@@ -21,7 +21,9 @@ import {
   createChecklist,
   createGuide,
   createSurvey,
+  deleteChecklist,
   deleteGuide,
+  deleteSurvey,
   getGuideAnalyticsSummary,
   listChecklists,
   listGuides,
@@ -38,6 +40,7 @@ import {
   type ChecklistPayload
 } from '@/lib/engagement/api';
 import { listIntegrations, type SdkIntegration } from '@/lib/sdk-integrations/api';
+import { useConfirm } from '@/context/ConfirmationContext';
 import type {
   FrequencyRules,
   Guide,
@@ -153,6 +156,7 @@ export interface EngagementPageProps {
 
 function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hideHeader = false }: EngagementPageProps): JSX.Element {
   const { integrationId } = useParams();
+  const confirm = useConfirm();
   const [activeIntegrationId, setActiveIntegrationId] = useState<string>('');
   const [integrations, setIntegrations] = useState<SdkIntegration[]>([]);
   const [tab, setTab] = useState<BuilderTab>(defaultTab ?? 'guides');
@@ -335,15 +339,22 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
                 setIsEditModalOpen(true);
               }}
               onDelete={async (experience) => {
+                const isConfirmed = await confirm({
+                  title: 'Delete Experience',
+                  message: `Permanently delete "${experience.title}"? This cannot be undone.`,
+                  confirmText: 'Delete',
+                  type: 'danger'
+                });
+                if (!isConfirmed) return;
                 if (tab === 'guides') {
                   await deleteGuide(activeIntegrationId, experience.id);
                   setMessage('Guide deleted.');
                 } else if (tab === 'surveys') {
-                  await updateSurvey(activeIntegrationId, experience.id, { status: 'ARCHIVED' });
-                  setMessage('Survey archived.');
+                  await deleteSurvey(activeIntegrationId, experience.id);
+                  setMessage('Survey deleted.');
                 } else if (tab === 'checklists') {
-                  await updateChecklist(experience.id, { status: 'ARCHIVED' });
-                  setMessage('Checklist archived.');
+                  await deleteChecklist(experience.id);
+                  setMessage('Checklist deleted.');
                 }
                 await load();
               }}

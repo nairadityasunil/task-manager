@@ -119,6 +119,10 @@ export const updateSurvey = async (sdkIntegrationId: string, surveyId: string, p
   return normalizeGuide({ ...response.data.data.survey, type: 'SURVEY', steps: payload.questions ?? [] });
 };
 
+export const deleteSurvey = async (sdkIntegrationId: string, surveyId: string): Promise<void> => {
+  await api.delete(`/sdk-integrations/${sdkIntegrationId}/surveys/${surveyId}`);
+};
+
 export const submitSurveyResponse = async (
   sdkIntegrationId: string,
   surveyId: string,
@@ -169,6 +173,10 @@ export const createChecklist = async (payload: ChecklistPayload): Promise<Guide>
 export const updateChecklist = async (checklistId: string, payload: Partial<ChecklistPayload>): Promise<Guide> => {
   const response = await api.patch<ApiEnvelope<{ checklist: Guide }>>(`/checklists/${checklistId}`, payload);
   return normalizeGuide({ ...response.data.data.checklist, type: 'CHECKLIST', steps: payload.items ?? [] });
+};
+
+export const deleteChecklist = async (checklistId: string): Promise<void> => {
+  await api.delete(`/checklists/${checklistId}`);
 };
 
 export const evaluateRuntime = async (context: EngagementRuntimeContext): Promise<Guide[]> => {

@@ -320,18 +320,6 @@ export const promptService = {
     return this.getPromptVersions(workspaceId, promptId);
   },
 
-  async createVersion(
-    workspaceId: string,
-    promptId: string,
-    payload: { changelog?: string; body?: string; messages?: IPromptMessage[]; variables?: IPromptVariable[]; parameters?: PromptParametersPayload; provider?: string; modelName?: string }
-  ): Promise<PromptVersion> {
-    const res = await api.post<{ status: string; data: PromptVersion }>(
-      `/workspaces/${workspaceId}/prompts/${promptId}/versions`,
-      payload
-    );
-    return res.data.data;
-  },
-
   async publishProductionVersion(
     workspaceId: string,
     promptId: string,

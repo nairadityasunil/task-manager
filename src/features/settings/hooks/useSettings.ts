@@ -114,7 +114,7 @@ export function useSettings() {
 
     try {
       setIsRegeneratingKey(true);
-      await api.post<{ message: string; data: { syncApiKey: string } }>("/users/me/sync-key/regenerate");
+      await api.patch<{ message: string; data: { syncApiKey: string } }>("/auth/regenerate-sync-key");
       await refreshUser();
       showToast({ variant: "success", message: "Sync API Key regenerated successfully" });
     } catch (err) {
@@ -145,13 +145,6 @@ export function useSettings() {
     await api.post("/companion/pair/qr", { qrToken });
     showToast({ variant: "success", message: "Companion device paired via QR code" });
     fetchCompanionDevices();
-  };
-
-  const getCompanionQrToken = async (deviceId: string) => {
-    const res = await api.post<{ message: string; data: { qrToken: string; payload: string } }>(
-      `/companion/devices/${deviceId}/qr-token`
-    );
-    return res.data.data;
   };
 
   const regenerateCompanionKey = async (deviceId: string) => {
@@ -224,7 +217,6 @@ export function useSettings() {
     createCompanionDeviceAndKey,
     pairCompanionDeviceWithKey,
     pairCompanionDeviceWithQr,
-    getCompanionQrToken,
     regenerateCompanionKey,
     handleRevokeCompanionDevice,
     handleSaveSlaConfig,
