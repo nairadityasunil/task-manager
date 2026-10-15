@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AddTaskForm from '@/components/AddTaskForm';
 import { WorkspaceSwitcher } from '@/features/workspaces';
@@ -14,7 +15,7 @@ import SettingsPanel from '@/components/SettingsPanel';
 import SubtaskForm from '@/components/SubtaskForm';
 import ChatPanel from '@/components/ChatPanel';
 import { ActivityHistoryPanel } from '@/features/projects';
-import { AiProjectPlanModal } from '@/features/projects';
+import { AiProjectPlanModal, ProjectWorkflowStatesPanel } from '@/features/projects';
 import SdkDocsPanel from '@/components/SdkDocsPanel';
 import EventTrackingPage from '@/pages/EventTrackingPage';
 import SemanticIntelligencePage from '@/pages/SemanticIntelligencePage';
@@ -50,7 +51,8 @@ import {
   RefreshCw,
   Calculator,
   Zap,
-  Bot
+  Bot,
+  Workflow
 } from 'lucide-react';
 import { Note } from '@/types/note';
 import { useDashboard, ALL_PROJECTS_VALUE } from '@/features/dashboard';
@@ -59,6 +61,7 @@ export function DashboardPage(): JSX.Element {
   const navigate = useNavigate();
   const { tab } = useParams();
   const dash = useDashboard();
+  const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
 
   const statusPillCls: Record<string, string> = {
     planned: 'bg-olive-500/20 text-olive-300',
@@ -416,6 +419,14 @@ export function DashboardPage(): JSX.Element {
                     >
                       <Users size={16} />
                       Team
+                    </button>
+                    <button
+                      className="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-olive-200 rounded-lg text-sm font-medium text-olive-600 hover:bg-olive-50 shadow-sm transition-colors"
+                      onClick={() => setIsWorkflowModalOpen(true)}
+                      type="button"
+                    >
+                      <Workflow size={16} />
+                      Workflow
                     </button>
                     <button
                       className="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-olive-200 rounded-lg text-sm font-medium text-olive-600 hover:bg-olive-50 shadow-sm transition-colors"
@@ -819,6 +830,19 @@ export function DashboardPage(): JSX.Element {
             onInviteMember={dash.handleInviteProjectMember}
             onRemoveMember={dash.handleRemoveProjectMember}
             onLeaveProject={dash.handleLeaveProject}
+          />
+        </Modal>
+      )}
+      {isWorkflowModalOpen && dash.activeProject && (
+        <Modal
+          bodyClassName="!p-0"
+          onClose={() => setIsWorkflowModalOpen(false)}
+          panelClassName="!max-w-[720px]"
+          title={`Workflow — ${dash.activeProject.name}`}
+        >
+          <ProjectWorkflowStatesPanel
+            canManage={dash.canManageTeam}
+            projectId={dash.activeProject.id}
           />
         </Modal>
       )}
