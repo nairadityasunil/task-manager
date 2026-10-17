@@ -2,16 +2,16 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useAuth } from './AuthContext';
 import { useWorkspace } from './WorkspaceContext';
 import { socketService, SocketEvents, type MessageReceivePayload, type MessageEditPayload, type MessageDeletePayload, type TypingUpdatePayload, type ReactionUpdatePayload } from '@/services/socket';
-import { 
-  getMessages, 
+import {
+  getMessages,
   getWorkspaceMessages,
-  getUnreadCount as apiGetUnreadCount, 
+  getUnreadCount as apiGetUnreadCount,
   markMessagesAsRead as apiMarkMessagesAsRead,
   editMessage as apiEditMessage,
   sendWorkspaceMessage as apiSendWorkspaceMessage,
   sendMessage as apiSendMessage,
 } from '@/services/chat';
-import { type ChatMessage, MessageType } from '@/types/chat';
+import { type ChatMessage, type ChatAttachment, MessageType } from '@/types/chat';
 import type { Project } from '@/types/project';
 
 interface TypingIndicator {
@@ -44,7 +44,7 @@ interface ChatContextType {
   setActiveWorkspaceId: (workspaceId: string | null) => void;
   activeRecipient: ChatRecipient | null;
   setActiveRecipient: (recipient: ChatRecipient | null) => void;
-  sendMessage: (content: string, replyToId?: string, mentions?: string[]) => Promise<void>;
+  sendMessage: (content: string, replyToId?: string, mentions?: string[], attachments?: ChatAttachment[]) => Promise<void>;
   editMessage: (messageId: string, content: string) => void;
   deleteMessage: (messageId: string) => void;
   addReaction: (messageId: string, emoji: string) => void;
@@ -140,6 +140,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initializeChatScope = async () => {
       setIsLoading(true);
       oldestMessageIdRef.current = null;
+      setTypingUsers(new Map());
 
       try {
         if (chatScope === 'project' && activeProject) {
@@ -191,15 +192,16 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!isConnected) return;
 
-    const handleMessageReceive = (payload: MessageReceivePayload) => {
+    const handleMessageReceive = (payload: MessageReceivePayload & { clientMessageId?: string }) => {
       const { message } = payload;
-      
+      const clientMsgId = payload.clientMessageId || (message as any)?.clientMessageId;
+
       const isForCurrentScope =
         (chatScope === 'project' && activeProject && message.projectId === activeProject.id) ||
         (chatScope === 'workspace' && activeWorkspaceId && message.workspaceId === activeWorkspaceId && !message.projectId && !message.recipientId) ||
         (chatScope === 'direct' && activeWorkspaceId && message.workspaceId === activeWorkspaceId &&
           ((message.senderId === activeRecipient?.id && (message.recipientId === currentUserId || !message.recipientId)) ||
-           (message.senderId === currentUserId && message.recipientId === activeRecipient?.id)));
+            (message.senderId === currentUserId && message.recipientId === activeRecipient?.id)));
 
       if (isForCurrentScope) {
         setMessages((prev) => {
@@ -210,9 +212,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           // If this is confirming an optimistic message from current user
           const pendingIdx = prev.findIndex(
-            (m) => (m.status === 'sending' || m.id.startsWith('temp-')) &&
-                   m.senderId === message.senderId &&
-                   m.content === message.content
+            (m) =>
+              (clientMsgId && m.id === clientMsgId) ||
+              ((m.status === 'sending' || m.id.startsWith('temp-')) &&
+                (m.senderId === message.senderId ||
+                  m.sender?.id === message.senderId ||
+                  m.senderId === message.sender?.id ||
+                  m.sender?.id === message.sender?.id ||
+                  (user?.email && m.sender?.email?.toLowerCase() === user.email.toLowerCase())) &&
+                m.content.trim() === message.content.trim())
           );
 
           if (pendingIdx !== -1) {
@@ -224,10 +232,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return [...prev, { ...message, status: 'sent' }];
         });
 
-        if (message.senderId !== currentUserId) {
+        const isFromMe =
+          message.senderId === currentUserId ||
+          message.sender?.id === currentUserId ||
+          (user?.email && message.sender?.email?.toLowerCase() === user.email.toLowerCase());
+
+        if (!isFromMe) {
           setUnreadCount((prev) => prev + 1);
           setLastMessage(message);
-          
+
           if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
             new Notification('New message', {
               body: `${message.sender?.name || message.sender?.email}: ${message.content.slice(0, 50)}`,
@@ -238,15 +251,22 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     };
 
-    const handleMessageSent = (payload: { success: boolean; message?: ChatMessage; error?: string }) => {
+    const handleMessageSent = (payload: { success: boolean; message?: ChatMessage; clientMessageId?: string; error?: string }) => {
       if (payload?.success && payload.message) {
         const confirmed = payload.message;
+        const clientMsgId = payload.clientMessageId || (confirmed as any)?.clientMessageId;
         setMessages((prev) => {
           const idx = prev.findIndex(
-            (m) => m.id === confirmed.id ||
-                   ((m.status === 'sending' || m.id.startsWith('temp-')) &&
-                    m.senderId === confirmed.senderId &&
-                    m.content === confirmed.content)
+            (m) =>
+              (clientMsgId && m.id === clientMsgId) ||
+              m.id === confirmed.id ||
+              ((m.status === 'sending' || m.id.startsWith('temp-')) &&
+                (m.senderId === confirmed.senderId ||
+                  m.sender?.id === confirmed.senderId ||
+                  m.senderId === confirmed.sender?.id ||
+                  m.sender?.id === confirmed.sender?.id ||
+                  (user?.email && m.sender?.email?.toLowerCase() === user.email.toLowerCase())) &&
+                m.content.trim() === confirmed.content.trim())
           );
           if (idx !== -1) {
             const next = [...prev];
@@ -269,8 +289,10 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const handleTypingUpdate = (payload: TypingUpdatePayload) => {
-      const { userId, userName, isTyping, projectId } = payload;
-      if (chatScope === 'project' && activeProject && projectId !== activeProject.id) return;
+      const { userId, userName, isTyping, projectId, workspaceId, recipientId } = payload;
+      if (chatScope === 'project' && activeProject && projectId && projectId !== activeProject.id) return;
+      if (chatScope === 'workspace' && activeWorkspaceId && workspaceId && workspaceId !== activeWorkspaceId) return;
+      if (chatScope === 'direct' && activeRecipient && recipientId && userId !== activeRecipient.id) return;
       if (userId === currentUserId) return;
 
       setTypingUsers((prev) => {
@@ -279,7 +301,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (existingTimeout) clearTimeout(existingTimeout);
 
         if (isTyping) {
-          next.set(userId, { userId, userName });
+          next.set(userId, { userId, userName: userName || 'Someone' });
           const timeout = setTimeout(() => {
             setTypingUsers((p) => {
               const n = new Map(p);
@@ -326,9 +348,9 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [isConnected, chatScope, activeProject, activeWorkspaceId, activeRecipient, currentUserId, notificationsEnabled]);
 
-  const sendMessage = useCallback(async (content: string, replyToId?: string, mentions?: string[]) => {
+  const sendMessage = useCallback(async (content: string, replyToId?: string, mentions?: string[], attachments?: ChatAttachment[]) => {
     const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-    
+
     // Find replying-to message for instant quote preview
     const parentMsg = replyToId ? messages.find(m => m.id === replyToId) : null;
     const replyToData = parentMsg ? {
@@ -336,6 +358,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       content: parentMsg.content,
       sender: parentMsg.sender,
     } : null;
+
+    const metadata: Record<string, unknown> = {};
+    if (attachments && attachments.length > 0) {
+      metadata.attachments = attachments;
+    }
 
     // Build optimistic message with pulsating status: 'sending'
     const optimisticMessage: ChatMessage = {
@@ -363,7 +390,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mentions: mentions?.map(userId => ({ userId, mentionedBy: currentUserId })) || [],
       isEdited: false,
       isDeleted: false,
-      metadata: {},
+      metadata,
       replyCount: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -382,6 +409,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
             replyToId,
             mentions,
             clientMessageId: tempId,
+            attachments,
+            metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
           });
         } else {
           const saved = await apiSendMessage(activeProject.id, { content, replyToId });
@@ -395,6 +424,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
             replyToId,
             mentions,
             clientMessageId: tempId,
+            attachments,
+            metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
           });
         } else {
           const saved = await apiSendWorkspaceMessage(activeWorkspaceId, { content, replyToId, mentions });
@@ -409,6 +440,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
             replyToId,
             mentions,
             clientMessageId: tempId,
+            attachments,
+            metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
           });
         } else {
           const saved = await apiSendWorkspaceMessage(activeWorkspaceId, {
@@ -421,10 +454,12 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // Safety timeout: transition sending -> sent after 1.5s if not already handled by socket emit
+      // Safety timeout: transition sending -> failed after 8s if not acknowledged
       setTimeout(() => {
-        setMessages(prev => prev.map(m => (m.id === tempId && m.status === 'sending' ? { ...m, status: 'sent' } : m)));
-      }, 1500);
+        setMessages(prev =>
+          prev.map(m => (m.id === tempId && m.status === 'sending' ? { ...m, status: 'failed' } : m))
+        );
+      }, 8000);
 
     } catch (err) {
       console.error('Failed to send message:', err);
@@ -501,16 +536,24 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [chatScope, activeProject, unreadCount]);
 
   const startTyping = useCallback(() => {
-    if (activeProject) {
+    if (chatScope === 'project' && activeProject) {
       socketService.startTyping(activeProject.id);
+    } else if (chatScope === 'direct' && activeWorkspaceId && activeRecipient) {
+      socketService.startTyping(undefined, activeWorkspaceId, activeRecipient.id);
+    } else if (chatScope === 'workspace' && activeWorkspaceId) {
+      socketService.startTyping(undefined, activeWorkspaceId);
     }
-  }, [activeProject]);
+  }, [chatScope, activeProject, activeWorkspaceId, activeRecipient]);
 
   const stopTyping = useCallback(() => {
-    if (activeProject) {
+    if (chatScope === 'project' && activeProject) {
       socketService.stopTyping(activeProject.id);
+    } else if (chatScope === 'direct' && activeWorkspaceId && activeRecipient) {
+      socketService.stopTyping(undefined, activeWorkspaceId, activeRecipient.id);
+    } else if (chatScope === 'workspace' && activeWorkspaceId) {
+      socketService.stopTyping(undefined, activeWorkspaceId);
     }
-  }, [activeProject]);
+  }, [chatScope, activeProject, activeWorkspaceId, activeRecipient]);
 
   const clearLastMessage = useCallback(() => {
     setLastMessage(null);
@@ -559,4 +602,4 @@ export const useChat = () => {
     throw new Error('useChat must be used within a ChatProvider');
   }
   return context;
-};
+};

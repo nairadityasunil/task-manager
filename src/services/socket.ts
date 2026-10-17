@@ -1,6 +1,6 @@
 import { io, type Socket } from 'socket.io-client';
 import { getAccessToken } from '@/services/authTokens';
-import type { ChatMessage } from '@/types/chat';
+import type { ChatMessage, ChatAttachment } from '@/types/chat';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL ?? import.meta.env.VITE_API_URL?.replace('/api', '') ?? 'http://localhost:4000';
 
@@ -77,6 +77,8 @@ export interface MessagePayload {
   replyToId?: string;
   mentions?: string[];
   clientMessageId?: string;
+  attachments?: ChatAttachment[];
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -142,16 +144,20 @@ export interface ReactionUpdatePayload {
  * Typing event payload
  */
 export interface TypingPayload {
-  projectId: string;
+  projectId?: string;
+  workspaceId?: string;
+  recipientId?: string;
 }
 
 /**
  * Typing update event payload
  */
 export interface TypingUpdatePayload {
-  projectId: string;
+  projectId?: string;
+  workspaceId?: string;
+  recipientId?: string;
   userId: string;
-  userName: string;
+  userName?: string;
   isTyping: boolean;
 }
 
@@ -177,7 +183,10 @@ class SocketService {
    * Initialize socket connection
    */
   public connect(): void {
-    if (this.socket?.connected) {
+    if (this.socket) {
+      if (!this.socket.connected) {
+        this.socket.connect();
+      }
       return;
     }
 
@@ -329,15 +338,15 @@ class SocketService {
   /**
    * Start typing indicator
    */
-  public startTyping(projectId: string): void {
-    this.socket?.emit(SocketEvents.TYPING_START, { projectId });
+  public startTyping(projectId?: string, workspaceId?: string, recipientId?: string): void {
+    this.socket?.emit(SocketEvents.TYPING_START, { projectId, workspaceId, recipientId });
   }
 
   /**
    * Stop typing indicator
    */
-  public stopTyping(projectId: string): void {
-    this.socket?.emit(SocketEvents.TYPING_STOP, { projectId });
+  public stopTyping(projectId?: string, workspaceId?: string, recipientId?: string): void {
+    this.socket?.emit(SocketEvents.TYPING_STOP, { projectId, workspaceId, recipientId });
   }
 
   /**
@@ -419,7 +428,7 @@ class SocketService {
     this.eventListeners.forEach((callbacks, event) => {
       // Don't duplicate internal handlers that we already set up above
       if (['connect', 'disconnect', 'connect_error', 'error'].includes(event)) return;
-      
+
       callbacks.forEach((callback) => {
         this.socket?.on(event, callback);
       });

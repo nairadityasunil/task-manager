@@ -18,6 +18,17 @@ export interface MessageReaction {
 }
 
 /**
+ * Chat attachment (images and files)
+ */
+export interface ChatAttachment {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+}
+
+/**
  * Message metadata for extensibility
  */
 export interface MessageMetadata {
@@ -34,6 +45,7 @@ export interface MessageMetadata {
     content: string;
     editedAt: string;
   }[];
+  attachments?: ChatAttachment[];
   [key: string]: unknown;
 }
 

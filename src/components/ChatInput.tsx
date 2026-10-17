@@ -241,9 +241,8 @@ function ChatInput({
                   e.preventDefault();
                   insertMention(member);
                 }}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                  isSelected ? 'bg-brand-50 text-brand-900' : 'hover:bg-olive-50 text-olive-800'
-                }`}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${isSelected ? 'bg-brand-50 text-brand-900' : 'hover:bg-olive-50 text-olive-800'
+                  }`}
               >
                 <div className="w-6 h-6 rounded-full bg-brand-100 text-brand-800 flex items-center justify-center text-[10px] font-bold shrink-0">
                   {(member.name || member.email).slice(0, 2).toUpperCase()}

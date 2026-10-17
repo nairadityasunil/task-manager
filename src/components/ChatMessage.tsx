@@ -142,8 +142,8 @@ function ChatMessageComponent({
   const sortedReplies = useMemo(() => {
     return [...replies].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   }, [replies]);
-  const isOwnMessage = 
-    message.senderId === currentUserId || 
+  const isOwnMessage =
+    message.senderId === currentUserId ||
     (currentUserEmail && message.sender?.email?.toLowerCase() === currentUserEmail.toLowerCase());
   const isSystemMessage = message.type === MessageType.SYSTEM;
   const isDeleted = message.isDeleted;

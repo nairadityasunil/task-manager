@@ -17,7 +17,7 @@ import {
   ArrowLeft,
   Hash,
 } from 'lucide-react';
-import type { ChatMessage as ChatMessageType } from '@/types/chat';
+import type { ChatMessage as ChatMessageType, ChatAttachment } from '@/types/chat';
 import type { Project, ProjectMember } from '@/types/project';
 import { type WorkspaceMember, workspaceService } from '@/services/workspaces';
 import { useAuth } from '@/context/AuthContext';
@@ -27,6 +27,9 @@ import { useDebounce } from '@/hooks/useDebounce';
 import ChatMessage from './ChatMessage';
 import ChatInput, { type MentionableMember } from './ChatInput';
 
+const EMPTY_MEMBERS: ProjectMember[] = [];
+const EMPTY_WS_MEMBERS: WorkspaceMember[] = [];
+
 interface ChatPanelProps {
   project?: Project | null;
   members?: ProjectMember[];
@@ -35,7 +38,13 @@ interface ChatPanelProps {
   onClose: () => void;
 }
 
-function ChatPanel({ project, members = [], workspaceMembers = [], isOpen, onClose }: ChatPanelProps) {
+function ChatPanel({
+  project,
+  members = EMPTY_MEMBERS,
+  workspaceMembers = EMPTY_WS_MEMBERS,
+  isOpen,
+  onClose,
+}: ChatPanelProps) {
   const { user } = useAuth();
   const {
     messages,
@@ -59,6 +68,7 @@ function ChatPanel({ project, members = [], workspaceMembers = [], isOpen, onClo
     startTyping,
     stopTyping,
     typingUsers,
+    activeProject,
     setActiveProject,
   } = useChat();
 
@@ -77,19 +87,33 @@ function ChatPanel({ project, members = [], workspaceMembers = [], isOpen, onClo
   const currentUserId = user?.id ?? '';
   const isAdmin = project ? project.currentUserRole === 'ADMIN' : false;
 
+  const fetchedWsIdRef = useRef<string | null>(null);
+
   // Set active project for context
   useEffect(() => {
-    if (project) {
+    if (project && activeProject?.id !== project.id) {
       setActiveProject(project);
     }
-  }, [project, setActiveProject]);
+  }, [project, activeProject?.id, setActiveProject]);
 
   // Load workspace members if not already provided
   useEffect(() => {
     if (workspaceMembers.length > 0) {
       setWsMembers(workspaceMembers);
-    } else if (activeWorkspaceId) {
-      workspaceService.listMembers(activeWorkspaceId).then(setWsMembers).catch(console.error);
+      return;
+    }
+
+    if (activeWorkspaceId && fetchedWsIdRef.current !== activeWorkspaceId) {
+      fetchedWsIdRef.current = activeWorkspaceId;
+      workspaceService
+        .listMembers(activeWorkspaceId)
+        .then((data) => {
+          setWsMembers(data);
+        })
+        .catch((err) => {
+          fetchedWsIdRef.current = null;
+          console.error('Failed to load workspace members for chat:', err);
+        });
     }
   }, [workspaceMembers, activeWorkspaceId]);
 
@@ -184,8 +208,8 @@ function ChatPanel({ project, members = [], workspaceMembers = [], isOpen, onClo
   const [replyingTo, setReplyingTo] = useState<ChatMessageType | null>(null);
 
   const handleSendMessage = useCallback(
-    async (content: string, mentions?: string[]) => {
-      await sendMessage(content, replyingTo?.id, mentions);
+    async (content: string, mentions?: string[], attachments?: ChatAttachment[]) => {
+      await sendMessage(content, replyingTo?.id, mentions, attachments);
       setReplyingTo(null);
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -330,11 +354,10 @@ function ChatPanel({ project, members = [], workspaceMembers = [], isOpen, onClo
             <button
               type="button"
               onClick={() => setChatScope('project')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all ${
-                chatScope === 'project'
+              className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all ${chatScope === 'project'
                   ? 'bg-white text-olive-950 font-semibold shadow-xs'
                   : 'text-olive-600 hover:text-olive-900'
-              }`}
+                }`}
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span className="truncate">Project</span>
@@ -344,11 +367,10 @@ function ChatPanel({ project, members = [], workspaceMembers = [], isOpen, onClo
           <button
             type="button"
             onClick={() => setChatScope('workspace')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all ${
-              chatScope === 'workspace'
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all ${chatScope === 'workspace'
                 ? 'bg-white text-olive-950 font-semibold shadow-xs'
                 : 'text-olive-600 hover:text-olive-900'
-            }`}
+              }`}
           >
             <Hash className="w-3.5 h-3.5 text-brand-600" />
             <span className="truncate">Lounge</span>
@@ -357,11 +379,10 @@ function ChatPanel({ project, members = [], workspaceMembers = [], isOpen, onClo
           <button
             type="button"
             onClick={() => setChatScope('direct')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all ${
-              chatScope === 'direct'
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all ${chatScope === 'direct'
                 ? 'bg-white text-olive-950 font-semibold shadow-xs'
                 : 'text-olive-600 hover:text-olive-900'
-            }`}
+              }`}
           >
             <Users className="w-3.5 h-3.5 text-brand-600" />
             <span className="truncate">Direct DMs</span>
@@ -472,8 +493,8 @@ function ChatPanel({ project, members = [], workspaceMembers = [], isOpen, onClo
                 {chatScope === 'workspace'
                   ? 'Welcome to the Workspace Lounge! Drop a message to say hello to everyone in the workspace.'
                   : chatScope === 'direct'
-                  ? `Start a conversation with ${activeRecipient?.name || activeRecipient?.email}.`
-                  : `Say hello to the team working on ${project?.name}.`}
+                    ? `Start a conversation with ${activeRecipient?.name || activeRecipient?.email}.`
+                    : `Say hello to the team working on ${project?.name}.`}
               </p>
             </div>
           ) : (
@@ -563,8 +584,13 @@ function ChatPanel({ project, members = [], workspaceMembers = [], isOpen, onClo
       {(chatScope !== 'direct' || activeRecipient) && (
         <div className="border-t border-olive-200 bg-white">
           {typingText && (
-            <div className="px-5 pt-2 text-xs text-olive-500">
-              {typingText}
+            <div className="px-5 pt-2 flex items-center gap-2 text-xs font-medium text-brand-600">
+              <span className="flex items-center gap-1 shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+              </span>
+              <span>{typingText}</span>
             </div>
           )}
 
@@ -581,8 +607,8 @@ function ChatPanel({ project, members = [], workspaceMembers = [], isOpen, onClo
                 chatScope === 'workspace'
                   ? 'Message Workspace Lounge... (Use @ to mention teammates)'
                   : chatScope === 'direct'
-                  ? `Message ${activeRecipient?.name || activeRecipient?.email}...`
-                  : `Message ${project?.name || 'Project'}... (Use @ to mention teammates)`
+                    ? `Message ${activeRecipient?.name || activeRecipient?.email}...`
+                    : `Message ${project?.name || 'Project'}... (Use @ to mention teammates)`
               }
             />
           </div>
@@ -592,4 +618,4 @@ function ChatPanel({ project, members = [], workspaceMembers = [], isOpen, onClo
   );
 }
 
-export default ChatPanel;
+export default ChatPanel;

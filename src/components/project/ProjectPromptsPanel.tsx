@@ -172,11 +172,18 @@ function ProjectPromptsPanel({ projectId, projectName, members, onClose }: Proje
           <div className="flex gap-2">
             <select aria-label="Prompt" className="input-base flex-1" onChange={(e) => setAttachId(e.target.value)} value={attachId}>
               <option value="">{library.length ? 'Choose a prompt…' : 'No unattached prompts you can edit'}</option>
-              {library.map((p) => <option key={p._id} value={p._id}>{p.name}</option>)}
+              {library.map((p) => {
+                const prodVer = p.deployment?.productionVersion ?? p.version;
+                return (
+                  <option key={p._id} value={p._id}>
+                    {p.name} (Production v{prodVer})
+                  </option>
+                );
+              })}
             </select>
             <button className="btn btn-primary" disabled={!attachId} onClick={() => void attach()} type="button">Attach</button>
           </div>
-          <p className="field-hint mb-0 mt-1.5">Attached prompts are visible to everyone who can open this project.</p>
+          <p className="field-hint mb-0 mt-1.5">Only the production version of attached prompts will be used by everyone in this project.</p>
         </section>
       )}
 
@@ -184,37 +191,42 @@ function ProjectPromptsPanel({ projectId, projectName, members, onClose }: Proje
         {prompts === null ? (
           <div className="grid gap-2">{[0, 1, 2].map((i) => <div className="skeleton h-16" key={i} />)}</div>
         ) : prompts.length === 0 ? (
-          <EmptyState icon={FileText} title="No prompts in this project" description="Attach prompts from the library so the whole team uses the same versions." />
+          <EmptyState icon={FileText} title="No prompts in this project" description="Attach prompts from the library so the whole team uses the same production versions." />
         ) : (
           <ul className="m-0 p-0 list-none grid gap-2">
-            {prompts.map((p) => (
-              <li className="card px-4 py-3" key={p._id}>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-md bg-brand-50 text-brand-700 flex items-center justify-center shrink-0">
-                    <FileText size={15} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[14px] font-medium text-olive-950 truncate">{p.name}</span>
-                      <span className="badge badge-slate !h-5 !text-[10px]">v{p.version}</span>
-                      <span className="badge badge-slate !h-5 !text-[10px]">
-                        {p.visibility === 'private' ? <Lock size={10} /> : <Users size={10} />}
-                        {VISIBILITY_LABEL[p.visibility]}
-                      </span>
+            {prompts.map((p) => {
+              const prodVersion = p.deployment?.productionVersion ?? p.version;
+              return (
+                <li className="card px-4 py-3" key={p._id}>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-md bg-brand-50 text-brand-700 flex items-center justify-center shrink-0">
+                      <FileText size={15} />
                     </div>
-                    {p.description && <p className="m-0 mt-0.5 text-xs text-olive-500 line-clamp-2">{p.description}</p>}
-                    <div className="mt-1 text-[11px] text-olive-400">
-                      By {p.createdBy?.name || p.createdBy?.email || 'unknown'} · used {p.usageCount ?? 0} {p.usageCount === 1 ? 'time' : 'times'}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[14px] font-medium text-olive-950 truncate">{p.name}</span>
+                        <span className="badge !h-5 !text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium">
+                          Production v{prodVersion}
+                        </span>
+                        <span className="badge badge-slate !h-5 !text-[10px]">
+                          {p.visibility === 'private' ? <Lock size={10} /> : <Users size={10} />}
+                          {VISIBILITY_LABEL[p.visibility]}
+                        </span>
+                      </div>
+                      {p.description && <p className="m-0 mt-0.5 text-xs text-olive-500 line-clamp-2">{p.description}</p>}
+                      <div className="mt-1 text-[11px] text-olive-400">
+                        By {p.createdBy?.name || p.createdBy?.email || 'unknown'} · used {p.usageCount ?? 0} {p.usageCount === 1 ? 'time' : 'times'}
+                      </div>
                     </div>
+                    {can('prompt.share_individual') && (
+                      <button className="btn btn-sm btn-secondary shrink-0" onClick={() => setSharing(p)} type="button">
+                        <Share2 size={13} /> Share
+                      </button>
+                    )}
                   </div>
-                  {can('prompt.share_individual') && (
-                    <button className="btn btn-sm btn-secondary shrink-0" onClick={() => setSharing(p)} type="button">
-                      <Share2 size={13} /> Share
-                    </button>
-                  )}
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
