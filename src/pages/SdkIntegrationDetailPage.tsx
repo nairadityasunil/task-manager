@@ -12,6 +12,7 @@ import {
 } from '@/lib/sdk-integrations/api';
 import EngagementPage from './EngagementPage';
 import EventTrackingPage from './EventTrackingPage';
+import SdkSetupGuide from '@/features/sdk-integrations/components/SdkSetupGuide';
 import {
   Activity,
   Check,
@@ -67,6 +68,16 @@ const SdkIntegrationDetailPage: React.FC = () => {
       setError('Failed to load integration details.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Re-reads connection status without the full-page loading state.
+  const refreshIntegration = async () => {
+    if (!integrationId) return;
+    try {
+      setIntegration(await getIntegration(integrationId));
+    } catch {
+      // The API client already reports the error.
     }
   };
 
@@ -247,6 +258,16 @@ const SdkIntegrationDetailPage: React.FC = () => {
 
       {/* Tab Panels */}
       <div className="p-8">
+        {activeTab === 'overview' && (
+          <div className="mb-6">
+            <SdkSetupGuide
+              integration={integration}
+              onOpenDocs={() => navigate('/sdk-docs')}
+              onOpenTab={(target) => navigate(`/sdk-integrations/${integration.id}/${target}`)}
+              onRefresh={refreshIntegration}
+            />
+          </div>
+        )}
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Left 2 Columns: Config & Keys */}
