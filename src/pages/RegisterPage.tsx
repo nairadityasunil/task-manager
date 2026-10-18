@@ -5,10 +5,11 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import api, { API_BASE_URL } from '@/services/api';
 import logoImg from '@/assets/logo.png';
+import GoogleLogo from '@/components/GoogleLogo';
 
 const inputCls =
-  'w-full bg-white border border-olive-200 rounded-xl text-olive-950 px-4 py-3 transition-all duration-200 focus:outline-none focus:border-olive-500 focus:ring-4 focus:ring-olive-500/10 placeholder:text-olive-400/80';
-const labelCls = 'grid gap-1.5 font-bold text-xs uppercase tracking-widest text-olive-800';
+  'w-full bg-white border border-slate-300 rounded-lg text-slate-900 text-sm px-3.5 py-2.5 shadow-sm transition-colors duration-150 focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 placeholder:text-slate-400';
+const labelCls = 'grid gap-1.5 text-sm font-medium text-slate-700';
 
 function RegisterPage(): JSX.Element {
   const navigate = useNavigate();
@@ -52,23 +53,23 @@ function RegisterPage(): JSX.Element {
       {/* Left Side (65% width) */}
       <div className="hidden lg:flex lg:w-[65%] bg-gradient-to-br from-olive-950 via-neutral-900 to-olive-900 relative p-16 flex-col justify-between overflow-hidden select-none">
         {/* Glowing abstract backgrounds */}
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-olive-700/10 rounded-full blur-[140px] pointer-events-none animate-pulse duration-[8000ms]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[6000ms]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-olive-700/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
         {/* Brand Header */}
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-white/20 shadow-md p-2">
+          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-white/20 shadow-md p-2">
             <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="text-white font-black tracking-[0.25em] text-lg">PRISTINE</span>
+          <span className="text-white font-semibold tracking-tight text-lg">Pristine</span>
         </div>
 
         {/* Visual Centerpiece (Horizontal layout of text and red outline logo container) */}
         <div className="relative z-10 my-auto w-full grid lg:grid-cols-2 gap-16 items-center">
           {/* Text Centerpiece */}
           <div className="flex flex-col gap-6 max-w-[500px]">
-            <h2 className="text-5xl font-black leading-[1.15] text-white tracking-tight">
+            <h2 className="text-5xl font-semibold leading-[1.15] text-white tracking-tight">
               Elevate your workflow with{' '}
               <span className="bg-gradient-to-r from-emerald-400 to-olive-300 bg-clip-text text-transparent">
                 effortless organization
@@ -95,8 +96,8 @@ function RegisterPage(): JSX.Element {
         </div>
 
         {/* Footer branding */}
-        <div className="relative z-10 flex items-center justify-between text-xs text-olive-400 font-bold uppercase tracking-widest">
-          <span>© 2026 Pristine</span>
+        <div className="relative z-10 flex items-center justify-between text-xs text-olive-400">
+          <span>© {new Date().getFullYear()} Pristine</span>
         </div>
       </div>
 
@@ -105,14 +106,14 @@ function RegisterPage(): JSX.Element {
         <div className="w-full max-w-[380px] grid gap-6">
           {/* Brand Logo Header */}
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-white border border-zinc-200/50 rounded-xl flex items-center justify-center p-2 shadow-md">
+            <div className="w-10 h-10 bg-white border border-zinc-200/50 rounded-lg flex items-center justify-center p-2 shadow-md">
               <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain" />
             </div>
-            <span className="font-black tracking-[0.25em] text-lg text-olive-950">PRISTINE</span>
+            <span className="font-semibold tracking-tight text-lg text-olive-950">Pristine</span>
           </div>
 
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-olive-950 m-0">Create Account</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-olive-950 m-0">Create your account</h1>
             <p className="text-olive-500 text-sm mt-1.5">
               Get started with Pristine today. Experience seamless task sync.
             </p>
@@ -120,17 +121,18 @@ function RegisterPage(): JSX.Element {
 
           {/* Google OAuth */}
           <button
-            className="w-full py-3 bg-white border border-olive-200 rounded-xl text-olive-800 font-bold hover:bg-olive-50 flex items-center justify-center gap-2.5 shadow-sm transition-all duration-250 active:scale-[0.98]"
+            className="w-full py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 font-semibold hover:bg-slate-50 flex items-center justify-center gap-2.5 shadow-sm transition-colors disabled:opacity-50"
             disabled={loading}
             onClick={startGoogleSignIn}
             type="button"
           >
+            <GoogleLogo />
             Sign up with Google
           </button>
 
           <div className="flex items-center gap-3 my-1">
             <hr className="flex-1 border-olive-200/60" />
-            <span className="text-olive-400 text-xs font-bold uppercase tracking-widest">or</span>
+            <span className="text-slate-400 text-xs">or</span>
             <hr className="flex-1 border-olive-200/60" />
           </div>
 
@@ -213,7 +215,7 @@ function RegisterPage(): JSX.Element {
             {error ? <p className="text-red-600 m-0 text-xs font-medium text-center">{error}</p> : null}
 
             <button
-              className="bg-olive-900 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+              className="bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
               disabled={loading}
               type="submit"
             >

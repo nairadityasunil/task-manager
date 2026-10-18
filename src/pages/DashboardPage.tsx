@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AddTaskForm from '@/components/AddTaskForm';
 import { WorkspaceSwitcher } from '@/features/workspaces';
@@ -52,10 +52,81 @@ import {
   Calculator,
   Zap,
   Bot,
-  Workflow
+  MoreHorizontal,
+  Workflow,
+  type LucideIcon
 } from 'lucide-react';
 import { Note } from '@/types/note';
 import { useDashboard, ALL_PROJECTS_VALUE } from '@/features/dashboard';
+
+const headerButtonCls =
+  'flex items-center gap-2 h-9 px-3 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-sm transition-colors whitespace-nowrap';
+
+interface MoreMenuItem {
+  label: string;
+  icon: LucideIcon;
+  onSelect: () => void;
+  disabled?: boolean;
+}
+
+function ProjectMoreMenu({ items }: { items: MoreMenuItem[] }): JSX.Element {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        aria-expanded={open}
+        aria-haspopup="menu"
+        className={headerButtonCls}
+        onClick={() => setOpen((value) => !value)}
+        type="button"
+      >
+        <MoreHorizontal size={15} />
+        More
+      </button>
+      {open && (
+        <div
+          className="absolute right-0 top-full z-40 mt-1.5 w-56 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+          role="menu"
+        >
+          {items.map(({ label, icon: Icon, onSelect, disabled }) => (
+            <button
+              className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50"
+              disabled={disabled}
+              key={label}
+              onClick={() => {
+                setOpen(false);
+                onSelect();
+              }}
+              role="menuitem"
+              type="button"
+            >
+              <Icon className="text-slate-400" size={15} />
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function DashboardPage(): JSX.Element {
   const navigate = useNavigate();
@@ -64,10 +135,18 @@ export function DashboardPage(): JSX.Element {
   const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
 
   const statusPillCls: Record<string, string> = {
-    planned: 'bg-olive-500/20 text-olive-300',
-    active: 'bg-amber-500/20 text-amber-300',
-    completed: 'bg-emerald-500/20 text-emerald-300',
-    archived: 'bg-olive-500/20 text-olive-400',
+    planned: 'bg-slate-50 text-slate-600 border-slate-200',
+    active: 'bg-blue-50 text-blue-700 border-blue-200',
+    completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    archived: 'bg-slate-100 text-slate-500 border-slate-200',
+    TODO: 'bg-slate-50 text-slate-600 border-slate-200',
+    IN_PROGRESS: 'bg-blue-50 text-blue-700 border-blue-200',
+    DONE: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    BLOCKED: 'bg-red-50 text-red-700 border-red-200',
+  };
+  const epicStatusLabel = (status: string): string => {
+    const words = status.toLowerCase().replace(/_/g, ' ');
+    return status === 'TODO' ? 'To do' : words.charAt(0).toUpperCase() + words.slice(1);
   };
 
   const allMutationMessages = [
@@ -194,15 +273,15 @@ export function DashboardPage(): JSX.Element {
               <span className="text-slate-300">/</span>
 
               {dash.activeView === 'settings' ? (
-                <span className="text-slate-600">Settings</span>
+                <span className="text-slate-800 font-medium truncate">Settings</span>
               ) : dash.activeView === 'sdk-docs' ? (
-                <span className="text-slate-600">SDK Documentation</span>
+                <span className="text-slate-800 font-medium truncate">SDK Documentation</span>
               ) : dash.activeView === 'event-tracking' ? (
-                <span className="text-slate-600">Event Tracking</span>
+                <span className="text-slate-800 font-medium truncate">Event Tracking</span>
               ) : dash.activeView === 'engagement' ? (
-                <span className="text-slate-600">Engagement</span>
+                <span className="text-slate-800 font-medium truncate">Engagement</span>
               ) : dash.activeView === 'sdk-integrations' ? (
-                <span className="text-slate-600">SDK Integrations</span>
+                <span className="text-slate-800 font-medium truncate">SDK Integrations</span>
               ) : dash.activeView === 'sdk-integration-detail' ? (
                 <>
                   <button
@@ -213,14 +292,14 @@ export function DashboardPage(): JSX.Element {
                     SDK Integrations
                   </button>
                   <span className="text-slate-300">/</span>
-                  <span className="text-slate-600">Integration Detail</span>
+                  <span className="text-slate-800 font-medium truncate">Integration Detail</span>
                 </>
               ) : dash.activeView === 'prompts' ? (
-                <span className="text-slate-600">Prompt Library</span>
+                <span className="text-slate-800 font-medium truncate">Prompt Library</span>
               ) : dash.activeView === 'playground' ? (
-                <span className="text-slate-600">Prompt Playground</span>
+                <span className="text-slate-800 font-medium truncate">Prompt Playground</span>
               ) : dash.activeView === 'semantic-intelligence' ? (
-                <span className="text-slate-600">Semantic Intelligence</span>
+                <span className="text-slate-800 font-medium truncate">Semantic Intelligence</span>
               ) : dash.activeProject ? (
                 <>
                   <button
@@ -231,20 +310,23 @@ export function DashboardPage(): JSX.Element {
                     Projects
                   </button>
                   <span className="text-slate-300">/</span>
-                  <span className="text-slate-600">{dash.activeProject.name}</span>
+                  <span className="text-slate-800 font-medium truncate">{dash.activeProject.name}</span>
                   {dash.activeProjectAiEnabled ? (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-green-50 text-green-700 border border-green-200/50 uppercase tracking-wider font-bold text-[9px] select-none ml-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                      AI ({dash.activeProjectAiProvider ? dash.activeProjectAiProvider.toUpperCase() : ''})
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium text-[11px] select-none ml-1.5 whitespace-nowrap">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      AI{dash.activeProjectAiProvider ? ` · ${dash.activeProjectAiProvider}` : ''}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-500 border border-zinc-200/50 uppercase tracking-wider font-bold text-[9px] select-none ml-1.5">
-                      AI (FALLBACK)
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 font-medium text-[11px] select-none ml-1.5 whitespace-nowrap"
+                      title="No AI provider is configured for this project; built-in rules are used."
+                    >
+                      AI off
                     </span>
                   )}
                 </>
               ) : (
-                <span className="text-olive-600">All Projects</span>
+                <span className="text-slate-800 font-medium">All Projects</span>
               )}
             </>
           }
@@ -345,125 +427,86 @@ export function DashboardPage(): JSX.Element {
           ) : (
             /* 3-column workspace */
             <div className="flex flex-col h-full overflow-hidden bg-white">
-              <div className="shrink-0 px-6 py-5 border-b border-olive-200/80 bg-white/78">
-                <div className="flex items-start justify-between gap-5">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-olive-600 text-white shadow-lg shadow-olive-500/25 shrink-0">
-                      <Folder size={20} />
+              <div className="shrink-0 px-6 py-3.5 border-b border-slate-200 bg-white">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-slate-900 text-white shrink-0">
+                      <Folder size={17} />
                     </div>
-                    <div className="grid gap-1">
-                      <div className="relative flex items-center">
-                        <select
-                          className="appearance-none bg-transparent border-none text-[1.35rem] font-bold text-olive-950 focus:outline-none focus:ring-0 cursor-pointer pr-6 m-0 p-0 tracking-tight"
-                          onChange={(e) => dash.handleProjectSelect(e.target.value)}
-                          value={dash.activeProject.id}
-                        >
-                          {dash.projects.map((project) => (
-                            <option
-                              className="text-olive-950 bg-white text-base font-normal"
-                              key={project.id}
-                              value={project.id}
-                            >
-                              {project.name}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center">
-                          <ChevronDown className="text-olive-500" size={16} />
-                        </div>
+                    <div className="relative flex min-w-0 items-center">
+                      <select
+                        aria-label="Switch project"
+                        className="appearance-none truncate bg-transparent border-none text-lg font-semibold text-slate-900 focus:outline-none focus:ring-0 cursor-pointer pr-6 m-0 p-0 tracking-tight"
+                        onChange={(e) => dash.handleProjectSelect(e.target.value)}
+                        value={dash.activeProject.id}
+                      >
+                        {dash.projects.map((project) => (
+                          <option
+                            className="text-slate-900 bg-white text-base font-normal"
+                            key={project.id}
+                            value={project.id}
+                          >
+                            {project.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center">
+                        <ChevronDown className="text-slate-400" size={16} />
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <button
-                      className="flex items-center gap-2 px-3.5 py-2.5 bg-olive-700 border border-olive-700 rounded-lg text-sm font-semibold text-white hover:bg-olive-800 shadow-sm transition-colors"
-                      onClick={() => dash.setIsAiPlanningWorkspaceOpen(true)}
-                      type="button"
-                    >
-                      <Zap size={16} />
-                      AI Planner
-                    </button>
-                    <button
-                      className="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-olive-200 rounded-lg text-sm font-medium text-olive-600 hover:bg-olive-50 shadow-sm transition-colors"
-                      onClick={() => dash.setActiveView('settings')}
-                      type="button"
-                    >
-                      <Bot size={16} />
-                      AI Settings
-                    </button>
-                    <button
-                      className="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-olive-200 rounded-lg text-sm font-medium text-olive-600 hover:bg-olive-50 shadow-sm transition-colors"
-                      onClick={() => dash.handleOpenProjectNotesPanel(dash.activeProject!)}
-                      type="button"
-                    >
-                      <MessageSquare size={16} />
-                      Project Notes
-                    </button>
-                    <button
-                      className={[
-                        'flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-bold shadow-sm transition-all duration-300 transform active:scale-95',
-                        dash.isChatPanelOpen
-                          ? 'bg-gradient-to-r from-olive-600 to-olive-600 border-olive-600 text-white shadow-olive-500/25'
-                          : 'bg-white border-olive-200 text-olive-600 hover:border-olive-400 hover:text-olive-600'
-                      ].join(' ')}
-                      onClick={() => dash.setIsChatPanelOpen(!dash.isChatPanelOpen)}
-                      type="button"
-                    >
-                      <MessageCircle size={18} className={dash.isChatPanelOpen ? 'text-white' : 'text-olive-500'} />
-                      Chat
-                    </button>
-                    <button
-                      className="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-olive-200 rounded-lg text-sm font-medium text-olive-600 hover:bg-olive-50 shadow-sm transition-colors"
+                      className={headerButtonCls}
                       onClick={() => dash.setIsProjectTeamModalOpen(true)}
                       type="button"
                     >
-                      <Users size={16} />
+                      <Users size={15} />
                       Team
                     </button>
                     <button
-                      className="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-olive-200 rounded-lg text-sm font-medium text-olive-600 hover:bg-olive-50 shadow-sm transition-colors"
-                      onClick={() => setIsWorkflowModalOpen(true)}
+                      aria-pressed={dash.isChatPanelOpen}
+                      className={dash.isChatPanelOpen ? `${headerButtonCls} !bg-slate-100 !border-slate-300 !text-slate-900` : headerButtonCls}
+                      onClick={() => dash.setIsChatPanelOpen(!dash.isChatPanelOpen)}
                       type="button"
                     >
-                      <Workflow size={16} />
-                      Workflow
+                      <MessageCircle size={15} />
+                      Chat
                     </button>
+                    <ProjectMoreMenu
+                      items={[
+                        { label: 'Project notes', icon: MessageSquare, onSelect: () => dash.handleOpenProjectNotesPanel(dash.activeProject!) },
+                        { label: 'Workflow states', icon: Workflow, onSelect: () => setIsWorkflowModalOpen(true) },
+                        { label: 'Activity history', icon: History, onSelect: () => dash.setIsActivityHistoryOpen(true) },
+                        {
+                          label: dash.isRecalculatingPriorities ? 'Recalculating priorities…' : 'Recalculate priorities',
+                          icon: Calculator,
+                          disabled: dash.isRecalculatingPriorities,
+                          onSelect: () => void dash.handleRecalculatePriorities()
+                        },
+                        { label: 'AI settings', icon: Bot, onSelect: () => dash.setActiveView('settings') },
+                        { label: 'Refresh', icon: RefreshCw, onSelect: () => void dash.loadDashboard() }
+                      ]}
+                    />
                     <button
-                      className="flex items-center gap-2 px-3.5 py-2.5 bg-white border border-olive-200 rounded-lg text-sm font-medium text-olive-600 hover:bg-olive-50 shadow-sm transition-colors"
-                      onClick={() => dash.setIsActivityHistoryOpen(true)}
+                      className="flex items-center gap-2 h-9 px-3.5 bg-slate-900 rounded-lg text-sm font-semibold text-white hover:bg-slate-800 shadow-sm transition-colors whitespace-nowrap"
+                      onClick={() => dash.setIsAiPlanningWorkspaceOpen(true)}
                       type="button"
                     >
-                      <History size={16} />
-                      History
-                    </button>
-                    <button
-                      className="group flex items-center gap-2 px-3.5 py-2.5 bg-white border border-olive-200 rounded-lg text-sm font-medium text-olive-600 hover:bg-olive-50 shadow-sm transition-colors disabled:opacity-50"
-                      disabled={dash.isRecalculatingPriorities}
-                      onClick={() => void dash.handleRecalculatePriorities()}
-                      type="button"
-                    >
-                      <Calculator size={16} className={dash.isRecalculatingPriorities ? "animate-pulse text-olive-800" : ""} />
-                      {dash.isRecalculatingPriorities ? 'Recalculating...' : 'Recalculate Priority'}
-                    </button>
-                    <button
-                      className="group flex items-center gap-2 px-3.5 py-2.5 bg-white border border-olive-200 rounded-lg text-sm font-medium text-olive-600 hover:bg-olive-50 shadow-sm transition-colors disabled:opacity-50"
-                      onClick={() => void dash.loadDashboard()}
-                      type="button"
-                    >
-                      <RefreshCw size={16} className="group-hover:rotate-180 transition-transform duration-500" />
-                      Refresh
+                      <Zap size={15} />
+                      AI Planner
                     </button>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-1 min-h-0 overflow-hidden gap-4 p-4 bg-olive-50">
+              <div className="flex flex-1 min-h-0 overflow-hidden gap-4 p-4 bg-slate-50">
                 {/* Column 1 — Epics (Sidebar) */}
-                <div className={`flex flex-col shrink-0 h-full rounded-md border border-olive-200/60 bg-white/70 backdrop-blur-xl shadow-sm overflow-hidden transition-all duration-500 ease-in-out ${dash.isSidebarCollapsed ? 'w-14' : 'w-[300px]'}`}>
-                  <div className={`flex items-center justify-between px-5 py-6 border-b border-olive-100 bg-linear-to-b from-white/50 to-transparent ${dash.isSidebarCollapsed ? 'flex-col gap-4' : ''}`}>
+                <div className={`flex flex-col shrink-0 h-full rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden transition-all duration-500 ease-in-out ${dash.isSidebarCollapsed ? 'w-14' : 'w-[300px]'}`}>
+                  <div className={`flex items-center justify-between px-4 py-3.5 border-b border-slate-100 ${dash.isSidebarCollapsed ? 'flex-col gap-4' : ''}`}>
                     {!dash.isSidebarCollapsed && (
                       <div className="animate-in fade-in duration-500">
-                        <span className="text-[0.6rem] uppercase tracking-[0.2em] font-black text-olive-600 opacity-80">Infrastructure</span>
-                        <h3 className="text-[1rem] font-bold font-sans text-olive-950 m-0 mt-1 tracking-tight">Epics</h3>
+                        <h3 className="text-[0.95rem] font-semibold text-slate-900 m-0">Epics</h3>
+                        <p className="m-0 mt-0.5 text-xs text-slate-500">{dash.epics.length} in this project</p>
                       </div>
                     )}
                     <div className={`flex items-center gap-1.5 ${dash.isSidebarCollapsed ? 'flex-col' : ''}`}>
@@ -489,29 +532,29 @@ export function DashboardPage(): JSX.Element {
                   </div>
 
                   {!dash.isSidebarCollapsed && (
-                    <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar animate-in fade-in slide-in-from-left-4 duration-500">
+                    <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2 custom-scrollbar">
                       {dash.activeProjectEpics.map(epic => {
                         const isActive = dash.selectedEpicId === epic.id;
                         return (
                           <div
                             key={epic.id}
-                            className={`relative flex flex-col gap-3 p-4 rounded-xl border transition-all cursor-pointer shadow-sm ${
+                            className={`relative flex flex-col gap-2 px-3.5 py-3 rounded-lg border transition-colors cursor-pointer ${
                               isActive
-                                ? 'bg-olive-50/80 border-olive-400/60 ring-1 ring-olive-500/10'
-                                : 'bg-white/50 border-olive-200/80 hover:border-olive-300 hover:-translate-y-[2px]'
+                                ? 'bg-slate-50 border-slate-900 ring-1 ring-slate-900'
+                                : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                             }`}
                             onClick={() => dash.handleEpicSelect(isActive ? null : epic.id)}
                           >
                             <div className="flex items-start justify-between gap-3">
-                              <h4 className={`text-[0.9rem] font-bold m-0 leading-tight transition-colors text-olive-950`}>
+                              <h4 className="text-sm font-semibold m-0 leading-snug text-slate-900">
                                 {epic.name}
                               </h4>
-                              <span className={`shrink-0 text-[0.55rem] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border ${statusPillCls[epic.status] ?? 'bg-olive-100 text-olive-600 border-olive-200'}`}>
-                                {epic.status}
+                              <span className={`shrink-0 whitespace-nowrap text-[11px] font-medium px-2 py-0.5 rounded-full border ${statusPillCls[epic.status] ?? 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                                {epicStatusLabel(epic.status)}
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-1 mt-1 opacity-60 hover:opacity-100 transition-opacity">
+                            <div className="flex items-center gap-1">
                               <button
                                 className="p-1 rounded hover:bg-olive-100 text-olive-400 hover:text-olive-600 transition-colors"
                                 onClick={(e) => { e.stopPropagation(); dash.handleOpenEpicNotesPanel(epic); }}
@@ -550,13 +593,12 @@ export function DashboardPage(): JSX.Element {
                 </div>
 
                 {/* Column 2 — Main Workspace (Tasks) */}
-                <div className={`flex flex-col flex-1 min-w-0 h-full rounded-md border border-olive-200/60 bg-white/50 backdrop-blur-xl shadow-md overflow-hidden transition-[opacity,filter,background-color] duration-500 ${!dash.selectedEpicId ? 'opacity-40 grayscale-[0.5]' : ''}`}>
+                <div className={`flex flex-col flex-1 min-w-0 h-full rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden`}>
                   {dash.selectedEpicId ? (
                     <>
-                      <div className="flex items-center justify-between px-6 py-6 border-b border-olive-100 bg-linear-to-b from-white/50 to-transparent">
+                      <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
                         <div>
-                          <span className="text-[0.6rem] uppercase tracking-[0.2em] font-black text-olive-600 opacity-80">Execution</span>
-                          <h3 className="text-[1.1rem] font-bold font-sans text-olive-950 m-0 mt-1 tracking-tight">{dash.tasksHeading}</h3>
+                          <h3 className="text-[0.95rem] font-semibold text-slate-900 m-0">{dash.tasksHeading}</h3>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-olive-500 text-[0.78rem] truncate max-w-[200px]">
                               {dash.epics.find(e => e.id === dash.selectedEpicId)?.name}
@@ -695,12 +737,12 @@ export function DashboardPage(): JSX.Element {
                       </div>
                     </>
                   ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-10 text-center opacity-40">
-                      <div className="p-6 rounded-full bg-olive-100 mb-4">
-                        <Folder size={48} className="text-olive-400" />
+                    <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 mb-4">
+                        <Folder size={22} className="text-slate-400" />
                       </div>
-                      <h4 className="text-lg font-bold text-olive-950">Select an Epic</h4>
-                      <p className="text-sm text-olive-500 max-w-xs mt-2">Choose an epic from the sidebar to view its execution plan and tasks.</p>
+                      <h4 className="text-base font-semibold text-slate-900 m-0">Select an epic</h4>
+                      <p className="text-sm text-slate-500 max-w-xs mt-1.5">Choose an epic from the sidebar to view its execution plan and tasks.</p>
                     </div>
                   )}
                 </div>

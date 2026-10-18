@@ -17,12 +17,12 @@ const ENV_LABELS: Record<SdkEnvironment, string> = { development: 'Development',
 const ENV_COLORS: Record<SdkEnvironment, string> = {
   development: 'bg-emerald-50 text-emerald-700',
   staging: 'bg-amber-50 text-amber-700',
-  production: 'bg-indigo-50 text-indigo-700',
+  production: 'bg-slate-900 text-white',
 };
 const ENV_BORDER: Record<SdkEnvironment, string> = {
   development: 'border-t-emerald-400',
   staging: 'border-t-amber-400',
-  production: 'border-t-indigo-500',
+  production: 'border-t-slate-900',
 };
 const STATUS_META: Record<SdkIntegration['status'], { label: string; icon: JSX.Element; cls: string }> = {
   pending: { label: 'Pending', icon: <Clock size={13} />, cls: 'bg-zinc-50 text-zinc-600 shadow-xs' },
@@ -88,11 +88,11 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
         <div className="p-6 grid gap-4 overflow-y-auto max-h-[70vh]">
           {err && <div className="flex items-center gap-2 rounded bg-red-50 px-4 py-2.5 text-sm text-red-700 shadow-sm"><AlertCircle size={15} />{err}</div>}
           <label className="grid gap-1.5">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Integration Name *</span>
+            <span className="text-sm font-medium text-slate-700">Integration Name *</span>
             <input className="rounded bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-sm focus:shadow-sm transition-shadow" placeholder="e.g. Production Website" value={name} onChange={e => setName(e.target.value)} />
           </label>
           <label className="grid gap-1.5">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Environment *</span>
+            <span className="text-sm font-medium text-slate-700">Environment *</span>
             <select className="rounded bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-sm focus:shadow-sm transition-shadow" value={env} onChange={e => setEnv(e.target.value as SdkEnvironment)}>
               <option value="production">Production</option>
               <option value="staging">Staging</option>
@@ -100,15 +100,15 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
             </select>
           </label>
           <label className="grid gap-1.5">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Application URL *</span>
+            <span className="text-sm font-medium text-slate-700">Application URL *</span>
             <input className="rounded bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-sm focus:shadow-sm transition-shadow" placeholder="https://app.company.com" value={domain} onChange={e => setDomain(e.target.value)} />
           </label>
           <label className="grid gap-1.5">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Additional Allowed Origins (optional, comma-separated)</span>
+            <span className="text-sm font-medium text-slate-700">Additional Allowed Origins (optional, comma-separated)</span>
             <input className="rounded bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-sm focus:shadow-sm transition-shadow" placeholder="https://origin2.com, http://localhost:5173" value={origins} onChange={e => setOrigins(e.target.value)} />
           </label>
           <label className="grid gap-1.5">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Description (optional)</span>
+            <span className="text-sm font-medium text-slate-700">Description (optional)</span>
             <textarea className="rounded bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/10 resize-none h-20 shadow-sm focus:shadow-sm transition-shadow" placeholder="Brief description of this integration" value={desc} onChange={e => setDesc(e.target.value)} />
           </label>
         </div>
@@ -395,40 +395,40 @@ export default function SdkIntegrationsPage() {
       {newKey && <KeyRevealModal sdkKey={newKey.key} name={newKey.name} onClose={() => setNewKey(null)} />}
 
       {/* Header */}
-      <div className="bg-white px-8 py-6 shadow-sm">
+      <div className="bg-white px-8 py-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-                <Shield className="text-white" size={18} />
+              <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center">
+                <Shield className="text-white" size={17} />
               </div>
               <div>
                 <h2 className="m-0 text-xl font-semibold text-slate-800">SDK Integrations</h2>
-                <p className="m-0 text-xs text-slate-400">Connect websites · Generate keys · Manage auth</p>
+                <p className="m-0 text-sm text-slate-500">Connect your apps, manage SDK keys and allowed origins.</p>
               </div>
             </div>
           </div>
           <button
             onClick={() => setShowCreate(true)} type="button"
-            className="flex items-center gap-2 rounded bg-slate-900 px-5 py-2.5 text-sm font-bold text-white hover:bg-slate-800 shadow-sm hover:shadow-sm transition-all"
+            className="flex items-center gap-2 rounded-lg bg-slate-900 h-9 px-3.5 text-sm font-semibold text-white hover:bg-slate-800 shadow-sm transition-colors whitespace-nowrap"
           >
-            <Plus size={16} />New Integration
+            <Plus size={16} />New integration
           </button>
         </div>
 
         {/* Stats */}
         <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total', value: stats.total, icon: <Globe size={14} />, iconCls: 'text-slate-500', bg: 'bg-slate-50', txt: 'text-slate-700' },
-            { label: 'Connected', value: stats.connected, icon: <CheckCircle2 size={14} />, iconCls: 'text-emerald-500', bg: 'bg-emerald-50', txt: 'text-emerald-700' },
-            { label: 'Pending', value: stats.pending, icon: <Clock size={14} />, iconCls: 'text-amber-500', bg: 'bg-amber-50', txt: 'text-amber-700' },
-            { label: 'Inactive', value: stats.disabled, icon: <WifiOff size={14} />, iconCls: 'text-rose-400', bg: 'bg-rose-50', txt: 'text-rose-600' },
+            { label: 'Total', value: stats.total, icon: <Globe size={14} />, iconCls: 'text-slate-500', bg: 'bg-slate-50', txt: 'text-slate-900' },
+            { label: 'Connected', value: stats.connected, icon: <CheckCircle2 size={14} />, iconCls: 'text-emerald-500', bg: 'bg-emerald-50', txt: 'text-slate-900' },
+            { label: 'Pending', value: stats.pending, icon: <Clock size={14} />, iconCls: 'text-amber-500', bg: 'bg-amber-50', txt: 'text-slate-900' },
+            { label: 'Inactive', value: stats.disabled, icon: <WifiOff size={14} />, iconCls: 'text-rose-400', bg: 'bg-rose-50', txt: 'text-slate-900' },
           ].map(({ label, value, icon, iconCls, bg, txt }) => (
-            <div key={label} className={`rounded ${bg} px-4 py-3.5 flex items-center gap-3`}>
-              <span className={iconCls}>{icon}</span>
+            <div key={label} className="rounded-lg border border-slate-200 bg-white px-4 py-3.5 flex items-center gap-3">
+              <span className={`flex h-8 w-8 items-center justify-center rounded-md ${bg} ${iconCls}`}>{icon}</span>
               <div>
-                <p className="text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
-                <p className={`text-xl font-semibold ${txt} leading-tight mt-0.5`}>{value}</p>
+                <p className="m-0 text-xs text-slate-500">{label}</p>
+                <p className={`m-0 text-xl font-semibold ${txt} leading-tight mt-0.5`}>{value}</p>
               </div>
             </div>
           ))}
@@ -436,19 +436,19 @@ export default function SdkIntegrationsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 px-8 py-4 bg-white/60 shadow-xs">
+      <div className="flex flex-wrap items-center gap-3 px-8 py-4 border-y border-slate-200 bg-white">
         <input
-          className="rounded bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-xs focus:shadow-sm w-56 transition-shadow"
+          className="rounded-lg border border-slate-300 bg-white h-9 px-3 text-sm text-slate-700 shadow-sm focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 w-64 placeholder:text-slate-400"
           placeholder="Search integrations…" value={search} onChange={e => setSearch(e.target.value)}
         />
-        <select className="rounded bg-white px-3 py-2 text-sm focus:outline-none shadow-xs text-slate-700 font-semibold" value={filterEnv} onChange={e => setFilterEnv(e.target.value as typeof filterEnv)}>
-          <option value="all">All Environments</option>
+        <select className="rounded-lg border border-slate-300 bg-white h-9 px-3 text-sm text-slate-700 shadow-sm focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10" value={filterEnv} onChange={e => setFilterEnv(e.target.value as typeof filterEnv)}>
+          <option value="all">All environments</option>
           <option value="production">Production</option>
           <option value="staging">Staging</option>
           <option value="development">Development</option>
         </select>
-        <select className="rounded bg-white px-3 py-2 text-sm focus:outline-none shadow-xs text-slate-700 font-semibold" value={filterStatus} onChange={e => setFilterStatus(e.target.value as typeof filterStatus)}>
-          <option value="all">All Statuses</option>
+        <select className="rounded-lg border border-slate-300 bg-white h-9 px-3 text-sm text-slate-700 shadow-sm focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10" value={filterStatus} onChange={e => setFilterStatus(e.target.value as typeof filterStatus)}>
+          <option value="all">All statuses</option>
           <option value="pending">Pending</option>
           <option value="connected">Connected</option>
           <option value="disabled">Disabled</option>

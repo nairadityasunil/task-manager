@@ -6,10 +6,30 @@ import { useAuth } from '@/context/AuthContext';
 import { QRScanner } from '@/features/settings/components/QRScanner';
 import api from '@/services/api';
 import logoImg from '@/assets/logo.png';
+import GoogleLogo from '@/components/GoogleLogo';
 
 const inputCls =
-  'w-full bg-white border border-olive-200 rounded-xl text-olive-950 px-4 py-3 transition-all duration-200 focus:outline-none focus:border-olive-500 focus:ring-4 focus:ring-olive-500/10 placeholder:text-olive-400/80';
-const labelCls = 'grid gap-1.5 font-bold text-xs uppercase tracking-widest text-olive-800';
+  'w-full bg-white border border-slate-300 rounded-lg text-slate-900 text-sm px-3.5 py-2.5 shadow-sm transition-colors duration-150 focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 placeholder:text-slate-400';
+const labelCls = 'grid gap-1.5 text-sm font-medium text-slate-700';
+
+const GOOGLE_ERROR_HINTS: Record<string, string> = {
+  access_denied: 'You cancelled the Google sign-in.',
+  'Authorization code missing': 'Google did not return an authorization code. Please try again.'
+};
+
+/** Turns the `?error=` value the Google callback sends back into a readable sentence. */
+function describeGoogleError(raw: string): string {
+  const hint = GOOGLE_ERROR_HINTS[raw];
+  if (hint) return hint;
+  if (/redirect_uri_mismatch/i.test(raw)) {
+    return 'Google rejected the sign-in because the redirect URI is not authorised. An administrator needs to add it in Google Cloud Console.';
+  }
+  if (/invalid_grant/i.test(raw)) return 'The Google sign-in link expired. Please try again.';
+  if (/invalid_client|unauthorized_client/i.test(raw)) {
+    return 'Google sign-in is misconfigured on the server (client ID or secret). Please contact your administrator.';
+  }
+  return raw;
+}
 
 function LoginPage(): JSX.Element {
   const navigate = useNavigate();
@@ -53,6 +73,18 @@ function LoginPage(): JSX.Element {
   const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
   const [resetErrorMessage, setResetErrorMessage] = useState<string | null>(null);
   const [resetLoading, setResetLoading] = useState<boolean>(false);
+  const [googleError] = useState<string | null>(() => {
+    const raw = searchParams.get('error');
+    return raw ? describeGoogleError(raw) : null;
+  });
+
+  // Drop ?error= from the address bar so a refresh doesn't show it again.
+  useEffect(() => {
+    if (!searchParams.has('error')) return;
+    const url = new URL(window.location.href);
+    url.searchParams.delete('error');
+    window.history.replaceState(window.history.state, '', url.toString());
+  }, [searchParams]);
 
   const nextPath = tokenParam
     ? `/accept-invitation?token=${tokenParam}`
@@ -194,23 +226,23 @@ function LoginPage(): JSX.Element {
       {/* Left Side (65% width) */}
       <div className="hidden lg:flex lg:w-[65%] bg-gradient-to-br from-olive-950 via-neutral-900 to-olive-900 relative p-16 flex-col justify-between overflow-hidden select-none">
         {/* Glowing abstract backgrounds */}
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-olive-700/10 rounded-full blur-[140px] pointer-events-none animate-pulse duration-[8000ms]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[6000ms]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-olive-700/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
         {/* Brand Header */}
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-white/20 shadow-md p-2">
+          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-white/20 shadow-md p-2">
             <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="text-white font-black tracking-[0.25em] text-lg">PRISTINE</span>
+          <span className="text-white font-semibold tracking-tight text-lg">Pristine</span>
         </div>
 
         {/* Visual Centerpiece (Horizontal layout of text and red outline logo container) */}
         <div className="relative z-10 my-auto w-full grid lg:grid-cols-2 gap-16 items-center">
           {/* Text Centerpiece */}
           <div className="flex flex-col gap-6 max-w-[500px]">
-            <h2 className="text-5xl font-black leading-[1.15] text-white tracking-tight">
+            <h2 className="text-5xl font-semibold leading-[1.15] text-white tracking-tight">
               Elevate your workflow with{' '}
               <span className="bg-gradient-to-r from-emerald-400 to-olive-300 bg-clip-text text-transparent">
                 effortless organization
@@ -237,8 +269,8 @@ function LoginPage(): JSX.Element {
         </div>
 
         {/* Footer branding */}
-        <div className="relative z-10 flex items-center justify-between text-xs text-olive-400 font-bold uppercase tracking-widest">
-          <span>© 2026 Pristine</span>
+        <div className="relative z-10 flex items-center justify-between text-xs text-olive-400">
+          <span>© {new Date().getFullYear()} Pristine</span>
         </div>
       </div>
 
@@ -247,10 +279,10 @@ function LoginPage(): JSX.Element {
         <div className="w-full max-w-[380px] grid gap-6">
           {/* Brand Logo Header */}
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-white border border-zinc-200/50 rounded-xl flex items-center justify-center p-2 shadow-md">
+            <div className="w-10 h-10 bg-white border border-zinc-200/50 rounded-lg flex items-center justify-center p-2 shadow-md">
               <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain" />
             </div>
-            <span className="font-black tracking-[0.25em] text-lg text-olive-950">PRISTINE</span>
+            <span className="font-semibold tracking-tight text-lg text-olive-950">Pristine</span>
           </div>
 
           {/* 2FA view */}
@@ -260,7 +292,7 @@ function LoginPage(): JSX.Element {
                 <div className="w-12 h-12 bg-olive-900 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
                   <Shield size={22} />
                 </div>
-                <h1 className="text-2xl font-black text-olive-950 m-0">Two-Factor Authentication</h1>
+                <h1 className="text-2xl font-semibold text-olive-950 m-0">Two-Factor Authentication</h1>
                 <p className="text-olive-500 text-sm mt-2">
                   We've sent a 6-digit verification code to{' '}
                   <strong className="text-olive-700">{tempEmail2fa || email}</strong>.
@@ -283,7 +315,7 @@ function LoginPage(): JSX.Element {
               {error ? <p className="text-red-600 m-0 text-sm font-medium text-center">{error}</p> : null}
 
               <button
-                className="w-full bg-olive-900 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+                className="w-full bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
                 disabled={loading}
                 type="submit"
               >
@@ -305,7 +337,7 @@ function LoginPage(): JSX.Element {
             /* Forgot Password Request Form */
             <form className="grid gap-5" onSubmit={(event) => void handleRequestOtp(event)}>
               <div>
-                <h1 className="text-2xl font-black text-olive-950 m-0">Reset Password</h1>
+                <h1 className="text-2xl font-semibold text-olive-950 m-0">Reset Password</h1>
                 <p className="text-olive-500 text-sm mt-1">
                   Enter your account email to receive a password reset OTP code.
                 </p>
@@ -329,7 +361,7 @@ function LoginPage(): JSX.Element {
               ) : null}
 
               <button
-                className="bg-olive-900 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+                className="bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
                 disabled={resetLoading}
                 type="submit"
               >
@@ -351,14 +383,14 @@ function LoginPage(): JSX.Element {
             /* Forgot Password Reset Form */
             <form className="grid gap-5" onSubmit={(event) => void handleResetPassword(event)}>
               <div>
-                <h1 className="text-2xl font-black text-olive-950 m-0">Enter Reset OTP</h1>
+                <h1 className="text-2xl font-semibold text-olive-950 m-0">Enter Reset OTP</h1>
                 <p className="text-olive-500 text-sm mt-1">
                   Check your inbox for the OTP code and enter your new password below.
                 </p>
               </div>
 
               {resetSuccessMessage ? (
-                <p className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-sm font-medium">
+                <p className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm font-medium">
                   {resetSuccessMessage}
                 </p>
               ) : null}
@@ -402,7 +434,7 @@ function LoginPage(): JSX.Element {
               ) : null}
 
               <button
-                className="bg-olive-900 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+                className="bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
                 disabled={resetLoading}
                 type="submit"
               >
@@ -425,38 +457,49 @@ function LoginPage(): JSX.Element {
             /* Main Login Form */
             <>
               <div>
-                <h1 className="text-3xl font-black tracking-tight text-olive-950 m-0">Sign In</h1>
+                <h1 className="text-2xl font-semibold tracking-tight text-olive-950 m-0">Sign In</h1>
                 <p className="text-olive-500 text-sm mt-1.5">
                   Welcome back. Enter your credentials to manage your workflow.
                 </p>
               </div>
 
               {resetSuccessMessage ? (
-                <p className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-sm font-medium">
+                <p className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm font-medium">
                   {resetSuccessMessage}
                 </p>
               ) : null}
 
+              {googleError ? (
+                <div
+                  className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-800"
+                  role="alert"
+                >
+                  <p className="m-0 font-semibold">Google sign-in couldn't be completed</p>
+                  <p className="m-0 mt-0.5 text-red-700">{googleError}</p>
+                </div>
+              ) : null}
+
               {/* Google OAuth */}
               <button
-                className="w-full py-3 bg-white border border-olive-200 rounded-xl text-olive-800 font-bold hover:bg-olive-50 flex items-center justify-center gap-2.5 shadow-sm transition-all duration-250 active:scale-[0.98]"
+                className="w-full py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 font-semibold hover:bg-slate-50 flex items-center justify-center gap-2.5 shadow-sm transition-colors disabled:opacity-50"
                 disabled={loading}
                 onClick={startGoogleSignIn}
                 type="button"
               >
-                Sign in with Google
+                <GoogleLogo />
+                Continue with Google
               </button>
 
               <div className="flex items-center gap-3 my-1">
                 <hr className="flex-1 border-olive-200/60" />
-                <span className="text-olive-400 text-xs font-bold uppercase tracking-widest">or</span>
+                <span className="text-slate-400 text-xs">or</span>
                 <hr className="flex-1 border-olive-200/60" />
               </div>
 
               {/* Mode switch */}
               <div
                 aria-label="Login method"
-                className="flex p-1 bg-olive-100/50 border border-olive-200/30 rounded-xl gap-1"
+                className="flex p-1 bg-olive-100/50 border border-olive-200/30 rounded-lg gap-1"
                 role="tablist"
               >
                 {(
@@ -506,7 +549,7 @@ function LoginPage(): JSX.Element {
                     <div className="flex items-center justify-between">
                       <span>Password</span>
                       <button
-                        className="text-xs text-olive-600 hover:text-olive-900 transition-colors lowercase font-bold tracking-normal"
+                        className="text-sm text-slate-600 hover:text-slate-900 transition-colors font-medium"
                         onClick={() => {
                           setForgotPasswordStep('request-otp');
                           setResetEmail(email);
@@ -514,7 +557,7 @@ function LoginPage(): JSX.Element {
                         }}
                         type="button"
                       >
-                        Forgot Password?
+                        Forgot password?
                       </button>
                     </div>
                     <div className="relative">
@@ -546,8 +589,8 @@ function LoginPage(): JSX.Element {
                         onChange={(event) => setRememberMe(event.target.checked)}
                         type="checkbox"
                       />
-                      <span className="text-[10px] font-extrabold text-olive-600 uppercase tracking-widest">
-                        Remember Me
+                      <span className="text-sm text-slate-600">
+                        Remember me
                       </span>
                     </label>
                   </div>
@@ -561,7 +604,7 @@ function LoginPage(): JSX.Element {
                   {error ? <p className="text-red-600 m-0 text-xs font-medium text-center">{error}</p> : null}
 
                   <button
-                    className="bg-olive-900 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+                    className="bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
                     disabled={loading}
                     type="submit"
                   >
@@ -570,7 +613,7 @@ function LoginPage(): JSX.Element {
                 </form>
               ) : (
                 <div className="grid gap-5">
-                  <div className="flex p-1 bg-olive-100/50 border border-olive-200/30 rounded-xl gap-1">
+                  <div className="flex p-1 bg-olive-100/50 border border-olive-200/30 rounded-lg gap-1">
                     <button
                       type="button"
                       className={[
@@ -616,7 +659,7 @@ function LoginPage(): JSX.Element {
                       </p>
                       {error ? <p className="text-red-600 m-0 text-xs font-medium text-center">{error}</p> : null}
                       <button
-                        className="bg-olive-900 text-white rounded-xl py-3.5 text-sm font-bold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+                        className="bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
                         disabled={loading || !companionKey.trim()}
                         type="submit"
                       >

@@ -33,35 +33,34 @@ const Topbar: React.FC<TopbarProps> = ({
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <header className="relative z-50 flex items-center justify-between gap-4 px-6 h-[52px] shrink-0 bg-white border-b border-gray-200">
+    <header className="relative z-50 flex items-center justify-between gap-4 px-6 h-[52px] shrink-0 bg-white border-b border-slate-200">
       {/* Left — title + breadcrumbs */}
       <div className="flex items-center gap-1.5 min-w-0">
         {breadcrumbs ? (
-          <div className="flex items-center gap-1 text-[0.75rem] text-gray-400 min-w-0">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[0.8rem] text-slate-400 min-w-0">
             {breadcrumbs}
-            <span className="text-gray-300 mx-1">/</span>
-            <span className="text-gray-700 font-medium truncate">{title}</span>
-          </div>
+          </nav>
         ) : (
-          <h1 className="text-[0.875rem] font-semibold text-gray-900 truncate">{title}</h1>
+          <h1 className="text-[0.875rem] font-semibold text-slate-900 truncate">{title}</h1>
         )}
       </div>
 
       {/* Right — actions */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-1.5 shrink-0">
         {rightContent}
 
         {/* Bell */}
         <div className="relative">
           <button
-            className="flex items-center justify-center w-7 h-7 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            aria-label="Notifications"
+            className="relative flex items-center justify-center w-8 h-8 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
             onClick={onNotificationsToggle}
             type="button"
             title="Notifications"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-0.5 right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-gray-800 text-[9px] font-bold text-white">
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -78,11 +77,11 @@ const Topbar: React.FC<TopbarProps> = ({
         </div>
 
         {/* User */}
-        <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
+        <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
           <UserAvatar name={user.name} email={user.email} size="sm" showTooltip={false} />
           <div className="hidden sm:flex flex-col leading-tight">
-            <span className="text-[0.75rem] font-medium text-gray-800">{user.name || 'User'}</span>
-            <span className="text-[0.65rem] text-gray-400">{user.email}</span>
+            <span className="text-[0.75rem] font-medium text-slate-800">{user.name || 'User'}</span>
+            <span className="text-[0.65rem] text-slate-400">{user.email}</span>
           </div>
         </div>
       </div>

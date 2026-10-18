@@ -72,7 +72,7 @@ export default function DataTable<TData>({
         <table className={`w-full text-left ${tableClassName || 'border-separate border-spacing-y-2'}`}>
           <thead className={stickyHeader ? 'sticky top-0 z-20 shadow-sm' : ''}>
             {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>) => (
-              <tr key={headerGroup.id} className="bg-olive-50 ">
+              <tr key={headerGroup.id} className="bg-slate-50">
                 {headerGroup.headers.map((header) => {
                   const isSortable = header.column.getCanSort();
                   const sortingState = header.column.getIsSorted();
@@ -80,7 +80,7 @@ export default function DataTable<TData>({
                   return (
                     <th
                       key={header.id}
-                      className="px-6 py-4 text-[0.63rem] font-bold uppercase tracking-[0.15em] text-olive-500  first:rounded-l-xl last:rounded-r-xl border-b border-olive-200 "
+                      className="px-5 py-3 text-[0.7rem] font-semibold uppercase tracking-wide text-slate-500 first:rounded-l-lg last:rounded-r-lg border-b border-slate-200"
                       style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
                     >
                       {header.isPlaceholder ? null : (
@@ -133,7 +133,7 @@ export default function DataTable<TData>({
               table.getRowModel().rows.map((row: Row<TData>) => (
                 <React.Fragment key={row.id}>
                   <tr
-                    className={`group transition-all duration-300 relative bg-white  shadow-sm border border-olive-100  hover:border-olive-500/30  ${onRowClick ? 'cursor-pointer' : ''
+                    className={`group transition-colors relative bg-white border-b border-slate-100 last:border-b-0 hover:bg-slate-50 ${onRowClick ? 'cursor-pointer' : ''
                       } ${row.getIsExpanded()
                         ? 'ring-1 ring-inset ring-olive-500/10  bg-olive-50/80  border-l-[6px] border-l-olive-600'
                         : ''
@@ -143,9 +143,9 @@ export default function DataTable<TData>({
                     {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
                       <td
                         key={cell.id}
-                        className={`px-6 py-4 align-middle border-y border-transparent transition-all duration-300 ${!tableClassName.includes('border-spacing-y-0') && !tableClassName.includes('border-collapse')
+                        className={`px-5 py-3.5 align-middle text-sm ${!tableClassName.includes('border-spacing-y-0') && !tableClassName.includes('border-collapse')
                           ? 'first:rounded-l-xl last:rounded-r-xl'
-                          : 'first:border-l last:border-r border-olive-100'
+                          : ''
                           }`}
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -223,13 +223,13 @@ export default function DataTable<TData>({
                     ) : null}
                     <button
                       className={`flex h-9 min-w-[36px] items-center justify-center rounded-lg px-2 text-[0.72rem] font-bold transition-all duration-200 ${page === currentPage
-                        ? 'bg-olive-900 text-white shadow-lg shadow-olive-900/20 scale-110 z-10'
+                        ? 'bg-slate-900 text-white'
                         : 'text-olive-500 hover:bg-white  hover:text-olive-900'
                         }`}
                       onClick={() => changePage(page)}
                       type="button"
                     >
-                      {page.toString().padStart(2, '0')}
+                      {page}
                     </button>
                   </React.Fragment>
                 );

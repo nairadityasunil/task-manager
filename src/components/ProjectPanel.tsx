@@ -6,8 +6,7 @@ import {
   Pencil,
   Plus,
   Search,
-  Trash2,
-  Calendar
+  Trash2
 } from 'lucide-react';
 import UserAvatar from './UserAvatar';
 import {
@@ -62,11 +61,12 @@ function ProjectPanel({
   const columns = useMemo(() => [
     columnHelper.display({
       id: 'select',
+      size: 48,
       header: ({ table }) => (
         <div className="flex items-center justify-center">
           <input
             type="checkbox"
-            className="w-5 h-5 cursor-pointer accent-olive-600"
+            className="w-4 h-4 cursor-pointer accent-slate-900"
             checked={table.getIsAllPageRowsSelected()}
             ref={(el) => {
               if (el) {
@@ -81,7 +81,7 @@ function ProjectPanel({
         <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
           <input
             type="checkbox"
-            className="w-5 h-5 cursor-pointer accent-olive-600"
+            className="w-4 h-4 cursor-pointer accent-slate-900"
             checked={row.getIsSelected()}
             disabled={row.original.currentUserRole !== 'ADMIN'}
             onChange={row.getToggleSelectedHandler()}
@@ -94,11 +94,13 @@ function ProjectPanel({
       header: 'Project',
       cell: info => (
         <div className="flex items-center gap-3">
-          <FolderKanban className="text-olive-600  shrink-0" size={18} />
-          <div className="grid gap-0.5">
-            <strong className="text-olive-900  font-bold text-[1rem]">{info.getValue()}</strong>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-50">
+            <FolderKanban className="text-slate-500" size={15} />
+          </div>
+          <div className="grid gap-0.5 min-w-0">
+            <span className="text-slate-900 font-semibold text-sm">{info.getValue()}</span>
             {info.row.original.description && (
-              <span className="text-olive-400  text-[0.85rem] truncate max-w-[300px]">
+              <span className="text-slate-500 text-xs truncate max-w-[320px]">
                 {info.row.original.description}
               </span>
             )}
@@ -111,65 +113,56 @@ function ProjectPanel({
       cell: info => {
         const creator = info.getValue();
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {creator ? (
-              <UserAvatar size="md" name={creator.name} email={creator.email} />
+              <>
+                <UserAvatar size="sm" name={creator.name} email={creator.email} />
+                <span className="text-slate-700 truncate max-w-[160px]">{creator.name || creator.email}</span>
+              </>
             ) : (
-              <div className="w-8 h-8 rounded-full bg-olive-100  border border-olive-200  flex items-center justify-center">
-                <Plus size={14} className="text-olive-400" />
-              </div>
+              <span className="text-slate-400">—</span>
             )}
-            <span className="text-olive-700  font-semibold truncate max-w-[120px]">
-              {creator?.name || creator?.email || 'Unknown'}
-            </span>
           </div>
         );
       },
     }),
     columnHelper.accessor('createdAt', {
-      id: 'date',
-      header: 'Date',
+      id: 'created',
+      header: 'Created',
       cell: info => (
-        <div className="flex items-center gap-2 text-olive-600 ">
-          <Calendar size={14} className="opacity-60" />
-          <span>{formatDate(info.getValue())}</span>
-        </div>
+        <span className="text-slate-600 whitespace-nowrap" title={formatDateTime(info.getValue())}>
+          {formatDate(info.getValue())}
+        </span>
       ),
-    }),
-    columnHelper.accessor('createdAt', {
-      id: 'time',
-      header: 'Time',
-      cell: info => formatTime(info.getValue()),
-      enableSorting: false,
     }),
     columnHelper.display({
       id: 'actions',
-      header: () => <div className="text-right">Actions</div>,
+      header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }) => {
         const project = row.original;
-        const rowActionCls = 'flex items-center justify-center w-7 h-7 rounded text-olive-400  transition-all duration-150 hover:-translate-y-px';
+        const rowActionCls = 'flex items-center justify-center w-8 h-8 rounded-md text-slate-400 transition-colors';
         return (
           <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
             <button
-              className={`${rowActionCls} !w-10 !h-10 hover:bg-olive-100  hover:text-olive-600  disabled:opacity-40`}
+              className={`${rowActionCls} hover:bg-olive-100  hover:text-olive-600  disabled:opacity-40`}
               disabled={project.currentUserRole !== 'ADMIN'}
               onClick={() => onOpenEpicManager(project)}
-              title="Epics"
+              title="Open epics"
               type="button"
             >
-              <Layers3 size={20} />
+              <Layers3 size={16} />
             </button>
             <button
-              className={`${rowActionCls} !w-10 !h-10 hover:bg-olive-100  hover:text-olive-900  disabled:opacity-40`}
+              className={`${rowActionCls} hover:bg-olive-100  hover:text-olive-900  disabled:opacity-40`}
               disabled={project.currentUserRole !== 'ADMIN'}
               onClick={() => onOpenUpdateProject(project)}
               title="Edit project"
               type="button"
             >
-              <Pencil size={20} />
+              <Pencil size={16} />
             </button>
             <button
-              className={`${rowActionCls} !w-10 !h-10 hover:bg-red-50  hover:text-red-500  disabled:opacity-50`}
+              className={`${rowActionCls} hover:bg-red-50  hover:text-red-500  disabled:opacity-50`}
               disabled={actionProjectId === project.id || project.currentUserRole !== 'ADMIN'}
               onClick={async () => {
                 const isConfirmed = await confirm({
@@ -185,7 +178,7 @@ function ProjectPanel({
               title="Delete project"
               type="button"
             >
-              <Trash2 size={20} />
+              <Trash2 size={16} />
             </button>
           </div>
         );
@@ -234,15 +227,16 @@ function ProjectPanel({
 
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return '—';
     return new Intl.DateTimeFormat('en-US', {
       dateStyle: 'medium'
     }).format(new Date(dateString));
   };
 
-  const formatTime = (dateString?: string) => {
-    if (!dateString) return 'N/A';
+  const formatDateTime = (dateString?: string) => {
+    if (!dateString) return undefined;
     return new Intl.DateTimeFormat('en-US', {
+      dateStyle: 'medium',
       timeStyle: 'short'
     }).format(new Date(dateString));
   };
@@ -250,22 +244,20 @@ function ProjectPanel({
   return (
     <div className="flex flex-col h-full bg-white ">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-olive-200  bg-olive-50 ">
-        <div className="grid gap-0.5">
-          <h4 className="m-0 font-bold text-olive-950  text-[0.95rem]">Project Directory</h4>
-          <span className="text-olive-400  text-[0.75rem]">Full Workspace Management</span>
+      <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-slate-200 bg-white">
+        <div className="grid gap-0.5 mr-2">
+          <h2 className="m-0 font-semibold text-slate-900 text-base">Projects</h2>
+          <span className="text-slate-500 text-xs">All projects you can access in this workspace</span>
         </div>
 
-        {/* Divider */}
-        <div className="h-6 w-px bg-olive-200  opacity-60 mx-2" />
-
         {/* Search */}
-        <div className="relative flex-1 flex items-center">
-          <Search className="absolute left-2.5 text-olive-400 " size={14} />
+        <div className="relative flex-1 min-w-[200px] max-w-md flex items-center ml-auto">
+          <Search className="absolute left-3 text-slate-400" size={14} />
           <input
-            className="w-full h-9 pl-[38px] pr-3 text-[0.85rem] bg-white  border border-olive-200  rounded-md shadow-inner transition-all duration-200 focus:outline-none focus:border-olive-500  focus:ring-2 focus:ring-olive-500/12 text-olive-950 "
+            aria-label="Search projects"
+            className="w-full h-9 pl-9 pr-3 text-sm bg-white border border-slate-300 rounded-lg shadow-sm transition-colors focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 text-slate-900 placeholder:text-slate-400"
             onChange={handleSearchChange}
-            placeholder="Filter projects..."
+            placeholder="Search projects…"
             type="text"
             value={searchTerm}
           />
@@ -273,17 +265,17 @@ function ProjectPanel({
 
         {selectedProjects.length > 0 && (
           <button
-            className="inline-flex items-center gap-2 h-9 px-4 bg-white  border border-red-200  rounded text-red-600  text-sm hover:bg-red-50  transition-colors"
+            className="inline-flex items-center gap-2 h-9 px-3.5 bg-white border border-red-200 rounded-lg text-red-600 text-sm font-medium hover:bg-red-50 transition-colors whitespace-nowrap"
             onClick={handleDeleteSelected}
             type="button"
           >
             <Trash2 size={16} />
-            <span>Delete Selected ({selectedProjects.length})</span>
+            <span>Delete selected ({selectedProjects.length})</span>
           </button>
         )}
 
         <button
-          className="inline-flex items-center gap-2 h-9 px-4 bg-olive-900  text-white rounded text-sm font-medium hover:bg-olive-800  transition-colors"
+          className="inline-flex items-center gap-2 h-9 px-3.5 bg-slate-900 text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-slate-800 transition-colors whitespace-nowrap"
           onClick={onOpenCreateProject}
           type="button"
         >
@@ -293,7 +285,7 @@ function ProjectPanel({
       </div>
 
       {/* Table Section */}
-      <div className="flex-1 overflow-y-auto px-1 py-1">
+      <div className="flex-1 overflow-y-auto px-6 py-4 bg-slate-50">
         {projects.length === 0 && !loading ? (
           <div className="py-20 border-y border-transparent">
             {/* Custom Empty State preserved for brand consistency */}
@@ -307,13 +299,13 @@ function ProjectPanel({
               </div>
 
               <h3 className="text-xl font-bold text-olive-950  mb-2 tracking-tight">
-                {searchTerm ? "No Matches Found" : "Your Directory is Empty"}
+                {searchTerm ? "No matching projects" : "No projects yet"}
               </h3>
 
               <p className="text-olive-500  text-sm mb-8 leading-relaxed px-4">
                 {searchTerm
-                  ? "We couldn't find any projects matching your current filter. Try adjusting your search term to see more results."
-                  : "It looks like you haven't created any projects yet. Start by provisioning a new node for your synchronization workspace."}
+                  ? "No projects match your search. Try a different term."
+                  : "Create your first project to start planning epics and tasks with your team."}
               </p>
 
               <button
@@ -337,6 +329,8 @@ function ProjectPanel({
           </div>
         ) : (
           <DataTable
+            className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
+            tableClassName="border-collapse"
             table={table}
             loading={loading}
             onRowClick={(project) => onOpenProject(project.id)}

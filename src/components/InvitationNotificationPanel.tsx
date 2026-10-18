@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  Bell,
-  BellDot,
+  Inbox,
   CheckCircle,
   XCircle,
   Clock,
@@ -161,20 +160,17 @@ function InvitationNotificationPanel() {
 
   return (
     <div className="relative" ref={panelRef}>
-      {/* Bell button */}
+      {/* Inbox button (invitations and team updates; task notifications live under the bell) */}
       <button
-        className="relative flex items-center justify-center w-9 h-9 rounded-xl border border-olive-200/80 bg-white/80 text-olive-700 hover:bg-olive-50 hover:text-olive-900 transition-all duration-200 shadow-sm"
+        aria-label="Invitations and team updates"
+        className="relative flex items-center justify-center w-8 h-8 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
         onClick={() => setOpen((o) => !o)}
-        title="Notifications"
+        title="Invitations and team updates"
         type="button"
       >
+        <Inbox size={16} />
         {hasNotifications ? (
-          <BellDot size={17} className="text-olive-800" />
-        ) : (
-          <Bell size={17} />
-        )}
-        {hasNotifications ? (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow">
+          <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
             {totalCount > 9 ? '9+' : totalCount}
           </span>
         ) : null}
@@ -186,8 +182,8 @@ function InvitationNotificationPanel() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-olive-100 shrink-0">
             <h3 className="text-sm font-bold text-olive-950 flex items-center gap-2">
-              <Bell size={15} className="text-olive-700" />
-              Notifications
+              <Inbox size={15} className="text-olive-700" />
+              Invitations &amp; updates
             </h3>
             <button
               className="p-1.5 rounded-lg text-olive-400 hover:text-olive-700 hover:bg-olive-50 transition-colors"
@@ -317,7 +313,7 @@ function InvitationNotificationPanel() {
             {totalCount === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-6">
                 <div className="w-12 h-12 rounded-2xl bg-olive-50 flex items-center justify-center mb-3 border border-olive-100">
-                  <Bell size={20} className="text-olive-300" />
+                  <Inbox size={20} className="text-olive-300" />
                 </div>
                 <p className="text-[0.84rem] font-semibold text-olive-700">All caught up</p>
                 <p className="text-[0.76rem] text-olive-400 mt-1">
