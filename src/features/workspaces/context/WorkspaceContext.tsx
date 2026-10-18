@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { workspaceService } from '../services/workspaceService';
 import type { Workspace } from '../types/workspace';
 
@@ -36,6 +37,7 @@ interface WorkspaceProviderProps {
 }
 
 export function WorkspaceProvider({ children }: WorkspaceProviderProps): JSX.Element {
+  const { user, token, loading: authLoading } = useAuth();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>(getPersistedWorkspaceId);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,10 +65,18 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps): JSX.Ele
     }
   }, []);
 
-  // Load workspaces once on mount (user must be authenticated at this point)
+  // Load workspaces once sign-in has finished, and again when the user
+  // changes. Fetching earlier (e.g. while a Google sign-in is still being
+  // confirmed) sends a stale or missing token and gets a 401.
+  const signedInUserId = !authLoading && token ? user?.id ?? null : null;
   useEffect(() => {
+    if (!signedInUserId) {
+      setWorkspaces([]);
+      setIsLoading(false);
+      return;
+    }
     void loadWorkspaces();
-  }, [loadWorkspaces]);
+  }, [signedInUserId, loadWorkspaces]);
 
   const switchWorkspace = useCallback((workspace: Workspace) => {
     setActiveWorkspaceId(workspace.id);

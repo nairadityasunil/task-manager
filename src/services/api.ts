@@ -60,6 +60,13 @@ const isAuthEndpoint = (url?: string): boolean => {
   );
 };
 
+const readStoredToken = (key: string): string | null => localStorage.getItem(key) ?? sessionStorage.getItem(key);
+
+const bearerOf = (config: InternalAxiosRequestConfig): string | null => {
+  const header = config.headers?.Authorization;
+  return typeof header === 'string' ? header.replace(/^Bearer\s+/i, '') : null;
+};
+
 const clearAuthStorage = () => {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
   localStorage.removeItem('todo_refresh_token');
@@ -103,9 +110,21 @@ api.interceptors.response.use(
       }
 
       originalRequest._retry = true;
+
+      // A newer sign-in (e.g. returning from Google) may have stored a new
+      // token after this request went out with the old one. Retry with the
+      // new token instead of refreshing, or failing, the old session.
+      const latestToken = readStoredToken(TOKEN_STORAGE_KEY);
+      if (latestToken && latestToken !== bearerOf(originalRequest)) {
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${latestToken}`;
+        }
+        return api(originalRequest);
+      }
+
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem('todo_refresh_token') ?? sessionStorage.getItem('todo_refresh_token');
+      const refreshToken = readStoredToken('todo_refresh_token');
       if (refreshToken) {
         try {
           const res = await axios.post(`${baseURL}/auth/refresh`, { refreshToken });
@@ -127,10 +146,12 @@ api.interceptors.response.use(
           return api(originalRequest);
         } catch (refreshErr) {
           processQueue(refreshErr, null);
-          clearAuthStorage();
-
-          if (window.location.pathname !== '/login') {
-            window.location.assign('/login');
+          // Only sign out if no newer session replaced this one meanwhile.
+          if (readStoredToken('todo_refresh_token') === refreshToken) {
+            clearAuthStorage();
+            if (window.location.pathname !== '/login') {
+              window.location.assign('/login');
+            }
           }
           return Promise.reject(refreshErr);
         } finally {
