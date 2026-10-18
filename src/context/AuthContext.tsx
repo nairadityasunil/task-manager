@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import api from '@/services/api';
@@ -63,54 +63,73 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+interface UrlAuthTokens {
+  token: string;
+  refreshToken: string | null;
+}
+
+/**
+ * Reads Google sign-in tokens from the URL and removes them from the address
+ * bar. This runs once when the module loads, before React renders: route
+ * guards are children of AuthProvider, so their redirects (e.g. a protected
+ * page sending a signed-out visitor to /login) run before AuthProvider's
+ * effects and would otherwise discard the tokens.
+ */
+const consumeUrlAuthTokens = (): UrlAuthTokens | null => {
+  if (typeof window === 'undefined') return null;
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const urlParams = new URLSearchParams(window.location.search);
+  const hashToken = hashParams.get('token');
+  // Older backends sent ?token=; pages like /accept-invitation and /login use
+  // ?token= for their own purpose, so the query form is ignored there.
+  const pageOwnsTokenParam = ['/accept-invitation', '/login'].includes(window.location.pathname);
+  const token = hashToken ?? (pageOwnsTokenParam ? null : urlParams.get('token'));
+  if (!token) return null;
+
+  const url = new URL(window.location.href);
+  if (hashToken) {
+    url.hash = '';
+  } else {
+    url.searchParams.delete('token');
+  }
+  window.history.replaceState(window.history.state, '', url.toString());
+  return { token, refreshToken: hashParams.get('refreshToken') };
+};
+
+const initialUrlTokens = consumeUrlAuthTokens();
+// StrictMode runs effects twice in development; sign in from the URL once.
+let urlLoginStarted = false;
+
 function AuthProvider({ children }: AuthProviderProps): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
   const { user, session, token, loading, error, require2fa, tempEmail2fa } = useSelector(
     (state: RootState) => state.auth
   );
 
-  // Google OAuth redirects back with tokens in the URL fragment (older
-  // backends used a ?token= query parameter).
+  const [isCompletingUrlLogin, setIsCompletingUrlLogin] = useState(initialUrlTokens != null);
+
   useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-    const urlParams = new URLSearchParams(window.location.search);
-    const hashToken = hashParams.get('token');
-    // Pages like /accept-invitation use ?token= for their own purpose, so the
-    // legacy query form is only honoured when no fragment token is present.
-    const pageOwnsTokenParam = ['/accept-invitation', '/login'].includes(window.location.pathname);
-    const tokenFromUrl = hashToken ?? (pageOwnsTokenParam ? null : urlParams.get('token'));
-    const refreshTokenFromUrl = hashParams.get('refreshToken');
+    if (!initialUrlTokens || urlLoginStarted) return;
+    urlLoginStarted = true;
+    const { token: tokenFromUrl, refreshToken: refreshTokenFromUrl } = initialUrlTokens;
 
-    if (tokenFromUrl) {
-      const url = new URL(window.location.href);
-      if (hashToken) {
-        url.hash = '';
-      } else {
-        url.searchParams.delete('token');
-      }
-      window.history.replaceState({}, '', url.toString());
-
-      // Treat redirect login as rememberMe = true
-      api.get('/auth/me', {
-        headers: { Authorization: `Bearer ${tokenFromUrl}` }
+    // Treat redirect login as rememberMe = true
+    api.get('/auth/me', {
+      headers: { Authorization: `Bearer ${tokenFromUrl}` }
+    })
+      .then((res) => {
+        dispatch(setTokens({
+          token: tokenFromUrl,
+          refreshToken: refreshTokenFromUrl ?? tokenFromUrl,
+          user: res.data.data.user,
+          session: res.data.data.session,
+          rememberMe: true
+        }));
       })
-        .then((res) => {
-          const fetchedUser = res.data.data.user;
-          const fetchedSession = res.data.data.session;
-          
-          // Generate refresh token via new login response or assume it works
-          dispatch(setTokens({
-            token: tokenFromUrl,
-            refreshToken: refreshTokenFromUrl ?? tokenFromUrl,
-            user: fetchedUser,
-            session: fetchedSession,
-            rememberMe: true
-          }));
-        })
-        .catch(() => {
-          // Failed to authenticate
-        });
-    }
+      .catch(() => {
+        // The API client already reports the failure; the user stays signed out.
+      })
+      .finally(() => setIsCompletingUrlLogin(false));
   }, [dispatch]);
 
   const logout = useCallback((): void => {
@@ -209,7 +228,7 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       user,
       session,
       token,
-      loading,
+      loading: loading || isCompletingUrlLogin,
       error,
       require2fa,
       tempEmail2fa,
@@ -224,7 +243,7 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       verify2fa,
       clearError
     }),
-    [user, session, token, loading, error, require2fa, tempEmail2fa, logout, refreshUser, authenticateWithToken, clearError]
+    [user, session, token, loading, isCompletingUrlLogin, error, require2fa, tempEmail2fa, logout, refreshUser, authenticateWithToken, clearError]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

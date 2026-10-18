@@ -16,7 +16,9 @@ const api = axios.create({
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem(TOKEN_STORAGE_KEY) ?? sessionStorage.getItem(TOKEN_STORAGE_KEY);
 
-  if (token && config.headers) {
+  // Keep an explicit Authorization header, e.g. verifying a fresh sign-in
+  // token while an older session is still in storage.
+  if (token && config.headers && !config.headers.Authorization) {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
