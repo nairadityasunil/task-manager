@@ -49,6 +49,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 interface AuthResponseData {
   token: string;
+  refreshToken?: string;
   user: AuthProfile;
   session?: AuthSession;
 }
@@ -68,14 +69,25 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     (state: RootState) => state.auth
   );
 
-  // Check URL token (e.g. Google OAuth callback redirect)
+  // Google OAuth redirects back with tokens in the URL fragment (older
+  // backends used a ?token= query parameter).
   useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromUrl = urlParams.get('token');
+    const hashToken = hashParams.get('token');
+    // Pages like /accept-invitation use ?token= for their own purpose, so the
+    // legacy query form is only honoured when no fragment token is present.
+    const pageOwnsTokenParam = ['/accept-invitation', '/login'].includes(window.location.pathname);
+    const tokenFromUrl = hashToken ?? (pageOwnsTokenParam ? null : urlParams.get('token'));
+    const refreshTokenFromUrl = hashParams.get('refreshToken');
 
     if (tokenFromUrl) {
       const url = new URL(window.location.href);
-      url.searchParams.delete('token');
+      if (hashToken) {
+        url.hash = '';
+      } else {
+        url.searchParams.delete('token');
+      }
       window.history.replaceState({}, '', url.toString());
 
       // Treat redirect login as rememberMe = true
@@ -89,7 +101,7 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
           // Generate refresh token via new login response or assume it works
           dispatch(setTokens({
             token: tokenFromUrl,
-            refreshToken: tokenFromUrl, // Simple fallback if not provided in URL
+            refreshToken: refreshTokenFromUrl ?? tokenFromUrl,
             user: fetchedUser,
             session: fetchedSession,
             rememberMe: true
@@ -139,7 +151,7 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       const response = await api.post<AuthResponse>('/auth/companion-login', { key });
       dispatch(setTokens({
         token: response.data.data.token,
-        refreshToken: response.data.data.token,
+        refreshToken: response.data.data.refreshToken ?? response.data.data.token,
         user: response.data.data.user,
         session: response.data.data.session,
         rememberMe: false
@@ -158,7 +170,7 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       const response = await api.post<AuthResponse>('/companion/pair/qr', payload);
       dispatch(setTokens({
         token: response.data.data.token,
-        refreshToken: response.data.data.token,
+        refreshToken: response.data.data.refreshToken ?? response.data.data.token,
         user: response.data.data.user,
         session: response.data.data.session,
         rememberMe: false

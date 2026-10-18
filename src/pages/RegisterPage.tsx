@@ -186,10 +186,10 @@ function RegisterPage(): JSX.Element {
                 <input
                   autoComplete="new-password"
                   className={inputCls}
-                  minLength={6}
+                  minLength={8}
                   name="password"
                   onChange={(event) => setPassword(event.target.value)}
-                  placeholder="At least 6 characters"
+                  placeholder="At least 8 characters"
                   required
                   type={showPassword ? 'text' : 'password'}
                   value={password}

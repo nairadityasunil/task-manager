@@ -380,6 +380,7 @@ function LoginPage(): JSX.Element {
                 <div className="relative">
                   <input
                     className={inputCls}
+                    minLength={8}
                     onChange={(event) => setResetPassword(event.target.value)}
                     placeholder="At least 8 characters"
                     required
