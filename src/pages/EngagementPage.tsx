@@ -4,12 +4,9 @@ import {
   BarChart3,
   Bell,
   CheckSquare,
-  GripVertical,
   Layers3,
-  Plus,
   Radio,
   Save,
-  Trash2,
   UsersRound,
   X
 } from 'lucide-react';
@@ -39,6 +36,16 @@ import {
 } from '@/lib/engagement/api';
 import { listIntegrations, type SdkIntegration } from '@/lib/sdk-integrations/api';
 import { useConfirm } from '@/context/ConfirmationContext';
+import {
+  ContentEditor,
+  GuideTypePicker,
+  TemplatePicker,
+  newChecklistItem,
+  newGuideStep,
+  newQuestion,
+  validateExperience,
+  type ExperienceTemplate
+} from '@/features/engagement/components/ExperienceEditor';
 import SegmentsPanel from '@/features/engagement/components/SegmentsPanel';
 import ExperienceLibrary from '@/features/engagement/components/ExperienceLibrary';
 import ExperienceAnalyticsModal from '@/features/engagement/components/ExperienceAnalyticsModal';
@@ -76,7 +83,6 @@ const defaultFrequency: FrequencyRules = {
   maxDisplays: 5
 };
 
-const guideTypes: GuideType[] = ['MODAL', 'TOUR', 'SMART_TIP', 'HOTSPOT', 'BANNER'];
 const priorities: GuidePriority[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
 
 export interface EngagementPageProps {
@@ -380,64 +386,15 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
   );
 }
 
-function StepEditor({ steps, onChange, mode }: { steps: GuideStep[]; onChange: (steps: GuideStep[]) => void; mode: 'guide' | 'survey' | 'checklist' }): JSX.Element {
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const add = () => onChange([...steps, mode === 'survey' ? newSurveyQuestion('TEXT') : mode === 'checklist' ? newChecklistItem() : newStep()]);
-  const update = (index: number, patch: Partial<GuideStep>) => onChange(steps.map((step, current) => (current === index ? { ...step, ...patch } : step)));
-  const remove = (index: number) => onChange(steps.filter((_, current) => current !== index));
-  const drop = (index: number) => {
-    if (dragIndex == null || dragIndex === index) return;
-    const next = [...steps];
-    const [moved] = next.splice(dragIndex, 1);
-    next.splice(index, 0, moved);
-    onChange(next);
-    setDragIndex(null);
-  };
-
+function ValidationSummary({ errors }: { errors: string[] }): JSX.Element | null {
+  if (errors.length === 0) return null;
   return (
-    <div className="mt-6">
-      <div className="mb-3 flex items-center justify-between">
-        <SectionTitle icon={GripVertical} title={mode === 'survey' ? 'Questions' : mode === 'checklist' ? 'Items' : 'Steps'} />
-        <button className="flex items-center gap-2 rounded-md border border-olive-200 px-3 py-1.5 text-xs font-bold text-olive-700" onClick={add} type="button">
-          <Plus size={14} />
-          Add
-        </button>
-      </div>
-      <div className="grid gap-3">
-        {steps.map((step, index) => (
-          <div
-            className="rounded-md border border-olive-200 bg-olive-50 p-4"
-            draggable
-            key={step.id}
-            onDragStart={() => setDragIndex(index)}
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={() => drop(index)}
-          >
-            <div className="grid grid-cols-[24px_1.5fr_1fr_32px] gap-3">
-              <GripVertical className="mt-2 text-olive-400" size={18} />
-              <TextInput label="Title" value={step.title} onChange={(value) => update(index, { title: value })} />
-              {mode === 'survey' ? (
-                <SelectInput label="Type" value={step.type ?? 'TEXT'} values={['NPS', 'TEXT', 'TEXTAREA', 'SINGLE_CHOICE', 'MULTI_CHOICE', 'RATING_SCALE', 'DROPDOWN', 'YES_NO', 'CSAT', 'CES', 'EMOJI', 'OPINION_SCALE', 'FILE_UPLOAD', 'CONTACT']} onChange={(value) => update(index, { type: value as GuideStep['type'] })} />
-              ) : mode === 'checklist' ? (
-                <TextInput label="Event" value={step.linkedEvent ?? ''} onChange={(value) => update(index, { linkedEvent: value })} />
-              ) : (
-                <TextInput label="Selector" value={step.selector ?? ''} onChange={(value) => update(index, { selector: value })} />
-              )}
-              <button className="mt-6 flex h-9 w-9 items-center justify-center rounded-md text-red-500 hover:bg-red-50" onClick={() => remove(index)} title="Remove" type="button">
-                <Trash2 size={16} />
-              </button>
-            </div>
-            <div className="mt-3">
-              <TextInput label="Description" value={step.description ?? ''} onChange={(value) => update(index, { description: value })} />
-            </div>
-            {mode === 'survey' && ['SINGLE_CHOICE', 'MULTI_CHOICE', 'DROPDOWN'].includes(step.type ?? '') && (
-              <div className="mt-3">
-                <TextInput label="Options, comma-separated" value={(step.options ?? []).join(', ')} onChange={(value) => update(index, { options: value.split(',').map((entry) => entry.trim()).filter(Boolean) })} />
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+    <div className="mr-auto max-w-xl rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800" role="alert">
+      <p className="m-0 font-semibold">Fix these before saving:</p>
+      <ul className="m-0 mt-1 list-disc pl-4">
+        {errors.slice(0, 5).map((error) => <li key={error}>{error}</li>)}
+        {errors.length > 5 && <li>…and {errors.length - 5} more</li>}
+      </ul>
     </div>
   );
 }
@@ -558,37 +515,6 @@ function SelectInput({ label, value, values, onChange }: { label: string; value:
       </select>
     </label>
   );
-}
-
-function newStep(): GuideStep {
-  return {
-    id: crypto.randomUUID(),
-    title: 'Explain this area',
-    description: 'Tell users why this workflow matters.',
-    placement: 'AUTO',
-    selector: '[data-guide-target]'
-  };
-}
-
-function newSurveyQuestion(type: GuideStep['type']): GuideStep {
-  return {
-    id: crypto.randomUUID(),
-    title: type === 'NPS' ? 'How likely are you to recommend Pristine?' : 'Question',
-    type,
-    min: 0,
-    max: type === 'NPS' ? 10 : 5,
-    options: ['Option A', 'Option B']
-  };
-}
-
-function newChecklistItem(): GuideStep {
-  return {
-    id: crypto.randomUUID(),
-    title: 'Create first project',
-    description: 'Completes when project_created is tracked.',
-    linkedEvent: 'project_created',
-    estimatedMinutes: 5
-  };
 }
 
 interface SurveyResponsesModalProps {
@@ -769,10 +695,16 @@ function EditExperienceModal({
   const [steps, setSteps] = useState<GuideStep[]>(experience.steps ?? []);
   const [rules, setRules] = useState<TargetingRuleGroup>(experience.targetingRules ?? defaultRules());
   const [saving, setSaving] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
 
   const mode = experience.type === 'SURVEY' ? 'survey' : experience.type === 'CHECKLIST' ? 'checklist' : 'guide';
+  const errors = validateExperience(mode, type, title, steps);
 
   const handleSave = async () => {
+    if (errors.length > 0) {
+      setShowErrors(true);
+      return;
+    }
     setSaving(true);
     try {
       await onSave({ ...experience, title, description, type, priority, steps, targetingRules: rules, frequencyRules: defaultFrequency });
@@ -802,16 +734,16 @@ function EditExperienceModal({
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
             <div className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
-                <TextInput label="Title" value={title} onChange={setTitle} />
-                {mode === 'guide' && (
-                  <SelectInput label="Type" value={type} values={guideTypes} onChange={(v) => setType(v as GuideType)} />
-                )}
-                <TextInput label="Description" value={description} onChange={setDescription} />
-                {mode !== 'checklist' && (
+                <TextInput label="Name" value={title} onChange={setTitle} />
+                {mode !== 'checklist' ? (
                   <SelectInput label="Priority" value={priority} values={priorities} onChange={(v) => setPriority(v as GuidePriority)} />
-                )}
+                ) : <span />}
+                <div className="col-span-2">
+                  <TextInput label="Description (only you see this)" value={description} onChange={setDescription} />
+                </div>
               </div>
-              <StepEditor steps={steps} onChange={setSteps} mode={mode} />
+              {mode === 'guide' && <GuideTypePicker value={type} onChange={setType} />}
+              <ContentEditor guideType={type} kind={mode} onChange={setSteps} steps={steps} />
               <SegmentPicker onApply={setRules} />
               <UrlTargeting rules={rules} onChange={setRules} />
               <RuleBuilder rules={rules} onChange={setRules} />
@@ -822,6 +754,7 @@ function EditExperienceModal({
           </div>
         </div>
         <div className="flex justify-end gap-3 border-t border-olive-100 px-6 py-4">
+          <ValidationSummary errors={showErrors ? errors : []} />
           <button onClick={onClose} className="rounded border border-olive-200 px-4 py-2 text-sm font-semibold text-olive-700 hover:bg-olive-50" type="button">Cancel</button>
           <button
             onClick={() => void handleSave()}
@@ -864,14 +797,28 @@ function CreateExperienceModal({
   const [guideType, setGuideType] = useState<GuideType>('MODAL');
   const [priority, setPriority] = useState<GuidePriority>('MEDIUM');
   const [steps, setSteps] = useState<GuideStep[]>(() => {
-    if (type === 'survey') return [newSurveyQuestion('NPS')];
-    if (type === 'checklist') return [newChecklistItem()];
-    return [newStep()];
+    if (type === 'survey') return [{ ...newQuestion('NPS', 'How likely are you to recommend us to a friend or colleague?'), required: true }];
+    if (type === 'checklist') return [newChecklistItem('Create your first project', 'project_created')];
+    return [newGuideStep('Welcome! 👋', 'Tell users what this is about.')];
   });
   const [rules, setRules] = useState<TargetingRuleGroup>(defaultRules());
   const [saving, setSaving] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
+  const errors = validateExperience(type, guideType, title, steps);
+
+  const applyTemplate = (template: ExperienceTemplate) => {
+    setTitle(template.title);
+    setDescription(template.description);
+    if (template.guideType) setGuideType(template.guideType);
+    setSteps(template.build());
+    setShowErrors(false);
+  };
 
   const handleSave = async () => {
+    if (errors.length > 0) {
+      setShowErrors(true);
+      return;
+    }
     setSaving(true);
     try {
       if (type === 'survey') {
@@ -927,17 +874,18 @@ function CreateExperienceModal({
         <div className="flex-grow overflow-y-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
             <div className="space-y-5">
+              <TemplatePicker kind={type} onPick={applyTemplate} />
               <div className="grid grid-cols-2 gap-4">
-                <TextInput label="Title" value={title} onChange={setTitle} />
-                {type === 'guide' && (
-                  <SelectInput label="Type" value={guideType} values={guideTypes} onChange={(v) => setGuideType(v as GuideType)} />
-                )}
-                <TextInput label="Description" value={description} onChange={setDescription} />
-                {type !== 'checklist' && (
+                <TextInput label="Name" value={title} onChange={setTitle} />
+                {type !== 'checklist' ? (
                   <SelectInput label="Priority" value={priority} values={priorities} onChange={(v) => setPriority(v as GuidePriority)} />
-                )}
+                ) : <span />}
+                <div className="col-span-2">
+                  <TextInput label="Description (only you see this)" value={description} onChange={setDescription} />
+                </div>
               </div>
-              <StepEditor steps={steps} onChange={setSteps} mode={type} />
+              {type === 'guide' && <GuideTypePicker value={guideType} onChange={setGuideType} />}
+              <ContentEditor guideType={guideType} kind={type} onChange={setSteps} steps={steps} />
               <SegmentPicker onApply={setRules} />
               <UrlTargeting rules={rules} onChange={setRules} />
               <RuleBuilder rules={rules} onChange={setRules} />
@@ -948,6 +896,7 @@ function CreateExperienceModal({
           </div>
         </div>
         <div className="flex justify-end gap-3 border-t border-olive-100 px-6 py-4">
+          <ValidationSummary errors={showErrors ? errors : []} />
           <button onClick={onClose} className="rounded border border-olive-200 px-4 py-2 text-sm font-semibold text-olive-700 hover:bg-olive-50" type="button">Cancel</button>
           <button
             onClick={() => void handleSave()}
