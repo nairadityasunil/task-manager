@@ -6,7 +6,6 @@ import {
   CheckSquare,
   GripVertical,
   Layers3,
-  Pencil,
   Plus,
   Radio,
   Save,
@@ -41,15 +40,26 @@ import {
 import { listIntegrations, type SdkIntegration } from '@/lib/sdk-integrations/api';
 import { useConfirm } from '@/context/ConfirmationContext';
 import SegmentsPanel from '@/features/engagement/components/SegmentsPanel';
+import ExperienceLibrary from '@/features/engagement/components/ExperienceLibrary';
+import ExperienceAnalyticsModal from '@/features/engagement/components/ExperienceAnalyticsModal';
+import { useToast } from '@/context/ToastContext';
 import { RuleBuilder, SegmentPicker, UrlTargeting } from '@/features/engagement/components/TargetingRuleEditor';
 import type {
   FrequencyRules,
   Guide,
+  GuideStatus,
   GuidePriority,
   GuideStep,
   GuideType,
   TargetingRuleGroup
 } from '@/lib/guides/types';
+
+const STATUS_VERB: Record<GuideStatus, string> = {
+  LIVE: 'published',
+  PAUSED: 'paused',
+  ARCHIVED: 'archived',
+  DRAFT: 'restored to draft'
+};
 
 type BuilderTab = 'guides' | 'surveys' | 'checklists' | 'segments' | 'analytics';
 
@@ -78,6 +88,8 @@ export interface EngagementPageProps {
 function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hideHeader = false }: EngagementPageProps): JSX.Element {
   const { integrationId } = useParams();
   const confirm = useConfirm();
+  const { showToast } = useToast();
+  const [analyticsExperience, setAnalyticsExperience] = useState<Guide | null>(null);
   const [activeIntegrationId, setActiveIntegrationId] = useState<string>('');
   const [integrations, setIntegrations] = useState<SdkIntegration[]>([]);
   const [tab, setTab] = useState<BuilderTab>(defaultTab ?? 'guides');
@@ -87,6 +99,13 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
   const [analytics, setAnalytics] = useState<GuideAnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  // Action results surface as toasts rather than a banner that never clears.
+  useEffect(() => {
+    if (message) {
+      showToast({ variant: 'success', message });
+      setMessage(null);
+    }
+  }, [message, showToast]);
   const [selectedSurveyForResponses, setSelectedSurveyForResponses] = useState<Guide | null>(null);
   const [isResponsesModalOpen, setIsResponsesModalOpen] = useState(false);
   const [editingExperience, setEditingExperience] = useState<Guide | null>(null);
@@ -150,7 +169,7 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
     }
   }, [activeIntegrationId]);
 
-  const handleStatusChangeRequest = async (experience: Guide, status: 'LIVE' | 'PAUSED' | 'ARCHIVED') => {
+  const handleStatusChangeRequest = async (experience: Guide, status: GuideStatus) => {
     if (status === 'LIVE') {
       setPublishingExperience(experience);
     } else {
@@ -158,16 +177,17 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
     }
   };
 
-  const executeStatusChange = async (experience: Guide, status: 'LIVE' | 'PAUSED' | 'ARCHIVED') => {
+  const executeStatusChange = async (experience: Guide, status: GuideStatus) => {
+    const verb = STATUS_VERB[status];
     if (experience.type === 'SURVEY') {
       await updateSurvey(activeIntegrationId, experience.id, { status });
-      setMessage(`Survey ${status.toLowerCase()}.`);
+      setMessage(`Survey ${verb}.`);
     } else if (experience.type === 'CHECKLIST') {
       await updateChecklist(experience.id, { status });
-      setMessage(`Checklist ${status.toLowerCase()}.`);
+      setMessage(`Checklist ${verb}.`);
     } else {
       await updateGuideStatus(activeIntegrationId, experience.id, status);
-      setMessage(`Guide ${status.toLowerCase()}.`);
+      setMessage(`Guide ${verb}.`);
     }
     await load();
   };
@@ -181,9 +201,9 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
   );
 
   return (
-    <div className="min-h-full bg-slate-50/50 ">
+    <div className={hideHeader ? '' : 'min-h-full bg-slate-50/50'}>
       {!hideHeader && (
-        <div className="border-b border-slate-200  bg-white  px-8 py-6">
+        <div className="border-b border-slate-200 bg-white px-8 pt-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-3">
@@ -210,7 +230,7 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
               <Metric label="MTU" value={analytics?.mtu.users ?? 0} />
             </div>
           </div>
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-6" role="tablist">
             <TabButton active={tab === 'guides'} icon={Layers3} label="Guides" onClick={() => setTab('guides')} />
             <TabButton active={tab === 'surveys'} icon={Radio} label="Surveys" onClick={() => setTab('surveys')} />
             <TabButton active={tab === 'checklists'} icon={CheckSquare} label="Checklists" onClick={() => setTab('checklists')} />
@@ -220,72 +240,59 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
         </div>
       )}
 
-      {message && (
-        <div className="mx-8 mt-5 rounded-md border border-emerald-200  bg-emerald-50  px-4 py-3 text-sm font-semibold text-emerald-800 ">
-          {message}
-        </div>
-      )}
 
-      <div className="p-8">
+      <div className={hideHeader ? '' : 'p-8'}>
         {(tab === 'guides' || tab === 'surveys' || tab === 'checklists') && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="m-0 text-lg font-bold text-slate-800 capitalize">{tab} Library</h3>
-              <button
-                onClick={() => {
-                  setCreateModalType(tab === 'guides' ? 'guide' : tab === 'surveys' ? 'survey' : 'checklist');
-                  setIsCreateModalOpen(true);
-                }}
-                className="flex items-center gap-2 rounded bg-slate-900 hover:bg-slate-800 px-4 py-2 text-sm font-bold text-white transition-colors shadow-sm"
-              >
-                <Plus size={16} />
-                Create {tab === 'guides' ? 'Guide' : tab === 'surveys' ? 'Survey' : 'Checklist'}
-              </button>
-            </div>
-            <ExperienceList
-              experiences={
-                tab === 'guides'
-                  ? guides
-                  : tab === 'surveys'
-                  ? surveys
-                  : checklists
+          <ExperienceLibrary
+            kind={tab}
+            experiences={tab === 'guides' ? guides : tab === 'surveys' ? surveys : checklists}
+            loading={loading}
+            onCreate={() => {
+              setCreateModalType(tab === 'guides' ? 'guide' : tab === 'surveys' ? 'survey' : 'checklist');
+              setIsCreateModalOpen(true);
+            }}
+            onStatusChange={handleStatusChangeRequest}
+            onViewAnalytics={tab === 'checklists' ? undefined : (experience) => setAnalyticsExperience(experience)}
+            onViewResponses={tab === 'surveys' ? (survey) => {
+              setSelectedSurveyForResponses(survey);
+              setIsResponsesModalOpen(true);
+            } : undefined}
+            onEdit={(experience) => {
+              setEditingExperience(experience);
+              setIsEditModalOpen(true);
+            }}
+            onDelete={async (experience) => {
+              const isConfirmed = await confirm({
+                title: 'Delete Experience',
+                message: `Permanently delete "${experience.title}"? This cannot be undone.`,
+                confirmText: 'Delete',
+                type: 'danger'
+              });
+              if (!isConfirmed) return;
+              if (experience.type === 'SURVEY') {
+                await deleteSurvey(activeIntegrationId, experience.id);
+                setMessage('Survey deleted.');
+              } else if (experience.type === 'CHECKLIST') {
+                await deleteChecklist(experience.id);
+                setMessage('Checklist deleted.');
+              } else {
+                await deleteGuide(activeIntegrationId, experience.id);
+                setMessage('Guide deleted.');
               }
-              loading={loading}
-              onStatusChange={handleStatusChangeRequest}
-              onViewResponses={tab === 'surveys' ? (survey) => {
-                setSelectedSurveyForResponses(survey);
-                setIsResponsesModalOpen(true);
-              } : undefined}
-              onEdit={(experience) => {
-                setEditingExperience(experience);
-                setIsEditModalOpen(true);
-              }}
-              onDelete={async (experience) => {
-                const isConfirmed = await confirm({
-                  title: 'Delete Experience',
-                  message: `Permanently delete "${experience.title}"? This cannot be undone.`,
-                  confirmText: 'Delete',
-                  type: 'danger'
-                });
-                if (!isConfirmed) return;
-                if (tab === 'guides') {
-                  await deleteGuide(activeIntegrationId, experience.id);
-                  setMessage('Guide deleted.');
-                } else if (tab === 'surveys') {
-                  await deleteSurvey(activeIntegrationId, experience.id);
-                  setMessage('Survey deleted.');
-                } else if (tab === 'checklists') {
-                  await deleteChecklist(experience.id);
-                  setMessage('Checklist deleted.');
-                }
-                await load();
-              }}
-            />
-          </div>
+              await load();
+            }}
+          />
         )}
         {tab === 'segments' && <SegmentsPanel />}
         {tab === 'analytics' && <AnalyticsDashboard analytics={analytics} />}
       </div>
+      {analyticsExperience && (
+        <ExperienceAnalyticsModal
+          experience={analyticsExperience}
+          onClose={() => setAnalyticsExperience(null)}
+          sdkIntegrationId={activeIntegrationId}
+        />
+      )}
       {selectedSurveyForResponses && (
         <SurveyResponsesModal
           isOpen={isResponsesModalOpen}
@@ -302,7 +309,15 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
           experience={editingExperience}
           onClose={() => { setIsEditModalOpen(false); setEditingExperience(null); }}
           onSave={async (updated) => {
-            if (editingExperience.type === 'SURVEY') {
+            if (editingExperience.type === 'CHECKLIST') {
+              await updateChecklist(editingExperience.id, {
+                title: updated.title,
+                description: updated.description,
+                items: updated.steps,
+                targetingRules: updated.targetingRules ?? null,
+                frequencyRules: updated.frequencyRules,
+              });
+            } else if (editingExperience.type === 'SURVEY') {
               await updateSurvey(activeIntegrationId, editingExperience.id, {
                 title: updated.title,
                 description: updated.description,
@@ -361,91 +376,6 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
           }}
         />
       )}
-    </div>
-  );
-}
-
-function ExperienceList({
-  experiences,
-  loading,
-  onStatusChange,
-  onViewResponses,
-  onEdit,
-  onDelete
-}: {
-  experiences: Guide[];
-  loading: boolean;
-  onStatusChange: (experience: Guide, status: 'LIVE' | 'PAUSED' | 'ARCHIVED') => Promise<void>;
-  onViewResponses?: (experience: Guide) => void;
-  onEdit?: (experience: Guide) => void;
-  onDelete?: (experience: Guide) => Promise<void>;
-}): JSX.Element {
-  const statusColor: Record<string, string> = {
-    LIVE: 'bg-emerald-100  text-emerald-700 ',
-    DRAFT: 'bg-amber-100  text-amber-700 ',
-    PAUSED: 'bg-slate-100  text-slate-600 ',
-    ARCHIVED: 'bg-red-100  text-red-700 ',
-  };
-  return (
-    <div className="rounded-lg bg-white  p-6 shadow-md">
-      <SectionTitle icon={Layers3} title="Library" />
-      <div className="grid gap-3 mt-4">
-        {loading && <p className="text-sm text-slate-500">Loading...</p>}
-        {!loading && experiences.length === 0 && <p className="text-sm text-slate-500">No experiences yet.</p>}
-        {experiences.map((experience) => (
-          <div className="rounded-md bg-slate-50  px-4 py-3 shadow-xs" key={experience.id}>
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="m-0 text-sm font-bold text-slate-900  truncate">{experience.title}</p>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                  <span className="text-xs text-slate-500 ">{experience.type}</span>
-                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${statusColor[experience.status ?? 'DRAFT'] ?? statusColor.DRAFT}`}>
-                    {experience.status ?? 'DRAFT'}
-                  </span>
-                  <span className="text-xs text-slate-500 ">{experience.priority}</span>
-                </div>
-              </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-                {onViewResponses && experience.type === 'SURVEY' && (
-                  <button className="rounded border border-slate-200  bg-slate-50  hover:bg-slate-100  px-2.5 py-1 text-xs font-bold text-slate-700  transition-colors" onClick={() => onViewResponses(experience)} type="button">Responses</button>
-                )}
-                {onEdit && (
-                  <button className="rounded border border-blue-200  bg-blue-50  hover:bg-blue-100  px-2.5 py-1 text-xs font-bold text-blue-700  flex items-center gap-1 transition-colors" onClick={() => onEdit(experience)} type="button">
-                    <Pencil size={11} /> Edit
-                  </button>
-                )}
-                {experience.status === 'LIVE' ? (
-                  <button
-                    className="rounded border border-amber-200  bg-amber-50  px-2.5 py-1 text-xs font-bold text-amber-700  hover:bg-amber-100  transition-colors"
-                    onClick={() => onStatusChange(experience, 'PAUSED')}
-                    type="button"
-                  >
-                    Take Down
-                  </button>
-                ) : (
-                  <button
-                    className="rounded border border-emerald-200  bg-emerald-50  px-2.5 py-1 text-xs font-bold text-emerald-700  hover:bg-emerald-100  transition-colors"
-                    onClick={() => onStatusChange(experience, 'LIVE')}
-                    type="button"
-                  >
-                    Publish
-                  </button>
-                )}
-                {experience.status !== 'LIVE' && experience.status !== 'PAUSED' && (
-                  <button className="rounded border border-slate-200  px-2.5 py-1 text-xs font-bold text-slate-700  hover:bg-slate-50  transition-colors" onClick={() => onStatusChange(experience, 'PAUSED')} type="button">Pause</button>
-                )}
-                {onDelete ? (
-                  <button className="rounded border border-red-200  px-2.5 py-1 text-xs font-bold text-red-600  hover:bg-red-50  flex items-center gap-1 transition-colors" onClick={() => void onDelete(experience)} type="button">
-                    <Trash2 size={11} /> Delete
-                  </button>
-                ) : (
-                  <button className="rounded border border-red-200  px-2.5 py-1 text-xs font-bold text-red-600  hover:bg-red-50  transition-colors" onClick={() => onStatusChange(experience, 'ARCHIVED')} type="button">Archive</button>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -568,9 +498,9 @@ function AnalyticsDashboard({ analytics }: { analytics: GuideAnalyticsSummary | 
 
 function Metric({ label, value }: { label: string; value: number }): JSX.Element {
   return (
-    <div className="rounded-md border border-slate-200  px-4 py-2">
-      <p className="m-0 text-xs font-bold uppercase tracking-widest text-slate-500 ">{label}</p>
-      <p className="m-0 text-xl font-black text-slate-900 ">{value}</p>
+    <div className="min-w-[88px] rounded-xl border border-slate-200 bg-white px-4 py-2.5">
+      <p className="m-0 text-xs font-medium text-slate-500">{label}</p>
+      <p className="m-0 mt-0.5 text-xl font-semibold tabular-nums text-slate-900">{new Intl.NumberFormat().format(value)}</p>
     </div>
   );
 }
@@ -586,8 +516,16 @@ function MetricCard({ label, value }: { label: string; value: number }): JSX.Ele
 
 function TabButton({ active, icon: Icon, label, onClick }: { active: boolean; icon: LucideIcon; label: string; onClick: () => void }): JSX.Element {
   return (
-    <button className={`flex items-center gap-2 rounded-md px-4 py-2 text-sm font-bold transition-all shadow-xs ${active ? 'bg-slate-900 text-white  ' : 'border border-slate-200  text-slate-700  hover:bg-slate-50 '}`} onClick={onClick} type="button">
-      <Icon size={16} />
+    <button
+      aria-selected={active}
+      className={`-mb-px flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-semibold transition-colors ${
+        active ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800'
+      }`}
+      onClick={onClick}
+      role="tab"
+      type="button"
+    >
+      <Icon size={15} />
       {label}
     </button>
   );

@@ -40,7 +40,7 @@ const columnHelper = createColumnHelper<RawEvent>();
 
 const columns = [
   columnHelper.accessor('userId', {
-    header: 'Identity',
+    header: 'User',
     size: 200,
     cell: info => {
       const value = info.getValue() || '-';
@@ -54,7 +54,7 @@ const columns = [
     },
   }),
   columnHelper.accessor('eventName', {
-    header: 'Signal',
+    header: 'Event',
     size: 200,
     cell: info => {
       const name = info.getValue();
@@ -182,6 +182,98 @@ interface EventTrackingPageProps {
   hideHeader?: boolean;
 }
 
+const formatCount = (value: number): string => new Intl.NumberFormat(undefined, { notation: value >= 10000 ? 'compact' : 'standard' }).format(value);
+
+/** Totals and the most frequent events, which double as one-click filters. */
+function EventSummaryBar({
+  availableEvents,
+  activeEventNames,
+  filterCount,
+  refreshing,
+  showControls,
+  onToggleEvent,
+  onOpenFilters,
+  onRefresh
+}: {
+  availableEvents: TrackedEvent[];
+  activeEventNames: string[];
+  filterCount: number;
+  refreshing: boolean;
+  showControls: boolean;
+  onToggleEvent: (eventName: string) => void;
+  onOpenFilters: () => void;
+  onRefresh: () => void;
+}): JSX.Element {
+  const total = availableEvents.reduce((sum, event) => sum + (event.count ?? 0), 0);
+  const top = [...availableEvents].sort((a, b) => (b.count ?? 0) - (a.count ?? 0)).slice(0, 6);
+  const max = Math.max(...top.map((event) => event.count ?? 0), 1);
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-slate-200 bg-white px-5 py-4">
+      <div className="flex gap-6">
+        <div>
+          <p className="m-0 text-xs font-medium text-slate-500">Events recorded</p>
+          <p className="m-0 mt-0.5 text-xl font-semibold tabular-nums text-slate-900">{formatCount(total)}</p>
+        </div>
+        <div>
+          <p className="m-0 text-xs font-medium text-slate-500">Event types</p>
+          <p className="m-0 mt-0.5 text-xl font-semibold tabular-nums text-slate-900">{formatCount(availableEvents.length)}</p>
+        </div>
+      </div>
+      {top.length > 0 && (
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5" aria-label="Most frequent events">
+          {top.map((event) => {
+            const active = activeEventNames.includes(event.eventName);
+            return (
+              <button
+                aria-pressed={active}
+                className={`relative overflow-hidden rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${
+                  active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                }`}
+                key={event.id}
+                onClick={() => onToggleEvent(event.eventName)}
+                title={`Show only ${event.eventName}`}
+                type="button"
+              >
+                {!active && (
+                  <span aria-hidden className="absolute inset-y-0 left-0 bg-slate-100" style={{ width: `${((event.count ?? 0) / max) * 100}%` }} />
+                )}
+                <span className="relative">
+                  {event.eventName}
+                  <span className={`ml-1.5 tabular-nums ${active ? 'text-slate-300' : 'text-slate-400'}`}>{formatCount(event.count ?? 0)}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+      {showControls && (
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+            onClick={onOpenFilters}
+            type="button"
+          >
+            <Filter size={14} />
+            Filters
+            {filterCount > 0 && <span className="rounded-full bg-slate-900 px-1.5 text-[11px] font-semibold text-white">{filterCount}</span>}
+          </button>
+          <button
+            aria-label="Refresh events"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm hover:text-slate-800 disabled:opacity-40"
+            disabled={refreshing}
+            onClick={onRefresh}
+            title="Refresh"
+            type="button"
+          >
+            <RefreshCw size={15} className={refreshing ? 'animate-spin' : ''} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIntegrationId, hideHeader = false }) => {
   const confirm = useConfirm();
   const [keys, setKeys] = useState<AnalyticsKey[]>([]);
@@ -242,7 +334,8 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
       const queryParams: Record<string, unknown> = {
         page,
         limit: pageSize,
-        eventNames: appliedFilters.eventNames.length > 0 ? appliedFilters.eventNames : undefined,
+        // Comma-separated: Express 5's query parser does not turn eventNames[]=a into an array.
+        eventNames: appliedFilters.eventNames.length > 0 ? appliedFilters.eventNames.join(',') : undefined,
         startDate: appliedFilters.startDate || undefined,
         endDate: appliedFilters.endDate || undefined
       };
@@ -279,19 +372,30 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
     loadInitialData();
   }, [sdkIntegrationId]);
 
+  // Event names (with totals) only depend on the source, not on filters.
   useEffect(() => {
     if (sdkIntegrationId || selectedKeyId) {
-      setCurrentPage(1);
       void loadAvailableEvents(selectedKeyId);
-      loadLogs(selectedKeyId, 1);
     }
-  }, [selectedKeyId, sdkIntegrationId, appliedFilters]);
+  }, [selectedKeyId, sdkIntegrationId]);
 
+  // One fetch per change: filter and source changes reset the page in the
+  // same update (see applyFilters / selectKey), so they never double-fetch.
   useEffect(() => {
     if (sdkIntegrationId || selectedKeyId) {
-      loadLogs(selectedKeyId, currentPage);
+      void loadLogs(selectedKeyId, currentPage);
     }
-  }, [currentPage, sdkIntegrationId, selectedKeyId]);
+  }, [currentPage, sdkIntegrationId, selectedKeyId, appliedFilters]);
+
+  const applyFilters = (filters: typeof appliedFilters) => {
+    setAppliedFilters(filters);
+    setCurrentPage(1);
+  };
+
+  const selectKey = (id: string) => {
+    setSelectedKeyId(id);
+    setCurrentPage(1);
+  };
 
   const handleCreateKey = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -303,7 +407,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
       setNewKeyName('');
       const updatedKeys = await listApiKeys();
       setKeys(updatedKeys);
-      if (!selectedKeyId) setSelectedKeyId(newKey.id);
+      if (!selectedKeyId) selectKey(newKey.id);
     } catch (err) {
       console.error('Failed to create API key', err);
     }
@@ -324,7 +428,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
       const updatedKeys = await listApiKeys();
       setKeys(updatedKeys);
       if (selectedKeyId === id) {
-        setSelectedKeyId(updatedKeys[0]?.id || '');
+        selectKey(updatedKeys[0]?.id || '');
       }
     } catch (err) {
       console.error('Failed to delete API key', err);
@@ -412,7 +516,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
                     {keys.map(key => (
                       <button
                         key={key.id}
-                        onClick={() => { setSelectedKeyId(key.id); setIsNodeSwitcherOpen(false); }}
+                        onClick={() => { selectKey(key.id); setIsNodeSwitcherOpen(false); }}
                         className={`w-full py-2 text-left text-[0.85rem] transition-colors ${selectedKeyId === key.id ? 'bg-olive-50 text-olive-600' : 'text-olive-600 hover:bg-olive-50'}`}
                       >
                         {key.name}
@@ -468,6 +572,27 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
             <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
           </button>
         </div>
+      )}
+
+      {(sdkIntegrationId || selectedKeyId) && (
+        <EventSummaryBar
+          activeEventNames={appliedFilters.eventNames}
+          availableEvents={availableEvents}
+          filterCount={appliedFilters.eventNames.length + (appliedFilters.startDate ? 1 : 0) + (appliedFilters.endDate ? 1 : 0)}
+          onOpenFilters={() => {
+            setDraftFilters(appliedFilters);
+            setIsFiltersModalOpen(true);
+          }}
+          onRefresh={() => void loadLogs(selectedKeyId, currentPage)}
+          onToggleEvent={(eventName) =>
+            applyFilters({
+              ...appliedFilters,
+              eventNames: appliedFilters.eventNames.length === 1 && appliedFilters.eventNames[0] === eventName ? [] : [eventName]
+            })
+          }
+          refreshing={refreshing}
+          showControls={hideHeader}
+        />
       )}
 
       {/* Main Content */}
@@ -603,7 +728,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
                 className="rounded-lg border border-olive-200 bg-white px-4 py-2 text-sm text-olive-700 transition-colors hover:bg-olive-50    "
                 onClick={() => {
                   setDraftFilters({ eventNames: [], startDate: '', endDate: '' });
-                  setAppliedFilters({ eventNames: [], startDate: '', endDate: '' });
+                  applyFilters({ eventNames: [], startDate: '', endDate: '' });
                   setCurrentPage(1);
                   setIsFiltersModalOpen(false);
                 }}
@@ -625,7 +750,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
                 <button
                   className="rounded-lg bg-olive-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-olive-800  "
                   onClick={() => {
-                    setAppliedFilters(draftFilters);
+                    applyFilters(draftFilters);
                     setCurrentPage(1);
                     setIsFiltersModalOpen(false);
                   }}

@@ -540,20 +540,34 @@ const SdkIntegrationDetailPage: React.FC = () => {
         )}
 
         {activeTab === 'guides' && (
-          <div className="rounded-md bg-white  shadow-sm overflow-hidden">
+          <div className="space-y-4">
+            <div>
+              <h2 className="m-0 text-lg font-semibold text-slate-900">Guides</h2>
+              <p className="m-0 mt-0.5 text-sm text-slate-500">Tours, modals, tips, hotspots and banners shown in this app.</p>
+            </div>
             <EngagementPage sdkIntegrationId={integrationId} defaultTab="guides" hideHeader={true} />
           </div>
         )}
 
         {activeTab === 'surveys' && (
-          <div className="rounded-md bg-white  shadow-sm overflow-hidden">
+          <div className="space-y-4">
+            <div>
+              <h2 className="m-0 text-lg font-semibold text-slate-900">Surveys</h2>
+              <p className="m-0 mt-0.5 text-sm text-slate-500">Feedback and NPS surveys shown to users of this app.</p>
+            </div>
             <EngagementPage sdkIntegrationId={integrationId} defaultTab="surveys" hideHeader={true} />
           </div>
         )}
 
         {activeTab === 'events' && (
-          <div className="rounded-md bg-white  shadow-sm overflow-hidden">
-            <EventTrackingPage sdkIntegrationId={integrationId} hideHeader={true} onOpenDocs={() => navigate('/sdk-docs')} />
+          <div className="space-y-4">
+            <div>
+              <h2 className="m-0 text-lg font-semibold text-slate-900">Events</h2>
+              <p className="m-0 mt-0.5 text-sm text-slate-500">Everything this app sends through the SDK. Click an event to see its payload.</p>
+            </div>
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+              <EventTrackingPage sdkIntegrationId={integrationId} hideHeader={true} onOpenDocs={() => navigate('/sdk-docs')} />
+            </div>
           </div>
         )}
       </div>

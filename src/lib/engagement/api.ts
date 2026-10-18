@@ -209,3 +209,62 @@ const normalizeGuide = (guide: Guide & { _id?: string; questions?: GuideStep[]; 
   priority: guide.priority ?? 'MEDIUM',
   type: guide.type ?? 'MODAL'
 });
+
+export interface GuideExperienceAnalytics {
+  guideId: string;
+  impressions: number;
+  uniqueUsers: number;
+  completions: number;
+  dismissals: number;
+  /** 0–1 */
+  completionRate: number;
+  /** 0–1 */
+  dismissalRate: number;
+}
+
+export interface SurveyQuestionAnalytics {
+  questionId: string;
+  title: string;
+  type: string;
+  responseCount: number;
+  skippedCount: number;
+  averageScore: number;
+  distribution: Record<string, number>;
+  mostSelectedOption: string | null;
+  leastSelectedOption: string | null;
+}
+
+export interface SurveyExperienceAnalytics {
+  surveyId: string;
+  responses: number;
+  /** -100 to 100 */
+  nps: number;
+  promoters: number;
+  passives: number;
+  detractors: number;
+  /** Percent, 0–100 */
+  responseRate: number;
+  impressions: number;
+  eligibleUsers: number;
+  starts: number;
+  submissions: number;
+  dismissals: number;
+  /** Percent, 0–100 */
+  completionRate: number;
+  /** Percent, 0–100 */
+  dropOffRate: number;
+  /** Seconds */
+  averageCompletionTime: number;
+  questionAnalytics: SurveyQuestionAnalytics[];
+  weeklyTrends: Array<{ period: string; responses: number; nps: number }>;
+}
+
+export const getGuideAnalytics = async (sdkIntegrationId: string, guideId: string): Promise<GuideExperienceAnalytics> => {
+  const response = await api.get<ApiEnvelope<GuideExperienceAnalytics>>(`/sdk-integrations/${sdkIntegrationId}/guides/${guideId}/analytics`);
+  return response.data.data;
+};
+
+export const getSurveyAnalytics = async (sdkIntegrationId: string, surveyId: string): Promise<SurveyExperienceAnalytics> => {
+  const response = await api.get<ApiEnvelope<SurveyExperienceAnalytics>>(`/sdk-integrations/${sdkIntegrationId}/surveys/${surveyId}/analytics`);
+  return response.data.data;
+};
