@@ -4,6 +4,10 @@ import { CheckCircle2, AlertTriangle, ArrowRight, Loader2, LogOut } from 'lucide
 import { useAuth } from '@/context/AuthContext';
 import api from '@/services/api';
 import logoImg from '@/assets/logo.png';
+import { Badge, buttonClass } from '@/components/ui';
+
+const primaryBtn = buttonClass('primary', 'md', 'w-full').replace('h-9', 'h-10');
+const secondaryBtn = buttonClass('secondary', 'md', 'w-full').replace('h-9', 'h-10');
 
 interface InvitationDetails {
   token: string;
@@ -88,160 +92,126 @@ function AcceptInvitationPage(): JSX.Element {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 relative p-6 select-none font-sans overflow-hidden">
-      {/* Glowing abstract backgrounds */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-slate-700/10 rounded-full blur-[140px] pointer-events-none animate-pulse duration-[8000ms]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[6000ms]" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-10 font-sans sm:px-6">
+      <div className="mb-6 flex items-center gap-2.5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 shadow-sm">
+          <img alt="Pristine Logo" className="h-full w-full object-contain" src={logoImg} />
+        </span>
+        <span className="text-base font-semibold tracking-tight text-slate-900">Pristine</span>
+      </div>
 
-      <div className="w-full max-w-[500px] bg-white/10 border border-white/10 rounded-2xl p-8 shadow-xl backdrop-blur-md relative z-10 text-white flex flex-col items-center">
-        {/* Brand Logo Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-2 shadow-md">
-            <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain" />
-          </div>
-          <span className="font-semibold tracking-wide text-lg">PRISTINE</span>
-        </div>
-
+      <div className="w-full max-w-[440px] rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
         {loading ? (
-          <div className="flex flex-col items-center py-12 gap-4">
-            <Loader2 className="w-10 h-10 text-emerald-400 animate-spin" />
-            <p className="text-slate-200 text-sm font-semibold tracking-wide uppercase">
-              Verifying your invitation...
-            </p>
+          <div className="flex flex-col items-center gap-3 py-10 text-center">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+            <p className="m-0 text-sm text-slate-500">Verifying your invitation...</p>
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center py-8 text-center gap-4">
-            <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center text-red-400 mb-2">
-              <AlertTriangle size={32} />
-            </div>
-            <h2 className="text-2xl font-semibold tracking-tight text-white">Verification Failed</h2>
-            <p className="text-slate-300 text-sm leading-relaxed max-w-[340px]">{error}</p>
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="mt-4 px-6 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white font-semibold hover:bg-white/20 transition-all active:scale-[0.98]"
-            >
+          <div className="flex flex-col items-center gap-3 py-4 text-center">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <AlertTriangle size={18} />
+            </span>
+            <h1 className="m-0 text-xl font-semibold tracking-tight text-slate-900">Verification failed</h1>
+            <p className="m-0 max-w-[340px] text-sm leading-relaxed text-slate-500">{error}</p>
+            <button className={buttonClass('secondary', 'md', 'mt-2')} onClick={() => navigate('/dashboard')} type="button">
               Go to Dashboard
             </button>
           </div>
         ) : success ? (
-          <div className="flex flex-col items-center py-8 text-center gap-4">
-            <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400 mb-2">
-              <CheckCircle2 size={32} className="animate-bounce" />
-            </div>
-            <h2 className="text-2xl font-semibold tracking-tight text-white">Welcome Aboard!</h2>
-            <p className="text-slate-300 text-sm">
-              You are now a member of <strong>{details?.projectName}</strong>.
+          <div className="flex flex-col items-center gap-3 py-4 text-center">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+              <CheckCircle2 size={20} />
+            </span>
+            <h1 className="m-0 text-xl font-semibold tracking-tight text-slate-900">Welcome aboard!</h1>
+            <p className="m-0 text-sm text-slate-600">
+              You are now a member of <strong className="font-medium text-slate-900">{details?.projectName}</strong>.
             </p>
-            <p className="text-emerald-400/80 text-xs font-semibold uppercase tracking-wide mt-2 animate-pulse">
-              Redirecting you to dashboard...
+            <p className="m-0 flex items-center gap-2 text-xs text-slate-500">
+              <Loader2 className="animate-spin" size={12} /> Redirecting you to dashboard...
             </p>
           </div>
         ) : (
-          <div className="w-full flex flex-col items-center">
-            <h2 className="text-3xl font-semibold text-center tracking-tight text-white mb-2">
-              Project Invitation
-            </h2>
-            <p className="text-slate-200 text-sm text-center mb-6">
-              You have been invited to join a collaborative space on Pristine.
-            </p>
+          <div className="grid gap-6">
+            <div className="grid gap-1.5">
+              <h1 className="m-0 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Project invitation</h1>
+              <p className="m-0 text-sm text-slate-500">You have been invited to join a collaborative space on Pristine.</p>
+            </div>
 
-            <div className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 mb-8 text-center">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                Project Name
-              </span>
-              <h3 className="text-xl font-semibold text-white mt-1 mb-4">
-                {details?.projectName}
-              </h3>
-
-              <div className="flex justify-center gap-6 text-xs border-t border-white/5 pt-4 text-slate-300">
-                <div>
-                  <span className="block text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-0.5">
-                    Invited Role
-                  </span>
-                  <span className="font-semibold text-white uppercase tracking-wide">
-                    {details?.role}
-                  </span>
+            <dl className="m-0 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <div className="grid gap-0.5">
+                <dt className="text-xs text-slate-500">Project</dt>
+                <dd className="m-0 truncate text-[15px] font-semibold text-slate-900">{details?.projectName}</dd>
+              </div>
+              <div className="grid grid-cols-1 gap-3 border-t border-slate-200 pt-3 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-6">
+                <div className="grid gap-1">
+                  <dt className="text-xs text-slate-500">Role</dt>
+                  <dd className="m-0">
+                    <Badge tone={details?.role === 'ADMIN' ? 'dark' : 'neutral'}>
+                      {details?.role === 'ADMIN' ? 'Admin' : 'Member'}
+                    </Badge>
+                  </dd>
                 </div>
-                <div className="w-px bg-white/5" />
-                <div>
-                  <span className="block text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-0.5">
-                    Invited Email
-                  </span>
-                  <span className="font-semibold text-white">{details?.email}</span>
+                <div className="grid min-w-0 gap-1">
+                  <dt className="text-xs text-slate-500">Invited email</dt>
+                  <dd className="m-0 truncate text-sm font-medium text-slate-800">{details?.email}</dd>
                 </div>
               </div>
-            </div>
+            </dl>
 
             {/* Auth check logic */}
             {user ? (
               user.email.toLowerCase() === details?.email.toLowerCase() ? (
                 /* Logged in as correct user */
-                <button
-                  onClick={handleAccept}
-                  disabled={accepting}
-                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-600/50 text-slate-950 font-semibold rounded-xl shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 flex items-center justify-center gap-2 text-sm uppercase tracking-wide active:scale-[0.98]"
-                >
+                <button className={primaryBtn} disabled={accepting} onClick={handleAccept} type="button">
                   {accepting ? (
                     <>
-                      <Loader2 size={18} className="animate-spin" /> Accepting...
+                      <Loader2 className="animate-spin" size={16} /> Accepting...
                     </>
                   ) : (
                     <>
-                      Accept & Join Project <ArrowRight size={18} />
+                      Accept & Join Project <ArrowRight size={16} />
                     </>
                   )}
                 </button>
               ) : (
                 /* Logged in as WRONG user */
-                <div className="w-full flex flex-col gap-4">
-                  <div className="flex gap-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-amber-300 text-xs leading-relaxed">
-                    <AlertTriangle size={18} className="shrink-0" />
-                    <div>
-                      You are logged in as <strong className="text-white">{user.email}</strong>,
-                      but this invitation was sent to <strong className="text-white">{details?.email}</strong>.
+                <div className="grid gap-4">
+                  <div className="flex gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-[13px] leading-relaxed text-amber-900">
+                    <AlertTriangle className="mt-0.5 shrink-0 text-amber-600" size={16} />
+                    <div className="min-w-0 break-words">
+                      You are logged in as <strong className="font-medium">{user.email}</strong>, but this invitation was sent to{' '}
+                      <strong className="font-medium">{details?.email}</strong>.
                     </div>
                   </div>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full py-3.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-sm active:scale-[0.98]"
-                  >
+                  <button className={secondaryBtn} onClick={handleLogout} type="button">
                     <LogOut size={16} /> Logout & Switch Accounts
                   </button>
                 </div>
               )
             ) : (
               /* NOT logged in */
-              <div className="w-full flex flex-col gap-3">
+              <div className="grid gap-3">
                 {details?.isRegistered ? (
                   <>
                     <button
-                      onClick={() =>
-                        navigate(
-                          `/login?token=${token}&email=${encodeURIComponent(details?.email || '')}`
-                        )
-                      }
-                      className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-xl shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 flex items-center justify-center gap-2 text-sm uppercase tracking-wide active:scale-[0.98]"
+                      className={primaryBtn}
+                      onClick={() => navigate(`/login?token=${token}&email=${encodeURIComponent(details?.email || '')}`)}
+                      type="button"
                     >
-                      Login to Accept <ArrowRight size={18} />
+                      Login to Accept <ArrowRight size={16} />
                     </button>
-                    <p className="text-center text-xs text-slate-400 mt-2">
-                      An account already exists for {details?.email}.
-                    </p>
+                    <p className="m-0 text-center text-xs text-slate-500">An account already exists for {details?.email}.</p>
                   </>
                 ) : (
                   <>
                     <button
-                      onClick={() =>
-                        navigate(
-                          `/register?token=${token}&email=${encodeURIComponent(details?.email || '')}`
-                        )
-                      }
-                      className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-xl shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 flex items-center justify-center gap-2 text-sm uppercase tracking-wide active:scale-[0.98]"
+                      className={primaryBtn}
+                      onClick={() => navigate(`/register?token=${token}&email=${encodeURIComponent(details?.email || '')}`)}
+                      type="button"
                     >
-                      Create Account to Join <ArrowRight size={18} />
+                      Create Account to Join <ArrowRight size={16} />
                     </button>
-                    <p className="text-center text-xs text-slate-400 mt-2">
+                    <p className="m-0 text-center text-xs text-slate-500">
                       You will be automatically added to the project after registration.
                     </p>
                   </>

@@ -1,16 +1,131 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff, Key, QrCode, Shield, Smartphone } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, Eye, EyeOff, Key, QrCode, Shield, Smartphone } from 'lucide-react';
 
 import { useAuth } from '@/context/AuthContext';
 import { QRScanner } from '@/features/settings/components/QRScanner';
 import api from '@/services/api';
 import logoImg from '@/assets/logo.png';
 import GoogleLogo from '@/components/GoogleLogo';
+import { buttonClass, cn, inputClass } from '@/components/ui';
 
-const inputCls =
-  'w-full bg-white border border-slate-300 rounded-lg text-slate-900 text-sm px-3.5 py-2.5 shadow-sm transition-colors duration-150 focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 placeholder:text-slate-400';
+/** 40px-tall controls for the auth forms. */
+const inputCls = inputClass.replace('h-9', 'h-10');
 const labelCls = 'grid gap-1.5 text-sm font-medium text-slate-700';
+const primaryBtn = buttonClass('primary', 'md', 'w-full').replace('h-9', 'h-10');
+const secondaryBtn = buttonClass('secondary', 'md', 'w-full').replace('h-9', 'h-10');
+const backBtn = buttonClass('ghost', 'md', 'w-full');
+const toggleBtn =
+  'absolute right-1 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/15';
+
+const VALUE_POINTS = [
+  'Projects, epics and tasks with priorities that update themselves',
+  'Response and resolution SLAs tracked on every task',
+  'Guides, surveys and events for your own product'
+];
+
+/** Inline form error, kept next to the form it belongs to. */
+function FormError({ children }: { children: string }): JSX.Element {
+  return (
+    <p className="m-0 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700">
+      <AlertCircle className="mt-0.5 shrink-0" size={14} />
+      <span className="min-w-0">{children}</span>
+    </p>
+  );
+}
+
+function FormSuccess({ children }: { children: string }): JSX.Element {
+  return (
+    <p className="m-0 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[13px] text-emerald-800">
+      <CheckCircle2 className="mt-0.5 shrink-0" size={14} />
+      <span className="min-w-0">{children}</span>
+    </p>
+  );
+}
+
+function FormHeading({ title, description }: { title: string; description: string }): JSX.Element {
+  return (
+    <div className="grid gap-1.5">
+      <h1 className="m-0 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">{title}</h1>
+      <p className="m-0 text-sm text-slate-500">{description}</p>
+    </div>
+  );
+}
+
+/** Dark brand panel shown beside the form on wide screens. */
+function BrandPanel(): JSX.Element {
+  return (
+    <aside className="hidden select-none flex-col justify-between bg-slate-900 p-10 text-white lg:flex xl:p-14">
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white p-1.5">
+          <img alt="Pristine Logo" className="h-full w-full object-contain" src={logoImg} />
+        </span>
+        <span className="text-base font-semibold tracking-tight">Pristine</span>
+      </div>
+
+      <div className="grid max-w-md gap-8">
+        <div className="grid gap-3">
+          <h2 className="m-0 text-3xl font-semibold leading-tight tracking-tight text-white xl:text-4xl">
+            Plan, prioritise and ship with your whole team.
+          </h2>
+          <p className="m-0 text-[15px] leading-relaxed text-slate-400">
+            One workspace for your projects and for the people who use your product.
+          </p>
+        </div>
+        <ul className="m-0 grid list-none gap-3 p-0">
+          {VALUE_POINTS.map((point) => (
+            <li className="flex items-start gap-3 text-sm text-slate-300" key={point}>
+              <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-400" size={16} />
+              {point}
+            </li>
+          ))}
+        </ul>
+        <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+          <div className="mb-3 flex items-center justify-between text-xs text-slate-400">
+            <span>Apollo · Onboarding</span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> On track
+            </span>
+          </div>
+          {[
+            { title: 'Ship SSO for enterprise workspaces', tone: 'bg-red-400/15 text-red-300', label: 'Critical' },
+            { title: 'Welcome tour for new admins', tone: 'bg-amber-400/15 text-amber-300', label: 'High' },
+            { title: 'Weekly digest email', tone: 'bg-slate-400/15 text-slate-300', label: 'Medium' }
+          ].map((row) => (
+            <div className="flex items-center justify-between gap-3 border-t border-white/5 py-2.5 text-sm" key={row.title}>
+              <span className="truncate text-slate-200">{row.title}</span>
+              <span className={cn('shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium', row.tone)}>{row.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <p className="m-0 text-xs text-slate-500">© {new Date().getFullYear()} Pristine</p>
+    </aside>
+  );
+}
+
+/** Split layout on desktop, a single centred card on tablets and phones. */
+function AuthShell({ children }: { children: ReactNode }): JSX.Element {
+  return (
+    <main className="min-h-screen bg-slate-50 font-sans lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:bg-white">
+      <BrandPanel />
+      <section className="flex min-h-screen flex-col items-center justify-center px-4 py-10 sm:px-6 lg:py-12">
+        <div className="w-full max-w-[400px]">
+          <div className="mb-6 flex items-center justify-center gap-2.5 lg:hidden">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 shadow-sm">
+              <img alt="Pristine Logo" className="h-full w-full object-contain" src={logoImg} />
+            </span>
+            <span className="text-base font-semibold tracking-tight text-slate-900">Pristine</span>
+          </div>
+          <div className="grid gap-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+            {children}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
 
 const GOOGLE_ERROR_HINTS: Record<string, string> = {
   access_denied: 'You cancelled the Google sign-in.',
@@ -221,482 +336,348 @@ function LoginPage(): JSX.Element {
     }
   };
 
+  const segmentBtn = (active: boolean): string =>
+    cn(
+      'flex h-8 flex-1 items-center justify-center gap-1.5 rounded-md px-3 text-[13px] font-medium transition-colors',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/15',
+      active ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' : 'text-slate-500 hover:text-slate-800'
+    );
+
   return (
-    <main className="min-h-screen flex bg-white font-sans overflow-hidden">
-      {/* Left Side (65% width) */}
-      <div className="hidden lg:flex lg:w-[65%] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 relative p-16 flex-col justify-between overflow-hidden select-none">
-        {/* Glowing abstract backgrounds */}
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-slate-700/10 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-
-        {/* Brand Header */}
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border border-white/20 shadow-md p-2">
-            <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain" />
-          </div>
-          <span className="text-white font-semibold tracking-tight text-lg">Pristine</span>
-        </div>
-
-        {/* Visual Centerpiece (Horizontal layout of text and red outline logo container) */}
-        <div className="relative z-10 my-auto w-full grid lg:grid-cols-2 gap-16 items-center">
-          {/* Text Centerpiece */}
-          <div className="flex flex-col gap-6 max-w-[500px]">
-            <h2 className="text-5xl font-semibold leading-[1.15] text-white tracking-tight">
-              Elevate your workflow with{' '}
-              <span className="bg-gradient-to-r from-emerald-400 to-slate-300 bg-clip-text text-transparent">
-                effortless organization
-              </span>
-            </h2>
-            <p className="text-slate-300 text-lg leading-relaxed font-light">
-              A premium, secure environment designed for high-performing teams to coordinate, automate, and synchronize
-              development epics.
-            </p>
-          </div>
-
-          {/* Large Premium Showcase containing the Logo */}
-          <div className="flex justify-center lg:justify-end">
-            <div className="w-full max-w-[420px] aspect-square bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/10 rounded-2xl flex items-center justify-center relative overflow-hidden group transition-all duration-300 p-10 shadow-xl backdrop-blur-sm">
-              {/* Inner ambient emerald glow hover effect */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              {/* Logo container inside the showcase */}
-              <div className="w-36 h-36 bg-white rounded-2xl flex items-center justify-center p-6 shadow-xl relative z-10 transition-all duration-500 group-hover:scale-105 group-hover:shadow-emerald-500/10">
-                <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(16,185,129,0.15)]" />
-              </div>
+    <AuthShell>
+      {require2fa ? (
+        /* 2FA view */
+        <form className="grid gap-5" onSubmit={(event) => void handleVerify2fa(event)}>
+          <div className="grid gap-4">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700">
+              <Shield size={18} />
+            </span>
+            <div className="grid gap-1.5">
+              <h1 className="m-0 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Two-factor authentication</h1>
+              <p className="m-0 text-sm text-slate-500">
+                We've sent a 6-digit verification code to{' '}
+                <strong className="font-medium text-slate-800">{tempEmail2fa || email}</strong>.
+              </p>
             </div>
           </div>
-        </div>
 
-        {/* Footer branding */}
-        <div className="relative z-10 flex items-center justify-between text-xs text-slate-400">
-          <span>© {new Date().getFullYear()} Pristine</span>
-        </div>
-      </div>
+          <label className={labelCls}>
+            <span>Verification code</span>
+            <input
+              autoComplete="one-time-code"
+              className={cn(inputCls, 'text-center font-mono text-base tracking-[0.3em]')}
+              inputMode="numeric"
+              maxLength={6}
+              onChange={(event) => setVerificationCode(event.target.value)}
+              placeholder="000000"
+              required
+              type="text"
+              value={verificationCode}
+            />
+          </label>
 
-      {/* Right Side (35% width on large screens, full width on small screens) */}
-      <section className="w-full lg:w-[35%] flex items-center justify-center p-8 lg:p-16 bg-white overflow-y-auto">
-        <div className="w-full max-w-[380px] grid gap-6">
-          {/* Brand Logo Header */}
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-white border border-slate-200/50 rounded-lg flex items-center justify-center p-2 shadow-md">
-              <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain" />
-            </div>
-            <span className="font-semibold tracking-tight text-lg text-slate-950">Pristine</span>
-          </div>
+          {error ? <FormError>{error}</FormError> : null}
 
-          {/* 2FA view */}
-          {require2fa ? (
-            <form className="grid gap-6" onSubmit={(event) => void handleVerify2fa(event)}>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
-                  <Shield size={22} />
-                </div>
-                <h1 className="text-2xl font-semibold text-slate-950 m-0">Two-Factor Authentication</h1>
-                <p className="text-slate-500 text-sm mt-2">
-                  We've sent a 6-digit verification code to{' '}
-                  <strong className="text-slate-700">{tempEmail2fa || email}</strong>.
-                </p>
-              </div>
+          <button className={primaryBtn} disabled={loading} type="submit">
+            {loading ? 'Verifying...' : 'Verify & Sign In'}
+          </button>
 
-              <label className={labelCls}>
-                <span>Verification Code</span>
-                <input
-                  className={`${inputCls} text-center tracking-wide font-mono text-lg`}
-                  maxLength={6}
-                  onChange={(event) => setVerificationCode(event.target.value)}
-                  placeholder="000000"
-                  required
-                  type="text"
-                  value={verificationCode}
-                />
-              </label>
+          <button
+            className={backBtn}
+            onClick={() => {
+              clearError();
+              window.location.reload();
+            }}
+            type="button"
+          >
+            <ArrowLeft size={16} /> Back to Login
+          </button>
+        </form>
+      ) : forgotPasswordStep === 'request-otp' ? (
+        /* Forgot password: request code */
+        <form className="grid gap-5" onSubmit={(event) => void handleRequestOtp(event)}>
+          <FormHeading description="Enter your account email and we'll send you a reset code." title="Reset your password" />
 
-              {error ? <p className="text-red-600 m-0 text-sm font-medium text-center">{error}</p> : null}
+          <label className={labelCls}>
+            <span>Email</span>
+            <input
+              autoComplete="email"
+              className={inputCls}
+              onChange={(event) => setResetEmail(event.target.value)}
+              placeholder="you@example.com"
+              required
+              type="email"
+              value={resetEmail}
+            />
+          </label>
 
+          {resetErrorMessage ? <FormError>{resetErrorMessage}</FormError> : null}
+
+          <button className={primaryBtn} disabled={resetLoading} type="submit">
+            {resetLoading ? 'Sending code...' : 'Send reset code'}
+          </button>
+
+          <button
+            className={backBtn}
+            onClick={() => {
+              setForgotPasswordStep('none');
+              setResetErrorMessage(null);
+            }}
+            type="button"
+          >
+            <ArrowLeft size={16} /> Back to Login
+          </button>
+        </form>
+      ) : forgotPasswordStep === 'reset-password' ? (
+        /* Forgot password: enter code and new password */
+        <form className="grid gap-5" onSubmit={(event) => void handleResetPassword(event)}>
+          <FormHeading description="Check your inbox for the code, then choose a new password." title="Enter your reset code" />
+
+          {resetSuccessMessage ? <FormSuccess>{resetSuccessMessage}</FormSuccess> : null}
+
+          <label className={labelCls}>
+            <span>Reset code</span>
+            <input
+              autoComplete="one-time-code"
+              className={cn(inputCls, 'font-mono')}
+              inputMode="numeric"
+              onChange={(event) => setResetOtp(event.target.value)}
+              placeholder="6-digit code"
+              required
+              type="text"
+              value={resetOtp}
+            />
+          </label>
+
+          <label className={labelCls}>
+            <span>New password</span>
+            <div className="relative">
+              <input
+                autoComplete="new-password"
+                className={cn(inputCls, 'pr-10')}
+                minLength={8}
+                onChange={(event) => setResetPassword(event.target.value)}
+                placeholder="At least 8 characters"
+                required
+                type={showResetPassword ? 'text' : 'password'}
+                value={resetPassword}
+              />
               <button
-                className="w-full bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
-                disabled={loading}
-                type="submit"
-              >
-                {loading ? 'Verifying...' : 'Verify & Sign In'}
-              </button>
-
-              <button
-                className="flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-semibold transition-colors mt-2"
-                onClick={() => {
-                  clearError();
-                  window.location.reload();
-                }}
+                aria-label={showResetPassword ? 'Hide password' : 'Show password'}
+                className={toggleBtn}
+                onClick={() => setShowResetPassword(!showResetPassword)}
                 type="button"
               >
-                <ArrowLeft size={16} /> Back to Login
+                {showResetPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
-            </form>
-          ) : forgotPasswordStep === 'request-otp' ? (
-            /* Forgot Password Request Form */
-            <form className="grid gap-5" onSubmit={(event) => void handleRequestOtp(event)}>
-              <div>
-                <h1 className="text-2xl font-semibold text-slate-950 m-0">Reset Password</h1>
-                <p className="text-slate-500 text-sm mt-1">
-                  Enter your account email to receive a password reset OTP code.
-                </p>
-              </div>
+            </div>
+          </label>
 
+          {resetErrorMessage ? <FormError>{resetErrorMessage}</FormError> : null}
+
+          <button className={primaryBtn} disabled={resetLoading} type="submit">
+            {resetLoading ? 'Resetting password...' : 'Reset password'}
+          </button>
+
+          <button
+            className={backBtn}
+            onClick={() => {
+              setForgotPasswordStep('none');
+              setResetErrorMessage(null);
+              setResetSuccessMessage(null);
+            }}
+            type="button"
+          >
+            <ArrowLeft size={16} /> Cancel
+          </button>
+        </form>
+      ) : (
+        /* Main sign-in */
+        <>
+          <FormHeading description="Welcome back. Sign in to your Pristine workspace." title="Sign in" />
+
+          {resetSuccessMessage ? <FormSuccess>{resetSuccessMessage}</FormSuccess> : null}
+
+          {googleError ? (
+            <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-800" role="alert">
+              <AlertCircle className="mt-0.5 shrink-0 text-red-600" size={16} />
+              <div className="min-w-0">
+                <p className="m-0 font-medium">Google sign-in couldn't be completed</p>
+                <p className="m-0 mt-0.5 text-[13px] text-red-700">{googleError}</p>
+              </div>
+            </div>
+          ) : null}
+
+          <div className="grid gap-4">
+            <button className={secondaryBtn} disabled={loading} onClick={startGoogleSignIn} type="button">
+              <GoogleLogo />
+              Continue with Google
+            </button>
+
+            <div className="flex items-center gap-3">
+              <span className="h-px flex-1 bg-slate-200" />
+              <span className="text-xs text-slate-400">or</span>
+              <span className="h-px flex-1 bg-slate-200" />
+            </div>
+
+            {/* Mode switch */}
+            <div aria-label="Login method" className="flex gap-1 rounded-lg bg-slate-100 p-1" role="tablist">
+              {(
+                [
+                  { key: 'account', label: 'Account', Icon: Shield },
+                  { key: 'companion', label: 'Companion', Icon: Smartphone }
+                ] as const
+              ).map(({ key, label, Icon }) => (
+                <button
+                  aria-selected={loginMode === key}
+                  className={segmentBtn(loginMode === key)}
+                  key={key}
+                  onClick={() => {
+                    setLoginMode(key);
+                    clearError();
+                  }}
+                  type="button"
+                >
+                  <Icon size={14} /> {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {loginMode === 'account' ? (
+            <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
               <label className={labelCls}>
-                <span>Email Address</span>
+                <span>Email</span>
                 <input
                   autoComplete="email"
                   className={inputCls}
-                  onChange={(event) => setResetEmail(event.target.value)}
+                  name="email"
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder="you@example.com"
                   required
                   type="email"
-                  value={resetEmail}
+                  value={email}
                 />
               </label>
 
-              {resetErrorMessage ? (
-                <p className="text-red-600 m-0 text-sm font-medium">{resetErrorMessage}</p>
-              ) : null}
-
-              <button
-                className="bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
-                disabled={resetLoading}
-                type="submit"
-              >
-                {resetLoading ? 'Sending OTP...' : 'Send Reset Code'}
-              </button>
-
-              <button
-                className="flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-semibold transition-colors mt-2"
-                onClick={() => {
-                  setForgotPasswordStep('none');
-                  setResetErrorMessage(null);
-                }}
-                type="button"
-              >
-                <ArrowLeft size={16} /> Back to Login
-              </button>
-            </form>
-          ) : forgotPasswordStep === 'reset-password' ? (
-            /* Forgot Password Reset Form */
-            <form className="grid gap-5" onSubmit={(event) => void handleResetPassword(event)}>
-              <div>
-                <h1 className="text-2xl font-semibold text-slate-950 m-0">Enter Reset OTP</h1>
-                <p className="text-slate-500 text-sm mt-1">
-                  Check your inbox for the OTP code and enter your new password below.
-                </p>
-              </div>
-
-              {resetSuccessMessage ? (
-                <p className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm font-medium">
-                  {resetSuccessMessage}
-                </p>
-              ) : null}
-
-              <label className={labelCls}>
-                <span>Reset OTP Code</span>
-                <input
-                  className={`${inputCls} font-mono`}
-                  onChange={(event) => setResetOtp(event.target.value)}
-                  placeholder="6-digit code"
-                  required
-                  type="text"
-                  value={resetOtp}
-                />
-              </label>
-
-              <label className={labelCls}>
-                <span>New Password</span>
-                <div className="relative">
-                  <input
-                    className={inputCls}
-                    minLength={8}
-                    onChange={(event) => setResetPassword(event.target.value)}
-                    placeholder="At least 8 characters"
-                    required
-                    type={showResetPassword ? 'text' : 'password'}
-                    value={resetPassword}
-                  />
+              <div className="grid gap-1.5">
+                <div className="flex items-center justify-between gap-3">
+                  <label className="text-sm font-medium text-slate-700" htmlFor="login-password">
+                    Password
+                  </label>
                   <button
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                    onClick={() => setShowResetPassword(!showResetPassword)}
-                    type="button"
-                  >
-                    {showResetPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </label>
-
-              {resetErrorMessage ? (
-                <p className="text-red-600 m-0 text-sm font-medium">{resetErrorMessage}</p>
-              ) : null}
-
-              <button
-                className="bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
-                disabled={resetLoading}
-                type="submit"
-              >
-                {resetLoading ? 'Resetting Password...' : 'Reset Password'}
-              </button>
-
-              <button
-                className="flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-semibold transition-colors mt-2"
-                onClick={() => {
-                  setForgotPasswordStep('none');
-                  setResetErrorMessage(null);
-                  setResetSuccessMessage(null);
-                }}
-                type="button"
-              >
-                <ArrowLeft size={16} /> Cancel
-              </button>
-            </form>
-          ) : (
-            /* Main Login Form */
-            <>
-              <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-slate-950 m-0">Sign In</h1>
-                <p className="text-slate-500 text-sm mt-1.5">
-                  Welcome back. Enter your credentials to manage your workflow.
-                </p>
-              </div>
-
-              {resetSuccessMessage ? (
-                <p className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm font-medium">
-                  {resetSuccessMessage}
-                </p>
-              ) : null}
-
-              {googleError ? (
-                <div
-                  className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-800"
-                  role="alert"
-                >
-                  <p className="m-0 font-semibold">Google sign-in couldn't be completed</p>
-                  <p className="m-0 mt-0.5 text-red-700">{googleError}</p>
-                </div>
-              ) : null}
-
-              {/* Google OAuth */}
-              <button
-                className="w-full py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 font-semibold hover:bg-slate-50 flex items-center justify-center gap-2.5 shadow-sm transition-colors disabled:opacity-50"
-                disabled={loading}
-                onClick={startGoogleSignIn}
-                type="button"
-              >
-                <GoogleLogo />
-                Continue with Google
-              </button>
-
-              <div className="flex items-center gap-3 my-1">
-                <hr className="flex-1 border-slate-200/60" />
-                <span className="text-slate-400 text-xs">or</span>
-                <hr className="flex-1 border-slate-200/60" />
-              </div>
-
-              {/* Mode switch */}
-              <div
-                aria-label="Login method"
-                className="flex p-1 bg-slate-100/50 border border-slate-200/30 rounded-lg gap-1"
-                role="tablist"
-              >
-                {(
-                  [
-                    { key: 'account', label: 'Account', Icon: Shield },
-                    { key: 'companion', label: 'Companion', Icon: Smartphone }
-                  ] as const
-                ).map(({ key, label, Icon }) => (
-                  <button
-                    key={key}
-                    aria-selected={loginMode === key}
-                    className={[
-                      'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200',
-                      loginMode === key
-                        ? 'bg-white text-slate-950 shadow-sm border border-slate-100'
-                        : 'text-slate-500 hover:text-slate-700'
-                    ].join(' ')}
+                    className="rounded text-[13px] font-medium text-slate-600 transition-colors hover:text-slate-900 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/15"
                     onClick={() => {
-                      setLoginMode(key);
+                      setForgotPasswordStep('request-otp');
+                      setResetEmail(email);
                       clearError();
                     }}
                     type="button"
                   >
-                    <Icon size={14} /> {label}
+                    Forgot password?
                   </button>
-                ))}
+                </div>
+                <div className="relative">
+                  <input
+                    autoComplete="current-password"
+                    className={cn(inputCls, 'pr-10')}
+                    id="login-password"
+                    name="password"
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="••••••••"
+                    required
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                  />
+                  <button
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className={toggleBtn}
+                    onClick={() => setShowPassword(!showPassword)}
+                    type="button"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
-              {/* Account form */}
-              {loginMode === 'account' ? (
-                <form className="grid gap-5" onSubmit={(event) => void handleSubmit(event)}>
+              <label className="flex w-fit cursor-pointer select-none items-center gap-2 text-sm text-slate-600">
+                <input
+                  checked={rememberMe}
+                  className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-slate-900"
+                  onChange={(event) => setRememberMe(event.target.checked)}
+                  type="checkbox"
+                />
+                Remember me
+              </label>
+
+              {user != null ? (
+                <p className="m-0 text-center text-xs text-slate-500">You already have an active session. Redirecting...</p>
+              ) : null}
+
+              {error ? <FormError>{error}</FormError> : null}
+
+              <button className={cn(primaryBtn, 'mt-1')} disabled={loading} type="submit">
+                {loading ? 'Signing in...' : 'Sign In'}
+              </button>
+            </form>
+          ) : (
+            <div className="grid gap-4">
+              <div className="flex gap-1 rounded-lg border border-slate-200 p-1">
+                <button className={segmentBtn(companionMethod === 'key')} onClick={() => setCompanionMethod('key')} type="button">
+                  <Key size={14} /> Pairing key
+                </button>
+                <button className={segmentBtn(companionMethod === 'qr')} onClick={() => setCompanionMethod('qr')} type="button">
+                  <QrCode size={14} /> Scan QR
+                </button>
+              </div>
+
+              {companionMethod === 'key' ? (
+                <form className="grid gap-4" onSubmit={(event) => void handleCompanionSubmit(event)}>
                   <label className={labelCls}>
-                    <span>Email</span>
+                    <span>Pairing key</span>
                     <input
-                      autoComplete="email"
-                      className={inputCls}
-                      name="email"
-                      onChange={(event) => setEmail(event.target.value)}
-                      placeholder="you@example.com"
+                      className={cn(inputCls, 'font-mono')}
+                      name="companion-key"
+                      onChange={(event) => setCompanionKey(event.target.value)}
+                      placeholder="cmp_..."
                       required
-                      type="email"
-                      value={email}
+                      type="password"
+                      value={companionKey}
                     />
+                    <span className="text-xs font-normal text-slate-500">
+                      Generate a one-time key on your primary device under Settings → Companion devices.
+                    </span>
                   </label>
-
-                  <label className={labelCls}>
-                    <div className="flex items-center justify-between">
-                      <span>Password</span>
-                      <button
-                        className="text-sm text-slate-600 hover:text-slate-900 transition-colors font-medium"
-                        onClick={() => {
-                          setForgotPasswordStep('request-otp');
-                          setResetEmail(email);
-                          clearError();
-                        }}
-                        type="button"
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <input
-                        autoComplete="current-password"
-                        className={inputCls}
-                        name="password"
-                        onChange={(event) => setPassword(event.target.value)}
-                        placeholder="••••••••"
-                        required
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                      />
-                      <button
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                        onClick={() => setShowPassword(!showPassword)}
-                        type="button"
-                      >
-                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                    </div>
-                  </label>
-
-                  <div className="flex items-center justify-between select-none">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        checked={rememberMe}
-                        className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20"
-                        onChange={(event) => setRememberMe(event.target.checked)}
-                        type="checkbox"
-                      />
-                      <span className="text-sm text-slate-600">
-                        Remember me
-                      </span>
-                    </label>
-                  </div>
-
-                  {user != null ? (
-                    <p className="text-slate-500 text-xs m-0 text-center">
-                      You already have an active session. Redirecting...
-                    </p>
-                  ) : null}
-
-                  {error ? <p className="text-red-600 m-0 text-xs font-medium text-center">{error}</p> : null}
-
-                  <button
-                    className="bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
-                    disabled={loading}
-                    type="submit"
-                  >
-                    {loading ? 'Signing in...' : 'Sign In'}
+                  {error ? <FormError>{error}</FormError> : null}
+                  <button className={primaryBtn} disabled={loading || !companionKey.trim()} type="submit">
+                    {loading ? 'Connecting...' : 'Connect companion device'}
                   </button>
                 </form>
               ) : (
-                <div className="grid gap-5">
-                  <div className="flex p-1 bg-slate-100/50 border border-slate-200/30 rounded-lg gap-1">
-                    <button
-                      type="button"
-                      className={[
-                        'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all',
-                        companionMethod === 'key'
-                          ? 'bg-white text-slate-950 shadow-sm border border-slate-100'
-                          : 'text-slate-500 hover:text-slate-700'
-                      ].join(' ')}
-                      onClick={() => setCompanionMethod('key')}
-                    >
-                      <Key size={14} /> Pairing Key
-                    </button>
-                    <button
-                      type="button"
-                      className={[
-                        'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all',
-                        companionMethod === 'qr'
-                          ? 'bg-white text-slate-950 shadow-sm border border-slate-100'
-                          : 'text-slate-500 hover:text-slate-700'
-                      ].join(' ')}
-                      onClick={() => setCompanionMethod('qr')}
-                    >
-                      <QrCode size={14} /> Scan QR
-                    </button>
-                  </div>
-
-                  {companionMethod === 'key' ? (
-                    <form className="grid gap-4" onSubmit={(event) => void handleCompanionSubmit(event)}>
-                      <label className={labelCls}>
-                        <span>Enter Pairing Key</span>
-                        <input
-                          className={`${inputCls} font-mono text-xs`}
-                          name="companion-key"
-                          onChange={(event) => setCompanionKey(event.target.value)}
-                          placeholder="cmp_..."
-                          required
-                          type="password"
-                          value={companionKey}
-                        />
-                      </label>
-                      <p className="text-slate-500 m-0 text-xs leading-relaxed">
-                        Enter the one-time pairing key generated on your primary device in Settings.
-                      </p>
-                      {error ? <p className="text-red-600 m-0 text-xs font-medium text-center">{error}</p> : null}
-                      <button
-                        className="bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
-                        disabled={loading || !companionKey.trim()}
-                        type="submit"
-                      >
-                        {loading ? 'Connecting...' : 'Connect Companion Device'}
-                      </button>
-                    </form>
-                  ) : (
-                    <div className="grid gap-3">
-                      <QRScanner
-                        onScanSuccess={(qrData) => void handleQrScanSuccess(qrData)}
-                        onFallbackToKey={() => setCompanionMethod('key')}
-                        isLoading={loading}
-                      />
-                      {error ? <p className="text-red-600 m-0 text-xs font-medium text-center">{error}</p> : null}
-                    </div>
-                  )}
+                <div className="grid gap-3">
+                  <QRScanner
+                    isLoading={loading}
+                    onFallbackToKey={() => setCompanionMethod('key')}
+                    onScanSuccess={(qrData) => void handleQrScanSuccess(qrData)}
+                  />
+                  {error ? <FormError>{error}</FormError> : null}
                 </div>
               )}
-
-              <p className="text-slate-500 m-0 text-xs text-center">
-                New to Pristine?{' '}
-                <Link
-                  className="text-slate-800 font-semibold hover:underline"
-                  to={
-                    tokenParam
-                      ? `/register?token=${tokenParam}&email=${encodeURIComponent(emailParam)}`
-                      : '/register'
-                  }
-                >
-                  Create an account
-                </Link>
-              </p>
-            </>
+            </div>
           )}
-        </div>
-      </section>
-    </main>
+
+          <p className="m-0 border-t border-slate-100 pt-5 text-center text-sm text-slate-500 lg:border-0 lg:pt-0">
+            New to Pristine?{' '}
+            <Link
+              className="font-medium text-slate-900 hover:underline"
+              to={tokenParam ? `/register?token=${tokenParam}&email=${encodeURIComponent(emailParam)}` : '/register'}
+            >
+              Create an account
+            </Link>
+          </p>
+        </>
+      )}
+    </AuthShell>
   );
 }
 

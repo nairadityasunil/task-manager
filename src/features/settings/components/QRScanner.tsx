@@ -165,84 +165,93 @@ export const QRScanner: React.FC<QRScannerProps> = ({
   const isConnecting = cameraState === "connecting" || isLoading;
 
   return (
-    <div className="flex flex-col items-center space-y-4 font-sans text-xs">
+    <div className="flex flex-col items-center gap-4 font-sans">
       {/* Hidden frame buffer canvas */}
       <canvas ref={canvasRef} className="hidden" />
 
-      <div className="w-full relative aspect-square max-w-[280px] bg-black rounded-2xl overflow-hidden border border-slate-300 shadow-md flex items-center justify-center">
+      <div className="relative flex aspect-square w-full max-w-[260px] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-900 shadow-sm">
         {/* Camera Video Stream */}
         <video
           ref={videoRef}
           playsInline
           muted
-          className={`w-full h-full object-cover ${cameraState === "active" ? "block" : "hidden"}`}
+          className={`h-full w-full object-cover ${cameraState === "active" ? "block" : "hidden"}`}
         />
 
-        {/* Viewfinder Overlay */}
+        {/* Viewfinder Overlay: four corner brackets */}
         {cameraState === "active" && (
-          <div className="absolute inset-0 border-2 border-emerald-500/80 rounded-2xl pointer-events-none flex items-center justify-center">
-            <div className="w-48 h-48 border-2 border-dashed border-emerald-400/70 rounded-xl animate-pulse" />
+          <div className="pointer-events-none absolute inset-8">
+            <span className="absolute left-0 top-0 h-6 w-6 rounded-tl-lg border-l-2 border-t-2 border-white" />
+            <span className="absolute right-0 top-0 h-6 w-6 rounded-tr-lg border-r-2 border-t-2 border-white" />
+            <span className="absolute bottom-0 left-0 h-6 w-6 rounded-bl-lg border-b-2 border-l-2 border-white" />
+            <span className="absolute bottom-0 right-0 h-6 w-6 rounded-br-lg border-b-2 border-r-2 border-white" />
           </div>
         )}
 
         {/* Camera Initializing */}
         {cameraState === "initializing" && (
-          <div className="flex flex-col items-center space-y-2 text-white p-4 text-center">
-            <RefreshCw className="w-6 h-6 animate-spin text-emerald-400" />
-            <p className="text-xs">Accessing camera...</p>
+          <div className="flex flex-col items-center gap-2 p-4 text-center text-slate-300">
+            <RefreshCw className="h-5 w-5 animate-spin text-slate-400" />
+            <p className="m-0 text-[13px]">Accessing camera...</p>
           </div>
         )}
 
         {/* Connecting / Authenticating Overlay (No Raw QR Payload displayed!) */}
         {isConnecting && (
-          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-xs flex flex-col items-center justify-center text-white p-6 space-y-3 text-center">
-            <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-900/95 p-6 text-center text-white">
+            <RefreshCw className="h-6 w-6 animate-spin text-emerald-400" />
             <div>
-              <p className="text-sm font-semibold text-white">Connecting companion device...</p>
-              <p className="text-xs text-slate-300 mt-1">Please wait while we securely link this device.</p>
+              <p className="m-0 text-sm font-medium text-white">Connecting companion device...</p>
+              <p className="m-0 mt-1 text-xs text-slate-400">Please wait while we securely link this device.</p>
             </div>
           </div>
         )}
 
         {/* Camera Denied / Unavailable */}
         {(cameraState === "denied" || cameraState === "unavailable") && (
-          <div className="flex flex-col items-center space-y-2.5 text-amber-200 p-5 text-center bg-slate-900/95 inset-0 absolute justify-center">
-            <AlertCircle className="w-8 h-8 text-amber-400" />
-            <p className="text-xs font-semibold text-white">Camera Unavailable</p>
-            <p className="text-[11px] text-slate-300 leading-tight">{errorMessage}</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-50 p-5 text-center">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+              <AlertCircle className="h-5 w-5" />
+            </span>
+            <p className="m-0 text-sm font-medium text-slate-900">Camera unavailable</p>
+            <p className="m-0 text-xs leading-relaxed text-slate-500">{errorMessage}</p>
           </div>
         )}
 
         {/* Invalid QR Error */}
         {cameraState === "error" && (
-          <div className="flex flex-col items-center space-y-3 text-rose-200 p-5 text-center bg-slate-900/95 inset-0 absolute justify-center">
-            <ShieldAlert className="w-8 h-8 text-rose-400" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-50 p-5 text-center">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <ShieldAlert className="h-5 w-5" />
+            </span>
             <div>
-              <p className="text-xs font-semibold text-white">Invalid QR Code</p>
-              <p className="text-[11px] text-slate-300 mt-1 leading-tight">{errorMessage}</p>
+              <p className="m-0 text-sm font-medium text-slate-900">Invalid QR code</p>
+              <p className="m-0 mt-1 text-xs leading-relaxed text-slate-500">{errorMessage}</p>
             </div>
             <button
               type="button"
               onClick={handleScanAgain}
-              className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Scan Again
+              <RefreshCw className="h-3.5 w-3.5" /> Scan Again
             </button>
           </div>
         )}
       </div>
 
+      <p className="m-0 text-center text-xs text-slate-500">
+        Open Settings → Companion devices on your primary device and point this camera at the QR code.
+      </p>
+
       {/* Fallback button to Enter Key */}
-      <div className="pt-2 border-t border-slate-200 w-full text-center">
-        <button
-          type="button"
-          onClick={onFallbackToKey}
-          className="text-xs font-semibold text-slate-700 hover:text-slate-950 underline flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
-        >
-          <Key className="w-3.5 h-3.5" />
-          Can't scan? Enter Pairing Key Instead
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={onFallbackToKey}
+        className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-3 text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+      >
+        <Key className="h-3.5 w-3.5" />
+        Can't scan? Enter Pairing Key Instead
+      </button>
     </div>
   );
 };

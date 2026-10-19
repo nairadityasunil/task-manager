@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 import { useAuth } from '@/context/AuthContext';
+import logoImg from '@/assets/logo.png';
+import { buttonClass } from '@/components/ui';
 
 function GoogleOAuthCallbackPage(): JSX.Element {
   const navigate = useNavigate();
@@ -38,8 +42,34 @@ function GoogleOAuthCallbackPage(): JSX.Element {
   }, [authenticateWithToken, location.search, navigate]);
 
   return (
-    <main className="route-state">
-      {error ? <p className="error-text">{error}</p> : <p>Finalizing Google sign-in…</p>}
+    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-4 py-10 font-sans sm:px-6">
+      <div className="mb-6 flex items-center gap-2.5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 shadow-sm">
+          <img alt="Pristine Logo" className="h-full w-full object-contain" src={logoImg} />
+        </span>
+        <span className="text-base font-semibold tracking-tight text-slate-900">Pristine</span>
+      </div>
+      <div className="flex w-full max-w-[400px] flex-col items-center gap-3 rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
+        {error ? (
+          <>
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-600">
+              <AlertCircle size={18} />
+            </span>
+            <h1 className="m-0 text-[15px] font-semibold text-slate-900">Google sign-in failed</h1>
+            <p className="m-0 text-sm text-slate-500" role="alert">
+              {error}
+            </p>
+            <Link className={buttonClass('secondary', 'md', 'mt-2')} to="/login">
+              Back to sign in
+            </Link>
+          </>
+        ) : (
+          <>
+            <Loader2 className="animate-spin text-slate-400" size={22} />
+            <p className="m-0 text-sm text-slate-600">Finalizing Google sign-in…</p>
+          </>
+        )}
+      </div>
     </main>
   );
 }
