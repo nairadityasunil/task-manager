@@ -4,6 +4,8 @@ import AddTaskForm from '@/components/AddTaskForm';
 import { WorkspaceSwitcher } from '@/features/workspaces';
 import EditTaskForm from '@/components/EditTaskForm';
 import EmptyState from '@/components/EmptyState';
+import PageHeader from '@/components/PageHeader';
+import { Badge, Button, buttonClass, cn, type BadgeTone } from '@/components/ui';
 import Modal from '@/components/Modal';
 import EpicForm from '@/components/EpicForm';
 import NoteModal from '@/components/NoteModal';
@@ -35,7 +37,7 @@ import AssigneeSelector from '@/components/AssigneeSelector';
 import SlaDashboard from '@/components/SlaDashboard';
 import { TaskInspector } from '@/features/tasks';
 import {
-  Calendar,
+  Layers3,
   ChevronDown,
   Edit3,
   FileText,
@@ -59,8 +61,27 @@ import {
 import { Note } from '@/types/note';
 import { useDashboard, ALL_PROJECTS_VALUE } from '@/features/dashboard';
 
-const headerButtonCls =
-  'flex items-center gap-2 h-9 px-3 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 shadow-sm transition-colors whitespace-nowrap';
+const headerButtonCls = buttonClass('secondary', 'md', 'px-2.5 sm:px-3');
+
+/** Below `sm` the header buttons show only their icon; the label stays as the accessible name. */
+function HeaderLabel({ children }: { children: string }): JSX.Element {
+  return <span className="sr-only sm:not-sr-only">{children}</span>;
+}
+
+const STATUS_TONES: Record<string, BadgeTone> = {
+  planned: 'neutral',
+  active: 'info',
+  completed: 'success',
+  archived: 'neutral',
+  TODO: 'neutral',
+  IN_PROGRESS: 'info',
+  DONE: 'success',
+  BLOCKED: 'danger'
+};
+
+const crumbLinkCls = 'rounded text-slate-500 transition-colors hover:text-slate-900';
+const crumbCurrentCls = 'truncate font-medium text-slate-900';
+const crumbSep = <span aria-hidden className="text-slate-300">/</span>;
 
 interface MoreMenuItem {
   label: string;
@@ -98,17 +119,17 @@ function ProjectMoreMenu({ items }: { items: MoreMenuItem[] }): JSX.Element {
         onClick={() => setOpen((value) => !value)}
         type="button"
       >
-        <MoreHorizontal size={15} />
-        More
+        <MoreHorizontal size={16} />
+        <HeaderLabel>More</HeaderLabel>
       </button>
       {open && (
         <div
-          className="absolute right-0 top-full z-40 mt-1.5 w-56 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+          className="absolute right-0 top-full z-40 mt-1.5 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
           role="menu"
         >
           {items.map(({ label, icon: Icon, onSelect, disabled }) => (
             <button
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50"
+              className="flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-[13px] font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
               disabled={disabled}
               key={label}
               onClick={() => {
@@ -118,7 +139,7 @@ function ProjectMoreMenu({ items }: { items: MoreMenuItem[] }): JSX.Element {
               role="menuitem"
               type="button"
             >
-              <Icon className="text-slate-400" size={15} />
+              <Icon className="shrink-0 text-slate-400" size={16} />
               {label}
             </button>
           ))}
@@ -135,16 +156,6 @@ export function DashboardPage(): JSX.Element {
   const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
-  const statusPillCls: Record<string, string> = {
-    planned: 'bg-slate-50 text-slate-600 border-slate-200',
-    active: 'bg-blue-50 text-blue-700 border-blue-200',
-    completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    archived: 'bg-slate-100 text-slate-500 border-slate-200',
-    TODO: 'bg-slate-50 text-slate-600 border-slate-200',
-    IN_PROGRESS: 'bg-blue-50 text-blue-700 border-blue-200',
-    DONE: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    BLOCKED: 'bg-red-50 text-red-700 border-red-200',
-  };
   const epicStatusLabel = (status: string): string => {
     const words = status.toLowerCase().replace(/_/g, ' ');
     return status === 'TODO' ? 'To do' : words.charAt(0).toUpperCase() + words.slice(1);
@@ -163,23 +174,24 @@ export function DashboardPage(): JSX.Element {
   ].filter(Boolean);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-100 text-slate-900 transition-colors duration-250">
+    <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900">
       {/* Toast Notification */}
       {allMutationMessages.length > 0 && (
-        <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2">
+        <div className="fixed left-3 right-3 top-3 z-[9999] flex flex-col items-end gap-2 sm:left-auto sm:right-4 sm:top-4">
           {allMutationMessages.map((msg, i) => (
             <div
               key={i}
-              className={`px-4 py-2.5 rounded-lg shadow-lg border text-sm font-medium animate-in fade-in slide-in-from-top-4 ${
+              className={`w-full max-w-sm rounded-lg border px-3.5 py-2.5 text-sm font-medium shadow-lg animate-in fade-in slide-in-from-top-4 ${
                 msg?.toLowerCase().includes('unable') || msg?.toLowerCase().includes('error')
                   ? 'bg-red-50 border-red-200 text-red-800'
                   : 'bg-emerald-50 border-emerald-200 text-emerald-800'
               }`}
             >
-              <div className="flex items-center justify-between gap-3">
-                <span>{msg}</span>
+              <div className="flex items-start justify-between gap-3">
+                <span className="min-w-0">{msg}</span>
                 <button
-                  className="opacity-50 hover:opacity-100 transition-opacity"
+                  aria-label="Dismiss"
+                  className="-mr-1 flex h-6 w-6 shrink-0 items-center justify-center rounded opacity-60 transition-opacity hover:opacity-100"
                   onClick={() => {
                     dash.setTaskMutationError(null);
                     dash.setTaskMutationSuccess(null);
@@ -192,7 +204,7 @@ export function DashboardPage(): JSX.Element {
                     dash.setError(null);
                   }}
                 >
-                  <Plus className="rotate-45" size={14} />
+                  <Plus className="rotate-45" size={16} />
                 </button>
               </div>
             </div>
@@ -225,13 +237,14 @@ export function DashboardPage(): JSX.Element {
         }}
         onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
         onLogout={dash.logout}
+        user={dash.user ? { name: dash.user.name || null, email: dash.user.email || '' } : null}
         activeIntegrationId={dash.activeIntegrationName}
         activeIntegrationName={dash.activeIntegrationName}
         activeTab={tab || 'overview'}
       />
 
       {/* Right side wrapper */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Top bar */}
         <Topbar
           onMenuClick={() => setIsMobileNavOpen(true)}
@@ -270,74 +283,70 @@ export function DashboardPage(): JSX.Element {
             <>
               <button
                 onClick={() => dash.handleProjectSelect(ALL_PROJECTS_VALUE)}
-                className="hover:text-slate-600 transition-colors"
+                className={crumbLinkCls}
                 type="button"
               >
                 Dashboard
               </button>
 
-              <span className="text-slate-300">/</span>
+              {crumbSep}
 
               {dash.activeView === 'settings' ? (
-                <span className="text-slate-800 font-medium truncate">Settings</span>
+                <span className={crumbCurrentCls}>Settings</span>
               ) : dash.activeView === 'sdk-docs' ? (
-                <span className="text-slate-800 font-medium truncate">SDK Documentation</span>
+                <span className={crumbCurrentCls}>SDK Documentation</span>
               ) : dash.activeView === 'event-tracking' ? (
-                <span className="text-slate-800 font-medium truncate">Event Tracking</span>
+                <span className={crumbCurrentCls}>Event Tracking</span>
               ) : dash.activeView === 'engagement' ? (
-                <span className="text-slate-800 font-medium truncate">Engagement</span>
+                <span className={crumbCurrentCls}>Engagement</span>
               ) : dash.activeView === 'sdk-integrations' ? (
-                <span className="text-slate-800 font-medium truncate">SDK Integrations</span>
+                <span className={crumbCurrentCls}>SDK Integrations</span>
               ) : dash.activeView === 'sdk-integration-detail' ? (
                 <>
                   <button
                     onClick={() => navigate('/sdk-integrations')}
-                    className="hover:text-slate-600 transition-colors"
+                    className={crumbLinkCls}
                     type="button"
                   >
                     SDK Integrations
                   </button>
-                  <span className="text-slate-300">/</span>
-                  <span className="text-slate-800 font-medium truncate">Integration Detail</span>
+                  {crumbSep}
+                  <span className={crumbCurrentCls}>Integration Detail</span>
                 </>
               ) : dash.activeView === 'prompts' ? (
-                <span className="text-slate-800 font-medium truncate">Prompt Library</span>
+                <span className={crumbCurrentCls}>Prompt Library</span>
               ) : dash.activeView === 'playground' ? (
-                <span className="text-slate-800 font-medium truncate">Prompt Playground</span>
+                <span className={crumbCurrentCls}>Prompt Playground</span>
               ) : dash.activeView === 'semantic-intelligence' ? (
-                <span className="text-slate-800 font-medium truncate">Semantic Intelligence</span>
+                <span className={crumbCurrentCls}>Semantic Intelligence</span>
               ) : dash.activeProject ? (
                 <>
                   <button
                     onClick={() => dash.handleProjectSelect(ALL_PROJECTS_VALUE)}
-                    className="hover:text-slate-600 transition-colors"
+                    className={crumbLinkCls}
                     type="button"
                   >
                     Projects
                   </button>
-                  <span className="text-slate-300">/</span>
-                  <span className="text-slate-800 font-medium truncate">{dash.activeProject.name}</span>
+                  {crumbSep}
+                  <span className={crumbCurrentCls}>{dash.activeProject.name}</span>
                   {dash.activeProjectAiEnabled ? (
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium text-[11px] select-none ml-1.5 whitespace-nowrap">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <Badge className="ml-1 select-none" dot tone="success">
                       AI{dash.activeProjectAiProvider ? ` · ${dash.activeProjectAiProvider}` : ''}
-                    </span>
+                    </Badge>
                   ) : (
-                    <span
-                      className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 font-medium text-[11px] select-none ml-1.5 whitespace-nowrap"
-                      title="No AI provider is configured for this project; built-in rules are used."
-                    >
+                    <Badge className="ml-1 select-none" title="No AI provider is configured for this project; built-in rules are used.">
                       AI off
-                    </span>
+                    </Badge>
                   )}
                 </>
               ) : (
-                <span className="text-slate-800 font-medium">All Projects</span>
+                <span className={crumbCurrentCls}>All Projects</span>
               )}
             </>
           }
           rightContent={
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 sm:gap-1.5">
               <WorkspaceSwitcher />
               <InvitationNotificationPanel />
             </div>
@@ -348,11 +357,8 @@ export function DashboardPage(): JSX.Element {
         <main className="flex-1 overflow-hidden">
           {dash.activeView === 'settings' ? (
             <div className="h-full overflow-y-auto">
-              <div className="px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-200 bg-white">
-                <h3 className="text-xl font-semibold text-slate-950 m-0">Settings</h3>
-                <p className="text-slate-500 m-0 text-sm mt-0.5">Account &amp; Preferences</p>
-              </div>
-              <div className="p-4 sm:p-8">
+              <PageHeader description="Account and preferences" title="Settings" />
+              <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
                 <SettingsPanel
                   projects={dash.projects}
                   activeProject={dash.activeProject}
@@ -397,11 +403,8 @@ export function DashboardPage(): JSX.Element {
             </div>
           ) : dash.activeView === 'sdk-docs' ? (
             <div className="h-full overflow-y-auto">
-              <div className="px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-200 bg-white">
-                <h3 className="text-xl font-semibold text-slate-950 m-0">SDK Documentation</h3>
-                <p className="text-slate-500 m-0 text-sm mt-0.5">Integration Guide &amp; API Reference</p>
-              </div>
-              <div className="p-3">
+              <PageHeader description="Integration guide and API reference" title="SDK Documentation" />
+              <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
                 <SdkDocsPanel />
               </div>
             </div>
@@ -432,23 +435,23 @@ export function DashboardPage(): JSX.Element {
             </div>
           ) : (
             /* 3-column workspace */
-            <div className="flex flex-col h-full overflow-hidden bg-white">
-              <div className="shrink-0 px-3 sm:px-6 py-3 sm:py-3.5 border-b border-slate-200 bg-white">
-                <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex h-full flex-col overflow-hidden">
+              <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 lg:px-8">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-slate-900 text-white shrink-0">
+                    <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 sm:flex">
                       <Folder size={17} />
                     </div>
                     <div className="relative flex min-w-0 items-center">
                       <select
                         aria-label="Switch project"
-                        className="appearance-none truncate bg-transparent border-none text-lg font-semibold text-slate-900 focus:outline-none focus:ring-0 cursor-pointer pr-6 m-0 p-0 tracking-tight"
+                        className="m-0 max-w-[60vw] cursor-pointer appearance-none truncate rounded-md border-none bg-transparent p-0 pr-6 text-lg font-semibold tracking-tight text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/15 sm:max-w-none sm:text-xl"
                         onChange={(e) => dash.handleProjectSelect(e.target.value)}
                         value={dash.activeProject.id}
                       >
                         {dash.projects.map((project) => (
                           <option
-                            className="text-slate-900 bg-white text-base font-normal"
+                            className="bg-white text-base font-normal text-slate-900"
                             key={project.id}
                             value={project.id}
                           >
@@ -461,23 +464,23 @@ export function DashboardPage(): JSX.Element {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <button
                       className={headerButtonCls}
                       onClick={() => dash.setIsProjectTeamModalOpen(true)}
                       type="button"
                     >
-                      <Users size={15} />
-                      Team
+                      <Users size={16} />
+                      <HeaderLabel>Team</HeaderLabel>
                     </button>
                     <button
                       aria-pressed={dash.isChatPanelOpen}
-                      className={dash.isChatPanelOpen ? `${headerButtonCls} !bg-slate-100 !border-slate-300 !text-slate-900` : headerButtonCls}
+                      className={cn(headerButtonCls, dash.isChatPanelOpen && '!border-slate-300 !bg-slate-100 !text-slate-900')}
                       onClick={() => dash.setIsChatPanelOpen(!dash.isChatPanelOpen)}
                       type="button"
                     >
-                      <MessageCircle size={15} />
-                      Chat
+                      <MessageCircle size={16} />
+                      <HeaderLabel>Chat</HeaderLabel>
                     </button>
                     <ProjectMoreMenu
                       items={[
@@ -494,164 +497,180 @@ export function DashboardPage(): JSX.Element {
                         { label: 'Refresh', icon: RefreshCw, onSelect: () => void dash.loadDashboard() }
                       ]}
                     />
-                    <button
-                      className="flex items-center gap-2 h-9 px-3.5 bg-slate-900 rounded-lg text-sm font-semibold text-white hover:bg-slate-800 shadow-sm transition-colors whitespace-nowrap"
-                      onClick={() => dash.setIsAiPlanningWorkspaceOpen(true)}
-                      type="button"
-                    >
-                      <Zap size={15} />
+                    <Button icon={Zap} onClick={() => dash.setIsAiPlanningWorkspaceOpen(true)} variant="primary">
                       AI Planner
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-1 min-h-0 flex-col lg:flex-row overflow-y-auto lg:overflow-hidden gap-3 sm:gap-4 p-3 sm:p-4 bg-slate-50">
-                {/* Column 1 — Epics (Sidebar) */}
-                <div className={`flex flex-col shrink-0 w-full max-h-[45vh] lg:max-h-none lg:h-full rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden transition-all duration-500 ease-in-out ${dash.isSidebarCollapsed ? 'lg:w-14' : 'lg:w-[300px]'}`}>
-                  <div className={`flex items-center justify-between px-4 py-3.5 border-b border-slate-100 ${dash.isSidebarCollapsed ? 'flex-col gap-4' : ''}`}>
-                    {!dash.isSidebarCollapsed && (
-                      <div className="animate-in fade-in duration-500">
-                        <h3 className="text-[15px] font-semibold text-slate-900 m-0">Epics</h3>
-                        <p className="m-0 mt-0.5 text-xs text-slate-500">{dash.epics.length} in this project</p>
+              <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-5 lg:flex-row lg:overflow-hidden lg:px-8 lg:py-6">
+                {/* Column 1 — Epics */}
+                <div className={`flex max-h-[45vh] w-full shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-[width] duration-300 ease-in-out lg:h-full lg:max-h-none ${dash.isSidebarCollapsed ? 'lg:w-14' : 'lg:w-[300px]'}`}>
+                  <div className={`flex items-center justify-between gap-2 border-b border-slate-100 py-3 ${dash.isSidebarCollapsed ? 'px-3 lg:flex-col lg:gap-3 lg:px-2' : 'px-4'}`}>
+                    {!dash.isSidebarCollapsed ? (
+                      <div className="flex min-w-0 items-center gap-2">
+                        <h3 className="m-0 text-[15px] font-semibold text-slate-900">Epics</h3>
+                        <Badge>{dash.epics.length}</Badge>
                       </div>
+                    ) : (
+                      <h3 className="m-0 text-[15px] font-semibold text-slate-900 lg:sr-only">Epics</h3>
                     )}
-                    <div className={`flex items-center gap-1.5 ${dash.isSidebarCollapsed ? 'flex-col' : ''}`}>
-                      {!dash.isSidebarCollapsed && (
-                        <button
-                          className="flex items-center justify-center w-9 h-9 bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm transition-all active:scale-95 disabled:opacity-40"
-                          disabled={!dash.canManageActiveProject}
-                          onClick={() => dash.setIsEpicCreateModalOpen(true)}
-                          title="New Epic"
-                          type="button"
-                        >
-                          <Plus size={16} />
-                        </button>
-                      )}
+                    <div className={`flex items-center gap-1 ${dash.isSidebarCollapsed ? 'lg:flex-col' : ''}`}>
                       <button
-                        className="flex items-center justify-center w-9 h-9 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-lg transition-all"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
                         onClick={() => dash.setIsSidebarCollapsed(!dash.isSidebarCollapsed)}
                         title={dash.isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                        type="button"
                       >
-                        {dash.isSidebarCollapsed ? <Layout size={18} /> : <List size={18} />}
+                        {dash.isSidebarCollapsed ? <Layout size={16} /> : <List size={16} />}
                       </button>
+                      {!dash.isSidebarCollapsed && (
+                        <Button
+                          disabled={!dash.canManageActiveProject}
+                          onClick={() => dash.setIsEpicCreateModalOpen(true)}
+                          size="icon-sm"
+                          title="New Epic"
+                          variant="primary"
+                        >
+                          <Plus size={16} />
+                        </Button>
+                      )}
                     </div>
                   </div>
 
                   {!dash.isSidebarCollapsed && (
-                    <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2 custom-scrollbar">
+                    <div className="custom-scrollbar flex flex-1 flex-col gap-1.5 overflow-y-auto p-2.5">
                       {dash.activeProjectEpics.map(epic => {
                         const isActive = dash.selectedEpicId === epic.id;
                         return (
                           <div
                             key={epic.id}
-                            className={`relative flex flex-col gap-2 px-3.5 py-3 rounded-lg border transition-colors cursor-pointer ${
+                            className={cn(
+                              'group relative flex cursor-pointer flex-col gap-1.5 rounded-lg border px-3 py-2.5 transition-colors',
                               isActive
-                                ? 'bg-slate-50 border-slate-900 ring-1 ring-slate-900'
-                                : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                            }`}
+                                ? 'border-slate-300 bg-slate-50 shadow-[inset_3px_0_0_0_#0f172a]'
+                                : 'border-transparent hover:border-slate-200 hover:bg-slate-50'
+                            )}
                             onClick={() => dash.handleEpicSelect(isActive ? null : epic.id)}
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <h4 className="text-sm font-semibold m-0 leading-snug text-slate-900">
+                            <div className="flex items-start justify-between gap-2">
+                              <h4 className="m-0 min-w-0 truncate text-sm font-medium leading-snug text-slate-900">
                                 {epic.name}
                               </h4>
-                              <span className={`shrink-0 whitespace-nowrap text-[11px] font-medium px-2 py-0.5 rounded-full border ${statusPillCls[epic.status] ?? 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                              <Badge className="shrink-0" tone={STATUS_TONES[epic.status] ?? 'neutral'}>
                                 {epicStatusLabel(epic.status)}
-                              </span>
+                              </Badge>
                             </div>
 
-                            <div className="flex items-center gap-1">
+                            <div className="-mb-1 -ml-1.5 flex items-center gap-0.5">
                               <button
-                                className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-700"
                                 onClick={(e) => { e.stopPropagation(); dash.handleOpenEpicNotesPanel(epic); }}
                                 title="Notes"
+                                type="button"
                               >
-                                <FileText size={12} />
+                                <FileText size={14} />
                               </button>
                               <button
-                                className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40"
+                                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-200/60 hover:text-slate-700 disabled:pointer-events-none disabled:opacity-40"
                                 disabled={!dash.canManageActiveProject}
                                 onClick={(e) => { e.stopPropagation(); dash.setEditingEpic(epic); }}
                                 title="Edit"
+                                type="button"
                               >
-                                <Edit3 size={12} />
+                                <Edit3 size={14} />
                               </button>
                               <div className="flex-1" />
                               <button
-                                className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors disabled:opacity-40"
+                                className="-mr-1.5 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:pointer-events-none disabled:opacity-40"
                                 disabled={dash.actionEpicId === epic.id || dash.activeProject?.currentUserRole !== 'ADMIN'}
                                 onClick={(e) => { e.stopPropagation(); void dash.handleDeleteEpic(epic.id); }}
                                 title="Delete"
+                                type="button"
                               >
-                                <Trash2 size={12} />
+                                <Trash2 size={14} />
                               </button>
                             </div>
                           </div>
                         );
                       })}
                       {dash.activeProjectEpics.length === 0 && (
-                        <div className="py-10 text-center opacity-40">
-                          <EmptyState description="Create an epic to group your tasks." icon={List} title="No epics" />
+                        <div className="p-1.5">
+                          <EmptyState
+                            action={
+                              dash.canManageActiveProject ? (
+                                <Button icon={Plus} onClick={() => dash.setIsEpicCreateModalOpen(true)} size="sm" variant="secondary">
+                                  Add epic
+                                </Button>
+                              ) : undefined
+                            }
+                            compact
+                            description="Create an epic to group your tasks."
+                            icon={List}
+                            title="No epics"
+                          />
                         </div>
                       )}
                     </div>
                   )}
                 </div>
 
-                {/* Column 2 — Main Workspace (Tasks) */}
-                <div className="flex flex-col flex-1 min-w-0 min-h-[60vh] lg:min-h-0 lg:h-full rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
+                {/* Column 2 — Tasks */}
+                <div className="flex min-h-[60vh] min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:h-full lg:min-h-0">
                   {dash.selectedEpicId ? (
                     <>
-                      <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-3.5 border-b border-slate-100">
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
                         <div className="min-w-0">
-                          <h3 className="text-[15px] font-semibold text-slate-900 m-0">{dash.tasksHeading}</h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-slate-500 text-xs truncate max-w-[200px]">
+                          <h3 className="m-0 truncate text-[15px] font-semibold text-slate-900">{dash.tasksHeading}</h3>
+                          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
+                            <span className="max-w-[200px] truncate">
                               {dash.epics.find(e => e.id === dash.selectedEpicId)?.name}
                             </span>
-                            <div className="w-1 h-1 rounded-full bg-slate-300" />
-                            <span className="text-[11px] font-semibold text-slate-600">
+                            <span aria-hidden className="text-slate-300">·</span>
+                            <span className="shrink-0">
                               {dash.activeEpicTasks.length} {dash.activeEpicTasks.length === 1 ? 'Task' : 'Tasks'}
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200/50">
+                        <div className="flex items-center gap-2">
+                          <div className="flex rounded-lg border border-slate-200 bg-slate-100 p-0.5">
                             <button
+                              aria-pressed={dash.viewMode === 'list'}
                               onClick={() => dash.setViewMode('list')}
-                              className={`p-1.5 rounded-md transition-all ${dash.viewMode === 'list' ? 'bg-white shadow-sm text-slate-600' : 'text-slate-400 hover:text-slate-600'}`}
+                              className={`flex h-7 w-8 items-center justify-center rounded-md transition-colors ${dash.viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
                               title="List View"
+                              type="button"
                             >
-                              <List size={18} />
+                              <List size={16} />
                             </button>
                             <button
+                              aria-pressed={dash.viewMode === 'kanban'}
                               onClick={() => dash.setViewMode('kanban')}
-                              className={`p-1.5 rounded-md transition-all ${dash.viewMode === 'kanban' ? 'bg-white shadow-sm text-slate-600' : 'text-slate-400 hover:text-slate-600'}`}
+                              className={`flex h-7 w-8 items-center justify-center rounded-md transition-colors ${dash.viewMode === 'kanban' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
                               title="Kanban Board"
+                              type="button"
                             >
-                              <Layout size={18} />
+                              <Layout size={16} />
                             </button>
                           </div>
-                          <button
-                            className="flex items-center justify-center w-10 h-10 bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm transition-all duration-300 hover:scale-[1.03] active:scale-95 disabled:opacity-40"
+                          <Button
                             disabled={!dash.canManageActiveProject}
                             onClick={() => {
                               const activeEpic = dash.epics.find(e => e.id === dash.selectedEpicId);
                               dash.setTaskModalProjectId(activeEpic?.projectId ?? dash.activeProject?.id ?? null);
                               dash.setIsTaskCreateModalOpen(true);
                             }}
+                            size="icon"
                             title="New Task"
-                            type="button"
+                            variant="primary"
                           >
-                            <Plus size={20} />
-                          </button>
+                            <Plus size={18} />
+                          </Button>
                         </div>
                       </div>
 
-                      <div className="px-3 sm:px-6 py-2 border-b border-slate-100">
-                        <div className="mb-3">
-                          <SlaDashboard />
-                        </div>
+                      <div className="grid gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
+                        <SlaDashboard />
                         <TaskFilterBar
                           filters={dash.taskFilters}
                           onFilterChange={dash.setTaskFilters}
@@ -661,20 +680,21 @@ export function DashboardPage(): JSX.Element {
                       </div>
 
                       {dash.selectedTaskIds.length > 0 && (
-                        <div className="mx-3 sm:mx-6 my-2 p-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-wrap items-center justify-between gap-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-slate-900">
+                        <div className="mx-4 mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 sm:mx-5">
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium text-slate-900">
                               {dash.selectedTaskIds.length} tasks selected
                             </span>
                             <button
                               onClick={() => dash.setSelectedTaskIds([])}
-                              className="text-xs text-slate-600 hover:text-red-500 font-medium transition-colors underline decoration-dotted"
+                              className="text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-900"
+                              type="button"
                             >
                               Deselect all
                             </button>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Assign to:</span>
+                          <div className="flex min-w-0 items-center gap-2">
+                            <span className="text-[13px] text-slate-500">Assign to</span>
                             <AssigneeSelector
                               projectId={dash.activeProject?.id ?? null}
                               selectedUserId=""
@@ -685,9 +705,9 @@ export function DashboardPage(): JSX.Element {
                         </div>
                       )}
 
-                      <div className="flex-1 overflow-auto custom-scrollbar">
+                      <div className="custom-scrollbar flex-1 overflow-auto">
                         {dash.viewMode === 'list' ? (
-                          <div className="p-6">
+                          <div className="p-4 sm:p-5">
                             <TaskList
                               actionTaskId={dash.actionTaskId}
                               epics={dash.epics}
@@ -711,11 +731,6 @@ export function DashboardPage(): JSX.Element {
                               onToggleSelection={dash.handleToggleTaskSelection}
                               loading={dash.loading && dash.tasks.length === 0}
                             />
-                            {!dash.loading && dash.activeEpicTasks.length === 0 && (
-                              <div className="py-20 flex flex-col items-center opacity-30">
-                                <EmptyState description="No tasks scheduled for this epic." icon={Calendar} title="Empty Workspace" />
-                              </div>
-                            )}
                           </div>
                         ) : (
                           <div className="h-full">
@@ -743,12 +758,19 @@ export function DashboardPage(): JSX.Element {
                       </div>
                     </>
                   ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 mb-4">
-                        <Folder size={22} className="text-slate-400" />
+                    <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
+                      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
+                        <Layers3 size={20} />
                       </div>
-                      <h4 className="text-base font-semibold text-slate-900 m-0">Select an epic</h4>
-                      <p className="text-sm text-slate-500 max-w-xs mt-1.5">Choose an epic from the sidebar to view its execution plan and tasks.</p>
+                      <h4 className="m-0 text-[15px] font-semibold text-slate-900">Select an epic</h4>
+                      <p className="m-0 mt-1 max-w-xs text-sm text-slate-500">
+                        Choose an epic from the list to view its execution plan and tasks.
+                      </p>
+                      {dash.activeProjectEpics.length === 0 && dash.canManageActiveProject ? (
+                        <Button className="mt-4" icon={Plus} onClick={() => dash.setIsEpicCreateModalOpen(true)} variant="primary">
+                          Add epic
+                        </Button>
+                      ) : null}
                     </div>
                   )}
                 </div>
@@ -817,10 +839,10 @@ export function DashboardPage(): JSX.Element {
       {dash.isChatPanelOpen && dash.activeProject && (
         <>
           <div
-            className="fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-[2000] animate-in fade-in duration-300"
+            className="fixed inset-0 z-[2000] bg-slate-950/30 backdrop-blur-[2px] animate-in fade-in duration-200"
             onClick={() => dash.setIsChatPanelOpen(false)}
           />
-          <div className="fixed top-0 right-0 h-full w-full md:w-1/2 lg:max-w-1/2 bg-white z-[5001] shadow-xl animate-in slide-in-from-right duration-500 overflow-hidden border-l border-slate-200 flex flex-col">
+          <div className="fixed right-0 top-0 z-[5001] flex h-full w-full flex-col overflow-hidden border-l border-slate-200 bg-white shadow-2xl animate-in slide-in-from-right duration-300 sm:w-[480px] lg:w-[560px]">
             <ChatPanel
               project={dash.activeProject}
               members={dash.activeProjectMembers}
@@ -1021,42 +1043,32 @@ export function DashboardPage(): JSX.Element {
         />
       )}
       {dash.priorityEvaluationModalOpen && dash.priorityEvaluationResult && (
-        <Modal onClose={() => dash.setPriorityEvaluationModalOpen(false)} title="Priority Evaluation">
-          <div className="grid gap-4">
-            <div className="grid gap-2 text-sm">
-              <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                <span className="font-semibold text-slate-700">Base Priority</span>
-                <span className="text-slate-900 font-medium">{dash.priorityEvaluationResult.basePriority}</span>
+        <Modal
+          footer={
+            <Button onClick={() => dash.setPriorityEvaluationModalOpen(false)} variant="primary">
+              Close
+            </Button>
+          }
+          onClose={() => dash.setPriorityEvaluationModalOpen(false)}
+          title="Priority Evaluation"
+        >
+          <dl className="m-0 grid divide-y divide-slate-100 rounded-xl border border-slate-200 text-sm">
+            {[
+              ['Base priority', dash.priorityEvaluationResult.basePriority],
+              ['Dynamic priority', <Badge key="dp" tone="dark">{dash.priorityEvaluationResult.dynamicPriority}</Badge>],
+              ['Dynamic score', dash.priorityEvaluationResult.dynamicPriorityScore],
+              ['Urgency / impact', `${dash.priorityEvaluationResult.urgencyScore} / ${dash.priorityEvaluationResult.impactScore}`],
+              ['Downstream impact', `${dash.priorityEvaluationResult.downstreamTaskCount} tasks (${dash.priorityEvaluationResult.dependencyWeight} weight)`]
+            ].map(([label, value]) => (
+              <div className="flex items-center justify-between gap-4 px-4 py-2.5" key={String(label)}>
+                <dt className="text-slate-500">{label}</dt>
+                <dd className="m-0 text-right font-medium text-slate-900">{value}</dd>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                <span className="font-semibold text-slate-700">Dynamic Priority</span>
-                <span className="text-slate-900 font-semibold px-2 py-0.5 bg-slate-100 rounded">{dash.priorityEvaluationResult.dynamicPriority}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                <span className="font-semibold text-slate-700">Dynamic Score</span>
-                <span className="text-slate-900">{dash.priorityEvaluationResult.dynamicPriorityScore}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                <span className="font-semibold text-slate-700">Urgency / Impact</span>
-                <span className="text-slate-900">{dash.priorityEvaluationResult.urgencyScore} / {dash.priorityEvaluationResult.impactScore}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                <span className="font-semibold text-slate-700">Downstream Impact</span>
-                <span className="text-slate-900">{dash.priorityEvaluationResult.downstreamTaskCount} tasks ({dash.priorityEvaluationResult.dependencyWeight} weight)</span>
-              </div>
-            </div>
-            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-              <h4 className="text-xs font-semibold text-slate-800 uppercase tracking-wide mb-1">Reasoning</h4>
-              <p className="text-sm text-slate-600 m-0">{dash.priorityEvaluationResult.reason}</p>
-            </div>
-            <div className="flex justify-end pt-2">
-              <button
-                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800"
-                onClick={() => dash.setPriorityEvaluationModalOpen(false)}
-              >
-                Close
-              </button>
-            </div>
+            ))}
+          </dl>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <h4 className="m-0 mb-1 text-sm font-medium text-slate-700">Reasoning</h4>
+            <p className="m-0 text-sm text-slate-600">{dash.priorityEvaluationResult.reason}</p>
           </div>
         </Modal>
       )}

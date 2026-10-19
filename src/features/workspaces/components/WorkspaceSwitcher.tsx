@@ -28,34 +28,32 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
     <>
       <div className="relative" ref={dropRef}>
         <button
+          aria-expanded={isOpen}
+          aria-label={activeWorkspace ? `Workspace: ${activeWorkspace.name}` : 'Select Workspace'}
           type="button"
           onClick={() => setIsOpen((v) => !v)}
-          className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100/80 active:bg-slate-100 rounded-xl border border-slate-200/90 transition-all duration-150 gap-2.5 shadow-sm focus:outline-none"
+          className={`flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white pl-1.5 pr-2 text-[13px] font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/10 ${isOpen ? 'bg-slate-50' : ''}`}
         >
-          <div className="flex items-center gap-2 truncate min-w-0">
-            <div className="w-5.5 h-5.5 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 border border-blue-100">
-              {isLoading ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
-              ) : (
-                <Building2 className="w-3.5 h-3.5 text-blue-600" />
-              )}
-            </div>
-            <span className="hidden sm:inline truncate max-w-[140px] text-slate-800 font-medium">
-              {activeWorkspace ? activeWorkspace.name : 'Select Workspace'}
-            </span>
-          </div>
-          <ChevronDown
-            className={`w-3.5 h-3.5 text-slate-400 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-          />
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-900 text-[11px] font-semibold text-white">
+            {isLoading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : activeWorkspace ? (
+              activeWorkspace.name.trim().charAt(0).toUpperCase() || 'W'
+            ) : (
+              <Building2 className="h-3.5 w-3.5" />
+            )}
+          </span>
+          <span className="hidden max-w-[160px] truncate text-slate-800 sm:inline">
+            {activeWorkspace ? activeWorkspace.name : 'Select Workspace'}
+          </span>
+          <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1.5rem)] bg-white border border-slate-200/90 rounded-xl shadow-xl shadow-slate-200/60 z-50 p-2 text-sm animate-in fade-in slide-in-from-top-2 duration-150">
-            <div className="px-2.5 py-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide select-none">
-              Workspaces
-            </div>
+          <div className="fixed left-3 right-3 top-[58px] z-50 rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-xl animate-in fade-in slide-in-from-top-2 duration-150 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72">
+            <div className="select-none px-2.5 pb-1 pt-1.5 text-xs font-medium text-slate-500">Workspaces</div>
 
-            <div className="max-h-56 overflow-y-auto space-y-1 scrollbar-thin">
+            <div className="scrollbar-thin max-h-56 space-y-0.5 overflow-y-auto">
               {workspaces.map((ws) => {
                 const isActive = ws.id === activeWorkspace?.id;
                 const initial = ws.name.trim().charAt(0).toUpperCase() || 'W';
@@ -67,55 +65,45 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
                       switchWorkspace(ws);
                       setIsOpen(false);
                     }}
-                    className={`w-full flex items-center justify-between p-2 rounded-lg text-left transition-colors duration-150 ${
-                      isActive
-                        ? 'bg-blue-50/80 border border-blue-200/70 text-blue-900'
-                        : 'hover:bg-slate-50 text-slate-700 border border-transparent'
+                    className={`flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left transition-colors ${
+                      isActive ? 'bg-slate-100' : 'hover:bg-slate-50'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex min-w-0 items-center gap-2.5">
                       <div
-                        className={`w-7 h-7 rounded-md font-semibold text-xs flex items-center justify-center flex-shrink-0 ${
-                          isActive
-                            ? 'bg-blue-100 text-blue-700 border border-blue-200/80'
-                            : 'bg-slate-100 text-slate-600 border border-slate-200/60'
+                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-semibold ${
+                          isActive ? 'bg-slate-900 text-white' : 'border border-slate-200 bg-white text-slate-600'
                         }`}
                       >
                         {initial}
                       </div>
                       <div className="min-w-0">
-                        <div className={`truncate text-xs font-semibold ${isActive ? 'text-blue-950' : 'text-slate-800'}`}>
-                          {ws.name}
-                        </div>
-                        <div className={`text-[11px] truncate ${isActive ? 'text-blue-600/80' : 'text-slate-400'}`}>
+                        <div className="truncate text-[13px] font-medium text-slate-900">{ws.name}</div>
+                        <div className="truncate text-xs text-slate-500">
                           {ws.memberCount} member{ws.memberCount !== 1 ? 's' : ''} · {ws.role}
                         </div>
                       </div>
                     </div>
-                    {isActive && (
-                      <Check className="w-4 h-4 text-blue-600 flex-shrink-0 ml-2" />
-                    )}
+                    {isActive && <Check className="h-4 w-4 shrink-0 text-emerald-600" />}
                   </button>
                 );
               })}
 
               {workspaces.length === 0 && !isLoading && (
-                <div className="px-3 py-4 text-center text-xs text-slate-400">
-                  No workspaces available
-                </div>
+                <div className="px-3 py-4 text-center text-[13px] text-slate-500">No workspaces available</div>
               )}
             </div>
 
-            <div className="border-t border-slate-100 mt-2 pt-1.5 space-y-0.5">
+            <div className="mt-1.5 space-y-0.5 border-t border-slate-100 pt-1.5">
               <button
                 type="button"
                 onClick={() => {
                   setIsOpen(false);
                   setShowCreate(true);
                 }}
-                className="w-full flex items-center gap-2.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors"
+                className="flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
               >
-                <Plus className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <Plus className="h-4 w-4 shrink-0 text-slate-500" />
                 <span>Create New Workspace</span>
               </button>
 
@@ -126,9 +114,9 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
                     setIsOpen(false);
                     onOpenSettings();
                   }}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-lg transition-colors"
+                  className="flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
                 >
-                  <Settings className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  <Settings className="h-4 w-4 shrink-0 text-slate-500" />
                   <span>Workspace Settings</span>
                 </button>
               )}

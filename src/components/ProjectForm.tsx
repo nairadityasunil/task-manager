@@ -1,5 +1,7 @@
 import { FormEvent, useState } from 'react';
 
+import { Button, Field, inputClass, textareaClass } from '@/components/ui';
+
 interface ProjectFormProps {
   initialDescription?: string;
   initialName?: string;
@@ -43,32 +45,26 @@ function ProjectForm({
     }
   };
 
-  const inputCls = 'w-full bg-white/82  border border-slate-200  rounded-md text-slate-950  px-4 py-3.5 transition-all duration-200 focus:outline-none focus:border-slate-500  focus:ring-2 focus:ring-slate-500/10';
-
   return (
-    <form className="grid gap-[18px] mt-6" onSubmit={(event) => void handleSubmit(event)}>
-      <label className="grid gap-2 font-medium text-[15px] text-slate-950 ">
-        <span>Project name</span>
-        <input className={inputCls} onChange={(event) => setName(event.target.value)} placeholder="Backend" type="text" value={name} />
-      </label>
-      <label className="grid gap-2 font-medium text-[15px] text-slate-950 ">
-        <span>Description</span>
+    <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
+      <Field label="Project name">
+        <input className={inputClass} onChange={(event) => setName(event.target.value)} placeholder="Backend" type="text" value={name} />
+      </Field>
+      <Field label="Description">
         <textarea
-          className={`${inputCls} min-h-[112px] resize-y`}
+          className={`${textareaClass} min-h-[96px] resize-y`}
           onChange={(event) => setDescription(event.target.value)}
           placeholder="Optional project context"
           rows={3}
           value={description}
         />
-      </label>
-      <button
-        className="bg-slate-900  text-white rounded-md px-4 py-2.5 text-sm font-medium hover:bg-slate-800  disabled:opacity-50 transition-colors"
-        disabled={submitting}
-        type="submit"
-      >
-        {submitting ? 'Saving...' : submitLabel}
-      </button>
-      {errorMessage ? <p className="text-red-600  m-0 text-sm">{errorMessage}</p> : null}
+      </Field>
+      {errorMessage ? <p className="m-0 text-sm text-red-600">{errorMessage}</p> : null}
+      <div className="flex justify-end border-t border-slate-100 pt-4">
+        <Button className="w-full sm:w-auto" disabled={submitting} type="submit" variant="primary">
+          {submitting ? 'Saving...' : submitLabel}
+        </Button>
+      </div>
     </form>
   );
 }

@@ -18,6 +18,9 @@ import {
 } from '@tanstack/react-table';
 import DataTable from './DataTable';
 import { useConfirm } from '@/context/ConfirmationContext';
+import EmptyState from './EmptyState';
+import PageHeader from './PageHeader';
+import { Button, Card, inputClass } from '@/components/ui';
 
 const columnHelper = createColumnHelper<Project>();
 
@@ -61,13 +64,14 @@ function ProjectPanel({
   const columns = useMemo(() => [
     columnHelper.display({
       id: 'select',
-      size: 48,
-      meta: { className: 'hidden sm:table-cell' },
+      size: 44,
+      meta: { className: 'hidden sm:table-cell !pr-0' },
       header: ({ table }) => (
         <div className="flex items-center justify-center">
           <input
             type="checkbox"
-            className="w-4 h-4 cursor-pointer accent-slate-900"
+            aria-label="Select all projects"
+            className="h-4 w-4 cursor-pointer rounded accent-slate-900"
             checked={table.getIsAllPageRowsSelected()}
             ref={(el) => {
               if (el) {
@@ -82,7 +86,8 @@ function ProjectPanel({
         <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
           <input
             type="checkbox"
-            className="w-4 h-4 cursor-pointer accent-slate-900"
+            aria-label={`Select ${row.original.name}`}
+            className="h-4 w-4 cursor-pointer rounded accent-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
             checked={row.getIsSelected()}
             disabled={row.original.currentUserRole !== 'ADMIN'}
             onChange={row.getToggleSelectedHandler()}
@@ -94,17 +99,18 @@ function ProjectPanel({
     columnHelper.accessor('name', {
       header: 'Project',
       cell: info => (
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-50">
-            <FolderKanban className="text-slate-500" size={15} />
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
+            <FolderKanban size={16} />
           </div>
-          <div className="grid gap-0.5 min-w-0">
-            <span className="text-slate-900 font-semibold text-sm">{info.getValue()}</span>
+          <div className="grid min-w-0 gap-0.5">
+            <span className="truncate text-sm font-medium text-slate-900">{info.getValue()}</span>
             {info.row.original.description && (
-              <span className="text-slate-500 text-xs truncate max-w-[320px]">
+              <span className="max-w-[200px] truncate text-[13px] text-slate-500 sm:max-w-[360px]">
                 {info.row.original.description}
               </span>
             )}
+            <span className="text-xs text-slate-400 sm:hidden">Created {formatDate(info.row.original.createdAt)}</span>
           </div>
         </div>
       ),
@@ -119,7 +125,7 @@ function ProjectPanel({
             {creator ? (
               <>
                 <UserAvatar size="sm" name={creator.name} email={creator.email} />
-                <span className="text-slate-700 truncate max-w-[160px]">{creator.name || creator.email}</span>
+                <span className="max-w-[160px] truncate text-slate-700">{creator.name || creator.email}</span>
               </>
             ) : (
               <span className="text-slate-400">—</span>
@@ -131,23 +137,25 @@ function ProjectPanel({
     columnHelper.accessor('createdAt', {
       id: 'created',
       header: 'Created',
+      size: 140,
       meta: { className: 'hidden sm:table-cell' },
       cell: info => (
-        <span className="text-slate-600 whitespace-nowrap" title={formatDateTime(info.getValue())}>
+        <span className="whitespace-nowrap text-slate-500" title={formatDateTime(info.getValue())}>
           {formatDate(info.getValue())}
         </span>
       ),
     }),
     columnHelper.display({
       id: 'actions',
+      size: 128,
       header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }) => {
         const project = row.original;
-        const rowActionCls = 'flex items-center justify-center w-8 h-8 rounded-md text-slate-400 transition-colors';
+        const rowActionCls = 'flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors disabled:pointer-events-none';
         return (
-          <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-end gap-0.5" onClick={(e) => e.stopPropagation()}>
             <button
-              className={`${rowActionCls} hover:bg-slate-100  hover:text-slate-600  disabled:opacity-40`}
+              className={`${rowActionCls} hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40`}
               disabled={project.currentUserRole !== 'ADMIN'}
               onClick={() => onOpenEpicManager(project)}
               title="Open epics"
@@ -156,7 +164,7 @@ function ProjectPanel({
               <Layers3 size={16} />
             </button>
             <button
-              className={`${rowActionCls} hover:bg-slate-100  hover:text-slate-900  disabled:opacity-40`}
+              className={`${rowActionCls} hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40`}
               disabled={project.currentUserRole !== 'ADMIN'}
               onClick={() => onOpenUpdateProject(project)}
               title="Edit project"
@@ -165,7 +173,7 @@ function ProjectPanel({
               <Pencil size={16} />
             </button>
             <button
-              className={`${rowActionCls} hover:bg-red-50  hover:text-red-500  disabled:opacity-50`}
+              className={`${rowActionCls} hover:bg-red-50 hover:text-red-600 disabled:opacity-40`}
               disabled={actionProjectId === project.id || project.currentUserRole !== 'ADMIN'}
               onClick={async () => {
                 const isConfirmed = await confirm({
@@ -245,105 +253,72 @@ function ProjectPanel({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white ">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-slate-200 bg-white">
-        <div className="grid gap-0.5 mr-2">
-          <h2 className="m-0 font-semibold text-slate-900 text-base">Projects</h2>
-          <span className="text-slate-500 text-xs">All projects you can access in this workspace</span>
-        </div>
-
-        {/* Search */}
-        <div className="relative flex-1 min-w-[200px] max-w-md flex items-center ml-auto">
-          <Search className="absolute left-3 text-slate-400" size={14} />
-          <input
-            aria-label="Search projects"
-            className="w-full h-9 pl-9 pr-3 text-sm bg-white border border-slate-300 rounded-lg shadow-sm transition-colors focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 text-slate-900 placeholder:text-slate-400"
-            onChange={handleSearchChange}
-            placeholder="Search projects…"
-            type="text"
-            value={searchTerm}
-          />
-        </div>
-
-        {selectedProjects.length > 0 && (
-          <button
-            className="inline-flex items-center gap-2 h-9 px-3.5 bg-white border border-red-200 rounded-lg text-red-600 text-sm font-medium hover:bg-red-50 transition-colors whitespace-nowrap"
-            onClick={handleDeleteSelected}
-            type="button"
-          >
-            <Trash2 size={16} />
-            <span>Delete selected ({selectedProjects.length})</span>
-          </button>
-        )}
-
-        <button
-          className="inline-flex items-center gap-2 h-9 px-3.5 bg-slate-900 text-white rounded-lg text-sm font-semibold shadow-sm hover:bg-slate-800 transition-colors whitespace-nowrap"
-          onClick={onOpenCreateProject}
-          type="button"
-        >
-          <Plus size={16} />
-          <span>New project</span>
-        </button>
-      </div>
-
-      {/* Table Section */}
-      <div className="flex-1 min-w-0 overflow-y-auto px-3 sm:px-6 py-4 bg-slate-50">
-        {projects.length === 0 && !loading ? (
-          <div className="py-20 border-y border-transparent">
-            {/* Custom Empty State preserved for brand consistency */}
-            <div className="flex flex-col items-center justify-center max-w-[400px] mx-auto text-center animate-in fade-in zoom-in duration-500">
-              <div className="relative">
-                <img
-                  src="https://res.cloudinary.com/diqzswlyr/image/upload/q_auto/f_auto/v1776863078/no_data_lyzl4t.png"
-                  alt="No Data"
-                  className="relative w-82 h-82 mx-auto object-contain opacity-90"
-                />
-              </div>
-
-              <h3 className="text-xl font-semibold text-slate-950  mb-2 tracking-tight">
-                {searchTerm ? "No matching projects" : "No projects yet"}
-              </h3>
-
-              <p className="text-slate-500  text-sm mb-8 leading-relaxed px-4">
-                {searchTerm
-                  ? "No projects match your search. Try a different term."
-                  : "Create your first project to start planning epics and tasks with your team."}
-              </p>
-
-              <button
-                onClick={searchTerm ? () => onSearch('') : onOpenCreateProject}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900  text-white rounded-lg text-sm font-semibold shadow-lg shadow-slate-950/20 hover:bg-slate-800  transform transition-all active:scale-95 duration-200"
-                type="button"
-              >
-                {searchTerm ? (
-                  <>
-                    <Search size={16} strokeWidth={2.5} />
-                    <span>Clear search filter</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus size={18} strokeWidth={2.5} />
-                    <span>Create first project</span>
-                  </>
-                )}
-              </button>
+    <div className="flex min-h-full flex-col bg-slate-50">
+      <PageHeader
+        title="Projects"
+        description="All projects you can access in this workspace"
+        actions={
+          <>
+            <div className="relative w-full sm:w-64">
+              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+              <input
+                aria-label="Search projects"
+                className={`${inputClass} pl-9`}
+                onChange={handleSearchChange}
+                placeholder="Search projects…"
+                type="search"
+                value={searchTerm}
+              />
             </div>
-          </div>
-        ) : (
-          <DataTable
-            className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"
-            tableClassName="border-collapse"
-            table={table}
-            loading={loading}
-            onRowClick={(project) => onOpenProject(project.id)}
-            skeletonRows={5}
-            pagination={{
-              page: currentPage,
-              totalPages,
-              onPageChange
-            }}
+            {selectedProjects.length > 0 && (
+              <Button icon={Trash2} onClick={handleDeleteSelected} variant="danger">
+                Delete selected ({selectedProjects.length})
+              </Button>
+            )}
+            <Button icon={Plus} onClick={onOpenCreateProject} variant="primary">
+              New project
+            </Button>
+          </>
+        }
+      />
+
+      <div className="flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+        {projects.length === 0 && !loading ? (
+          <EmptyState
+            icon={searchTerm ? Search : FolderKanban}
+            title={searchTerm ? 'No matching projects' : 'No projects yet'}
+            description={
+              searchTerm
+                ? 'No projects match your search. Try a different term.'
+                : 'Create your first project to start planning epics and tasks with your team.'
+            }
+            action={
+              searchTerm ? (
+                <Button icon={Search} onClick={() => onSearch('')} variant="secondary">
+                  Clear search filter
+                </Button>
+              ) : (
+                <Button icon={Plus} onClick={onOpenCreateProject} variant="primary">
+                  Create first project
+                </Button>
+              )
+            }
           />
+        ) : (
+          <Card className="overflow-hidden">
+            <DataTable
+              tableClassName="border-collapse table-fixed sm:table-auto"
+              table={table}
+              loading={loading}
+              onRowClick={(project) => onOpenProject(project.id)}
+              skeletonRows={5}
+              pagination={{
+                page: currentPage,
+                totalPages,
+                onPageChange
+              }}
+            />
+          </Card>
         )}
       </div>
     </div>

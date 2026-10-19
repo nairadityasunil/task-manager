@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 
+import { Button, Field, inputClass, selectClass, textareaClass } from '@/components/ui';
 import { EPIC_STATUS_OPTIONS, type EpicStatus } from '@/types/epic';
 
 interface EpicFormProps {
@@ -9,9 +10,6 @@ interface EpicFormProps {
   onSubmit: (payload: { description?: string; name: string; status: EpicStatus }) => Promise<void>;
   submitLabel?: string;
 }
-
-const inputCls = 'w-full bg-white/82  border border-slate-200  rounded-md text-slate-950  px-4 py-3.5 transition-all duration-200 focus:outline-none focus:border-slate-500  focus:ring-2 focus:ring-slate-500/10';
-const labelCls = 'grid gap-2 font-medium text-[15px] text-slate-950';
 
 function EpicForm({
   initialDescription = '',
@@ -51,43 +49,38 @@ function EpicForm({
   };
 
   return (
-    <form className="grid gap-[18px] mt-6" onSubmit={(event) => void handleSubmit(event)}>
-      <label className={labelCls}>
-        <span>Epic name</span>
-        <input className={inputCls} onChange={(event) => setName(event.target.value)} placeholder="Launch workflow cleanup" type="text" value={name} />
-      </label>
+    <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
+      <Field label="Epic name">
+        <input className={inputClass} onChange={(event) => setName(event.target.value)} placeholder="Launch workflow cleanup" type="text" value={name} />
+      </Field>
 
-      <label className={labelCls}>
-        <span>Description</span>
+      <Field label="Description">
         <textarea
-          className={`${inputCls} min-h-[112px] resize-y`}
+          className={`${textareaClass} min-h-[96px] resize-y`}
           onChange={(event) => setDescription(event.target.value)}
           placeholder="Optional context for the tasks grouped under this epic"
           rows={4}
           value={description}
         />
-      </label>
+      </Field>
 
-      <label className={labelCls}>
-        <span>Status</span>
-        <select className={inputCls} onChange={(event) => setStatus(event.target.value as EpicStatus)} value={status}>
+      <Field label="Status">
+        <select className={selectClass} onChange={(event) => setStatus(event.target.value as EpicStatus)} value={status}>
           {EPIC_STATUS_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
         </select>
-      </label>
+      </Field>
 
-      <button
-        className="bg-slate-900  text-white rounded-md px-4 py-2.5 text-sm font-medium hover:bg-slate-800  disabled:opacity-50 transition-colors"
-        disabled={submitting}
-        type="submit"
-      >
-        {submitting ? 'Saving epic...' : submitLabel}
-      </button>
+      {errorMessage ? <p className="m-0 text-sm text-red-600">{errorMessage}</p> : null}
 
-      {errorMessage ? <p className="text-red-600  m-0 text-sm">{errorMessage}</p> : null}
+      <div className="flex justify-end border-t border-slate-100 pt-4">
+        <Button className="w-full sm:w-auto" disabled={submitting} type="submit" variant="primary">
+          {submitting ? 'Saving epic...' : submitLabel}
+        </Button>
+      </div>
     </form>
   );
 }

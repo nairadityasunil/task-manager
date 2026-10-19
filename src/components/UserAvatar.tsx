@@ -31,7 +31,7 @@ export default function UserAvatar({
 
   const content = (
     <div 
-      className={`flex items-center justify-center rounded-full bg-slate-100  text-slate-700  font-semibold shadow-sm border border-slate-200/50  shrink-0 ${sizeClasses[size]} ${className}`}
+      className={`flex items-center justify-center shrink-0 rounded-full border border-slate-200 bg-slate-100 font-semibold text-slate-700 ${sizeClasses[size]} ${className}`}
     >
       {initials}
     </div>

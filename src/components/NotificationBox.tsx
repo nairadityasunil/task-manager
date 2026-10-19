@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, MessageCircle, UserPlus, X, ExternalLink, Clock } from 'lucide-react';
+import { Bell, MessageCircle, UserPlus, X, ChevronRight } from 'lucide-react';
 
 export interface Notification {
   id: string;
@@ -31,99 +31,89 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
 
   return (
     <div
-      className="absolute right-0 mt-3 w-[380px] bg-white  rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)]  border border-slate-200  overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300"
+      className="fixed left-3 right-3 top-[58px] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl animate-in fade-in slide-in-from-top-2 duration-200 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[380px]"
       style={{ zIndex: 9999 }}
     >
       {/* Header */}
-      <div className="px-5 py-4 bg-slate-50  border-b border-slate-200  flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 border-b border-slate-200 px-4 py-3">
         <div className="flex items-center gap-2">
-          <Bell className="w-5 h-5 text-slate-600 " />
-          <h3 className="text-sm font-semibold text-slate-950  uppercase tracking-wide">
-            Notifications
-          </h3>
+          <h3 className="m-0 text-[15px] font-semibold text-slate-900">Notifications</h3>
           {unreadCount > 0 && (
-            <span className="px-2 py-0.5 bg-slate-100  text-slate-600  text-[11px] font-semibold rounded-full">
+            <span className="rounded-full bg-slate-900 px-1.5 py-0.5 text-[11px] font-medium leading-none text-white">
               {unreadCount} New
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {notifications.length > 0 && (
             <button
               onClick={onClearAll}
-              className="text-[11px] font-semibold text-slate-500 hover:text-slate-600  transition-colors uppercase tracking-tight"
+              className="h-8 rounded-lg px-2 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+              type="button"
             >
               Clear All
             </button>
           )}
           <button
+            aria-label="Close"
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600  transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            type="button"
           >
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           </button>
         </div>
       </div>
 
       {/* List */}
-      <div className="max-h-[480px] overflow-y-auto custom-scrollbar">
+      <div className="custom-scrollbar max-h-[min(480px,70vh)] overflow-y-auto">
         {notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-            <div className="w-16 h-16 bg-slate-100  rounded-full flex items-center justify-center mb-4">
-              <Bell className="w-8 h-8 text-slate-300 " />
+          <div className="flex flex-col items-center justify-center px-6 py-10 text-center">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-400">
+              <Bell className="h-[18px] w-[18px]" />
             </div>
-            <p className="text-slate-950  font-semibold mb-1">All caught up!</p>
-            <p className="text-slate-500  text-sm">
-              No new notifications at the moment.
-            </p>
+            <p className="m-0 text-sm font-medium text-slate-900">All caught up!</p>
+            <p className="m-0 mt-1 text-[13px] text-slate-500">No new notifications at the moment.</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 ">
+          <div className="divide-y divide-slate-100">
             {notifications.map((notification) => (
               <div
                 key={notification.id}
                 onClick={() => onNotificationClick(notification)}
                 className={[
-                  'p-5 transition-all cursor-pointer relative group',
-                  notification.isRead
-                    ? 'bg-transparent opacity-80'
-                    : 'bg-slate-50/30',
-                  'hover:bg-slate-50',
+                  'group relative cursor-pointer px-4 py-3 transition-colors hover:bg-slate-50',
+                  notification.isRead ? '' : 'bg-sky-50/40',
                 ].join(' ')}
               >
                 {!notification.isRead && (
-                  <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-slate-600 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.6)]" />
+                  <span className="absolute left-1.5 top-[22px] h-1.5 w-1.5 rounded-full bg-sky-500" />
                 )}
 
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                   <div className={[
-                    'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm',
-                    notification.type === 'message' ? 'bg-slate-100 text-slate-600' :
-                    notification.type === 'team_join' ? 'bg-green-100 text-green-600' :
-                    'bg-slate-100 text-slate-600',
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+                    notification.type === 'team_join' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600',
                   ].join(' ')}>
-                    {notification.type === 'message' ? <MessageCircle size={20} /> :
-                      notification.type === 'team_join' ? <UserPlus size={20} /> :
-                        <Bell size={20} />}
+                    {notification.type === 'message' ? <MessageCircle size={15} /> :
+                      notification.type === 'team_join' ? <UserPlus size={15} /> :
+                        <Bell size={15} />}
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h4 className="text-sm font-semibold text-slate-950  leading-tight">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className={`m-0 text-sm leading-snug text-slate-900 ${notification.isRead ? 'font-normal' : 'font-medium'}`}>
                         {notification.title}
                       </h4>
-                      <div className="flex items-center gap-1 text-[11px] text-slate-400  font-medium shrink-0">
-                        <Clock size={10} />
+                      <span className="shrink-0 text-xs text-slate-400">
                         {new Date(notification.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </div>
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-600  line-clamp-2 leading-relaxed">
-                      {notification.message}
-                    </p>
+                    <p className="m-0 mt-0.5 line-clamp-2 text-[13px] text-slate-500">{notification.message}</p>
 
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-slate-500  uppercase tracking-wide flex items-center gap-1">
-                        View details <ExternalLink size={10} />
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="flex items-center gap-0.5 text-xs font-medium text-slate-600 group-hover:text-slate-900">
+                        View details <ChevronRight size={12} />
                       </span>
                       {!notification.isRead && (
                         <button
@@ -131,7 +121,8 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
                             e.stopPropagation();
                             onMarkAsRead(notification.id);
                           }}
-                          className="text-[11px] font-semibold text-slate-400 hover:text-slate-600  transition-colors uppercase"
+                          className="text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
+                          type="button"
                         >
                           Mark as read
                         </button>
@@ -145,12 +136,12 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
         )}
       </div>
 
-      {/* Footer */}
       {notifications.length > 0 && (
-        <div className="px-5 py-3 bg-slate-50  border-t border-slate-200  text-center">
+        <div className="border-t border-slate-200 bg-slate-50/70 px-4 py-2 text-center">
           <button
             onClick={onClose}
-            className="text-xs font-semibold text-slate-500 hover:text-slate-700   transition-colors"
+            className="h-8 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
+            type="button"
           >
             Close Notifications
           </button>

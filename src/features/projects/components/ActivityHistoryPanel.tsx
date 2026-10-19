@@ -18,6 +18,7 @@ import {
 import { getProjectActivities, verifyProjectAuditChain, getRetentionPolicy, updateRetentionPolicy, type ActivityLog, type RetentionPolicy } from '@/services/activity';
 import Modal from '@/components/Modal';
 import { useToast } from '@/context/ToastContext';
+import { Badge, Button, Field, inputClass, selectClass } from '@/components/ui';
 
 interface ActivityHistoryPanelProps {
   projectId: string;
@@ -34,8 +35,8 @@ const ENTITY_LABELS: Record<string, string> = {
 
 const ENTITY_COLORS: Record<string, string> = {
   project: 'bg-slate-500',
-  epic: 'bg-purple-500',
-  task: 'bg-slate-600',
+  epic: 'bg-sky-500',
+  task: 'bg-emerald-500',
   subtask: 'bg-teal-500',
   note: 'bg-amber-500'
 };
@@ -54,13 +55,13 @@ const ACTION_ICONS: Record<string, typeof Plus> = {
 };
 
 const ACTION_COLORS: Record<string, string> = {
-  created: 'text-green-600 bg-green-50',
-  updated: 'text-slate-600 bg-slate-50',
+  created: 'text-emerald-600 bg-emerald-50',
+  updated: 'text-slate-600 bg-slate-100',
   deleted: 'text-red-600 bg-red-50',
-  assigned: 'text-purple-600 bg-purple-50',
+  assigned: 'text-sky-600 bg-sky-50',
   status_changed: 'text-amber-600 bg-amber-50',
-  member_added: 'text-teal-600 bg-teal-50',
-  member_removed: 'text-rose-600 bg-rose-50',
+  member_added: 'text-emerald-600 bg-emerald-50',
+  member_removed: 'text-red-600 bg-red-50',
   approved: 'text-emerald-600 bg-emerald-50',
   rejected: 'text-red-600 bg-red-50',
   escalated: 'text-red-600 bg-red-50'
@@ -194,92 +195,60 @@ export function ActivityHistoryPanel({
   }
 
   return (
-    <div className="flex flex-col h-full max-h-[75vh]">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 ">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-slate-50  rounded-xl">
-            <History className="w-5 h-5 text-slate-600 " />
-          </div>
-          <div>
-            <h3 className="text-[15px] font-semibold text-slate-950 ">
-              Activity History
-            </h3>
-            <p className="text-[11px] text-slate-500  font-medium">
-              {projectName}
-            </p>
-          </div>
+    <div className="flex h-full max-h-[75vh] flex-col">
+      <h3 className="sr-only">Activity History for {projectName}</h3>
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-4 py-3 sm:px-5">
+        <div className="relative flex items-center">
+          <Filter className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-slate-400" />
+          <select
+            aria-label="Filter activity"
+            value={entityFilter}
+            onChange={(e) => {
+              setEntityFilter(e.target.value);
+              setPage(1);
+            }}
+            className={`${selectClass} h-8 !w-auto pl-8 text-[13px]`}
+          >
+            {FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
-
-        {/* Right controls */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleVerifyChain}
-            disabled={verifying}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg transition-colors disabled:opacity-50"
-          >
-            {verifying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <Button icon={ShieldCheck} loading={verifying} onClick={handleVerifyChain} size="sm" variant="secondary">
             Verify Chain
-          </button>
-          
-          <button
-            onClick={openRetentionModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg transition-colors"
-          >
-            <Scale className="w-3.5 h-3.5" />
+          </Button>
+          <Button icon={Scale} onClick={openRetentionModal} size="sm" variant="secondary">
             Retention Policy
-          </button>
-
-          <div className="w-px h-5 bg-slate-200 mx-1"></div>
-
-          {/* Entity type filter */}
-          <div className="flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-slate-400" />
-            <select
-              value={entityFilter}
-              onChange={(e) => {
-                setEntityFilter(e.target.value);
-                setPage(1);
-              }}
-              className="text-xs font-semibold bg-slate-100  border border-slate-200  rounded-lg px-3 py-1.5 text-slate-700  focus:outline-none focus:ring-2 focus:ring-slate-500/30"
-            >
-              {FILTER_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          </Button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+      <div className="custom-scrollbar flex-1 overflow-y-auto px-2 py-3 sm:px-3">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
+          <div className="flex items-center justify-center gap-2 py-16 text-sm text-slate-500">
+            <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            Loading activity…
           </div>
         ) : activities.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-slate-400 ">
-            <History className="w-12 h-12 mb-3 opacity-40" />
-            <p className="text-sm font-medium">No activity yet</p>
-            <p className="text-xs mt-1">Changes to this project will appear here</p>
+          <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
+              <History size={18} />
+            </div>
+            <p className="m-0 mt-3 text-[15px] font-semibold text-slate-900">No activity yet</p>
+            <p className="m-0 mt-1 text-sm text-slate-500">Changes to this project will appear here.</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {groupedActivities.map((group) => (
               <div key={group.label}>
-                {/* Date separator */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="flex-1 h-px bg-slate-200 " />
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400  select-none whitespace-nowrap">
-                    {group.label}
-                  </span>
-                  <div className="flex-1 h-px bg-slate-200 " />
-                </div>
+                <div className="px-2 pb-1.5 pt-1 text-xs font-medium text-slate-500 sm:px-3">{group.label}</div>
 
-                {/* Activity items */}
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {group.items.map((activity) => {
                     const IconComponent = ACTION_ICONS[activity.action] || Pencil;
                     const colorClass = ACTION_COLORS[activity.action] || ACTION_COLORS.updated;
@@ -288,79 +257,58 @@ export function ActivityHistoryPanel({
                     return (
                       <div
                         key={activity.id}
-                        className="group flex items-start gap-3.5 px-4 py-3 rounded-xl hover:bg-slate-50  transition-all duration-200"
+                        className="flex items-start gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-slate-50 sm:px-3"
                       >
-                        {/* Icon */}
-                        <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${colorClass} transition-transform group-hover:scale-105`}>
-                          <IconComponent className="w-3.5 h-3.5" />
+                        <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${colorClass}`}>
+                          <IconComponent className="h-3.5 w-3.5" />
                         </div>
 
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[13px] font-semibold text-slate-900 ">
-                              {activity.userName}
-                            </span>
-                            <span className="text-xs text-slate-500 ">
-                              {activity.description}
-                            </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-sm">
+                            <span className="font-medium text-slate-900">{activity.userName}</span>
+                            <span className="text-slate-600">{activity.description}</span>
+                            <span className="ml-auto whitespace-nowrap text-xs text-slate-400">{formatTime(activity.createdAt)}</span>
                           </div>
 
-                          {/* Entity badge + timestamp */}
-                          <div className="flex items-center gap-2 mt-1.5">
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide text-white ${entityColor}`}>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                            <Badge>
+                              <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${entityColor}`} />
                               {ENTITY_LABELS[activity.entityType]}
-                            </span>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            </Badge>
+                            <Badge tone="success">
                               <ShieldCheck size={10} />
                               #{activity.sequence}
-                            </span>
+                            </Badge>
                             {activity.entityName && (
-                              <span className="text-xs text-slate-500  truncate max-w-[200px]">
-                                {activity.entityName}
-                              </span>
+                              <span className="max-w-[200px] truncate text-xs text-slate-500">{activity.entityName}</span>
                             )}
-                            <span className="text-[11px] text-slate-400  ml-auto whitespace-nowrap">
-                              {formatTime(activity.createdAt)}
-                            </span>
                           </div>
 
-                          {/* Field changes */}
                           {activity.changes.length > 0 && (
                             <div className="mt-2 space-y-1">
                               {activity.changes.slice(0, 3).map((change, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex items-center gap-2 text-[11px] text-slate-500  bg-slate-50  rounded-lg px-3 py-1.5"
+                                  className="flex min-w-0 items-center gap-2 rounded-md border border-slate-100 bg-slate-50 px-2.5 py-1 text-xs text-slate-500"
                                 >
-                                  <span className="font-semibold text-slate-600  capitalize">
-                                    {change.field}:
-                                  </span>
+                                  <span className="shrink-0 font-medium capitalize text-slate-600">{change.field}:</span>
                                   {change.oldValue && (
-                                    <span className="line-through text-red-400 truncate max-w-[120px]">
-                                      {change.oldValue}
-                                    </span>
+                                    <span className="max-w-[120px] truncate text-red-500 line-through">{change.oldValue}</span>
                                   )}
-                                  {change.oldValue && change.newValue && (
-                                    <span className="text-slate-300 ">→</span>
-                                  )}
+                                  {change.oldValue && change.newValue && <span className="text-slate-300">→</span>}
                                   {change.newValue && (
-                                    <span className="text-green-600  truncate max-w-[120px]">
-                                      {change.newValue}
-                                    </span>
+                                    <span className="max-w-[120px] truncate text-emerald-700">{change.newValue}</span>
                                   )}
                                 </div>
                               ))}
                               {activity.changes.length > 3 && (
-                                <span className="text-[11px] text-slate-400 italic pl-3">
-                                  +{activity.changes.length - 3} more changes
-                                </span>
+                                <span className="pl-2.5 text-xs text-slate-400">+{activity.changes.length - 3} more changes</span>
                               )}
                             </div>
                           )}
-                          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
                             <span className="font-mono">hash {(activity.immutableHash || 'pending-migration').slice(0, 16)}</span>
-                            {activity.legalHold && <span className="text-red-500 font-semibold">legal hold</span>}
+                            {activity.legalHold && <span className="font-medium text-red-600">legal hold</span>}
                             {activity.retentionUntil && <span>retains until {new Date(activity.retentionUntil).toLocaleDateString()}</span>}
                           </div>
                         </div>
@@ -374,83 +322,61 @@ export function ActivityHistoryPanel({
         )}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200  bg-slate-50/50 ">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600  hover:bg-slate-100  rounded-lg disabled:opacity-40 transition-colors"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
+        <div className="flex items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/60 px-4 py-2.5 sm:px-5">
+          <Button disabled={page <= 1} icon={ChevronLeft} onClick={() => setPage((p) => Math.max(1, p - 1))} size="sm" variant="ghost">
             Previous
-          </button>
-          <span className="text-[11px] font-semibold text-slate-500  uppercase tracking-wide">
+          </Button>
+          <span className="text-xs text-slate-500">
             Page {page} of {totalPages}
           </span>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600  hover:bg-slate-100  rounded-lg disabled:opacity-40 transition-colors"
-          >
+          <Button disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} size="sm" variant="ghost">
             Next
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
         </div>
       )}
 
-      {/* Retention Policy Modal */}
       {retentionModalOpen && (
-        <Modal onClose={() => setRetentionModalOpen(false)} title="Legal Retention Policy">
-          <div className="grid gap-5">
-            <p className="text-sm text-slate-500 m-0">
-              Configure how long activity logs are retained for compliance. Enabling legal hold prevents deletion regardless of retention days.
-            </p>
-            
-            <div className="grid gap-2">
-              <label className="text-sm font-semibold text-slate-900">Retention Days</label>
-              <input
-                type="number"
-                min="0"
-                value={retentionDaysInput}
-                onChange={(e) => setRetentionDaysInput(e.target.value)}
-                placeholder="e.g. 2555 for 7 years (leave empty for infinite)"
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-slate-500 text-sm"
-              />
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
-              <input
-                type="checkbox"
-                id="legalHold"
-                checked={legalHoldInput}
-                onChange={(e) => setLegalHoldInput(e.target.checked)}
-                className="w-4 h-4 text-slate-600 bg-white border-slate-300 rounded focus:ring-slate-500"
-              />
-              <label htmlFor="legalHold" className="text-sm font-semibold text-red-600 cursor-pointer">
-                Enable Legal Hold
-              </label>
-            </div>
-
-            <div className="flex gap-3 justify-end pt-2">
-              <button
-                type="button"
-                className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors"
-                onClick={() => setRetentionModalOpen(false)}
-              >
+        <Modal
+          footer={
+            <>
+              <Button onClick={() => setRetentionModalOpen(false)} variant="secondary">
                 Cancel
-              </button>
-              <button
-                type="button"
-                className="px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
-                onClick={saveRetentionPolicy}
-                disabled={savingRetention}
-              >
-                {savingRetention ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+              </Button>
+              <Button icon={ShieldCheck} loading={savingRetention} onClick={saveRetentionPolicy} variant="primary">
                 {savingRetention ? 'Saving...' : 'Save Policy'}
-              </button>
-            </div>
-          </div>
+              </Button>
+            </>
+          }
+          onClose={() => setRetentionModalOpen(false)}
+          title="Legal Retention Policy"
+        >
+          <p className="m-0 text-sm text-slate-500">
+            Configure how long activity logs are retained for compliance. Enabling legal hold prevents deletion regardless of retention days.
+          </p>
+
+          <Field label="Retention days">
+            <input
+              type="number"
+              min="0"
+              value={retentionDaysInput}
+              onChange={(e) => setRetentionDaysInput(e.target.value)}
+              placeholder="e.g. 2555 for 7 years (leave empty for infinite)"
+              className={inputClass}
+            />
+          </Field>
+
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3" htmlFor="legalHold">
+            <input
+              type="checkbox"
+              id="legalHold"
+              checked={legalHoldInput}
+              onChange={(e) => setLegalHoldInput(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 accent-slate-900"
+            />
+            <span className="text-sm font-medium text-red-600">Enable Legal Hold</span>
+          </label>
         </Modal>
       )}
     </div>

@@ -7,6 +7,7 @@ import { flattenProjectOptions } from '@/utils/projectTree';
 import AssigneeSelector from './AssigneeSelector';
 import { useAuth } from '@/context/AuthContext';
 import { AlertTriangle } from 'lucide-react';
+import { Button, Field, inputClass, selectClass, textareaClass } from '@/components/ui';
 
 interface AddTaskFormProps {
   epics: Epic[];
@@ -24,9 +25,6 @@ interface AddTaskFormProps {
   }) => Promise<void>;
   projects: Project[];
 }
-
-const inputCls = 'w-full bg-white/82  border border-slate-200  rounded-md text-slate-950  px-4 py-3.5 transition-all duration-200 focus:outline-none focus:border-slate-500  focus:ring-2 focus:ring-slate-500/10';
-const labelCls = 'grid gap-2 font-medium text-[15px] text-slate-950';
 
 function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onCreateTask, projects }: AddTaskFormProps): JSX.Element {
   const { user } = useAuth();
@@ -113,38 +111,37 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
     }
   };
 
+  const optional = <span className="font-normal text-slate-400">(optional)</span>;
+
   return (
-    <form className="grid gap-[18px] mt-2" onSubmit={(event) => void handleSubmit(event)}>
-      <label className={labelCls}>
-        <span>Task title</span>
+    <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
+      <Field label="Task title">
         <input
           autoFocus
-          className={inputCls}
+          className={inputClass}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="What needs to be done?"
           required
           type="text"
           value={title}
         />
-      </label>
+      </Field>
 
-      <label className={labelCls}>
-        <span>Description <span className="text-slate-400  font-normal text-[13px]">(optional)</span></span>
+      <Field label={<>Description {optional}</>}>
         <textarea
-          className={`${inputCls} min-h-[80px] resize-y`}
+          className={`${textareaClass} min-h-[80px] resize-y`}
           onChange={(event) => setDescription(event.target.value)}
           placeholder="Add more details about this task"
           rows={2}
           value={description}
         />
-      </label>
-      
-      <div className="grid grid-cols-2 gap-4">
-        <label className={labelCls}>
-          <span>Priority</span>
-          <select 
-            className={inputCls} 
-            onChange={(event) => setPriority(event.target.value as TaskPriority)} 
+      </Field>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Field label="Priority">
+          <select
+            className={selectClass}
+            onChange={(event) => setPriority(event.target.value as TaskPriority)}
             value={priority}
           >
             <option value="LOW">Low</option>
@@ -152,13 +149,12 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
             <option value="HIGH">High</option>
             <option value="CRITICAL">Critical</option>
           </select>
-        </label>
+        </Field>
 
-        <label className={labelCls}>
-          <span>Initial Status</span>
-          <select 
-            className={inputCls} 
-            onChange={(event) => setStatus(event.target.value as TaskWorkflowStatus)} 
+        <Field label="Initial status">
+          <select
+            className={selectClass}
+            onChange={(event) => setStatus(event.target.value as TaskWorkflowStatus)}
             value={status}
           >
             {TASK_WORKFLOW_STATUS_OPTIONS.map((option) => (
@@ -167,7 +163,7 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
               </option>
             ))}
           </select>
-        </label>
+        </Field>
       </div>
 
       <div className="grid gap-1.5">
@@ -180,10 +176,9 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
       </div>
 
       {!initialProjectId && (
-        <label className={labelCls}>
-          <span>Project</span>
+        <Field label="Project">
           <select
-            className={inputCls}
+            className={selectClass}
             onChange={(event) => {
               setProjectId(event.target.value);
               setEpicId('');
@@ -197,13 +192,12 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
               </option>
             ))}
           </select>
-        </label>
+        </Field>
       )}
 
       {(!initialEpicId && (projectId || initialProjectId)) && (
-        <label className={labelCls}>
-          <span>Epic</span>
-          <select className={inputCls} onChange={(event) => setEpicId(event.target.value)} value={epicId}>
+        <Field label="Epic">
+          <select className={selectClass} onChange={(event) => setEpicId(event.target.value)} value={epicId}>
             <option value="">No epic</option>
             {visibleEpics.map((epic) => (
               <option key={epic.id} value={epic.id}>
@@ -211,23 +205,21 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
               </option>
             ))}
           </select>
-        </label>
+        </Field>
       )}
 
-      <button
-        className="bg-slate-900  text-white rounded-md px-4 py-3 text-[15px] font-semibold hover:bg-slate-800  disabled:opacity-50 transition-colors shadow-lg shadow-slate-500/20"
-        disabled={submitting}
-        type="submit"
-      >
-        {submitting ? 'Creating task...' : 'Create Task'}
-      </button>
-
       {errorMessage ? (
-        <div className="flex items-center gap-2 p-3 bg-red-50  border border-red-100  rounded-lg">
-          <AlertTriangle size={14} className="text-red-500" />
-          <p className="text-red-600  m-0 text-sm font-medium">{errorMessage}</p>
+        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
+          <AlertTriangle size={14} className="shrink-0 text-red-500" />
+          <p className="m-0 text-sm text-red-700">{errorMessage}</p>
         </div>
       ) : null}
+
+      <div className="flex justify-end border-t border-slate-100 pt-4">
+        <Button className="w-full sm:w-auto" disabled={submitting} type="submit" variant="primary">
+          {submitting ? 'Creating task...' : 'Create Task'}
+        </Button>
+      </div>
     </form>
   );
 }

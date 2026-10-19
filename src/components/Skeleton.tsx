@@ -16,16 +16,12 @@ const Skeleton: React.FC<SkeletonProps> = ({
   const variantClasses = {
     rectangle: 'rounded-lg',
     circle: 'rounded-full',
-    text: 'rounded h-4 w-full'
+    text: 'h-3.5 w-full rounded-md'
   };
 
   return (
     <div
-      className={`
-        relative overflow-hidden bg-slate-100 
-        ${variantClasses[variant]}
-        ${className}
-      `}
+      className={`relative overflow-hidden bg-slate-100 ${variantClasses[variant]} ${className}`}
       style={{ width, height }}
     >
       <div className="absolute inset-0 animate-shimmer" />

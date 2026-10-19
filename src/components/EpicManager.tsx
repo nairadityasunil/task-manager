@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, FolderTree, Pencil, Plus, Trash2 } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
+import { Badge, Button, type BadgeTone } from '@/components/ui';
 import type { Epic } from '@/types/epic';
 
 interface EpicManagerProps {
@@ -13,15 +14,12 @@ interface EpicManagerProps {
   projectName: string;
 }
 
-const statusPillClasses: Record<string, string> = {
-  planned:   'bg-slate-50 text-slate-700 border border-slate-200',
-  active:    'bg-amber-50 text-amber-700 border border-amber-200',
-  completed: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  archived:  'bg-slate-100 text-slate-600 border border-slate-200'
+const statusTone: Record<string, BadgeTone> = {
+  planned: 'neutral',
+  active: 'info',
+  completed: 'success',
+  archived: 'neutral'
 };
-
-const ghostBtn = 'inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium bg-white  border border-slate-200  rounded text-slate-600  hover:bg-slate-50  disabled:opacity-50 transition-colors';
-const dangerBtn = 'inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium bg-white  border border-red-200  rounded text-red-600  hover:bg-red-50  disabled:opacity-50 transition-colors';
 
 function EpicManager({
   actionEpicId,
@@ -33,21 +31,15 @@ function EpicManager({
   projectName
 }: EpicManagerProps): JSX.Element {
   return (
-    <div className="grid gap-[18px]">
-      {/* Intro */}
-      <div className="flex items-flex-start justify-between gap-4">
-        <div>
-          <span className="text-slate-600  font-['Space_Grotesk'] text-xs tracking-wide uppercase">Epic layer</span>
-          <h3 className="my-1 text-slate-950 ">{projectName} epics</h3>
-          <p className="text-slate-500  m-0 text-sm">Create, reorder, rename, or remove epics without affecting the underlying tasks.</p>
+    <div className="grid gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="m-0 text-[15px] font-semibold text-slate-900">{projectName} epics</h3>
+          <p className="m-0 mt-0.5 text-[13px] text-slate-500">Create, reorder, rename, or remove epics without affecting the underlying tasks.</p>
         </div>
-        <button
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900  text-white rounded text-sm font-medium hover:bg-slate-800  transition-colors shrink-0"
-          onClick={onCreateEpic}
-          type="button"
-        >
-          <Plus size={16} /> New epic
-        </button>
+        <Button icon={Plus} onClick={onCreateEpic} variant="primary">
+          New epic
+        </Button>
       </div>
 
       {epics.length === 0 ? (
@@ -57,44 +49,37 @@ function EpicManager({
           title="No epics yet"
         />
       ) : (
-        <div className="grid gap-3.5">
+        <ul className="m-0 grid list-none divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white p-0">
           {epics.map((epic, index) => (
-            <div
-              key={epic.id}
-              className="flex items-stretch bg-gradient-to-b from-white/98 to-slate-50/98   border border-slate-200/60  rounded-lg grid gap-3 grid-cols-[1fr_auto] p-[18px]"
-            >
-              {/* Copy */}
-              <div className="grid gap-1.5">
-                <span className="text-slate-600  font-['Space_Grotesk'] text-xs tracking-wide uppercase">
-                  Epic #{index + 1}
-                </span>
-                <strong className="text-slate-950  text-[1.05rem]">{epic.name}</strong>
-                <span className="text-slate-500  text-sm">
+            <li key={epic.id} className="flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+              <div className="grid min-w-0 gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400">#{index + 1}</span>
+                  <span className="truncate text-sm font-medium text-slate-900">{epic.name}</span>
+                  <Badge tone={statusTone[epic.status] ?? 'neutral'}>{epic.status.charAt(0).toUpperCase() + epic.status.slice(1)}</Badge>
+                </div>
+                <span className="line-clamp-2 text-[13px] text-slate-500">
                   {epic.description?.trim() ? epic.description : 'No description provided.'}
-                </span>
-                <span className={`inline-block self-start rounded text-xs font-semibold px-2 py-0.5 mt-0.5 ${statusPillClasses[epic.status] ?? statusPillClasses.planned}`}>
-                  {epic.status}
                 </span>
               </div>
 
-              {/* Actions */}
-              <div className="grid gap-2.5 items-center grid-cols-[repeat(auto-fit,minmax(60px,auto))]">
-                <button className={ghostBtn} disabled={index === 0 || actionEpicId === epic.id} onClick={() => void onMoveEpic(epic, 'up')} type="button">
-                  <ArrowUp size={16} /> Up
-                </button>
-                <button className={ghostBtn} disabled={index === epics.length - 1 || actionEpicId === epic.id} onClick={() => void onMoveEpic(epic, 'down')} type="button">
-                  <ArrowDown size={16} /> Down
-                </button>
-                <button className={ghostBtn} disabled={actionEpicId === epic.id} onClick={() => onEditEpic(epic)} type="button">
-                  <Pencil size={16} /> Edit
-                </button>
-                <button className={dangerBtn} disabled={actionEpicId === epic.id} onClick={() => void onDeleteEpic(epic)} type="button">
-                  <Trash2 size={16} /> {actionEpicId === epic.id ? 'Deleting...' : 'Delete'}
-                </button>
+              <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                <Button disabled={index === 0 || actionEpicId === epic.id} icon={ArrowUp} onClick={() => void onMoveEpic(epic, 'up')} size="sm">
+                  Up
+                </Button>
+                <Button disabled={index === epics.length - 1 || actionEpicId === epic.id} icon={ArrowDown} onClick={() => void onMoveEpic(epic, 'down')} size="sm">
+                  Down
+                </Button>
+                <Button disabled={actionEpicId === epic.id} icon={Pencil} onClick={() => onEditEpic(epic)} size="sm">
+                  Edit
+                </Button>
+                <Button disabled={actionEpicId === epic.id} icon={Trash2} onClick={() => void onDeleteEpic(epic)} size="sm" variant="danger">
+                  {actionEpicId === epic.id ? 'Deleting...' : 'Delete'}
+                </Button>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

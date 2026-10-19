@@ -1,4 +1,6 @@
-import { ScrollText } from 'lucide-react';
+import { FileText, Plus, ScrollText, Trash2 } from 'lucide-react';
+
+import { Button } from '@/components/ui';
 
 import EmptyState from '@/components/EmptyState';
 import type { Note } from '@/types/note';
@@ -43,58 +45,57 @@ function ProjectNotes({
   onOpenNote
 }: ProjectNotesProps): JSX.Element {
   return (
-    <section className="bg-slate-50/90  border border-slate-200/80  rounded-xl grid gap-4 p-[18px]">
-      {/* Header */}
-      <div className="flex items-start gap-3 justify-between">
-        <div>
-          <span className="text-slate-600  text-xs tracking-wide uppercase font-semibold">Notes</span>
-          <h3 className="mt-1 mb-0 text-slate-950 ">{heading}</h3>
-        </div>
+    <section className="grid gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="m-0 text-[15px] font-semibold text-slate-900">{heading}</h3>
         {onCreateNote ? (
-          <button
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900  text-white rounded text-sm font-medium hover:bg-slate-800  transition-colors shrink-0"
-            onClick={onCreateNote}
-            type="button"
-          >
+          <Button icon={Plus} onClick={onCreateNote} size="sm" variant="primary">
             {createLabel}
-          </button>
+          </Button>
         ) : null}
       </div>
 
-      {loading ? <p className="text-slate-400  m-0 text-sm">Loading notes...</p> : null}
+      {loading ? (
+        <div className="grid gap-2" aria-busy="true">
+          {[0, 1].map((key) => <div className="h-14 animate-pulse rounded-lg bg-slate-100" key={key} />)}
+          <span className="sr-only">Loading notes...</span>
+        </div>
+      ) : null}
 
       {!loading && notes.length === 0 ? (
         <EmptyState compact description={emptyDescription} icon={ScrollText} title={emptyTitle} />
       ) : null}
 
       {notes.length ? (
-        <div className="grid gap-3 max-h-[520px] overflow-auto pr-1">
+        <ul className="m-0 grid max-h-[520px] list-none divide-y divide-slate-100 overflow-auto rounded-xl border border-slate-200 p-0">
           {notes.map((note) => (
-            <article
-              key={note.id}
-              className="flex items-stretch bg-white/88  border border-slate-200/80  rounded-lg gap-3 justify-between p-2.5"
-            >
+            <li key={note.id} className="flex items-center gap-2 pr-2">
               <button
-                className="flex flex-col items-start flex-1 gap-1.5 bg-transparent hover:bg-teal-600/6  rounded-xl px-3 py-2.5 text-left transition-colors"
+                className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-slate-50 sm:px-4"
                 onClick={() => onOpenNote(note)}
                 type="button"
               >
-                <strong className="text-slate-950  text-base">{note.title}</strong>
-                <span className="text-slate-500  text-sm">Updated {formatTimestamp(note.updatedAt)}</span>
+                <FileText className="shrink-0 text-slate-400" size={16} />
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium text-slate-900">{note.title}</span>
+                  <span className="block text-xs text-slate-500">Updated {formatTimestamp(note.updatedAt)}</span>
+                </span>
               </button>
               {onDeleteNote ? (
-                <button
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-white  border border-red-200  text-red-600  rounded hover:bg-red-50  disabled:opacity-50 transition-colors self-center"
+                <Button
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
                   disabled={actionNoteId === note.id}
+                  icon={Trash2}
                   onClick={() => onDeleteNote(note)}
-                  type="button"
+                  size="sm"
+                  variant="ghost"
                 >
                   {actionNoteId === note.id ? 'Deleting...' : 'Delete'}
-                </button>
+                </Button>
               ) : null}
-            </article>
+            </li>
           ))}
-        </div>
+        </ul>
       ) : null}
     </section>
   );

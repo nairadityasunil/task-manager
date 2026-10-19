@@ -4,6 +4,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { TASK_WORKFLOW_STATUS_OPTIONS, type TaskWorkflowStatus } from '@/types/task';
 import type { ProjectMember } from '@/types/project';
 import UserAvatar from './UserAvatar';
+import { Button, Field, inputClass, selectClass } from '@/components/ui';
 
 interface SubtaskDraft {
   id: string;
@@ -27,8 +28,6 @@ const createDraft = (): SubtaskDraft => ({
   status: 'TODO',
   assignedToUserId: null
 });
-
-const inputCls = 'w-full bg-white/82  border border-slate-200  rounded-md text-slate-950  px-4 py-3.5 transition-all duration-200 focus:outline-none focus:border-slate-500  focus:ring-2 focus:ring-slate-500/10';
 
 function SubtaskForm({ onSubmit, members }: SubtaskFormProps): JSX.Element {
   const [drafts, setDrafts] = useState<SubtaskDraft[]>([createDraft()]);
@@ -89,124 +88,108 @@ function SubtaskForm({ onSubmit, members }: SubtaskFormProps): JSX.Element {
   };
 
   return (
-    <form className="grid gap-[18px] mt-6" onSubmit={(event) => void handleSubmit(event)}>
-      {/* Builder cards */}
-      <div className="grid gap-4">
+    <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
+      <div className="grid gap-3">
         {drafts.map((draft, index) => (
-          <div
-            key={draft.id}
-            className="bg-slate-50/92  border border-slate-200/60  rounded-lg grid gap-3.5 p-4"
-          >
-            {/* Head */}
+          <div key={draft.id} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3.5 sm:p-4">
             <div className="flex items-center justify-between gap-3">
-              <strong className="text-slate-900  text-sm">Sub-task {index + 1}</strong>
-              <button
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-white  border border-red-200  text-red-600  rounded hover:bg-red-50  disabled:opacity-50 transition-colors"
+              <span className="text-sm font-semibold text-slate-900">Sub-task {index + 1}</span>
+              <Button
                 disabled={submitting || drafts.length === 1}
+                icon={Trash2}
                 onClick={() => handleRemoveDraft(draft.id)}
-                type="button"
+                size="sm"
+                variant="ghost"
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
               >
-                <Trash2 size={14} /> Remove
-              </button>
+                Remove
+              </Button>
             </div>
 
-            <label className="grid gap-2 text-sm font-medium text-slate-700 ">
-              <span>Sub-task title</span>
+            <Field label="Sub-task title">
               <input
-                className={inputCls}
+                className={inputClass}
                 onChange={(event) => updateDraft(draft.id, 'title', event.target.value)}
                 placeholder="Write tests"
                 type="text"
                 value={draft.title}
               />
-            </label>
+            </Field>
 
-            <label className="grid gap-2 text-sm font-medium text-slate-700 ">
-              <span>Description</span>
+            <Field label="Description">
               <input
-                className={inputCls}
+                className={inputClass}
                 onChange={(event) => updateDraft(draft.id, 'description', event.target.value)}
                 placeholder="Optional description"
                 type="text"
                 value={draft.description}
               />
-            </label>
+            </Field>
 
-            <label className="grid gap-2 text-sm font-medium text-slate-700 ">
-              <span>Internal Note</span>
+            <Field label="Internal note">
               <input
-                className={inputCls}
+                className={inputClass}
                 onChange={(event) => updateDraft(draft.id, 'note', event.target.value)}
                 placeholder="Optional private note"
                 type="text"
                 value={draft.note}
               />
-            </label>
+            </Field>
 
-            <label className="grid gap-2 text-sm font-medium text-slate-700 ">
-              <span>Status</span>
-              <select
-                className={inputCls}
-                onChange={(event) => updateDraft(draft.id, 'status', event.target.value)}
-                value={draft.status}
-              >
-                {TASK_WORKFLOW_STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="grid gap-2 text-sm font-medium text-slate-700 ">
-              <span>Assign To</span>
-              <div className="flex items-center gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field label="Status">
                 <select
-                  className={`${inputCls} !py-2.5`}
-                  onChange={(event) => updateDraft(draft.id, 'assignedToUserId', event.target.value || null)}
-                  value={draft.assignedToUserId || ''}
+                  className={selectClass}
+                  onChange={(event) => updateDraft(draft.id, 'status', event.target.value)}
+                  value={draft.status}
                 >
-                  <option value="">Unassigned</option>
-                  {members.map((member) => (
-                    <option key={member.id} value={member.userId}>
-                      {member.user.name || member.user.email}
+                  {TASK_WORKFLOW_STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </select>
-                {draft.assignedToUserId && (
-                  <UserAvatar 
-                    name={members.find(m => m.userId === draft.assignedToUserId)?.user.name || null}
-                    email={members.find(m => m.userId === draft.assignedToUserId)?.user.email || ''}
-                    size="md"
-                    showTooltip={false}
-                  />
-                )}
-              </div>
-            </label>
+              </Field>
+
+              <Field label="Assign to">
+                <div className="flex items-center gap-2">
+                  <select
+                    className={selectClass}
+                    onChange={(event) => updateDraft(draft.id, 'assignedToUserId', event.target.value || null)}
+                    value={draft.assignedToUserId || ''}
+                  >
+                    <option value="">Unassigned</option>
+                    {members.map((member) => (
+                      <option key={member.id} value={member.userId}>
+                        {member.user.name || member.user.email}
+                      </option>
+                    ))}
+                  </select>
+                  {draft.assignedToUserId && (
+                    <UserAvatar
+                      name={members.find(m => m.userId === draft.assignedToUserId)?.user.name || null}
+                      email={members.find(m => m.userId === draft.assignedToUserId)?.user.email || ''}
+                      size="md"
+                      showTooltip={false}
+                    />
+                  )}
+                </div>
+              </Field>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Actions */}
-      <div className="flex justify-between gap-3">
-        <button
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-white  border border-slate-200  rounded text-slate-700  text-sm hover:bg-slate-50  disabled:opacity-50 transition-colors"
-          disabled={submitting}
-          onClick={handleAddDraft}
-          type="button"
-        >
-          <Plus size={16} /> Add another sub-task
-        </button>
-        <button
-          className="px-4 py-2 bg-slate-900  text-white rounded text-sm font-medium hover:bg-slate-800  disabled:opacity-50 transition-colors"
-          disabled={submitting}
-          type="submit"
-        >
-          {submitting ? 'Creating sub-tasks...' : 'Create sub-tasks'}
-        </button>
-      </div>
+      {errorMessage ? <p className="m-0 text-sm text-red-600">{errorMessage}</p> : null}
 
-      {errorMessage ? <p className="text-red-600  m-0 text-sm">{errorMessage}</p> : null}
+      <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <Button disabled={submitting} icon={Plus} onClick={handleAddDraft} variant="secondary">
+          Add another sub-task
+        </Button>
+        <Button disabled={submitting} type="submit" variant="primary">
+          {submitting ? 'Creating sub-tasks...' : 'Create sub-tasks'}
+        </Button>
+      </div>
     </form>
   );
 }

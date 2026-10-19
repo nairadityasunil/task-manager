@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 
 import Modal from '@/components/Modal';
+import { Button, Field, inputClass, textareaClass } from '@/components/ui';
 import type { Note } from '@/types/note';
 
 interface NoteModalProps {
@@ -80,81 +81,56 @@ function NoteModal({
       onClose={onClose}
       panelClassName="!max-w-[680px] w-full"
       title={modalTitle ?? (note ? 'Edit Note' : 'Create Note')}
+      description={<>For <span className="font-medium text-slate-700">{entityLabel}</span></>}
     >
-      <form className="grid gap-5" onSubmit={(event) => void handleSubmit(event)}>
-        <p className="m-0 text-sm text-slate-500 ">
-          Capture notes for {entityLabel} with a simple form. Existing save API stays unchanged.
-        </p>
-
+      <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
         {showTitle ? (
-          <label className="grid gap-2">
-            <span className="text-sm font-semibold text-slate-950 ">Title</span>
+          <Field label="Title">
             <input
               autoFocus
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-950 shadow-sm transition-colors focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/10    "
+              className={inputClass}
               onChange={(event) => setTitle(event.target.value)}
               placeholder={titlePlaceholder}
               type="text"
               value={title}
             />
-          </label>
+          </Field>
         ) : null}
 
-        <label className="grid gap-2">
-          <span className="text-sm font-semibold text-slate-950 ">Description</span>
+        <Field label="Description">
           <textarea
-            className="min-h-[240px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-950 shadow-sm transition-colors focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500/10    "
+            className={`${textareaClass} min-h-[220px]`}
             onChange={(event) => setContent(event.target.value)}
             placeholder="Write note details, decisions, or follow-ups..."
             value={content}
           />
-        </label>
+        </Field>
 
         {errorMessage ? (
-          <p className="m-0 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600   ">
-            {errorMessage}
-          </p>
+          <p className="m-0 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{errorMessage}</p>
         ) : null}
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <button
-            className="inline-flex items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50    "
-            onClick={onClose}
-            type="button"
-          >
+        <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <Button onClick={onClose} variant="ghost">
             Cancel
-          </button>
+          </Button>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row">
             {note && allowDelete && onDelete ? (
-              <button
-                className="inline-flex items-center rounded-lg border border-red-200 bg-white px-4 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50    "
-                disabled={submitting}
-                onClick={() => void onDelete()}
-                type="button"
-              >
+              <Button disabled={submitting} onClick={() => void onDelete()} variant="danger">
                 {deleteLabel}
-              </button>
+              </Button>
             ) : null}
 
             {note && allowAppend ? (
-              <button
-                className="inline-flex items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50    "
-                disabled={submitting}
-                onClick={(event) => void handleSubmit(event, 'append')}
-                type="button"
-              >
+              <Button disabled={submitting} onClick={(event) => void handleSubmit(event, 'append')} variant="secondary">
                 {submitting ? 'Appending...' : 'Append'}
-              </button>
+              </Button>
             ) : null}
 
-            <button
-              className="inline-flex items-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800 disabled:opacity-50  "
-              disabled={submitting}
-              type="submit"
-            >
+            <Button disabled={submitting} type="submit" variant="primary">
               {submitting ? 'Saving...' : note ? 'Save changes' : 'Create note'}
-            </button>
+            </Button>
           </div>
         </div>
       </form>

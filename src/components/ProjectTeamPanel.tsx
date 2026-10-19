@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { LogOut, Shield, Trash2, UserPlus, Users, Loader2, Mail, Clock, RotateCcw } from 'lucide-react';
+import { LogOut, Shield, Trash2, UserPlus, Mail, RotateCcw } from 'lucide-react';
+import { Badge, Button, inputClass, selectClass } from '@/components/ui';
 import type { ProjectMember } from '@/types/project';
 import { getProjectInvitations, revokeInvitation, type ProjectInvitation } from '@/services/invitations';
 
@@ -83,115 +84,100 @@ function ProjectTeamPanel({
   };
 
   return (
-    <section className="relative overflow-hidden bg-white border border-slate-200/80 rounded-xl grid gap-5 p-5 md:p-6 shadow-sm">
-      <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-slate-500/10 blur-3xl pointer-events-none" />
-
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="m-0 text-base font-semibold text-slate-950 flex items-center gap-2">
-            <Users className="text-slate-700" size={18} />
-            Project Members
-          </h3>
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-50 text-slate-700 border border-slate-100">
-            {members.length} {members.length === 1 ? 'member' : 'members'}
-          </span>
+    <section className="grid">
+      {/* Members */}
+      <div className="grid gap-3 p-4 sm:p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="m-0 text-[15px] font-semibold text-slate-900">Project members</h3>
+          <Badge>{members.length} {members.length === 1 ? 'member' : 'members'}</Badge>
         </div>
 
-        {/* Active Members */}
-        <div className="grid gap-2 max-h-[16rem] overflow-y-auto pr-1">
-          {members.map((member) => (
-            (() => {
-              const isAdmin = member.role === 'ADMIN';
-              const isCurrentUser = member.userId === currentUserId;
+        <ul className="m-0 grid max-h-[18rem] list-none divide-y divide-slate-100 overflow-y-auto rounded-xl border border-slate-200 p-0">
+          {members.map((member) => {
+            const isAdmin = member.role === 'ADMIN';
+            const isCurrentUser = member.userId === currentUserId;
+            const initial = member.user?.name ? member.user.name[0].toUpperCase() : (member.user?.email ? member.user.email[0].toUpperCase() : '?');
 
-              return (
-                <div
-                  key={member.userId}
-                  className="flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl border border-slate-200/80 bg-white/50 hover:bg-slate-50/30 transition-all duration-200"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="relative">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200/60 flex items-center justify-center font-semibold text-slate-800 text-sm shadow-inner">
-                        {member.user?.name ? member.user.name[0].toUpperCase() : (member.user?.email ? member.user.email[0].toUpperCase() : '?')}
-                      </div>
-                      {isAdmin && (
-                        <div className="absolute -bottom-1 -right-1 bg-slate-800 text-white rounded-md p-0.5 border border-white shadow-sm">
-                          <Shield size={10} />
-                        </div>
-                      )}
+            return (
+              <li key={member.userId} className="flex items-center justify-between gap-3 px-3 py-2.5 sm:px-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="relative shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-xs font-semibold text-slate-700">
+                      {initial}
                     </div>
-
-                    <div className="min-w-0">
-                      <div className="text-[13px] font-semibold text-slate-950 truncate flex items-center gap-1.5">
-                        {member.user?.name || member.user?.email || 'Unknown Member'}
-                        {isCurrentUser && (
-                          <span className="text-[11px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded border border-slate-200/40">
-                            You
-                          </span>
-                        )}
+                    {isAdmin && (
+                      <div className="absolute -bottom-0.5 -right-0.5 rounded-full border-2 border-white bg-slate-900 p-[2px] text-white" title="Admin">
+                        <Shield size={8} />
                       </div>
-                      <div className="text-xs text-slate-500 font-medium truncate">
-                        {member.user?.email ?? member.role}
-                      </div>
-                    </div>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
-                    {isCurrentUser ? (
-                      <button
-                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50/80 border border-transparent hover:border-red-100 active:scale-95 transition-all duration-200 disabled:opacity-50"
-                        disabled={isMutating}
-                        onClick={() => void onLeaveProject()}
-                        type="button"
-                      >
-                        <LogOut size={13} />
-                        Leave
-                      </button>
-                    ) : null}
-
-                    {canManageTeam && member.userId !== currentUserId ? (
-                      <button
-                        className="p-2.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:hover:text-slate-400 disabled:hover:bg-transparent"
-                        disabled={isMutating || isAdmin}
-                        onClick={() => void onRemoveMember(member.userId)}
-                        title={isAdmin ? 'Project admins cannot be removed' : 'Remove member'}
-                        type="button"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    ) : null}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 truncate text-sm font-medium text-slate-900">
+                      <span className="truncate">{member.user?.name || member.user?.email || 'Unknown Member'}</span>
+                      {isCurrentUser && <Badge className="shrink-0">You</Badge>}
+                    </div>
+                    <div className="truncate text-xs text-slate-500">
+                      {member.user?.email ?? member.role}
+                    </div>
                   </div>
                 </div>
-              );
-            })()
-          ))}
-        </div>
 
-        {/* Pending Invitations */}
-        {canManageTeam && pendingInvitations.length > 0 ? (
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wide">
-              <Clock size={12} />
-              Pending Invitations ({pendingInvitations.length})
-            </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <span className="hidden sm:inline-flex">
+                    <Badge tone={isAdmin ? 'dark' : 'neutral'}>{isAdmin ? 'Admin' : 'Member'}</Badge>
+                  </span>
+                  {isCurrentUser ? (
+                    <Button
+                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      disabled={isMutating}
+                      icon={LogOut}
+                      onClick={() => void onLeaveProject()}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      Leave
+                    </Button>
+                  ) : null}
+
+                  {canManageTeam && member.userId !== currentUserId ? (
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                      disabled={isMutating || isAdmin}
+                      onClick={() => void onRemoveMember(member.userId)}
+                      title={isAdmin ? 'Project admins cannot be removed' : 'Remove member'}
+                      type="button"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Pending invitations */}
+      {canManageTeam && pendingInvitations.length > 0 ? (
+        <div className="grid gap-3 border-t border-slate-200 p-4 sm:p-5">
+          <h3 className="m-0 text-[15px] font-semibold text-slate-900">
+            Pending invitations <span className="font-normal text-slate-400">({pendingInvitations.length})</span>
+          </h3>
+          <ul className="m-0 grid list-none divide-y divide-slate-100 rounded-xl border border-dashed border-slate-300 p-0">
             {pendingInvitations.map((inv) => (
-              <div
-                key={inv.id}
-                className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl border border-dashed border-slate-300/60 bg-slate-50/30"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-                    <Mail size={13} className="text-slate-600" />
+              <li key={inv.id} className="flex items-center justify-between gap-3 px-3 py-2.5 sm:px-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+                    <Mail size={14} />
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[13px] font-semibold text-slate-800 truncate">
-                      {inv.email}
-                    </div>
-                    <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                      <span className="font-semibold uppercase tracking-wide">{inv.role}</span>
+                    <div className="truncate text-sm font-medium text-slate-800">{inv.email}</div>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                      <span>{inv.role === 'ADMIN' ? 'Admin' : 'Member'}</span>
                       {inv.createdAt ? (
                         <>
-                          <span>·</span>
+                          <span className="text-slate-300">·</span>
                           <span>Invited {formatRelative(inv.createdAt)}</span>
                         </>
                       ) : null}
@@ -199,75 +185,59 @@ function ProjectTeamPanel({
                   </div>
                 </div>
                 <button
-                  className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50 shrink-0"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                   disabled={revokingId === inv.id}
                   onClick={() => void handleRevoke(inv)}
                   title="Revoke invitation"
                   type="button"
                 >
-                  {revokingId === inv.id ? (
-                    <RotateCcw size={14} className="animate-spin" />
-                  ) : (
-                    <Trash2 size={14} />
-                  )}
+                  {revokingId === inv.id ? <RotateCcw size={14} className="animate-spin" /> : <Trash2 size={14} />}
                 </button>
-              </div>
+              </li>
             ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {/* Invite */}
+      {canManageTeam ? (
+        <form onSubmit={handleSendInvite} className="grid gap-3 border-t border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+          <div>
+            <h3 className="m-0 text-[15px] font-semibold text-slate-900">Add team member</h3>
+            <p className="m-0 mt-0.5 text-[13px] text-slate-500">
+              Registered users get an in-app invitation; anyone else gets an email to sign up and join.
+            </p>
           </div>
-        ) : null}
 
-        {/* Add Member Form */}
-        {canManageTeam ? (
-          <form onSubmit={handleSendInvite} className="grid gap-3.5 rounded-xl border border-slate-200/80 bg-slate-50/20 p-4 md:p-5">
-            <div>
-              <h4 className="m-0 text-[15px] font-semibold text-slate-950 flex items-center gap-2">
-                <UserPlus size={16} className="text-slate-700" />
-                Add team member
-              </h4>
-              <p className="m-0 mt-1 text-xs text-slate-500">
-                Enter an email address. Registered users receive an in-portal invitation; unregistered users receive an email to register then join.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                className="flex-1 h-12 rounded-lg border border-slate-200 bg-white px-4 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-500/20"
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="Enter user's email address"
-                required
-                type="email"
-                value={inviteEmail}
-              />
-              
-              <select
-                className="h-12 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-500/20 font-semibold"
-                value={inviteRole}
-                onChange={(e) => setInviteRole(e.target.value as 'ADMIN' | 'MEMBER')}
-              >
-                <option value="MEMBER">MEMBER</option>
-                <option value="ADMIN">ADMIN</option>
-              </select>
-
-              <button
-                className="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-lg bg-slate-900 text-white text-[13px] font-semibold disabled:opacity-50 shadow-sm whitespace-nowrap active:scale-[0.98] transition-all"
-                disabled={inviteLoading || isMutating}
-                type="submit"
-              >
-                {inviteLoading ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <UserPlus size={16} />
-                )}
-                Send Invite
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="px-4 py-3 rounded-lg border border-slate-200/80 bg-white/76 text-[13px] text-slate-500">
-            You can view the team here. Admins manage membership changes.
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              aria-label="Email address"
+              className={`${inputClass} sm:flex-1`}
+              onChange={(e) => setInviteEmail(e.target.value)}
+              placeholder="Enter user's email address"
+              required
+              type="email"
+              value={inviteEmail}
+            />
+            <select
+              aria-label="Role"
+              className={`${selectClass} sm:w-32`}
+              value={inviteRole}
+              onChange={(e) => setInviteRole(e.target.value as 'ADMIN' | 'MEMBER')}
+            >
+              <option value="MEMBER">Member</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+            <Button disabled={isMutating} icon={UserPlus} loading={inviteLoading} type="submit" variant="primary">
+              Send Invite
+            </Button>
           </div>
-        )}
-      </div>
+        </form>
+      ) : (
+        <div className="border-t border-slate-200 bg-slate-50/70 px-4 py-3 text-[13px] text-slate-500 sm:px-5">
+          You can view the team here. Admins manage membership changes.
+        </div>
+      )}
     </section>
   );
 }
