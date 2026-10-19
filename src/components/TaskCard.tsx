@@ -1,13 +1,15 @@
-import { AlertCircle, FilePenLine, Rows3, Trash2, ArrowUpCircle, ArrowDownCircle, MinusCircle, MessageSquare, Siren } from 'lucide-react';
+import { AlertCircle, ArrowDown, ArrowUp, CalendarDays, FilePenLine, ListChecks, Loader2, MessageSquare, Minus, Siren, Trash2 } from 'lucide-react';
 
 import type { Epic } from '@/types/epic';
 import type { Project } from '@/types/project';
 import {
+  TASK_WORKFLOW_STATUS_OPTIONS,
   type Subtask,
   type Task,
   type TaskWorkflowStatus,
   type TaskPriority
 } from '@/types/task';
+import { Badge, cn, type BadgeTone } from '@/components/ui';
 import UserAvatar from './UserAvatar';
 import SlaIndicator from './SlaIndicator';
 
@@ -35,197 +37,276 @@ interface TaskCardProps {
   isSelected?: boolean;
   isMultiSelected?: boolean;
   onToggleSelection?: (taskId: string) => void;
+  /** `row` is the dense list layout, `card` the kanban card. */
+  variant?: 'row' | 'card';
 }
 
-const statusPillClasses: Record<string, string> = {
-  BACKLOG: 'bg-slate-100  text-slate-600  border-slate-200',
-  TODO: 'bg-slate-50  text-slate-700  border-slate-100',
-  IN_PROGRESS: 'bg-amber-50  text-amber-700  border-amber-100',
-  IN_REVIEW: 'bg-purple-50  text-purple-700  border-purple-100',
-  BLOCKED: 'bg-red-50  text-red-700  border-red-100',
-  DONE: 'bg-emerald-50  text-emerald-700  border-emerald-100',
-  rolled_over: 'bg-slate-50  text-slate-500  border-slate-100'
+/* ---------- Shared task display helpers (also used by the inspector) ---------- */
+
+export const TASK_STATUS_TONE: Record<string, BadgeTone> = {
+  BACKLOG: 'neutral',
+  TODO: 'neutral',
+  IN_PROGRESS: 'info',
+  IN_REVIEW: 'warning',
+  BLOCKED: 'danger',
+  DONE: 'success',
+  rolled_over: 'neutral'
 };
 
-const priorityIcons: Record<TaskPriority, JSX.Element> = {
-  CRITICAL: <Siren size={12} className="text-red-600" />,
-  HIGH: <ArrowUpCircle size={12} className="text-red-500" />,
-  MEDIUM: <MinusCircle size={12} className="text-amber-500" />,
-  LOW: <ArrowDownCircle size={12} className="text-slate-400" />,
+/** Dot colour for a workflow status (kanban column headers, compact markers). */
+export const TASK_STATUS_DOT: Record<string, string> = {
+  BACKLOG: 'bg-slate-300',
+  TODO: 'bg-slate-400',
+  IN_PROGRESS: 'bg-sky-500',
+  IN_REVIEW: 'bg-amber-500',
+  BLOCKED: 'bg-red-500',
+  DONE: 'bg-emerald-500',
+  rolled_over: 'bg-slate-300'
 };
+
+export function taskStatusLabel(status: string): string {
+  if (status === 'rolled_over') return 'Rolled over';
+  return TASK_WORKFLOW_STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status.replace(/_/g, ' ');
+}
+
+export const PRIORITY_META: Record<TaskPriority, { label: string; icon: typeof Siren; className: string }> = {
+  CRITICAL: { label: 'Critical', icon: Siren, className: 'text-red-600' },
+  HIGH: { label: 'High', icon: ArrowUp, className: 'text-red-500' },
+  MEDIUM: { label: 'Medium', icon: Minus, className: 'text-amber-500' },
+  LOW: { label: 'Low', icon: ArrowDown, className: 'text-slate-400' }
+};
+
+export function PriorityIcon({ priority, size = 14 }: { priority: TaskPriority; size?: number }): JSX.Element | null {
+  const meta = PRIORITY_META[priority];
+  if (!meta) return null;
+  const Icon = meta.icon;
+  return (
+    <span aria-label={`${meta.label} priority`} className={cn('inline-flex shrink-0', meta.className)} role="img" title={`${meta.label} priority`}>
+      <Icon size={size} strokeWidth={2.25} />
+    </span>
+  );
+}
+
+const parseTaskDate = (value: string): Date | null => {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  const date = match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+/** Short date label ("Oct 21") and whether it is in the past for an unfinished task. */
+export function taskDateInfo(task: Pick<Task, 'date' | 'status'>): { label: string; overdue: boolean } | null {
+  const date = parseTaskDate(task.date);
+  if (!date) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const sameYear = date.getFullYear() === today.getFullYear();
+  return {
+    label: date.toLocaleDateString(undefined, sameYear ? { month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' }),
+    overdue: date < today && task.status !== 'DONE'
+  };
+}
+
+/* ---------- Component ---------- */
+
+const actionBtn =
+  'inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/15';
 
 function TaskCard({
   actionTaskId,
   onDelete,
   onEditTask,
-  epicName,
-  projectName,
   task,
   onSelect,
   onComment,
   onToggleBlocked,
   isSelected,
   isMultiSelected,
-  onToggleSelection
+  onToggleSelection,
+  variant = 'card'
 }: TaskCardProps): JSX.Element {
   const completedSubtasksCount = task.subtasks.filter((subtask) => subtask.status === 'DONE').length;
-  const statusCls = statusPillClasses[task.status] || statusPillClasses.TODO;
   const isUpdating = actionTaskId === task.id;
+  const breached = task.responseBreached || task.resolutionBreached;
+  const dateInfo = taskDateInfo(task);
+  const isDone = task.status === 'DONE';
+
+  const checkbox = onToggleSelection ? (
+    <input
+      aria-label={`Select ${task.title}`}
+      checked={isMultiSelected}
+      className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 accent-slate-900"
+      onChange={(e) => {
+        e.stopPropagation();
+        onToggleSelection(task.id);
+      }}
+      onClick={(e) => e.stopPropagation()}
+      type="checkbox"
+    />
+  ) : null;
+
+  const actions = (
+    <div
+      className={cn(
+        'flex items-center gap-0.5 transition-opacity',
+        // In the wide single-line row, float the actions over the meta column so they don't steal title space.
+        variant === 'row' &&
+          '@3xl:[@media(hover:hover)]:absolute @3xl:[@media(hover:hover)]:right-12 @3xl:[@media(hover:hover)]:top-1/2 @3xl:[@media(hover:hover)]:-translate-y-1/2 @3xl:[@media(hover:hover)]:rounded-lg @3xl:[@media(hover:hover)]:bg-slate-50 @3xl:[@media(hover:hover)]:pl-2',
+        // Hover-capable devices reveal actions on hover/focus; touch devices always see them.
+        '[@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100',
+        isSelected && '[@media(hover:hover)]:opacity-100'
+      )}
+    >
+      {onEditTask && (
+        <button
+          className={actionBtn}
+          disabled={!task.permissions.canEdit}
+          onClick={(e) => { e.stopPropagation(); onEditTask(task); }}
+          title="Edit Task"
+          type="button"
+        >
+          <FilePenLine size={15} />
+        </button>
+      )}
+      {onToggleBlocked && (
+        <button
+          className={cn(actionBtn, task.isBlocked ? 'text-red-600 hover:bg-red-50 hover:text-red-700' : 'hover:text-red-600')}
+          disabled={!task.permissions.canEdit}
+          onClick={(e) => { e.stopPropagation(); onToggleBlocked(task); }}
+          title={task.isBlocked ? 'Unblock Task' : 'Block Task'}
+          type="button"
+        >
+          <AlertCircle size={15} />
+        </button>
+      )}
+      <button
+        className={actionBtn}
+        onClick={(e) => { e.stopPropagation(); onComment?.(task); }}
+        title="Add Comment"
+        type="button"
+      >
+        <MessageSquare size={15} />
+      </button>
+      <button
+        className={cn(actionBtn, 'hover:bg-red-50 hover:text-red-600')}
+        disabled={!task.permissions.canDelete}
+        onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
+        title="Delete Task"
+        type="button"
+      >
+        <Trash2 size={15} />
+      </button>
+    </div>
+  );
+
+  const avatar = (
+    <UserAvatar email={task.assignedTo?.email ?? ''} name={task.assignedTo?.name ?? null} size="sm" />
+  );
+
+  const subtaskMeta = task.subtasks.length > 0 ? (
+    <span className="inline-flex items-center gap-1 text-xs tabular-nums text-slate-500" title="Subtasks completed">
+      <ListChecks className="text-slate-400" size={13} />
+      {completedSubtasksCount}/{task.subtasks.length}
+    </span>
+  ) : null;
+
+  const dateMeta = dateInfo ? (
+    <span className={cn('inline-flex items-center gap-1 whitespace-nowrap text-xs', dateInfo.overdue ? 'text-red-600' : 'text-slate-500')} title="Date">
+      <CalendarDays className={dateInfo.overdue ? 'text-red-500' : 'text-slate-400'} size={13} />
+      {dateInfo.label}
+    </span>
+  ) : null;
+
+  const blockedMarker = task.isBlocked ? (
+    <span className="inline-flex shrink-0 text-red-500" title={task.blockedByTaskId ? `Blocked by task ${task.blockedByTaskId}` : 'Blocked'}>
+      <AlertCircle size={14} />
+    </span>
+  ) : null;
+
+  const updatingOverlay = isUpdating ? (
+    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-[inherit] bg-white/60">
+      <Loader2 className="animate-spin text-slate-500" size={16} />
+    </div>
+  ) : null;
+
+  if (variant === 'row') {
+    return (
+      <article
+        className={cn(
+          'group relative flex items-start gap-3 px-3 py-3 transition-colors sm:px-4',
+          isSelected ? 'bg-slate-50 shadow-[inset_2px_0_0_0_var(--color-slate-900)]' : 'hover:bg-slate-50',
+          breached && !isSelected && 'shadow-[inset_2px_0_0_0_var(--color-red-500)]',
+          isUpdating ? 'cursor-wait opacity-60' : 'cursor-pointer'
+        )}
+        onClick={() => !isUpdating && onSelect?.(task)}
+      >
+        {updatingOverlay}
+        {checkbox ? <div className="flex h-8 items-center">{checkbox}</div> : null}
+
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5 @3xl:flex-row @3xl:items-center @3xl:gap-4">
+          {/* Title */}
+          <div className="flex min-h-8 min-w-0 flex-1 items-center gap-2">
+            <PriorityIcon priority={task.priority} />
+            <h3 className={cn('m-0 min-w-0 text-sm font-medium leading-5 line-clamp-2 @3xl:line-clamp-none @3xl:truncate', isDone ? 'text-slate-500 line-through decoration-slate-300' : 'text-slate-900')}>
+              {task.title}
+            </h3>
+            {blockedMarker}
+          </div>
+
+          {/* Meta + actions */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 @3xl:shrink-0 @3xl:flex-nowrap @3xl:gap-x-2">
+            {/* Fixed widths on wide rows keep the meta columns aligned between rows. */}
+            <span className="flex items-center @3xl:w-[104px]">
+              <Badge dot tone={TASK_STATUS_TONE[task.status] ?? 'neutral'}>{taskStatusLabel(task.status)}</Badge>
+            </span>
+            <span className="flex items-center @3xl:w-[120px]">
+              <SlaIndicator compact task={task} />
+            </span>
+            {subtaskMeta ? <span className="flex items-center @3xl:w-11">{subtaskMeta}</span> : <span aria-hidden className="hidden w-11 @3xl:block" />}
+            {dateMeta ? <span className="flex items-center @3xl:w-[64px]">{dateMeta}</span> : null}
+            <div className="ml-auto flex items-center gap-1 @3xl:ml-0">
+              {actions}
+              {avatar}
+            </div>
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article
-      className={[
-        'group relative flex flex-col gap-4 p-4 transition-all duration-300',
-        'bg-white',
-        'border rounded-xl font-["Inter"] shadow-sm',
-        task.responseBreached || task.resolutionBreached ? 'ring-1 ring-red-300 bg-red-50/30' : '',
-        isSelected
-          ? 'border-slate-400/70  shadow-sm bg-slate-50/60'
-          : 'border-slate-200/80  hover:border-slate-300  hover:-translate-y-[2px]',
-        isUpdating ? 'opacity-60 grayscale-[0.5] cursor-wait' : 'cursor-pointer'
-      ].join(' ')}
+      className={cn(
+        'group relative flex flex-col gap-2.5 rounded-xl border bg-white p-3 shadow-sm transition-colors',
+        isSelected ? 'border-slate-900 ring-1 ring-slate-900' : breached ? 'border-red-200 hover:border-red-300' : 'border-slate-200 hover:border-slate-300',
+        isUpdating ? 'cursor-wait opacity-60' : 'cursor-pointer'
+      )}
       onClick={() => !isUpdating && onSelect?.(task)}
     >
-      {isUpdating && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/10  backdrop-blur-[1px] rounded-xl overflow-hidden">
-          <div className="flex gap-1.5">
-             <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce [animation-delay:-0.3s]" />
-             <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce [animation-delay:-0.15s]" />
-             <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce" />
-          </div>
+      {updatingOverlay}
+
+      <div className="flex items-start gap-2">
+        {checkbox ? <div className="flex h-5 items-center">{checkbox}</div> : null}
+        <div className="flex h-5 items-center">
+          <PriorityIcon priority={task.priority} />
         </div>
-      )}
-      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-slate-300/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        <h3 className="m-0 min-w-0 flex-1 text-sm font-medium leading-5 text-slate-900 line-clamp-2">{task.title}</h3>
+        {blockedMarker}
+      </div>
 
-      <div className="flex justify-between items-start gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              {onToggleSelection && (
-                <input
-                  type="checkbox"
-                  checked={isMultiSelected}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    onToggleSelection(task.id);
-                  }}
-                  className="w-4 h-4 rounded border-slate-300 text-slate-600 focus:ring-slate-500 cursor-pointer"
-                />
-              )}
-              <div className={`px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide border shadow-sm ${statusCls}`}>
-                {task.status.replace('_', ' ')}
-              </div>
-              {task.priority && (
-                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100  border border-slate-200 ">
-                  {priorityIcons[task.priority]}
-                  <span className="text-[11px] font-semibold text-slate-500 ">{task.priority}</span>
-                </div>
-              )}
-            </div>
+      {task.description ? (
+        <p className="m-0 text-[13px] leading-snug text-slate-500 line-clamp-2">{task.description}</p>
+      ) : null}
 
-            {task.isBlocked && (
-              <div className="flex items-center gap-1 text-red-500" title={task.blockedByTaskId ? `Blocked by task ${task.blockedByTaskId}` : 'Blocked'}>
-                <AlertCircle size={14} />
-              </div>
-            )}
-          </div>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <SlaIndicator compact task={task} />
+        {dateMeta}
+        {subtaskMeta}
+      </div>
 
-          <h3 className="text-[15px] font-semibold tracking-tight text-slate-950  m-0 leading-snug line-clamp-2">
-            {task.title}
-          </h3>
-
-          <p className="mt-1.5 text-slate-500  text-xs leading-relaxed line-clamp-2 font-medium">
-            {task.description || 'No description provided.'}
-          </p>
-
-          <div className="mt-3">
-            <SlaIndicator task={task} />
-          </div>
-
-          {task.dynamicPriorityScore > 0 && (
-            <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-slate-500">
-              <span>Dynamic score {task.dynamicPriorityScore}</span>
-              <span className="h-1 w-1 rounded-full bg-slate-300" />
-              <span>{task.dependencyWeight} downstream</span>
-            </div>
-          )}
-
-          {(projectName || epicName || task.subtasks.length > 0) && (
-            <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-slate-100/90  text-slate-400 ">
-              {task.subtasks.length > 0 && (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100/80 ">
-                  <Rows3 size={10} />
-                  <span className="text-[11px] font-semibold">
-                    {completedSubtasksCount}<span className="opacity-40">/</span>{task.subtasks.length}
-                  </span>
-                </div>
-              )}
-              {projectName && (
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100/80 ">
-                  <div className="w-1 h-1 rounded-full bg-slate-500/50" />
-                  <span className="text-[11px] font-semibold uppercase tracking-wide truncate max-w-[100px]">{projectName}</span>
-                </div>
-              )}
-              {epicName && (
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100/80 ">
-                  <div className="w-1 h-1 rounded-full bg-slate-500/50" />
-                  <span className="text-[11px] font-semibold uppercase tracking-wide truncate max-w-[100px]">{epicName}</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col items-center gap-3">
-          <UserAvatar 
-            name={task.assignedTo?.name} 
-            email={task.assignedTo?.email} 
-            size="sm" 
-            className="ring-2 ring-white  shadow-md"
-          />
-          <div className="flex flex-col gap-1">
-            {onEditTask && (
-              <button
-                className="p-2 rounded-lg bg-white/90  border border-slate-200/80  text-slate-400 hover:text-slate-600  transition-colors disabled:opacity-40 shadow-sm"
-                disabled={!task.permissions.canEdit}
-                onClick={(e) => { e.stopPropagation(); onEditTask(task); }}
-                title="Edit Task"
-              >
-                <FilePenLine size={13} />
-              </button>
-            )}
-            {onToggleBlocked && (
-              <button
-                className={[
-                  'p-2 rounded-lg border transition-all shadow-sm',
-                  task.isBlocked 
-                    ? 'bg-red-500 border-red-600 text-white hover:bg-red-600' 
-                    : 'bg-white/90  border-slate-200/80  text-slate-400 hover:text-red-500'
-                ].join(' ')}
-                disabled={!task.permissions.canEdit}
-                onClick={(e) => { e.stopPropagation(); onToggleBlocked(task); }}
-                title={task.isBlocked ? 'Unblock Task' : 'Block Task'}
-              >
-                <AlertCircle size={13} />
-              </button>
-            )}
-            <button
-              className="p-2 rounded-lg bg-white/90  border border-slate-200/80  text-slate-400 hover:text-slate-600  transition-colors shadow-sm"
-              onClick={(e) => { e.stopPropagation(); onComment?.(task); }}
-              title="Add Comment"
-            >
-              <MessageSquare size={13} />
-            </button>
-            <button
-              className="p-2 rounded-lg bg-white/90  border border-slate-200/80  text-slate-400 hover:text-red-500 transition-colors disabled:opacity-40 shadow-sm"
-              disabled={!task.permissions.canDelete}
-              onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
-              title="Delete Task"
-            >
-              <Trash2 size={13} />
-            </button>
-          </div>
-        </div>
+      <div className="-mb-1 flex items-center justify-between gap-2 border-t border-slate-100 pt-2">
+        <div className="-ml-1.5">{actions}</div>
+        {avatar}
       </div>
     </article>
   );

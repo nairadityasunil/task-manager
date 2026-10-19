@@ -3,6 +3,7 @@ import { Check, X } from 'lucide-react';
 import { Subtask } from '@/types/task';
 import type { ProjectMember } from '@/types/project';
 import UserAvatar from './UserAvatar';
+import { Button, cn, inputClass, selectClass, textareaClass } from '@/components/ui';
 
 interface SubtaskInlineEditProps {
   subtask: Subtask;
@@ -12,7 +13,7 @@ interface SubtaskInlineEditProps {
   members: ProjectMember[];
 }
 
-const inputCls = 'w-full bg-white  border border-slate-200  rounded px-3 py-2 text-sm focus:outline-none focus:border-slate-500 transition-all';
+const labelCls = 'text-[13px] font-medium text-slate-700';
 
 export default function SubtaskInlineEdit({ subtask, onSave, onCancel, isSaving, members }: SubtaskInlineEditProps) {
   const [title, setTitle] = useState(subtask.title);
@@ -31,47 +32,47 @@ export default function SubtaskInlineEdit({ subtask, onSave, onCancel, isSaving,
   };
 
   return (
-    <div className="mt-3 grid gap-3 p-3 bg-slate-50  rounded-lg border border-slate-200 ">
-      <div className="grid gap-1.5">
-        <span className="text-[11px] font-semibold text-slate-500  uppercase tracking-wide">Subtask Title</span>
+    <div className="mt-3 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <label className="grid gap-1.5">
+        <span className={labelCls}>Subtask Title</span>
         <input
           autoFocus
-          className={inputCls}
+          className={inputClass}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSave()}
           placeholder="What needs to be done?"
           type="text"
           value={title}
         />
-      </div>
+      </label>
 
-      <div className="grid gap-1.5">
-        <span className="text-[11px] font-semibold text-slate-500  uppercase tracking-wide">Description (optional)</span>
+      <label className="grid gap-1.5">
+        <span className={labelCls}>Description (optional)</span>
         <textarea
-          className={`${inputCls} min-h-[60px] resize-none`}
+          className={cn(textareaClass, 'min-h-[60px] resize-none')}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Add some details..."
           rows={2}
           value={description}
         />
-      </div>
+      </label>
 
-      <div className="grid gap-1.5">
-        <span className="text-[11px] font-semibold text-slate-500  uppercase tracking-wide">Internal Note (optional)</span>
+      <label className="grid gap-1.5">
+        <span className={labelCls}>Internal Note (optional)</span>
         <textarea
-          className={`${inputCls} min-h-[60px] resize-none`}
+          className={cn(textareaClass, 'min-h-[60px] resize-none')}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Private notes..."
           rows={2}
           value={note}
         />
-      </div>
+      </label>
 
-      <div className="grid gap-1.5">
-        <span className="text-[11px] font-semibold text-slate-500  uppercase tracking-wide">Assignee</span>
+      <label className="grid gap-1.5">
+        <span className={labelCls}>Assignee</span>
         <div className="flex items-center gap-3">
           <select
-            className={`${inputCls} !py-2`}
+            className={selectClass}
             onChange={(e) => setAssignedToUserId(e.target.value || null)}
             value={assignedToUserId || ''}
           >
@@ -91,26 +92,19 @@ export default function SubtaskInlineEdit({ subtask, onSave, onCancel, isSaving,
             />
           )}
         </div>
-      </div>
+      </label>
 
       <div className="flex justify-end gap-2">
-        <button
-          className="p-1.5 text-slate-500 hover:text-red-500 hover:bg-red-50  rounded-md transition-colors"
-          onClick={onCancel}
-          title="Cancel"
-          type="button"
-        >
-          <X size={16} />
-        </button>
-        <button
-          className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-600 hover:bg-slate-500 text-white text-xs font-semibold rounded-md transition-colors disabled:opacity-50"
+        <Button aria-label="Cancel" icon={X} onClick={onCancel} size="icon-sm" title="Cancel" variant="ghost" />
+        <Button
           disabled={isSaving || !title.trim()}
+          icon={Check}
           onClick={handleSave}
-          type="button"
+          size="sm"
+          variant="primary"
         >
-          <Check size={14} />
           {isSaving ? 'Saving...' : 'Save'}
-        </button>
+        </Button>
       </div>
     </div>
   );

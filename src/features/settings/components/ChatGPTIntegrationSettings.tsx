@@ -13,7 +13,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import SectionCard from "@/components/SectionCard";
+import { Badge, Button, Card, CardHeader } from "@/components/ui";
 import { SYNC_CHATGPT_ACTION_SCHEMA, SYNC_CHATGPT_INSTRUCTION_TEXT, validateSyncActionSchema } from "@/features/sync/schema";
 
 interface ChatGPTIntegrationSettingsProps {
@@ -49,297 +49,253 @@ export const ChatGPTIntegrationSettings: React.FC<ChatGPTIntegrationSettingsProp
     URL.revokeObjectURL(url);
   };
 
+  const steps = [
+    {
+      n: 1,
+      meta: <span className="text-xs text-slate-500">Step 1 of 3</span>,
+      title: "Copy Sync API Key",
+      text: (
+        <>
+          Copy your API Key from <strong className="font-medium text-slate-800">Profile & API Key</strong>. It authenticates ChatGPT calls.
+        </>
+      ),
+      chip: (
+        <>
+          Header: <code className="font-medium text-slate-900">x-sync-api-key</code>
+        </>
+      ),
+    },
+    {
+      n: 2,
+      meta: (
+        <a
+          href="https://chatgpt.com/gpts/editor"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-1 text-xs font-medium text-slate-700 underline-offset-2 hover:text-slate-900 hover:underline"
+        >
+          Open Builder <ExternalLink className="h-3 w-3" />
+        </a>
+      ),
+      title: "Create Custom GPT",
+      text: (
+        <>
+          Go to ChatGPT Builder, create a new GPT, and switch to the <strong className="font-medium text-slate-800">Configure</strong> tab.
+        </>
+      ),
+      chip: (
+        <>
+          Tab: <code className="font-medium text-slate-900">Configure</code>
+        </>
+      ),
+    },
+    {
+      n: 3,
+      meta: <span className="text-xs text-slate-500">Step 3 of 3</span>,
+      title: "Set Auth & Actions",
+      text: (
+        <>
+          Under <strong className="font-medium text-slate-800">Actions</strong>, set Auth to{" "}
+          <strong className="font-medium text-slate-800">API Key (Custom)</strong> and paste the OpenAPI Schema.
+        </>
+      ),
+      chip: (
+        <>
+          Auth: <code className="font-medium text-slate-900">API Key (Custom)</code>
+        </>
+      ),
+    },
+  ];
+
+  const operations = [
+    { name: "Projects", ops: "5 Ops", text: "List, Create, Get, Update, Delete" },
+    { name: "Epics", ops: "5 Ops", text: "Manage project epics & milestones" },
+    { name: "Tasks", ops: "6 Ops", text: "CRUD tasks & bulk task sync" },
+    { name: "Notes & Summary", ops: "6 Ops", text: "Polymorphic notes & daily summary" },
+  ];
+
   return (
-    <div className="space-y-6 font-sans">
-      {/* Pristine Enterprise Overview Banner */}
-      <div className="relative overflow-hidden rounded border border-slate-800 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-900 p-5 text-white shadow-xs">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5 max-w-2xl">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[11px] font-semibold tracking-wide uppercase bg-slate-500/20 text-slate-200 border border-slate-500/30">
-                ChatGPT Custom GPT Integration
-              </span>
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                <ShieldCheck className="w-3 h-3" /> OpenAPI 3.1.0 Ready
-              </span>
+    <div className="space-y-5 font-sans">
+      {/* Overview */}
+      <Card>
+        <div className="flex flex-col justify-between gap-4 p-4 sm:p-5 md:flex-row md:items-center">
+          <div className="max-w-2xl space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge tone="neutral">ChatGPT Custom GPT Integration</Badge>
+              <Badge tone="success">
+                <ShieldCheck className="h-3 w-3" /> OpenAPI 3.1.0 Ready
+              </Badge>
             </div>
-            <h3 className="text-base font-semibold text-white">Connect Sync Todo to Your Custom ChatGPT Agent</h3>
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <h3 className="m-0 text-[15px] font-semibold text-slate-900">Connect Sync Todo to Your Custom ChatGPT Agent</h3>
+            <p className="m-0 text-[13px] leading-relaxed text-slate-500">
               Enable your Custom GPT inside ChatGPT Builder to manage projects, epics, daily tasks, and notes directly through natural language conversations.
             </p>
           </div>
 
           {onNavigateToProfile && (
-            <button
-              onClick={onNavigateToProfile}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-white/10 hover:bg-white/20 text-white font-medium text-xs transition border border-white/20 cursor-pointer whitespace-nowrap self-start md:self-auto"
-            >
-              <Key className="w-3.5 h-3.5 text-amber-300" />
+            <Button size="sm" icon={Key} onClick={onNavigateToProfile} className="self-start md:self-auto">
               Get Sync API Key
-            </button>
+            </Button>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Step-by-Step Setup Guide */}
-      <SectionCard>
-        <h3 className="text-sm font-semibold text-slate-950 mb-1">Setup & Configuration Guide</h3>
-        <p className="text-xs text-slate-600 mb-4">Follow these steps to connect ChatGPT Builder with Pristine Sync API.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-          {/* Step 1 */}
-          <div className="p-3.5 rounded border border-slate-200 bg-slate-50/50 space-y-2 flex flex-col justify-between">
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="w-5 h-5 rounded bg-slate-800 text-white font-semibold flex items-center justify-center text-[11px]">
-                  1
-                </span>
-                <span className="text-[11px] font-mono text-slate-500">Step 1 of 3</span>
+      <Card>
+        <CardHeader title="Setup & Configuration Guide" description="Follow these steps to connect ChatGPT Builder with Pristine Sync API." />
+        <ol className="m-0 grid list-none grid-cols-1 gap-3 p-4 sm:p-5 md:grid-cols-3">
+          {steps.map((step) => (
+            <li key={step.n} className="flex flex-col justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3.5">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-xs font-medium text-white">
+                    {step.n}
+                  </span>
+                  {step.meta}
+                </div>
+                <h4 className="m-0 text-sm font-medium text-slate-900">{step.title}</h4>
+                <p className="m-0 text-[13px] leading-snug text-slate-600">{step.text}</p>
               </div>
-              <h4 className="font-semibold text-slate-950">Copy Sync API Key</h4>
-              <p className="text-slate-700 text-[11px] leading-snug">
-                Copy your API Key from <strong>Profile & API Key</strong>. It authenticates ChatGPT calls.
-              </p>
-            </div>
-            <div className="pt-2">
-              <div className="p-2 rounded bg-white border border-slate-200 text-[11px] font-mono text-slate-800 flex items-center justify-between">
-                <span>Header: <code className="text-slate-900 font-semibold">x-sync-api-key</code></span>
-              </div>
-            </div>
-          </div>
+              <div className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-xs text-slate-700">{step.chip}</div>
+            </li>
+          ))}
+        </ol>
+      </Card>
 
-          {/* Step 2 */}
-          <div className="p-3.5 rounded border border-slate-200 bg-slate-50/50 space-y-2 flex flex-col justify-between">
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="w-5 h-5 rounded bg-slate-800 text-white font-semibold flex items-center justify-center text-[11px]">
-                  2
-                </span>
-                <a
-                  href="https://chatgpt.com/gpts/editor"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[11px] font-medium text-slate-800 hover:text-slate-950 flex items-center gap-1 underline"
-                >
-                  Open Builder <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-              <h4 className="font-semibold text-slate-950">Create Custom GPT</h4>
-              <p className="text-slate-700 text-[11px] leading-snug">
-                Go to ChatGPT Builder, create a new GPT, and switch to the <strong>Configure</strong> tab.
-              </p>
+      {/* Custom GPT Instructions */}
+      <Card>
+        <CardHeader
+          title="1. Custom GPT Instructions"
+          description="Copy and paste these instructions into your Custom GPT's Instructions field."
+        />
+        <div className="space-y-3 p-4 sm:p-5">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 items-center gap-2">
+              <BookOpen className="h-4 w-4 shrink-0 text-slate-400" />
+              <span className="text-[13px] text-slate-700">System Instructions for Pristine Sync API workflow & CRUD rules.</span>
             </div>
-            <div className="pt-2">
-              <div className="p-2 rounded bg-white border border-slate-200 text-[11px] font-mono text-slate-800 flex items-center justify-between">
-                <span>Tab: <code className="text-slate-900 font-semibold">Configure</code></span>
-              </div>
-            </div>
-          </div>
-
-          {/* Step 3 */}
-          <div className="p-3.5 rounded border border-slate-200 bg-slate-50/50 space-y-2 flex flex-col justify-between">
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="w-5 h-5 rounded bg-slate-800 text-white font-semibold flex items-center justify-center text-[11px]">
-                  3
-                </span>
-                <span className="text-[11px] font-mono text-slate-500">Step 3 of 3</span>
-              </div>
-              <h4 className="font-semibold text-slate-950">Set Auth & Actions</h4>
-              <p className="text-slate-700 text-[11px] leading-snug">
-                Under <strong>Actions</strong>, set Auth to <strong>API Key (Custom)</strong> and paste the OpenAPI Schema.
-              </p>
-            </div>
-            <div className="pt-2">
-              <div className="p-2 rounded bg-white border border-slate-200 text-[11px] font-mono text-slate-800 flex items-center justify-between">
-                <span>Auth: <code className="text-slate-900 font-semibold">API Key (Custom)</code></span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </SectionCard>
-
-      {/* Custom GPT Instructions Display Box */}
-      <SectionCard>
-        <h3 className="text-sm font-semibold text-slate-950 mb-1">1. Custom GPT Instructions</h3>
-        <p className="text-xs text-slate-600 mb-3">Copy and paste these instructions into your Custom GPT's Instructions field.</p>
-        <div className="space-y-3 text-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded bg-slate-50 border border-slate-200 text-slate-800">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-slate-700 shrink-0" />
-              <span className="font-medium text-slate-900 text-xs">
-                System Instructions for Pristine Sync API workflow & CRUD rules.
-              </span>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setShowFullInstructions(!showFullInstructions)}
-                className="px-3 py-1.5 rounded bg-white hover:bg-slate-100/60 text-slate-800 font-medium text-xs border border-slate-200 transition flex items-center gap-1 cursor-pointer"
-              >
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <Button size="sm" onClick={() => setShowFullInstructions(!showFullInstructions)}>
                 {showFullInstructions ? (
                   <>
-                    <ChevronUp className="w-3.5 h-3.5" /> Collapse
+                    <ChevronUp className="h-3.5 w-3.5" /> Collapse
                   </>
                 ) : (
                   <>
-                    <ChevronDown className="w-3.5 h-3.5" /> View Instructions
+                    <ChevronDown className="h-3.5 w-3.5" /> View Instructions
                   </>
                 )}
-              </button>
-              <button
-                type="button"
-                onClick={onCopyInstructions}
-                className="px-3.5 py-1.5 rounded bg-slate-800 hover:bg-slate-900 text-white font-medium text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs"
-              >
+              </Button>
+              <Button size="sm" variant="primary" onClick={onCopyInstructions}>
                 {instructionsCopied ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" /> Copied!
+                    <Check className="h-3.5 w-3.5 text-emerald-400" /> Copied!
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5" /> Copy Instructions
+                    <Copy className="h-3.5 w-3.5" /> Copy Instructions
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
 
           {showFullInstructions && (
-            <div className="relative rounded bg-slate-950 border border-slate-900 p-4 text-slate-100 font-mono text-[11px] leading-relaxed">
-              <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                <span className="text-[11px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
-                  Markdown
-                </span>
+            <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-900">
+              <div className="flex items-center justify-between border-b border-slate-800 px-3.5 py-2">
+                <span className="text-xs font-medium text-slate-400">instructions.md</span>
+                <span className="text-[11px] text-slate-400">Markdown</span>
               </div>
-              <pre className="overflow-x-auto max-h-72 scrollbar-thin scrollbar-thumb-olive-800 whitespace-pre-wrap pr-12">
+              <pre className="m-0 max-h-72 overflow-auto whitespace-pre-wrap break-words p-3.5 font-mono text-xs leading-relaxed text-slate-100">
                 {SYNC_CHATGPT_INSTRUCTION_TEXT}
               </pre>
             </div>
           )}
         </div>
-      </SectionCard>
+      </Card>
 
-      {/* OpenAPI Action Schema Display Box */}
-      <SectionCard>
-        <h3 className="text-sm font-semibold text-slate-950 mb-1">2. ChatGPT OpenAPI Action Schema</h3>
-        <p className="text-xs text-slate-600 mb-3">Copy and paste this schema into the Actions section of ChatGPT Builder.</p>
-        <div className="space-y-3 text-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded bg-slate-50 border border-slate-200 text-slate-800">
-            <div className="flex items-center gap-2">
-              <FileCode className="w-4 h-4 text-slate-700 shrink-0" />
-              <div className="space-y-0.5">
-                <span className="font-medium text-slate-900 text-xs">
-                  OpenAPI 3.1.0 Specification
-                </span>
-                <div className="flex items-center gap-2 text-[11px]">
-                  {isSchemaValid ? (
-                    <span className="text-emerald-700 flex items-center gap-1 font-medium">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Valid Schema (6 Endpoints)
-                    </span>
-                  ) : (
-                    <span className="text-rose-600 flex items-center gap-1 font-medium">
-                      <AlertCircle className="w-3 h-3" /> Schema Validation Warning
-                    </span>
-                  )}
-                </div>
+      {/* OpenAPI Action Schema */}
+      <Card>
+        <CardHeader
+          title="2. ChatGPT OpenAPI Action Schema"
+          description="Copy and paste this schema into the Actions section of ChatGPT Builder."
+        />
+        <div className="space-y-3 p-4 sm:p-5">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 items-center gap-2">
+              <FileCode className="h-4 w-4 shrink-0 text-slate-400" />
+              <div className="min-w-0 space-y-0.5">
+                <span className="block text-[13px] font-medium text-slate-900">OpenAPI 3.1.0 Specification</span>
+                {isSchemaValid ? (
+                  <span className="flex items-center gap-1 text-xs font-medium text-emerald-700">
+                    <CheckCircle2 className="h-3 w-3" /> Valid Schema (6 Endpoints)
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs font-medium text-red-600">
+                    <AlertCircle className="h-3 w-3" /> Schema Validation Warning
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={handleDownloadSchema}
-                className="px-3 py-1.5 rounded bg-white hover:bg-slate-100/60 text-slate-800 font-medium text-xs border border-slate-200 transition flex items-center gap-1 cursor-pointer"
-                title="Download OpenAPI Schema file"
-              >
-                <Download className="w-3.5 h-3.5" /> Download .yaml
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowFullSchema(!showFullSchema)}
-                className="px-3 py-1.5 rounded bg-white hover:bg-slate-100/60 text-slate-800 font-medium text-xs border border-slate-200 transition flex items-center gap-1 cursor-pointer"
-              >
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <Button size="sm" onClick={handleDownloadSchema} title="Download OpenAPI Schema file">
+                <Download className="h-3.5 w-3.5" /> Download .yaml
+              </Button>
+              <Button size="sm" onClick={() => setShowFullSchema(!showFullSchema)}>
                 {showFullSchema ? (
                   <>
-                    <ChevronUp className="w-3.5 h-3.5" /> Collapse
+                    <ChevronUp className="h-3.5 w-3.5" /> Collapse
                   </>
                 ) : (
                   <>
-                    <ChevronDown className="w-3.5 h-3.5" /> View Schema
+                    <ChevronDown className="h-3.5 w-3.5" /> View Schema
                   </>
                 )}
-              </button>
-              <button
-                type="button"
-                onClick={onCopySchema}
-                className="px-3.5 py-1.5 rounded bg-slate-800 hover:bg-slate-900 text-white font-medium text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs"
-              >
+              </Button>
+              <Button size="sm" variant="primary" onClick={onCopySchema}>
                 {schemaCopied ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" /> Copied!
+                    <Check className="h-3.5 w-3.5 text-emerald-400" /> Copied!
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5" /> Copy Schema
+                    <Copy className="h-3.5 w-3.5" /> Copy Schema
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
 
           {showFullSchema && (
-            <div className="relative rounded bg-slate-950 border border-slate-900 p-4 text-slate-100 font-mono text-[11px] leading-relaxed">
-              <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                <span className="text-[11px] text-emerald-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 font-semibold">
-                  OpenAPI 3.1.0 YAML
-                </span>
+            <div className="overflow-hidden rounded-lg border border-slate-800 bg-slate-900">
+              <div className="flex items-center justify-between border-b border-slate-800 px-3.5 py-2">
+                <span className="text-xs font-medium text-slate-400">openapi.yaml</span>
+                <span className="text-[11px] text-emerald-400">OpenAPI 3.1.0 YAML</span>
               </div>
-              <pre className="overflow-x-auto max-h-96 scrollbar-thin scrollbar-thumb-olive-800 whitespace-pre-wrap pr-20">
+              <pre className="m-0 max-h-96 overflow-auto p-3.5 font-mono text-xs leading-relaxed text-slate-100">
                 {SYNC_CHATGPT_ACTION_SCHEMA}
               </pre>
             </div>
           )}
         </div>
-      </SectionCard>
+      </Card>
 
       {/* Available Endpoints Summary */}
-      <SectionCard>
-        <h3 className="text-sm font-semibold text-slate-950 mb-1">Supported API Operations</h3>
-        <p className="text-xs text-slate-600 mb-3">Available endpoints in the OpenAPI schema.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          <div className="p-3.5 rounded border border-slate-200 bg-white space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-950">Projects</span>
-              <span className="px-1.5 py-0.5 rounded text-[11px] bg-slate-100 text-slate-800 font-mono border border-slate-200">5 Ops</span>
+      <Card>
+        <CardHeader title="Supported API Operations" description="Available endpoints in the OpenAPI schema." />
+        <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-4">
+          {operations.map((op) => (
+            <div key={op.name} className="space-y-1 rounded-lg border border-slate-200 p-3.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium text-slate-900">{op.name}</span>
+                <Badge tone="neutral">{op.ops}</Badge>
+              </div>
+              <p className="m-0 text-[13px] text-slate-500">{op.text}</p>
             </div>
-            <p className="text-[11px] text-slate-600">List, Create, Get, Update, Delete</p>
-          </div>
-
-          <div className="p-3.5 rounded border border-slate-200 bg-white space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-950">Epics</span>
-              <span className="px-1.5 py-0.5 rounded text-[11px] bg-slate-100 text-slate-800 font-mono border border-slate-200">5 Ops</span>
-            </div>
-            <p className="text-[11px] text-slate-600">Manage project epics & milestones</p>
-          </div>
-
-          <div className="p-3.5 rounded border border-slate-200 bg-white space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-950">Tasks</span>
-              <span className="px-1.5 py-0.5 rounded text-[11px] bg-slate-100 text-slate-800 font-mono border border-slate-200">6 Ops</span>
-            </div>
-            <p className="text-[11px] text-slate-600">CRUD tasks & bulk task sync</p>
-          </div>
-
-          <div className="p-3.5 rounded border border-slate-200 bg-white space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-950">Notes & Summary</span>
-              <span className="px-1.5 py-0.5 rounded text-[11px] bg-slate-100 text-slate-800 font-mono border border-slate-200">6 Ops</span>
-            </div>
-            <p className="text-[11px] text-slate-600">Polymorphic notes & daily summary</p>
-          </div>
+          ))}
         </div>
-      </SectionCard>
+      </Card>
     </div>
   );
 };

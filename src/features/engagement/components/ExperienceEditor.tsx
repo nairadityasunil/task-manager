@@ -14,10 +14,58 @@ import {
   X
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import type { GuideStep, GuideType, SurveyQuestionType } from '@/lib/guides/types';
+import { Button, cn, inputClass, selectClass, textareaClass } from '@/components/ui';
 
 export type EditorKind = 'guide' | 'survey' | 'checklist';
+
+/** Centered dialog with a fixed header and footer and a scrolling body; full width (with a small margin) on phones. */
+export function EditorDialog({
+  title,
+  description,
+  onClose,
+  children,
+  footer,
+  maxWidth = 'max-w-6xl',
+  closeLabel = 'Close',
+  bodyClassName
+}: {
+  title: ReactNode;
+  description?: ReactNode;
+  onClose: () => void;
+  children: ReactNode;
+  footer?: ReactNode;
+  maxWidth?: string;
+  closeLabel?: string;
+  bodyClassName?: string;
+}): JSX.Element {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5">
+      <div aria-modal="true" className={cn('flex max-h-[calc(100dvh-24px)] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:max-h-[calc(100dvh-40px)]', maxWidth)} role="dialog">
+        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-slate-200 px-4 py-3.5 sm:px-6 sm:py-4">
+          <div className="min-w-0">
+            <h3 className="m-0 truncate text-base font-semibold text-slate-900">{title}</h3>
+            {description && <p className="m-0 mt-0.5 text-[13px] text-slate-500">{description}</p>}
+          </div>
+          <button
+            aria-label={closeLabel}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            onClick={onClose}
+            type="button"
+          >
+            <X size={16} />
+          </button>
+        </div>
+        <div className={cn('min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6', bodyClassName)}>{children}</div>
+        {footer && (
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-200 bg-slate-50/70 px-4 py-3 sm:px-6">{footer}</div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const newId = (): string => crypto.randomUUID();
 
@@ -37,7 +85,7 @@ export const GUIDE_TYPE_INFO: Record<
 export function GuideTypePicker({ value, onChange }: { value: GuideType; onChange: (type: GuideType) => void }): JSX.Element {
   return (
     <div>
-      <p className="m-0 mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Format</p>
+      <p className="m-0 mb-2 text-sm font-medium text-slate-700">Format</p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" role="radiogroup" aria-label="Guide format">
         {(Object.keys(GUIDE_TYPE_INFO) as Array<keyof typeof GUIDE_TYPE_INFO>).map((type) => {
           const info = GUIDE_TYPE_INFO[type];
@@ -46,17 +94,17 @@ export function GuideTypePicker({ value, onChange }: { value: GuideType; onChang
           return (
             <button
               aria-checked={active}
-              className={`flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors ${
-                active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+              className={`flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/10 ${
+                active ? 'border-slate-900 bg-slate-50 text-slate-900 ring-1 ring-slate-900' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
               }`}
               key={type}
               onClick={() => onChange(type)}
               role="radio"
               type="button"
             >
-              <Icon size={16} />
-              <span className="text-sm font-semibold">{info.label}</span>
-              <span className={`text-[11px] leading-snug ${active ? 'text-slate-300' : 'text-slate-500'}`}>{info.description}</span>
+              <Icon size={16} className={active ? 'text-slate-900' : 'text-slate-400'} />
+              <span className="text-sm font-medium">{info.label}</span>
+              <span className="text-xs leading-snug text-slate-500">{info.description}</span>
             </button>
           );
         })}
@@ -228,20 +276,20 @@ export const TEMPLATES: Record<EditorKind, ExperienceTemplate[]> = {
 
 export function TemplatePicker({ kind, onPick }: { kind: EditorKind; onPick: (template: ExperienceTemplate) => void }): JSX.Element {
   return (
-    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/60 p-4">
-      <p className="m-0 flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-        <Sparkles size={15} className="text-amber-500" /> Start from a template
+    <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3 sm:p-4">
+      <p className="m-0 flex items-center gap-1.5 text-sm font-medium text-slate-900">
+        <Sparkles size={15} className="text-slate-500" /> Start from a template
       </p>
-      <p className="m-0 mt-0.5 text-xs text-slate-500">Pick one to fill in the form, then change anything you like.</p>
+      <p className="m-0 mt-0.5 text-[13px] text-slate-500">Pick one to fill in the form, then change anything you like.</p>
       <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
         {TEMPLATES[kind].map((template) => (
           <button
-            className="rounded-lg border border-slate-200 bg-white p-3 text-left transition-colors hover:border-slate-400"
+            className="rounded-lg border border-slate-200 bg-white p-3 text-left shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/10"
             key={template.key}
             onClick={() => onPick(template)}
             type="button"
           >
-            <span className="block text-sm font-semibold text-slate-900">{template.name}</span>
+            <span className="block text-sm font-medium text-slate-900">{template.name}</span>
             <span className="mt-0.5 block text-xs text-slate-500">{template.summary}</span>
           </button>
         ))}
@@ -278,9 +326,10 @@ export const validateExperience = (kind: EditorKind, guideType: GuideType, title
 
 // ─── Content editor ─────────────────────────────────────────────────────────
 
-const inputCls =
-  'w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none';
-const labelCls = 'grid gap-1 text-xs font-semibold text-slate-600';
+const inputCls = cn(inputClass, 'min-w-0');
+const textareaCls = cn(textareaClass, 'min-w-0');
+const labelCls = 'grid gap-1.5 text-sm font-medium text-slate-700';
+const hintCls = 'text-xs font-normal text-slate-500';
 
 interface ContentEditorProps {
   kind: EditorKind;
@@ -310,19 +359,19 @@ export function ContentEditor({ kind, guideType, steps, onChange }: ContentEdito
 
   return (
     <section>
-      <div className="mb-2 flex items-center justify-between">
-        <p className="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500">{heading}</p>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="m-0 text-sm font-medium text-slate-700">{heading}</p>
         {!singleStep && (
-          <button className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50" onClick={add} type="button">
-            <Plus size={13} /> Add {noun.toLowerCase()}
-          </button>
+          <Button icon={Plus} onClick={add} size="sm">
+            Add {noun.toLowerCase()}
+          </Button>
         )}
       </div>
       <ol className="m-0 grid list-none gap-3 p-0">
         {visible.map((step, index) => (
-          <li className="rounded-xl border border-slate-200 bg-white p-4" key={step.id}>
+          <li className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4" key={step.id}>
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500">
+              <span className="text-xs font-medium text-slate-500">
                 {singleStep ? (kind === 'guide' ? info?.label : noun) : `${noun} ${index + 1}`}
               </span>
               {!singleStep && (
@@ -343,20 +392,20 @@ export function ContentEditor({ kind, guideType, steps, onChange }: ContentEdito
                 </label>
                 <label className={labelCls}>
                   {kind === 'checklist' ? 'Details (optional)' : 'Message'}
-                  <textarea className={`${inputCls} resize-y`} onChange={(event) => update(index, { description: event.target.value })} rows={2} value={step.description ?? ''} />
+                  <textarea className={`${textareaCls} resize-y`} onChange={(event) => update(index, { description: event.target.value })} rows={2} value={step.description ?? ''} />
                 </label>
                 {kind === 'checklist' && (
                   <label className={labelCls}>
                     Completes when this event is tracked
                     <input className={`${inputCls} font-mono`} onChange={(event) => update(index, { linkedEvent: event.target.value.trim() })} placeholder="e.g. project_created" value={step.linkedEvent ?? ''} />
-                    <span className="font-normal text-slate-400">The event name your app sends with tracker.track(…). Leave empty to let users tick it off themselves.</span>
+                    <span className={hintCls}>The event name your app sends with tracker.track(…). Leave empty to let users tick it off themselves.</span>
                   </label>
                 )}
                 {kind === 'guide' && info && info.selector !== 'none' && (
                   <label className={labelCls}>
-                    Point at element {info.selector === 'optional' && <span className="font-normal text-slate-400">(optional)</span>}
+                    Point at element {info.selector === 'optional' && <span className="font-normal text-slate-500">(optional)</span>}
                     <input className={`${inputCls} font-mono`} onChange={(event) => update(index, { selector: event.target.value })} placeholder="e.g. #save-button or [data-tour='projects']" value={step.selector ?? ''} />
-                    <span className="font-normal text-slate-400">
+                    <span className={hintCls}>
                       {info.selector === 'optional'
                         ? 'A CSS selector for the element this step points at. Leave empty to show the step in the centre of the screen.'
                         : 'A CSS selector for the element to attach to. Tip: add a data attribute like data-tour="export" to your HTML and use [data-tour="export"].'}
@@ -396,7 +445,7 @@ function QuestionFields({ question, onChange }: { question: GuideStep; onChange:
       <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
         <label className={labelCls}>
           Answer type
-          <select className={inputCls} onChange={(event) => changeType(event.target.value as SurveyQuestionType)} value={question.type ?? 'TEXTAREA'}>
+          <select className={cn(selectClass, 'min-w-0')} onChange={(event) => changeType(event.target.value as SurveyQuestionType)} value={question.type ?? 'TEXTAREA'}>
             {groups.map((group) => (
               <optgroup key={group} label={group}>
                 {QUESTION_TYPES.filter((entry) => entry.group === group).map((entry) => (
@@ -406,12 +455,12 @@ function QuestionFields({ question, onChange }: { question: GuideStep; onChange:
             ))}
           </select>
         </label>
-        <label className="flex items-center gap-2 self-end pb-2 text-sm text-slate-700">
-          <input checked={Boolean(question.required)} className="h-4 w-4 rounded border-slate-300" onChange={(event) => onChange({ required: event.target.checked })} type="checkbox" />
+        <label className="flex h-9 items-center gap-2 self-end text-sm text-slate-700">
+          <input checked={Boolean(question.required)} className="h-4 w-4 rounded border-slate-300 accent-slate-900" onChange={(event) => onChange({ required: event.target.checked })} type="checkbox" />
           Required
         </label>
       </div>
-      {typeInfo && <p className="m-0 -mt-1 text-xs text-slate-400">{typeInfo.hint}</p>}
+      {typeInfo && <p className="m-0 -mt-1 text-xs text-slate-500">{typeInfo.hint}</p>}
       <label className={labelCls}>
         Help text (optional)
         <input className={inputCls} onChange={(event) => onChange({ description: event.target.value })} value={question.description ?? ''} />
@@ -419,7 +468,7 @@ function QuestionFields({ question, onChange }: { question: GuideStep; onChange:
 
       {CHOICE_TYPES.has(question.type) && (
         <div className="grid gap-2">
-          <span className="text-xs font-semibold text-slate-600">Options</span>
+          <span className="text-sm font-medium text-slate-700">Options</span>
           {options.map((option, optionIndex) => (
             <div className="flex items-center gap-2" key={optionIndex}>
               <input
@@ -434,7 +483,7 @@ function QuestionFields({ question, onChange }: { question: GuideStep; onChange:
             </div>
           ))}
           <button
-            className="flex w-fit items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+            className="flex h-8 w-fit items-center gap-1.5 rounded-lg px-2 text-[13px] font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
             onClick={() => onChange({ options: [...options, `Option ${options.length + 1}`] })}
             type="button"
           >
@@ -475,7 +524,7 @@ function IconBtn({
   return (
     <button
       aria-label={label}
-      className={`flex h-7 w-7 items-center justify-center rounded-md text-slate-400 disabled:opacity-30 ${danger ? 'hover:bg-red-50 hover:text-red-600' : 'hover:bg-slate-100 hover:text-slate-700'}`}
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 disabled:opacity-30 ${danger ? 'hover:bg-red-50 hover:text-red-600' : 'hover:bg-slate-100 hover:text-slate-700'}`}
       disabled={disabled}
       onClick={onClick}
       title={label}

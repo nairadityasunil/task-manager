@@ -1,18 +1,19 @@
 import { Clock3, PauseCircle, ShieldAlert } from 'lucide-react';
 
 import type { Task, TaskSlaState } from '@/types/task';
+import { cn } from '@/components/ui';
 
 interface SlaIndicatorProps {
   compact?: boolean;
   task: Task;
 }
 
-const stateClass: Record<TaskSlaState, string> = {
-  HEALTHY: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  NEAR_BREACH: 'bg-amber-50 text-amber-700 border-amber-200',
-  BREACHED: 'bg-red-50 text-red-700 border-red-200',
-  PAUSED: 'bg-slate-100 text-slate-600 border-slate-200',
-  COMPLETED: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+const stateMeta: Record<TaskSlaState, { label: string; text: string; dot: string; bar: string }> = {
+  HEALTHY: { label: 'Healthy', text: 'text-slate-600', dot: 'bg-emerald-500', bar: 'bg-emerald-500' },
+  NEAR_BREACH: { label: 'Near breach', text: 'text-amber-700', dot: 'bg-amber-500', bar: 'bg-amber-500' },
+  BREACHED: { label: 'Breached', text: 'text-red-700', dot: 'bg-red-500', bar: 'bg-red-500' },
+  PAUSED: { label: 'Paused', text: 'text-slate-500', dot: 'bg-slate-400', bar: 'bg-slate-400' },
+  COMPLETED: { label: 'Completed', text: 'text-emerald-700', dot: 'bg-emerald-500', bar: 'bg-emerald-500' }
 };
 
 const formatRemaining = (dueAt: string | null): string => {
@@ -40,25 +41,33 @@ function SlaIndicator({ compact = false, task }: SlaIndicatorProps): JSX.Element
   const breached = task.responseBreached || task.resolutionBreached;
   const remaining = formatRemaining(task.slaResolutionDueAt);
   const pct = progressPercent(task);
+  const meta = breached ? stateMeta.BREACHED : stateMeta[state] ?? stateMeta.HEALTHY;
+  const showRemaining = state !== 'COMPLETED' && state !== 'PAUSED' && remaining !== 'Breached' && remaining !== 'No SLA';
+  const Icon = state === 'PAUSED' ? PauseCircle : breached ? ShieldAlert : Clock3;
+
+  if (compact) {
+    return (
+      <span
+        className={cn('inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-medium', meta.text)}
+        title={`SLA ${stateMeta[state]?.label ?? state} · Resolution ${remaining}`}
+      >
+        <span aria-hidden className={cn('h-1.5 w-1.5 rounded-full', meta.dot)} />
+        {stateMeta[state]?.label ?? state}
+        {showRemaining ? <span className="font-normal tabular-nums text-slate-500">· {remaining}</span> : null}
+      </span>
+    );
+  }
 
   return (
-    <div className="grid gap-1.5 min-w-0">
-      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[11px] font-semibold uppercase tracking-wide ${stateClass[state]}`}>
-        {state === 'PAUSED' ? <PauseCircle size={12} /> : breached ? <ShieldAlert size={12} /> : <Clock3 size={12} />}
-        <span>{state.replace('_', ' ')}</span>
-        {!compact && <span className="opacity-70">Resolution {remaining}</span>}
+    <div className="grid min-w-0 gap-1.5">
+      <div className={cn('flex items-center gap-1.5 text-xs font-medium', meta.text)}>
+        <Icon className="shrink-0" size={13} />
+        <span>{stateMeta[state]?.label ?? state}</span>
+        <span className="ml-auto font-normal tabular-nums text-slate-500">Resolution {remaining}</span>
       </div>
-      {!compact && (
-        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div
-            className={[
-              'h-full rounded-full transition-all',
-              breached ? 'bg-red-500' : state === 'NEAR_BREACH' ? 'bg-amber-500' : 'bg-emerald-500'
-            ].join(' ')}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-      )}
+      <div className="h-1 overflow-hidden rounded-full bg-slate-100">
+        <div className={cn('h-full rounded-full transition-all', meta.bar)} style={{ width: `${pct}%` }} />
+      </div>
     </div>
   );
 }

@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { getProjectMembers } from '@/services/projects';
 import type { ProjectMember } from '@/types/project';
 import UserAvatar from './UserAvatar';
-import { User } from 'lucide-react';
+import { ChevronDown, User } from 'lucide-react';
+import { cn } from '@/components/ui';
 
 interface AssigneeSelectorProps {
   projectId: string | null;
@@ -44,8 +45,9 @@ export default function AssigneeSelector({
     if (isOpen && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       setDropdownPos({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
+        // The dropdown is `position: fixed`, so viewport coordinates are what we need.
+        top: rect.bottom,
+        left: Math.max(8, Math.min(rect.left, window.innerWidth - Math.max(rect.width, 220) - 8)),
         width: rect.width
       });
     }
@@ -54,19 +56,21 @@ export default function AssigneeSelector({
   const selectedMember = members.find(m => String(m.userId) === String(selectedUserId));
 
   return (
-    <div className={`relative z-30 ${className}`}>
-      {label && <label className="block text-xs font-medium text-slate-500  mb-1.5">{label}</label>}
+    <div className={`relative ${className}`}>
+      {label && <label className="mb-1.5 block text-sm font-medium text-slate-700">{label}</label>}
       
       <button
         ref={triggerRef}
         type="button"
         disabled={disabled || loading}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl border transition-all ${
-          isOpen 
-            ? 'border-slate-500 ring-2 ring-slate-500/10 bg-white'
-            : 'border-slate-200  bg-slate-50/50  hover:border-slate-300'
-        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        className={cn(
+          'flex h-9 w-full min-w-0 items-center gap-2 rounded-lg border bg-white pl-1.5 pr-2 text-left shadow-sm transition-colors',
+          isOpen ? 'border-slate-900 ring-4 ring-slate-900/10' : 'border-slate-300 hover:border-slate-400',
+          disabled || loading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+        )}
       >
         {selectedMember ? (
           <>
@@ -76,18 +80,19 @@ export default function AssigneeSelector({
               size="sm" 
               showTooltip={false} 
             />
-            <span className="text-sm font-medium text-slate-700  truncate">
+            <span className="min-w-0 flex-1 truncate text-sm text-slate-900">
               {selectedMember.user.name || selectedMember.user.email}
             </span>
           </>
         ) : (
           <>
-            <div className="w-7 h-7 rounded-full bg-slate-200  flex items-center justify-center">
-              <User className="w-4 h-4 text-slate-500" />
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-dashed border-slate-300 bg-slate-50">
+              <User className="h-3.5 w-3.5 text-slate-400" />
             </div>
-            <span className="text-sm text-slate-500">Unassigned</span>
+            <span className="min-w-0 flex-1 truncate text-sm text-slate-500">Unassigned</span>
           </>
         )}
+        <ChevronDown aria-hidden className={cn('h-4 w-4 shrink-0 text-slate-400 transition-transform', isOpen && 'rotate-180')} />
       </button>
 
       {isOpen && createPortal(
@@ -97,15 +102,16 @@ export default function AssigneeSelector({
             onClick={() => setIsOpen(false)}
           ></div>
           <div 
-            className="fixed z-[6001] max-h-60 overflow-y-auto bg-white  rounded-xl border border-slate-200  shadow-xl p-1.5 animate-modalIn"
+            className="fixed z-[6001] max-h-60 min-w-[220px] overflow-y-auto rounded-lg border border-slate-200 bg-white p-1 shadow-lg animate-modalIn"
+            role="listbox"
             style={{
-              top: `${dropdownPos.top + 8}px`,
+              top: `${dropdownPos.top + 4}px`,
               left: `${dropdownPos.left}px`,
               width: `${dropdownPos.width}px`
             }}
           >
             {members.length === 0 ? (
-              <div className="p-3 text-sm text-slate-500 text-center">No members found</div>
+              <div className="px-3 py-4 text-center text-[13px] text-slate-500">No members found</div>
             ) : (
               members.map((member) => (
                 <button
@@ -115,11 +121,12 @@ export default function AssigneeSelector({
                     onSelect(member.userId);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg transition-colors ${
-                    String(selectedUserId) === String(member.userId)
-                      ? 'bg-slate-50  text-slate-700  ring-1 ring-slate-500/20' 
-                      : 'hover:bg-slate-50  text-slate-700'
-                  }`}
+                  aria-selected={String(selectedUserId) === String(member.userId)}
+                  role="option"
+                  className={cn(
+                    'flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-slate-700 transition-colors',
+                    String(selectedUserId) === String(member.userId) ? 'bg-slate-100 text-slate-900' : 'hover:bg-slate-50'
+                  )}
                 >
                   <UserAvatar 
                     name={member.user.name} 
@@ -127,12 +134,12 @@ export default function AssigneeSelector({
                     size="sm" 
                     showTooltip={false} 
                   />
-                  <div className="flex flex-col items-start min-w-0">
-                    <span className="text-sm font-medium truncate">
+                  <div className="flex min-w-0 flex-col items-start">
+                    <span className="max-w-full truncate text-sm font-medium">
                       {member.user.name || member.user.email}
                     </span>
                     {member.user.name && (
-                      <span className="text-[11px] text-slate-500  truncate">
+                      <span className="max-w-full truncate text-xs text-slate-500">
                         {member.user.email}
                       </span>
                     )}

@@ -18,6 +18,9 @@ import {
   Workflow
 } from 'lucide-react';
 import noDataImg from '@/assets/no_data.png';
+import PageHeader from '@/components/PageHeader';
+import EmptyState from '@/components/EmptyState';
+import { Badge, Button, Card, selectClass } from '@/components/ui';
 import type { Project } from '@/types/project';
 import {
   useSemanticIntelligence,
@@ -34,7 +37,7 @@ interface SemanticIntelligencePageProps {
   allProjectsValue: string;
 }
 
-const ScoreRing = ({ score, size = 60, stroke = 5, color = 'var(--color-olive-700)' }: { score: number, size?: number, stroke?: number, color?: string }) => {
+const ScoreRing = ({ score, size = 60, stroke = 5, color = 'var(--color-slate-700)' }: { score: number, size?: number, stroke?: number, color?: string }) => {
   const radius = (size - stroke) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (score / 100) * circumference;
@@ -64,7 +67,7 @@ const ScoreRing = ({ score, size = 60, stroke = 5, color = 'var(--color-olive-70
           style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
         />
       </svg>
-      <span className="absolute text-[11px] font-semibold text-slate-800">
+      <span className="absolute text-xs font-semibold tabular-nums text-slate-800">
         {Math.round(score)}
       </span>
     </div>
@@ -90,14 +93,14 @@ const Sparkline = ({ data }: { data: number[] }) => {
   return (
     <svg className="overflow-visible" height={height} width={width}>
       <polyline
-        className="text-slate-700/30"
+        className="text-slate-300"
         fill="none"
         points={points}
         stroke="currentColor"
         strokeWidth="1.5"
       />
       <circle
-        className="text-slate-700"
+        className="text-slate-500"
         cx={width}
         cy={height - ((data[data.length - 1] - min) / range) * height}
         fill="currentColor"
@@ -107,13 +110,13 @@ const Sparkline = ({ data }: { data: number[] }) => {
   );
 };
 
-const FactorBar = ({ label, share, color = 'var(--color-olive-700)' }: { label: string, share: number, color?: string }) => (
+const FactorBar = ({ label, share, color = 'var(--color-slate-700)' }: { label: string, share: number, color?: string }) => (
   <div className="space-y-1.5">
-    <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wide">
-      <span className="text-slate-500">{label}</span>
-      <span className="text-slate-700">{share}%</span>
+    <div className="flex justify-between gap-2 text-[13px]">
+      <span className="font-medium text-slate-700">{label}</span>
+      <span className="tabular-nums text-slate-500">{share}%</span>
     </div>
-    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+    <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
       <div
         className="h-full transition-all duration-1000 ease-out"
         style={{ width: `${share}%`, backgroundColor: color }}
@@ -142,90 +145,99 @@ export default function SemanticIntelligencePage({
 
   if (intel.loading && intel.metrics.length === 0) {
     return (
-      <div className="flex h-[80vh] items-center justify-center">
+      <div className="flex min-h-[60vh] items-center justify-center bg-slate-50">
         <div className="text-center">
-          <Loader2 className="mx-auto animate-spin text-slate-700" size={40} />
-          <p className="mt-4 text-sm font-semibold text-slate-500 uppercase tracking-wide">Hydrating Semantic Layer</p>
+          <Loader2 className="mx-auto animate-spin text-slate-400" size={28} />
+          <p className="mt-3 text-sm font-medium text-slate-500">Hydrating Semantic Layer</p>
         </div>
       </div>
     );
   }
 
+  const sectionIcon = (Icon: typeof Activity, tone: 'neutral' | 'red' | 'emerald' = 'neutral') => (
+    <div
+      className={[
+        'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border',
+        tone === 'red'
+          ? 'border-red-100 bg-red-50 text-red-600'
+          : tone === 'emerald'
+          ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+          : 'border-slate-200 bg-slate-50 text-slate-600'
+      ].join(' ')}
+    >
+      <Icon size={17} />
+    </div>
+  );
+
   return (
     <div className="min-h-full bg-slate-50 font-sans">
-      {/* Header Panel */}
-      <div className="sticky top-0 z-20 px-4 sm:px-8 py-4 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl shadow-[0_4px_24px_rgba(63,98,18,0.04)]">
-        <div className="flex flex-wrap items-center justify-between gap-6 max-w-full mx-auto">
-          <div className="flex flex-wrap items-center justify-between w-full gap-3">
-            <div className="relative group">
-              <select
-                className="h-10 pl-10 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 shadow-sm appearance-none focus:ring-4 focus:ring-slate-700/5 focus:border-slate-400 outline-none transition-all cursor-pointer hover:border-slate-300"
-                onChange={(event) => intel.setActiveProjectId(event.target.value)}
-                value={intel.activeProjectId}
-              >
-                <option value={allProjectsValue}>All Workspaces</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
-              <Workflow className="absolute left-3.5 top-3 text-slate-500 group-hover:text-slate-700 transition-colors" size={14} />
-              <div className="absolute right-3.5 top-3.5 pointer-events-none text-slate-400">
-                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-            </div>
-
-            <div className="flex max-w-full overflow-x-auto rounded-xl border border-slate-200 bg-slate-50/50 p-1 shadow-inner backdrop-blur-sm">
-              {timeRangeOptions.map((option) => (
-                <button
-                  className={[
-                    'h-8 px-4 text-[11px] font-medium uppercase tracking-wide rounded-lg transition-all duration-300',
-                    intel.timeRange === option.value
-                      ? 'bg-white text-slate-800 shadow-md ring-1 ring-slate-100'
-                      : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
-                  ].join(' ')}
-                  key={option.value}
-                  onClick={() => intel.setTimeRange(option.value)}
-                  type="button"
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-
-            <button
-              className={[
-                'flex h-10 items-center gap-2 rounded-xl px-5 text-xs font-medium transition-all duration-300 transform active:scale-95 group',
-                intel.loading
-                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                  : 'bg-slate-900 text-white shadow-lg shadow-slate-900/20 hover:bg-black hover:shadow-black/25'
-              ].join(' ')}
-              disabled={intel.loading}
-              onClick={() => void intel.loadIntelligence()}
-              type="button"
+      <PageHeader
+        icon={Sparkles}
+        title="Semantic Intelligence"
+        description="Governed metrics, anomalies and trends across your projects."
+      >
+        {/* Filter toolbar */}
+        <div className="flex flex-wrap items-center gap-2 pb-4 sm:gap-3">
+          <div className="relative w-full sm:w-64">
+            <Workflow className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+            <select
+              aria-label="Project scope"
+              className={`${selectClass} pl-8`}
+              onChange={(event) => intel.setActiveProjectId(event.target.value)}
+              value={intel.activeProjectId}
             >
-              {intel.loading ? <Loader2 className="animate-spin" size={14} /> : <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-500" />}
-              <span className="tracking-wide uppercase">Sync</span>
-            </button>
+              <option value={allProjectsValue}>All Workspaces</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
-      </div>
 
-      <div className="p-8 space-y-8 animate-fadeIn">
+          <div className="flex max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 p-0.5 hide-scrollbar">
+            {timeRangeOptions.map((option) => (
+              <button
+                className={[
+                  'h-8 shrink-0 whitespace-nowrap rounded-md px-3 text-[13px] font-medium transition-colors',
+                  intel.timeRange === option.value
+                    ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+                    : 'text-slate-500 hover:text-slate-900'
+                ].join(' ')}
+                key={option.value}
+                onClick={() => intel.setTimeRange(option.value)}
+                type="button"
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+
+          <Button
+            className="sm:ml-auto"
+            disabled={intel.loading}
+            icon={RefreshCw}
+            loading={intel.loading}
+            onClick={() => void intel.loadIntelligence()}
+            variant="primary"
+          >
+            Sync
+          </Button>
+        </div>
+      </PageHeader>
+
+      <div className="space-y-5 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
         {intel.error ? (
-          <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800">
-            <AlertTriangle size={18} />
+          <div className="flex items-center gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            <AlertTriangle className="shrink-0" size={16} />
             {intel.error}
           </div>
         ) : null}
 
         {/* Top Metric Cards */}
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            { metric: 'project_health_score' as MetricName, icon: Gauge, hint: healthStatus.replace(/_/g, ' '), color: 'var(--color-olive-700)' },
+            { metric: 'project_health_score' as MetricName, icon: Gauge, hint: healthStatus.replace(/_/g, ' '), color: 'var(--color-slate-700)' },
             { metric: 'task_completion_rate' as MetricName, icon: CheckCircle2, hint: `${getMetricNumber(completion, ['completed'])} completed`, color: 'var(--color-emerald-600)' },
             { metric: 'overdue_tasks' as MetricName, icon: AlertTriangle, hint: 'open past due date', color: 'var(--color-red-600)' },
             { metric: 'stale_tasks' as MetricName, icon: Clock3, hint: 'not updated in 7 days', color: 'var(--color-amber-600)' }
@@ -233,58 +245,51 @@ export default function SemanticIntelligencePage({
             const result = intel.resultByMetric.get(metric);
             const definition = intel.metricByName.get(metric);
             const scoreValue = typeof getValueRecord(result).score === 'number' ? (getValueRecord(result).score as number) : null;
+            const label = result?.label ?? metric.replace(/_/g, ' ');
 
             return (
-              <section
-                className="group relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1"
-                key={metric}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-                      {result?.label ?? metric.replace(/_/g, ' ')}
-                    </p>
-                    <h4 className="text-3xl font-semibold text-slate-800 tabular-nums">
+              <section className="flex flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5" key={metric}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 space-y-1">
+                    <p className="m-0 text-[13px] font-medium text-slate-500 first-letter:uppercase">{label}</p>
+                    <h4 className="m-0 text-2xl font-semibold tabular-nums tracking-tight text-slate-900">
                       {formatMetricValue(result)}
                     </h4>
                   </div>
                   {scoreValue !== null ? (
-                    <ScoreRing color={color} score={scoreValue} />
+                    <ScoreRing color={color} score={scoreValue} size={48} stroke={4} />
                   ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-slate-700">
-                      <Icon size={24} />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
+                      <Icon size={17} />
                     </div>
                   )}
                 </div>
 
-                <div className="mt-6 flex items-end justify-between">
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-slate-500 capitalize">{hint}</p>
+                <div className="mt-4 flex items-end justify-between gap-3">
+                  <div className="min-w-0 space-y-1.5">
+                    <p className="m-0 text-xs text-slate-500 first-letter:uppercase">{hint}</p>
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium uppercase text-slate-500">
+                      <Badge tone="neutral">
                         <ShieldCheck size={10} />
                         {result?.semantic?.stability ?? definition?.stability ?? 'STABLE'}
-                      </span>
-                      {definition?.AIVisibility === 'safe' && (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-medium uppercase text-emerald-700">
-                          AI-SAFE
-                        </span>
-                      )}
+                      </Badge>
+                      {definition?.AIVisibility === 'safe' && <Badge tone="success">AI-SAFE</Badge>}
                     </div>
                   </div>
                   <Sparkline data={[40, 35, 55, 45, 60, 50, scoreValue ?? 70]} />
                 </div>
 
                 {definition?.drilldownSupport && (
-                  <button
-                    className="mt-6 w-full flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-100 bg-slate-50 text-[11px] font-medium uppercase tracking-wide text-slate-800 hover:bg-slate-50"
+                  <Button
+                    className="mt-4 w-full"
                     disabled={intel.drilldownLoading === metric}
+                    icon={GitBranch}
+                    loading={intel.drilldownLoading === metric}
                     onClick={() => void intel.openDrilldown(metric)}
-                    type="button"
+                    size="sm"
                   >
-                    {intel.drilldownLoading === metric ? <Loader2 className="animate-spin" size={14} /> : <GitBranch size={14} />}
                     Explore Lineage
-                  </button>
+                  </Button>
                 )}
               </section>
             );
@@ -293,96 +298,78 @@ export default function SemanticIntelligencePage({
 
         {/* Reasoning Panel */}
         {intel.reasoning && (
-          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
+          <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="flex flex-col xl:flex-row">
-              <div className="flex-1 p-8 space-y-6">
-                <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0 flex-1 space-y-5 p-4 sm:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                      <Sparkles size={20} />
-                    </div>
-                    <h4 className="text-xl font-semibold text-slate-800">
-                      Operational Reasoning
-                    </h4>
+                    {sectionIcon(Sparkles)}
+                    <h4 className="m-0 text-[15px] font-semibold text-slate-900">Operational Reasoning</h4>
                   </div>
-                  <div className={[
-                    'flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-wide ring-1 ring-inset',
-                    intel.reasoning.status === 'at_risk'
-                      ? 'bg-red-50 text-red-700 ring-red-200'
-                      : intel.reasoning.status === 'watch'
-                      ? 'bg-amber-50 text-amber-700 ring-amber-200'
-                      : 'bg-emerald-50 text-emerald-700 ring-emerald-200'
-                  ].join(' ')}>
-                    <Activity size={12} className="animate-pulse" />
+                  <Badge
+                    className="capitalize"
+                    dot
+                    tone={intel.reasoning.status === 'at_risk' ? 'danger' : intel.reasoning.status === 'watch' ? 'warning' : 'success'}
+                  >
                     {intel.reasoning.status.replace(/_/g, ' ')}
-                  </div>
+                  </Badge>
                 </div>
 
-                <div className="space-y-4">
-                  <p className="text-lg font-medium leading-relaxed text-slate-700">
-                    {intel.reasoning.narrative}
-                  </p>
+                <div className="space-y-3">
+                  <p className="m-0 text-[15px] leading-relaxed text-slate-700">{intel.reasoning.narrative}</p>
                   {intel.reasoning.causalNarrative && (
-                    <div className="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-slate-200">
-                      <p className="text-sm italic text-slate-500">
-                        {intel.reasoning.causalNarrative}
-                      </p>
-                    </div>
+                    <p className="m-0 border-l-2 border-slate-200 pl-3 text-sm text-slate-500">
+                      {intel.reasoning.causalNarrative}
+                    </p>
                   )}
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="rounded-2xl bg-slate-50/50 p-6 border border-slate-100">
-                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 mb-4">Semantic Context</p>
-                    <div className="flex flex-wrap gap-2">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-lg border border-slate-200 p-4">
+                    <p className="m-0 mb-3 text-sm font-medium text-slate-700">Semantic Context</p>
+                    <div className="flex flex-wrap gap-1.5">
                       {Object.entries(intel.reasoning.semanticInterpretation ?? {}).map(([key, value]) => (
-                        <span className="rounded-lg bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm border border-slate-100" key={key}>
-                          <span className="text-slate-400 mr-1">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                        <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700" key={key}>
+                          <span className="mr-1 text-slate-500">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
                           {value.replace(/_/g, ' ')}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-2xl bg-slate-50/50 p-6 border border-slate-100">
-                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 mb-4">Governance Recommendations</p>
-                    <div className="space-y-3">
+                  <div className="rounded-lg border border-slate-200 p-4">
+                    <p className="m-0 mb-3 text-sm font-medium text-slate-700">Governance Recommendations</p>
+                    <ul className="m-0 list-none space-y-2.5 p-0">
                       {(intel.reasoning.recommendations ?? []).slice(0, 3).map((rec, i) => (
-                        <div key={i} className="flex items-start gap-3 group">
-                          <CheckCircle2 className="mt-0.5 text-slate-600 flex-shrink-0" size={14} />
-                          <div className="space-y-1">
-                            <p className="text-sm font-semibold text-slate-800 leading-tight">{rec}</p>
-                          </div>
-                        </div>
+                        <li key={i} className="flex items-start gap-2.5">
+                          <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={14} />
+                          <p className="m-0 text-sm leading-snug text-slate-700">{rec}</p>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
                 </div>
               </div>
 
-              <div className="w-full xl:w-96 border-t xl:border-t-0 xl:border-l border-slate-200 bg-slate-50/30 p-8">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 mb-8">Intelligence Vectors</p>
-                <div className="space-y-8">
+              <div className="w-full border-t border-slate-200 bg-slate-50/60 p-4 sm:p-5 xl:w-80 xl:border-l xl:border-t-0">
+                <p className="m-0 mb-4 text-sm font-medium text-slate-700">Intelligence Vectors</p>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
                   {[
-                    { label: 'Delivery Risk', value: intel.reasoning.scores.deliveryRisk, color: '#ef4444' },
-                    { label: 'Execution Confidence', value: intel.reasoning.scores.executionConfidence, color: '#10b981' },
-                    { label: 'Workflow Friction', value: intel.reasoning.scores.workflowFriction, color: '#f59e0b' },
-                    { label: 'Project Momentum', value: intel.reasoning.scores.projectMomentum, color: '#3b82f6' }
+                    { label: 'Delivery Risk', value: intel.reasoning.scores.deliveryRisk, color: 'var(--color-red-500)' },
+                    { label: 'Execution Confidence', value: intel.reasoning.scores.executionConfidence, color: 'var(--color-emerald-500)' },
+                    { label: 'Workflow Friction', value: intel.reasoning.scores.workflowFriction, color: 'var(--color-amber-500)' },
+                    { label: 'Project Momentum', value: intel.reasoning.scores.projectMomentum, color: 'var(--color-sky-500)' }
                   ].map((item) => (
-                    <div key={item.label} className="group flex items-center justify-between">
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-slate-600 group-hover:text-slate-800 transition-colors uppercase tracking-tight">
-                          {item.label}
-                        </p>
-                        <div className="h-1.5 w-40 rounded-full bg-slate-100 overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-1000 ease-out"
-                            style={{ width: `${item.value}%`, backgroundColor: item.color }}
-                          />
-                        </div>
+                    <div key={item.label} className="space-y-1.5">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="m-0 text-[13px] text-slate-600">{item.label}</p>
+                        <span className="text-base font-semibold tabular-nums text-slate-900">{item.value}</span>
                       </div>
-                      <span className="text-2xl font-semibold text-slate-800 tabular-nums">
-                        {item.value}
-                      </span>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-slate-200/70">
+                        <div
+                          className="h-full rounded-full transition-all duration-700 ease-out"
+                          style={{ width: `${item.value}%`, backgroundColor: item.color }}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -392,210 +379,201 @@ export default function SemanticIntelligencePage({
         )}
 
         {/* Intelligence Grid */}
-        <div className="grid gap-8 xl:grid-cols-2">
+        <div className="grid gap-5 lg:grid-cols-2">
           {/* Anomalies Panel */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-8">
+          <Card>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3.5 sm:px-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600">
-                  <AlertTriangle size={20} />
-                </div>
-                <h4 className="text-lg font-semibold text-slate-800">Operational Anomalies</h4>
+                {sectionIcon(AlertTriangle, 'red')}
+                <h4 className="m-0 text-[15px] font-semibold text-slate-900">Operational Anomalies</h4>
               </div>
-              <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Threshold: 2.5σ</span>
+              <span className="text-xs text-slate-500">Threshold: 2.5σ</span>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 p-4 sm:p-5">
               {intel.anomalies.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                  <ShieldCheck size={32} className="text-emerald-500 mb-3" />
-                  <p className="text-sm font-semibold text-slate-400">Operational state within expected semantic bounds.</p>
-                </div>
+                <EmptyState
+                  compact
+                  description="Operational state within expected semantic bounds."
+                  icon={ShieldCheck}
+                  title="No anomalies detected"
+                />
               ) : (
                 intel.anomalies.slice(0, 4).map((anomaly) => (
-                  <div className="relative overflow-hidden group rounded-2xl border border-slate-100 bg-slate-50/50 p-6 transition-all hover:bg-white hover:shadow-md" key={anomaly.metric}>
-                    <div className="flex items-start justify-between gap-4 mb-2">
-                      <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">{anomaly.metric}</span>
-                      <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">{anomaly.deviation}x deviation</span>
+                  <div className="rounded-lg border border-slate-200 p-4" key={anomaly.metric}>
+                    <div className="mb-1.5 flex items-start justify-between gap-3">
+                      <span className="break-all font-mono text-xs text-slate-500">{anomaly.metric}</span>
+                      <Badge tone="danger">{anomaly.deviation}x deviation</Badge>
                     </div>
-                    <p className="text-sm font-semibold text-slate-800 mb-2">{anomaly.explanation}</p>
-                    <p className="text-xs text-slate-500">{anomaly.mitigationHints?.[0] || 'No immediate action required'}</p>
+                    <p className="m-0 mb-1 text-sm font-medium text-slate-900">{anomaly.explanation}</p>
+                    <p className="m-0 text-[13px] text-slate-500">{anomaly.mitigationHints?.[0] || 'No immediate action required'}</p>
                   </div>
                 ))
               )}
             </div>
-          </section>
+          </Card>
 
           {/* Operational Trends Panel */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-8">
+          <Card>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3.5 sm:px-5">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                  <TrendingUp size={20} />
-                </div>
-                <h4 className="text-lg font-semibold text-slate-800">Operational Trends</h4>
+                {sectionIcon(TrendingUp)}
+                <h4 className="m-0 text-[15px] font-semibold text-slate-900">Operational Trends</h4>
               </div>
-              <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Causal Vectors</span>
+              <span className="text-xs text-slate-500">Causal Vectors</span>
             </div>
 
-            <div className="space-y-4">
-              {intel.trends.slice(0, 4).map((trend) => (
-                <div className="p-6 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-white transition-all shadow-xs" key={trend.metric}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-slate-800 uppercase tracking-wide">{trend.metric}</span>
-                    <span className={`text-xs font-semibold ${trend.direction === 'up' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                      {trend.direction.toUpperCase()}
-                    </span>
+            <div className="space-y-3 p-4 sm:p-5">
+              {intel.trends.length === 0 ? (
+                <EmptyState
+                  compact
+                  description="Trends appear once enough activity has been recorded in this window."
+                  icon={TrendingUp}
+                  title="No trends yet"
+                />
+              ) : (
+                intel.trends.slice(0, 4).map((trend) => (
+                  <div className="rounded-lg border border-slate-200 p-4" key={trend.metric}>
+                    <div className="mb-1.5 flex items-center justify-between gap-3">
+                      <span className="break-all font-mono text-xs font-medium text-slate-700">{trend.metric}</span>
+                      <Badge tone={trend.direction === 'up' ? 'success' : 'warning'}>{trend.direction.toUpperCase()}</Badge>
+                    </div>
+                    <p className="m-0 mb-2 text-sm text-slate-600">{trend.interpretation}</p>
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs tabular-nums text-slate-500">
+                      <span>Confidence: {Math.round(trend.confidence * 100)}%</span>
+                      <span>Delta: {trend.delta}</span>
+                    </div>
                   </div>
-                  <p className="text-sm text-slate-600 mb-3">{trend.interpretation}</p>
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                    <span>Confidence: {Math.round(trend.confidence * 100)}%</span>
-                    <span>Delta: {trend.delta}</span>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
-          </section>
+          </Card>
         </div>
 
         {/* Explainability & Causal Root Cause Section */}
         {intel.explanation && (
-          <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                  <BarChart3 size={20} />
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold text-slate-800">Metric Explainability — Delivery Risk</h4>
-                  <p className="text-xs text-slate-500">Deconstructed semantic drivers and root cause attribution</p>
+          <Card>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3.5 sm:px-5">
+              <div className="flex min-w-0 items-center gap-3">
+                {sectionIcon(BarChart3)}
+                <div className="min-w-0">
+                  <h4 className="m-0 text-[15px] font-semibold text-slate-900">Metric Explainability — Delivery Risk</h4>
+                  <p className="m-0 text-[13px] text-slate-500">Deconstructed semantic drivers and root cause attribution</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
-                <ShieldCheck size={14} className="text-emerald-600" />
+              <Badge tone="neutral">
+                <ShieldCheck size={12} className="text-emerald-600" />
                 Lineage: {intel.lineage?.lineage?.sourceCollections?.join(', ') || 'N/A'}
-              </div>
+              </Badge>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-4 p-4 sm:p-5 md:grid-cols-3">
               {intel.explanation.factors.map((factor) => (
-                <div key={factor.label} className="p-5 rounded-2xl bg-slate-50/50 border border-slate-100 space-y-3">
+                <div key={factor.label} className="space-y-2.5 rounded-lg border border-slate-200 p-4">
                   <FactorBar label={factor.label} share={Math.round(factor.weight * 100)} />
-                  <p className="text-xs text-slate-600">{factor.explanation}</p>
+                  <p className="m-0 text-[13px] text-slate-600">{factor.explanation}</p>
                 </div>
               ))}
             </div>
-          </section>
+          </Card>
         )}
 
         {/* Predictive Simulation & Counterfactual Interventions */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                <Bot size={20} />
-              </div>
-              <div>
-                <h4 className="text-lg font-semibold text-slate-800">Predictive Simulation Engine</h4>
-                <p className="text-xs text-slate-500">Simulate counterfactual interventions to evaluate impact prior to execution</p>
+        <Card>
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:p-5">
+            <div className="flex min-w-0 items-center gap-3">
+              {sectionIcon(Bot, 'emerald')}
+              <div className="min-w-0">
+                <h4 className="m-0 text-[15px] font-semibold text-slate-900">Predictive Simulation Engine</h4>
+                <p className="m-0 text-[13px] text-slate-500">Simulate counterfactual interventions to evaluate impact prior to execution</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                disabled={intel.simulating}
+                icon={ArrowRight}
+                loading={intel.simulating}
                 onClick={() => void intel.runSimulation('reduce_blockers')}
-                disabled={intel.simulating}
-                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-black transition-colors disabled:opacity-50 flex items-center gap-2"
+                size="sm"
+                variant="primary"
               >
-                {intel.simulating ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
                 Simulate Blockers Reduction
-              </button>
-              <button
-                type="button"
-                onClick={() => void intel.runSimulation('resolve_overdue')}
-                disabled={intel.simulating}
-                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-50 transition-colors disabled:opacity-50"
-              >
+              </Button>
+              <Button disabled={intel.simulating} onClick={() => void intel.runSimulation('resolve_overdue')} size="sm">
                 Simulate Resolving Overdue
-              </button>
+              </Button>
             </div>
           </div>
 
           {intel.simulation && (
-            <div className="p-6 rounded-2xl bg-emerald-50/50 border border-emerald-200/60 space-y-4 animate-fadeIn">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Intervention Simulation Result</span>
-                <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+            <div className="mx-4 mb-4 space-y-2 rounded-lg border border-emerald-200 bg-emerald-50/60 p-4 sm:mx-5 sm:mb-5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm font-medium text-emerald-800">Intervention Simulation Result</span>
+                <Badge tone="success">
                   Expected Impact: {intel.simulation.impact > 0 ? `+${intel.simulation.impact}` : intel.simulation.impact} Risk Score
-                </span>
+                </Badge>
               </div>
-              <p className="text-sm font-medium text-emerald-900">{intel.simulation.explanation}</p>
+              <p className="m-0 text-sm text-emerald-900">{intel.simulation.explanation}</p>
             </div>
           )}
-        </section>
+        </Card>
 
         {/* User Engagement Performance Grid */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm space-y-6">
-          <div className="flex items-center justify-between">
+        <Card>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3.5 sm:px-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                <Database size={20} />
-              </div>
-              <h4 className="text-lg font-semibold text-slate-800">Team Execution Breakdown</h4>
+              {sectionIcon(Database)}
+              <h4 className="m-0 text-[15px] font-semibold text-slate-900">Team Execution Breakdown</h4>
             </div>
-            <span className="text-xs font-mono text-slate-400">{perUserRows.length} active contributors</span>
+            <span className="text-xs text-slate-500">{perUserRows.length} active contributors</span>
           </div>
 
-          {perUserRows.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <img alt="No activity" className="w-32 opacity-40 mb-3" src={noDataImg} />
-              <p className="text-xs font-semibold text-slate-400">No contributor records found in this window.</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {perUserRows.map((row) => (
-                <div key={row.userId} className="p-5 rounded-2xl bg-slate-50/50 border border-slate-100 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-800">{row.name || row.email || 'User'}</span>
-                    <span className="text-xs font-semibold text-slate-700 bg-white px-2.5 py-1 rounded-lg shadow-xs border border-slate-100">
-                      {row.count} completed
-                    </span>
+          <div className="p-4 sm:p-5">
+            {perUserRows.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <img alt="No activity" className="mb-3 w-24 opacity-50" src={noDataImg} />
+                <p className="m-0 text-[13px] text-slate-500">No contributor records found in this window.</p>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {perUserRows.map((row) => (
+                  <div key={row.userId} className="space-y-2.5 rounded-lg border border-slate-200 p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-medium text-slate-900">{row.name || row.email || 'User'}</span>
+                      <span className="shrink-0 text-xs tabular-nums text-slate-500">{row.count} completed</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                      <div
+                        className="h-full rounded-full bg-slate-700 transition-all duration-700"
+                        style={{ width: `${Math.min(100, (row.count / maxCompleted) * 100)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                    <div
-                      className="h-full bg-slate-600 rounded-full transition-all duration-700"
-                      style={{ width: `${Math.min(100, (row.count / maxCompleted) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+                ))}
+              </div>
+            )}
+          </div>
+        </Card>
 
         {/* Drilldown Modal */}
         {intel.drilldown && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-xl space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div>
-                  <h4 className="text-lg font-semibold text-slate-900 capitalize">{intel.drilldown.metric.replace(/_/g, ' ')} Lineage</h4>
-                  <p className="text-xs text-slate-500">Drilldown results: {intel.drilldown.pagination.total} records</p>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true">
+            <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+              <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-4 sm:px-6">
+                <div className="min-w-0">
+                  <h4 className="m-0 truncate text-base font-semibold capitalize text-slate-900">{intel.drilldown.metric.replace(/_/g, ' ')} Lineage</h4>
+                  <p className="m-0 text-[13px] text-slate-500">Drilldown results: {intel.drilldown.pagination.total} records</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => intel.setDrilldown(null)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-50 transition-colors"
-                >
+                <Button onClick={() => intel.setDrilldown(null)} size="sm" variant="ghost">
                   Close
-                </button>
+                </Button>
               </div>
 
-              <div className="max-h-96 overflow-y-auto space-y-3 custom-scrollbar">
+              <div className="space-y-2 overflow-y-auto p-4 sm:p-6">
                 {intel.drilldown.rows.map((row, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-slate-50/60 border border-slate-100 text-xs space-y-1">
-                    <div className="font-semibold text-slate-800">{String(row.title || `Record #${idx + 1}`)}</div>
-                    <div className="text-slate-500 font-mono text-[11px]">{JSON.stringify(row)}</div>
+                  <div key={idx} className="space-y-1 rounded-lg border border-slate-200 p-3">
+                    <div className="text-sm font-medium text-slate-900">{String(row.title || `Record #${idx + 1}`)}</div>
+                    <div className="break-all font-mono text-xs text-slate-500">{JSON.stringify(row)}</div>
                   </div>
                 ))}
               </div>

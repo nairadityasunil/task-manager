@@ -51,28 +51,15 @@ function TaskList({
 }: TaskListProps): JSX.Element {
   if (loading) {
     return (
-      <div className="grid gap-4">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={`skeleton-${i}`} className="bg-white  border border-slate-100  rounded-2xl p-5 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 flex-1">
-                <Skeleton variant="rectangle" className="w-6 h-6 rounded-lg" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton variant="text" className="w-1/3 h-5" />
-                  <Skeleton variant="text" className="w-1/2 h-3" />
-                </div>
-              </div>
-              <Skeleton variant="rectangle" className="w-24 h-8 rounded-lg" />
+          <div key={`skeleton-${i}`} className="flex items-center gap-3 border-b border-slate-100 px-4 py-3.5 last:border-b-0">
+            <Skeleton variant="rectangle" className="h-4 w-4 rounded" />
+            <div className="flex-1 space-y-2">
+              <Skeleton variant="text" className={i % 2 ? 'h-3.5 w-1/2' : 'h-3.5 w-2/3'} />
+              <Skeleton variant="text" className="h-3 w-1/3" />
             </div>
-            <div className="flex items-center gap-3 pt-3 border-t border-slate-50 ">
-              <Skeleton variant="circle" className="w-6 h-6" />
-              <Skeleton variant="text" className="w-20 h-3" />
-              <div className="flex-1" />
-              <div className="flex gap-2">
-                <Skeleton variant="rectangle" className="w-8 h-8 rounded-lg" />
-                <Skeleton variant="rectangle" className="w-8 h-8 rounded-lg" />
-              </div>
-            </div>
+            <Skeleton variant="circle" className="h-7 w-7" />
           </div>
         ))}
       </div>
@@ -144,7 +131,7 @@ function TaskList({
   })();
 
   return (
-    <div className="grid gap-3.5">
+    <div className="@container flex min-w-0 flex-col gap-4">
       {tasks.length === 0 ? (
         <EmptyState
           description="Create a task or switch the active project to start planning work for this date."
@@ -152,7 +139,7 @@ function TaskList({
           title="No tasks in this view"
         />
       ) : (
-        <div className="grid gap-[18px]">
+        <div className="flex min-w-0 flex-col gap-4">
           {projectSections.length > 0 ? (
             projectSections.map((section) => {
               const tasksByEpicId = new Map<string | null, Task[]>();
@@ -198,18 +185,18 @@ function TaskList({
               ];
 
               return (
-                <section className="grid gap-[18px]" key={section.id}>
+                <section className="flex min-w-0 flex-col gap-4" key={section.id}>
 
                   {/* Epic groups */}
-                  <div className="grid gap-[18px]">
+                  <div className="flex min-w-0 flex-col gap-4">
                     {sectionGroups.map((group) => (
                       <section
                         key={group.id}
-                        className="flex flex-col gap-4"
+                        className="flex min-w-0 flex-col"
                       >
 
-                        {/* Task cards */}
-                        <div className="grid gap-4">
+                        {/* Task rows */}
+                        <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                           {group.tasks.map((task) => (
                             <TaskCard
                               actionTaskId={actionTaskId}
@@ -225,6 +212,7 @@ function TaskList({
                               isSelected={selectedTaskId === task.id}
                               isMultiSelected={selectedTaskIds.includes(task.id)}
                               onToggleSelection={onToggleSelection}
+                              variant="row"
                             />
                           ))}
                         </div>
@@ -235,7 +223,7 @@ function TaskList({
               );
             })
           ) : (
-            <div className="grid gap-4">
+            <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
               {tasks.map((task) => (
                 <TaskCard
                   key={task.id}
@@ -248,6 +236,7 @@ function TaskList({
                   isSelected={selectedTaskId === task.id}
                   isMultiSelected={selectedTaskIds.includes(task.id)}
                   onToggleSelection={onToggleSelection}
+                  variant="row"
                 />
               ))}
             </div>

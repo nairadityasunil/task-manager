@@ -1,6 +1,7 @@
 import React from "react";
 import { Folder as FolderIcon, X, Loader2, ChevronDown } from "lucide-react";
 import { PromptItem, PromptFolder } from "@/services/prompts";
+import { buttonClass, selectClass } from "@/components/ui";
 
 interface PromptMoveModalProps {
   prompt: PromptItem;
@@ -24,16 +25,17 @@ export const PromptMoveModal: React.FC<PromptMoveModalProps> = ({
   onConfirmMove,
 }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-sm max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+          <h3 className="m-0 min-w-0 truncate text-base font-semibold text-slate-900">
             Move "{prompt.name}" to...
           </h3>
           <button
             type="button"
             onClick={() => !isMoving && onClose()}
-            className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
+            aria-label="Close"
+            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
           >
             <X className="w-4 h-4" />
           </button>
@@ -41,14 +43,14 @@ export const PromptMoveModal: React.FC<PromptMoveModalProps> = ({
 
         <div className="p-4 space-y-3">
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-700">
+            <label className="block text-sm font-medium text-slate-700">
               Select Folder
             </label>
             <div className="relative">
               <select
                 value={targetFolderId || ""}
                 onChange={(e) => setTargetFolderId(e.target.value || null)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-medium focus:outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 cursor-pointer appearance-none pr-8"
+                className={`${selectClass} cursor-pointer appearance-none`}
               >
                 <option value="">Uncategorized / No Folder</option>
                 {folders.map((f) => {
@@ -60,16 +62,16 @@ export const PromptMoveModal: React.FC<PromptMoveModalProps> = ({
                   );
                 })}
               </select>
-              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-3 pointer-events-none" />
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
 
-          <div className="space-y-2 max-h-56 overflow-y-auto custom-scrollbar text-xs pt-1">
+          <div className="space-y-2 max-h-56 overflow-y-auto custom-scrollbar text-[13px] pt-1">
             <label
               onClick={() => setTargetFolderId(null)}
-              className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition ${
+              className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition ${
                 targetFolderId === null
-                  ? "bg-slate-50 border-slate-400 font-semibold text-slate-900 shadow-2xs"
+                  ? "bg-slate-50 border-slate-900 font-medium text-slate-900"
                   : "border-slate-200 hover:bg-slate-50 text-slate-700"
               }`}
             >
@@ -93,16 +95,16 @@ export const PromptMoveModal: React.FC<PromptMoveModalProps> = ({
                 <label
                   key={f._id}
                   onClick={() => setTargetFolderId(f._id)}
-                  className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition ${
+                  className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition ${
                     isSelected
-                      ? "bg-slate-50 border-slate-400 font-semibold text-slate-900 shadow-2xs"
+                      ? "bg-slate-50 border-slate-900 font-medium text-slate-900"
                       : "border-slate-200 hover:bg-slate-50 text-slate-700"
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <FolderIcon className={`w-4 h-4 ${isSelected ? "text-slate-700" : "text-slate-400"}`} />
                     <span>{f.name}</span>
-                    <span className="text-[11px] text-slate-400 font-mono">({count})</span>
+                    <span className="text-xs text-slate-400">({count})</span>
                   </div>
                   <input
                     type="radio"
@@ -122,7 +124,7 @@ export const PromptMoveModal: React.FC<PromptMoveModalProps> = ({
             type="button"
             disabled={isMoving}
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-100 transition cursor-pointer disabled:opacity-50"
+            className={buttonClass("secondary", "sm")}
           >
             Cancel
           </button>
@@ -130,7 +132,7 @@ export const PromptMoveModal: React.FC<PromptMoveModalProps> = ({
             type="button"
             disabled={isMoving}
             onClick={onConfirmMove}
-            className="px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-black text-white font-semibold text-xs transition shadow-2xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+            className={buttonClass("primary", "sm")}
           >
             {isMoving ? (
               <>

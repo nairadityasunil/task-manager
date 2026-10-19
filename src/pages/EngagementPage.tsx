@@ -2,15 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   BarChart3,
-  Bell,
   CheckSquare,
+  Eye,
   Layers3,
   Radio,
+  Rocket,
   Save,
-  UsersRound,
-  X
+  Sparkles,
+  UsersRound
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 
 import {
   createChecklist,
@@ -36,8 +36,11 @@ import {
 } from '@/lib/engagement/api';
 import { listIntegrations, type SdkIntegration } from '@/lib/sdk-integrations/api';
 import { useConfirm } from '@/context/ConfirmationContext';
+import PageHeader from '@/components/PageHeader';
+import { Badge, Button, Field, Tabs, cn, inputClass, selectClass } from '@/components/ui';
 import {
   ContentEditor,
+  EditorDialog,
   GuideTypePicker,
   TemplatePicker,
   newChecklistItem,
@@ -207,47 +210,52 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
   );
 
   return (
-    <div className={hideHeader ? '' : 'min-h-full bg-slate-50/50'}>
+    <div className={hideHeader ? '' : 'min-h-full bg-slate-50'}>
       {!hideHeader && (
-        <div className="border-b border-slate-200 bg-white px-4 sm:px-8 pt-5 sm:pt-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-3">
-                <h2 className="m-0 text-2xl font-semibold text-slate-900 ">Engagement</h2>
-                {integrations.length > 0 && !propSdkIntegrationId && (
-                  <select
-                    value={activeIntegrationId}
-                    onChange={(e) => setActiveIntegrationId(e.target.value)}
-                    className="rounded-lg border border-slate-200  bg-white  px-3 py-1.5 text-sm font-semibold text-slate-800  shadow-sm focus:border-slate-500 focus:outline-none"
-                  >
-                    {integrations.map((integration) => (
-                      <option key={integration.id} value={integration.id}>
-                        {integration.name} ({integration.environment})
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-              <p className="m-0 mt-1 text-sm text-slate-500 ">Guides, surveys, checklists, targeting, and behavior analytics</p>
+        <PageHeader
+          title="Engagement"
+          description="Guides, surveys, checklists, targeting, and behavior analytics"
+          icon={Sparkles}
+          actions={integrations.length > 0 && !propSdkIntegrationId ? (
+            <div className="w-full sm:w-64">
+              <select
+                aria-label="Integration"
+                value={activeIntegrationId}
+                onChange={(e) => setActiveIntegrationId(e.target.value)}
+                className={cn(selectClass, 'font-medium')}
+              >
+                {integrations.map((integration) => (
+                  <option key={integration.id} value={integration.id}>
+                    {integration.name} ({integration.environment})
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="grid w-full grid-cols-3 gap-2 sm:w-auto sm:gap-3 sm:text-right">
-              <Metric label="Live" value={totals.live} />
-              <Metric label="Drafts" value={totals.drafts} />
-              <Metric label="MTU" value={analytics?.mtu.users ?? 0} />
-            </div>
-          </div>
-          <div className="mt-6 flex flex-wrap gap-6" role="tablist">
-            <TabButton active={tab === 'guides'} icon={Layers3} label="Guides" onClick={() => setTab('guides')} />
-            <TabButton active={tab === 'surveys'} icon={Radio} label="Surveys" onClick={() => setTab('surveys')} />
-            <TabButton active={tab === 'checklists'} icon={CheckSquare} label="Checklists" onClick={() => setTab('checklists')} />
-            <TabButton active={tab === 'segments'} icon={UsersRound} label="Segments" onClick={() => setTab('segments')} />
-            <TabButton active={tab === 'analytics'} icon={BarChart3} label="Analytics" onClick={() => setTab('analytics')} />
-          </div>
-        </div>
+          ) : undefined}
+        >
+          <Tabs
+            items={[
+              { value: 'guides', label: 'Guides', icon: Layers3 },
+              { value: 'surveys', label: 'Surveys', icon: Radio },
+              { value: 'checklists', label: 'Checklists', icon: CheckSquare },
+              { value: 'segments', label: 'Segments', icon: UsersRound },
+              { value: 'analytics', label: 'Analytics', icon: BarChart3 }
+            ]}
+            value={tab}
+            onChange={setTab}
+          />
+        </PageHeader>
       )}
 
 
-      <div className={hideHeader ? '' : 'p-4 sm:p-8'}>
+      <div className={hideHeader ? '' : 'grid grid-cols-[minmax(0,1fr)] gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8'}>
+        {!hideHeader && (
+          <div className="grid grid-cols-3 gap-3">
+            <Metric label="Live" value={totals.live} />
+            <Metric label="Drafts" value={totals.drafts} />
+            <Metric label="MTU" value={analytics?.mtu.users ?? 0} />
+          </div>
+        )}
         {(tab === 'guides' || tab === 'surveys' || tab === 'checklists') && (
           <ExperienceLibrary
             kind={tab}
@@ -389,8 +397,8 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
 function ValidationSummary({ errors }: { errors: string[] }): JSX.Element | null {
   if (errors.length === 0) return null;
   return (
-    <div className="mr-auto max-w-xl rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800" role="alert">
-      <p className="m-0 font-semibold">Fix these before saving:</p>
+    <div className="mr-auto w-full rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] text-amber-800 sm:w-auto sm:max-w-xl" role="alert">
+      <p className="m-0 font-medium">Fix these before saving:</p>
       <ul className="m-0 mt-1 list-disc pl-4">
         {errors.slice(0, 5).map((error) => <li key={error}>{error}</li>)}
         {errors.length > 5 && <li>…and {errors.length - 5} more</li>}
@@ -399,22 +407,44 @@ function ValidationSummary({ errors }: { errors: string[] }): JSX.Element | null
   );
 }
 
+const TYPE_LABEL: Record<string, string> = {
+  MODAL: 'Modal',
+  TOUR: 'Product tour',
+  SMART_TIP: 'Smart tip',
+  HOTSPOT: 'Hotspot',
+  BANNER: 'Banner',
+  SURVEY: 'Survey',
+  CHECKLIST: 'Checklist'
+};
+
 function Preview({ guide }: { guide: Guide }): JSX.Element {
   return (
-    <aside className="sticky top-6 h-fit rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <SectionTitle icon={Bell} title="Preview" />
-      <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <p className="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500">{guide.type}</p>
-        <h3 className="m-0 mt-2 text-lg font-semibold text-slate-950">{guide.title}</h3>
-        <p className="m-0 mt-2 text-sm text-slate-600">{guide.description}</p>
-        <div className="mt-4 grid gap-2">
-          {guide.steps.map((step, index) => (
-            <div className="rounded-md bg-white px-3 py-2 text-sm" key={step.id}>
-              <span className="font-semibold text-slate-900">{index + 1}. {step.title}</span>
-              {step.description && <p className="m-0 mt-1 text-xs text-slate-500">{step.description}</p>}
-            </div>
-          ))}
+    <aside className="h-fit rounded-xl border border-slate-200 bg-white shadow-sm lg:sticky lg:top-0">
+      <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-3">
+        <span className="flex items-center gap-2 text-sm font-medium text-slate-900">
+          <Eye size={15} className="text-slate-400" /> Preview
+        </span>
+        <Badge>{TYPE_LABEL[guide.type] ?? guide.type}</Badge>
+      </div>
+      <div className="p-3 sm:p-4">
+        <div className="rounded-lg border border-slate-200 bg-slate-100/80 p-3 sm:p-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <h3 className="m-0 text-[15px] font-semibold text-slate-900">{guide.title || 'Untitled'}</h3>
+            {guide.description && <p className="m-0 mt-1 text-[13px] text-slate-500">{guide.description}</p>}
+            <ol className="m-0 mt-3 grid list-none gap-2 p-0">
+              {guide.steps.map((step, index) => (
+                <li className="flex gap-2.5 rounded-md border border-slate-100 bg-slate-50 px-3 py-2" key={step.id}>
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white text-[11px] font-medium text-slate-600 ring-1 ring-slate-200">{index + 1}</span>
+                  <div className="min-w-0">
+                    <p className="m-0 text-[13px] font-medium text-slate-900">{step.title}</p>
+                    {step.description && <p className="m-0 mt-0.5 text-xs text-slate-500">{step.description}</p>}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
         </div>
+        <p className="m-0 mt-2 text-xs text-slate-500">A rough preview. The SDK renders the final look in your app.</p>
       </div>
     </aside>
   );
@@ -422,32 +452,72 @@ function Preview({ guide }: { guide: Guide }): JSX.Element {
 
 function AnalyticsDashboard({ analytics }: { analytics: GuideAnalyticsSummary | null }): JSX.Element {
   if (!analytics) {
-    return <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500">No analytics yet.</div>;
+    return (
+      <div className="flex flex-col items-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+        <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
+          <BarChart3 size={20} />
+        </span>
+        <p className="m-0 mt-4 text-[15px] font-semibold text-slate-900">No analytics yet.</p>
+        <p className="m-0 mt-1 text-sm text-slate-500">Numbers appear here once users see your guides and surveys.</p>
+      </div>
+    );
   }
 
+  const maxEvent = Math.max(1, ...analytics.events.map((event) => event.count));
+
   return (
-    <div className="grid gap-6">
-      <div className="grid grid-cols-4 gap-4">
+    <div className="grid gap-4 sm:gap-5">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard label="Impressions" value={analytics.guides.impressions} />
         <MetricCard label="Completions" value={analytics.guides.completions} />
         <MetricCard label="Dismissals" value={analytics.guides.dismissals} />
         <MetricCard label="NPS" value={Math.round(analytics.surveys.nps)} />
       </div>
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
-        <SectionTitle icon={BarChart3} title="Engagement Events" />
-        <div className="mt-4 grid gap-2">
-          {analytics.events.map((event) => (
-            <div className="grid grid-cols-[1fr_80px] rounded-md bg-slate-50  px-3 py-2 text-sm" key={event.eventName}>
-              <span className="font-semibold text-slate-900 ">{event.eventName}</span>
-              <span className="text-right font-semibold text-slate-700 ">{event.count}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-4">
-        <MetricCard label="Promoters" value={analytics.surveys.promoters} />
-        <MetricCard label="Passives" value={analytics.surveys.passives} />
-        <MetricCard label="Detractors" value={analytics.surveys.detractors} />
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[1.4fr_1fr]">
+        <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 px-4 py-3.5 sm:px-5">
+            <h3 className="m-0 text-[15px] font-semibold text-slate-900">Engagement Events</h3>
+            <p className="m-0 mt-0.5 text-[13px] text-slate-500">Counts of each engagement event received.</p>
+          </div>
+          {analytics.events.length === 0 ? (
+            <p className="m-0 px-4 py-6 text-sm text-slate-500 sm:px-5">No engagement events yet.</p>
+          ) : (
+            <ul className="m-0 grid list-none gap-3 p-4 sm:p-5">
+              {analytics.events.map((event) => (
+                <li className="grid gap-1.5" key={event.eventName}>
+                  <div className="flex items-baseline justify-between gap-3 text-[13px]">
+                    <span className="truncate font-mono text-slate-700">{event.eventName}</span>
+                    <span className="font-medium tabular-nums text-slate-900">{new Intl.NumberFormat().format(event.count)}</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-full rounded-full bg-slate-700" style={{ width: `${(event.count / maxEvent) * 100}%` }} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+        <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 px-4 py-3.5 sm:px-5">
+            <h3 className="m-0 text-[15px] font-semibold text-slate-900">Survey sentiment</h3>
+            <p className="m-0 mt-0.5 text-[13px] text-slate-500">NPS respondents by group.</p>
+          </div>
+          <dl className="m-0 grid grid-cols-3 divide-x divide-slate-100">
+            {[
+              { label: 'Promoters', value: analytics.surveys.promoters, dot: 'bg-emerald-600' },
+              { label: 'Passives', value: analytics.surveys.passives, dot: 'bg-slate-400' },
+              { label: 'Detractors', value: analytics.surveys.detractors, dot: 'bg-red-500' }
+            ].map((entry) => (
+              <div className="min-w-0 px-3 py-4 sm:px-5" key={entry.label}>
+                <dt className="flex items-center gap-1.5 truncate text-[13px] text-slate-500">
+                  <span className={`h-2 w-2 shrink-0 rounded-full ${entry.dot}`} />
+                  {entry.label}
+                </dt>
+                <dd className="m-0 mt-1 text-xl font-semibold tracking-tight tabular-nums text-slate-900">{entry.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       </div>
     </div>
   );
@@ -455,65 +525,37 @@ function AnalyticsDashboard({ analytics }: { analytics: GuideAnalyticsSummary | 
 
 function Metric({ label, value }: { label: string; value: number }): JSX.Element {
   return (
-    <div className="min-w-0 rounded-xl border border-slate-200 bg-white px-3 sm:px-4 py-2.5">
-      <p className="m-0 text-xs font-medium text-slate-500">{label}</p>
-      <p className="m-0 mt-0.5 text-xl font-semibold tabular-nums text-slate-900">{new Intl.NumberFormat().format(value)}</p>
+    <div className="min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 shadow-sm sm:px-4">
+      <p className="m-0 truncate text-[13px] text-slate-500">{label}</p>
+      <p className="m-0 mt-1 text-xl font-semibold tracking-tight tabular-nums text-slate-900 sm:text-2xl">{new Intl.NumberFormat().format(value)}</p>
     </div>
   );
 }
 
 function MetricCard({ label, value }: { label: string; value: number }): JSX.Element {
   return (
-    <div className="rounded-lg bg-white  p-5 shadow-md">
-      <p className="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500 ">{label}</p>
-      <p className="m-0 mt-2 text-3xl font-semibold text-slate-900 ">{value}</p>
-    </div>
-  );
-}
-
-function TabButton({ active, icon: Icon, label, onClick }: { active: boolean; icon: LucideIcon; label: string; onClick: () => void }): JSX.Element {
-  return (
-    <button
-      aria-selected={active}
-      className={`-mb-px flex items-center gap-2 border-b-2 px-1 pb-3 text-sm font-semibold transition-colors ${
-        active ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800'
-      }`}
-      onClick={onClick}
-      role="tab"
-      type="button"
-    >
-      <Icon size={15} />
-      {label}
-    </button>
-  );
-}
-
-function SectionTitle({ icon: Icon, title }: { icon: LucideIcon; title: string }): JSX.Element {
-  return (
-    <div className="flex items-center gap-2">
-      <Icon size={17} className="text-slate-700 " />
-      <h3 className="m-0 text-sm font-semibold uppercase tracking-wide text-slate-900 ">{title}</h3>
+    <div className="min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <p className="m-0 truncate text-[13px] text-slate-500">{label}</p>
+      <p className="m-0 mt-1.5 text-2xl font-semibold tracking-tight tabular-nums text-slate-900">{value}</p>
     </div>
   );
 }
 
 function TextInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }): JSX.Element {
   return (
-    <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500 min-w-0">
-      {label}
-      <input className="w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 focus:border-slate-500 focus:outline-none" onChange={(event) => onChange(event.target.value)} value={value} />
-    </label>
+    <Field className="min-w-0" label={label}>
+      <input className={cn(inputClass, 'min-w-0')} onChange={(event) => onChange(event.target.value)} value={value} />
+    </Field>
   );
 }
 
 function SelectInput({ label, value, values, onChange }: { label: string; value: string; values: string[]; onChange: (value: string) => void }): JSX.Element {
   return (
-    <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500 min-w-0">
-      {label}
-      <select className="w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 focus:border-slate-500 focus:outline-none" onChange={(event) => onChange(event.target.value)} value={value}>
-        {values.map((entry) => <option key={entry} value={entry}>{entry}</option>)}
+    <Field className="min-w-0" label={label}>
+      <select className={cn(selectClass, 'min-w-0')} onChange={(event) => onChange(event.target.value)} value={value}>
+        {values.map((entry) => <option key={entry} value={entry}>{entry.charAt(0) + entry.slice(1).toLowerCase()}</option>)}
       </select>
-    </label>
+    </Field>
   );
 }
 
@@ -546,136 +588,112 @@ function SurveyResponsesModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-      <div className="flex h-[85vh] w-full max-w-5xl flex-col rounded-xl border border-slate-200 bg-white shadow-xl transition-all duration-300">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-950">Responses: {survey.title}</h3>
-            <p className="mt-0.5 text-xs text-slate-500">Showing all collected response payloads, including dynamic custom fields.</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
-          >
-            <X size={18} />
-          </button>
+    <EditorDialog
+      bodyClassName="bg-slate-50/60"
+      closeLabel="Dismiss"
+      description="Showing all collected response payloads, including dynamic custom fields."
+      footer={<Button onClick={onClose} variant="primary">Close</Button>}
+      maxWidth="max-w-5xl"
+      onClose={onClose}
+      title={`Responses: ${survey.title}`}
+    >
+      {loading ? (
+        <div aria-busy="true" className="grid gap-3">
+          {[0, 1, 2].map((row) => <div className="h-28 animate-pulse rounded-xl border border-slate-200 bg-white" key={row} />)}
+          <p className="sr-only">Loading responses...</p>
         </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {loading ? (
-            <div className="flex h-full items-center justify-center">
-              <p className="text-sm font-medium text-slate-600 animate-pulse">Loading responses...</p>
-            </div>
-          ) : responses.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-center p-8">
-              <Radio className="h-10 w-10 text-slate-300 animate-bounce" />
-              <h4 className="mt-4 text-base font-semibold text-slate-900">No responses recorded yet</h4>
-              <p className="mt-1 text-sm text-slate-500 max-w-xs">Once users submit responses through the SDK, they will appear here in real-time.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {responses.map((response) => (
-                <div key={response._id} className="rounded-lg border border-slate-100 bg-slate-50/20 p-4 hover:border-slate-200 transition-colors shadow-sm">
-                  {/* Respondent Info */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100/50 pb-2 mb-3">
-                    <div className="flex items-center gap-4 text-xs">
-                      <div>
-                        <span className="font-semibold text-slate-500">User:</span>{' '}
-                        <span className="font-mono text-slate-900 bg-slate-100/50 px-1.5 py-0.5 rounded">{response.userId || 'Anonymous'}</span>
-                      </div>
-                      {response.sessionId && (
-                        <div>
-                          <span className="font-semibold text-slate-500">Session:</span>{' '}
-                          <span className="font-mono text-slate-900">{response.sessionId}</span>
-                        </div>
-                      )}
-                      {response.category && response.category !== 'NONE' && (
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-slate-500">NPS Class:</span>
-                          <span className={`px-2 py-0.5 rounded-full font-semibold text-[11px] uppercase tracking-wide ${
-                            response.category === 'PROMOTER'
-                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                              : response.category === 'PASSIVE'
-                              ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                              : 'bg-rose-100 text-rose-800 border border-rose-200'
-                          }`}>
-                            {response.category}
-                          </span>
-                        </div>
-                      )}
-                      {response.npsScore !== null && (
-                        <div>
-                          <span className="font-semibold text-slate-500">NPS Score:</span>{' '}
-                          <span className="font-semibold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">{response.npsScore}/10</span>
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-xs text-slate-400">
-                      {new Date(response.submittedAt).toLocaleString()}
-                    </span>
+      ) : responses.length === 0 ? (
+        <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+          <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500">
+            <Radio size={20} />
+          </span>
+          <h4 className="m-0 mt-4 text-[15px] font-semibold text-slate-900">No responses recorded yet</h4>
+          <p className="m-0 mt-1 max-w-xs text-sm text-slate-500">Once users submit responses through the SDK, they will appear here in real-time.</p>
+        </div>
+      ) : (
+        <div className="grid gap-3">
+          {responses.map((response) => (
+            <div key={response._id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              {/* Respondent Info */}
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
+                  <div className="min-w-0">
+                    <span className="text-slate-500">User:</span>{' '}
+                    <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-slate-900">{response.userId || 'Anonymous'}</span>
                   </div>
-
-                  {/* Answers */}
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-800">Answers Payload</h4>
-                      <div className="space-y-1.5">
-                        {response.answers.map((answer) => (
-                          <div key={answer.questionId} className="text-sm rounded border border-slate-100/65 bg-white p-2">
-                            <div className="flex items-center justify-between text-xs text-slate-500">
-                              <span className="font-medium truncate max-w-[200px]" title={answer.questionTitle}>
-                                {answer.questionTitle}
-                              </span>
-                              <span className="bg-slate-50 px-1 rounded text-[11px] font-mono">{answer.questionType}</span>
-                            </div>
-                            <div className="mt-1 font-semibold text-slate-900">
-                              {typeof answer.value === 'object' && answer.value !== null
-                                ? JSON.stringify(answer.value, null, 2)
-                                : String(answer.value)}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                  {response.sessionId && (
+                    <div className="min-w-0 truncate">
+                      <span className="text-slate-500">Session:</span>{' '}
+                      <span className="font-mono text-slate-900">{response.sessionId}</span>
                     </div>
-
-                    {/* Metadata & Raw Details */}
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-800">Telemetry & Context</h4>
-                      <div className="rounded border border-slate-100/65 bg-slate-50/40 p-2.5 space-y-1.5 text-xs text-slate-700">
-                        {response.metadata && Object.keys(response.metadata).length > 0 ? (
-                          Object.entries(response.metadata).map(([key, val]) => (
-                            <div key={key} className="flex justify-between gap-4 py-0.5 border-b border-slate-100 last:border-0">
-                              <span className="font-mono text-slate-500 shrink-0">{key}:</span>
-                              <span className="font-medium text-slate-900 text-right break-all truncate max-w-[240px]" title={String(val)}>
-                                {typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val)}
-                              </span>
-                            </div>
-                          ))
-                        ) : (
-                          <p className="text-slate-400 italic">No additional telemetry sent.</p>
-                        )}
-                      </div>
+                  )}
+                  {response.category && response.category !== 'NONE' && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-500">NPS Class:</span>
+                      <Badge tone={response.category === 'PROMOTER' ? 'success' : response.category === 'PASSIVE' ? 'warning' : 'danger'}>
+                        {response.category.charAt(0) + response.category.slice(1).toLowerCase()}
+                      </Badge>
                     </div>
+                  )}
+                  {response.npsScore !== null && (
+                    <div>
+                      <span className="text-slate-500">NPS Score:</span>{' '}
+                      <span className="font-medium text-slate-900">{response.npsScore}/10</span>
+                    </div>
+                  )}
+                </div>
+                <span className="text-xs text-slate-500">
+                  {new Date(response.submittedAt).toLocaleString()}
+                </span>
+              </div>
+
+              {/* Answers */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid content-start gap-2">
+                  <h4 className="m-0 text-[13px] font-medium text-slate-700">Answers</h4>
+                  <div className="grid gap-1.5">
+                    {response.answers.map((answer) => (
+                      <div key={answer.questionId} className="rounded-lg border border-slate-200 bg-white p-2.5 text-sm">
+                        <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                          <span className="min-w-0 truncate" title={answer.questionTitle}>
+                            {answer.questionTitle}
+                          </span>
+                          <span className="shrink-0 rounded bg-slate-100 px-1.5 font-mono text-[11px]">{answer.questionType}</span>
+                        </div>
+                        <div className="mt-1 whitespace-pre-wrap break-words font-medium text-slate-900">
+                          {typeof answer.value === 'object' && answer.value !== null
+                            ? JSON.stringify(answer.value, null, 2)
+                            : String(answer.value)}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end border-t border-slate-100 bg-slate-50/50 px-6 py-3.5">
-          <button
-            onClick={onClose}
-            className="rounded-md bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 text-sm font-semibold shadow transition-colors"
-          >
-            Close
-          </button>
+                {/* Metadata & Raw Details */}
+                <div className="grid content-start gap-2">
+                  <h4 className="m-0 text-[13px] font-medium text-slate-700">Telemetry &amp; context</h4>
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700">
+                    {response.metadata && Object.keys(response.metadata).length > 0 ? (
+                      Object.entries(response.metadata).map(([key, val]) => (
+                        <div key={key} className="flex justify-between gap-4 border-b border-slate-200/70 py-1.5 last:border-0">
+                          <span className="shrink-0 font-mono text-slate-500">{key}</span>
+                          <span className="min-w-0 truncate text-right font-medium text-slate-900" title={String(val)}>
+                            {typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val)}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="m-0 py-1.5 text-slate-500">No additional telemetry sent.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-    </div>
+      )}
+    </EditorDialog>
   );
 }
 
@@ -724,50 +742,53 @@ function EditExperienceModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm">
-      <div className="my-8 w-full max-w-6xl rounded border border-slate-200 bg-white shadow-xl flex flex-col">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <h3 className="text-base font-semibold text-slate-950">Edit {experience.type === 'SURVEY' ? 'Survey' : experience.type === 'CHECKLIST' ? 'Checklist' : 'Guide'}</h3>
-          <button onClick={onClose} className="rounded-full p-1 text-slate-400 hover:bg-slate-100" type="button"><X size={18} /></button>
-        </div>
-        <div className="flex-grow overflow-y-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
-            <div className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <TextInput label="Name" value={title} onChange={setTitle} />
-                {mode !== 'checklist' ? (
-                  <SelectInput label="Priority" value={priority} values={priorities} onChange={(v) => setPriority(v as GuidePriority)} />
-                ) : <span />}
-                <div className="col-span-2">
-                  <TextInput label="Description (only you see this)" value={description} onChange={setDescription} />
-                </div>
-              </div>
-              {mode === 'guide' && <GuideTypePicker value={type} onChange={setType} />}
-              <ContentEditor guideType={type} kind={mode} onChange={setSteps} steps={steps} />
-              <SegmentPicker onApply={setRules} />
-              <UrlTargeting rules={rules} onChange={setRules} />
-              <RuleBuilder rules={rules} onChange={setRules} />
-            </div>
-            <div>
-              <Preview guide={experienceMock} />
+    <EditorDialog
+      footer={
+        <>
+          <ValidationSummary errors={showErrors ? errors : []} />
+          <Button onClick={onClose}>Cancel</Button>
+          <Button disabled={saving} icon={Save} onClick={() => void handleSave()} variant="primary">
+            {saving ? 'Saving…' : 'Save Changes'}
+          </Button>
+        </>
+      }
+      onClose={onClose}
+      title={`Edit ${experience.type === 'SURVEY' ? 'Survey' : experience.type === 'CHECKLIST' ? 'Checklist' : 'Guide'}`}
+    >
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid min-w-0 gap-6">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextInput label="Name" value={title} onChange={setTitle} />
+            {mode !== 'checklist' ? (
+              <SelectInput label="Priority" value={priority} values={priorities} onChange={(v) => setPriority(v as GuidePriority)} />
+            ) : <span className="hidden sm:block" />}
+            <div className="sm:col-span-2">
+              <TextInput label="Description (only you see this)" value={description} onChange={setDescription} />
             </div>
           </div>
+          {mode === 'guide' && <GuideTypePicker value={type} onChange={setType} />}
+          <ContentEditor guideType={type} kind={mode} onChange={setSteps} steps={steps} />
+          <TargetingSection>
+            <SegmentPicker onApply={setRules} />
+            <UrlTargeting rules={rules} onChange={setRules} />
+            <RuleBuilder rules={rules} onChange={setRules} />
+          </TargetingSection>
         </div>
-        <div className="flex justify-end gap-3 border-t border-slate-100 px-6 py-4">
-          <ValidationSummary errors={showErrors ? errors : []} />
-          <button onClick={onClose} className="rounded border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button">Cancel</button>
-          <button
-            onClick={() => void handleSave()}
-            disabled={saving}
-            className="flex items-center gap-2 rounded bg-slate-900 hover:bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-            type="button"
-          >
-            <Save size={14} />
-            {saving ? 'Saving…' : 'Save Changes'}
-          </button>
-        </div>
+        <Preview guide={experienceMock} />
       </div>
-    </div>
+    </EditorDialog>
+  );
+}
+
+function TargetingSection({ children }: { children: React.ReactNode }): JSX.Element {
+  return (
+    <section className="grid gap-3 border-t border-slate-200 pt-5">
+      <div>
+        <h4 className="m-0 text-[15px] font-semibold text-slate-900">Targeting</h4>
+        <p className="m-0 mt-0.5 text-[13px] text-slate-500">Choose where this appears and who sees it.</p>
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -864,52 +885,45 @@ function CreateExperienceModal({
     targetingRules: rules,
   };
 
+  const noun = type === 'guide' ? 'Guide' : type === 'survey' ? 'Survey' : 'Checklist';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm">
-      <div className="my-8 w-full max-w-6xl rounded border border-slate-200 bg-white shadow-xl flex flex-col">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <h3 className="text-base font-semibold text-slate-950">Create {type === 'guide' ? 'Guide' : type === 'survey' ? 'Survey' : 'Checklist'}</h3>
-          <button onClick={onClose} className="rounded-full p-1 text-slate-400 hover:bg-slate-100" type="button"><X size={18} /></button>
-        </div>
-        <div className="flex-grow overflow-y-auto p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
-            <div className="space-y-5">
-              <TemplatePicker kind={type} onPick={applyTemplate} />
-              <div className="grid grid-cols-2 gap-4">
-                <TextInput label="Name" value={title} onChange={setTitle} />
-                {type !== 'checklist' ? (
-                  <SelectInput label="Priority" value={priority} values={priorities} onChange={(v) => setPriority(v as GuidePriority)} />
-                ) : <span />}
-                <div className="col-span-2">
-                  <TextInput label="Description (only you see this)" value={description} onChange={setDescription} />
-                </div>
-              </div>
-              {type === 'guide' && <GuideTypePicker value={guideType} onChange={setGuideType} />}
-              <ContentEditor guideType={guideType} kind={type} onChange={setSteps} steps={steps} />
-              <SegmentPicker onApply={setRules} />
-              <UrlTargeting rules={rules} onChange={setRules} />
-              <RuleBuilder rules={rules} onChange={setRules} />
-            </div>
-            <div>
-              <Preview guide={experienceMock} />
+    <EditorDialog
+      footer={
+        <>
+          <ValidationSummary errors={showErrors ? errors : []} />
+          <Button onClick={onClose}>Cancel</Button>
+          <Button disabled={saving} icon={Save} onClick={() => void handleSave()} variant="primary">
+            {saving ? 'Creating…' : `Create ${noun}`}
+          </Button>
+        </>
+      }
+      onClose={onClose}
+      title={`Create ${noun}`}
+    >
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid min-w-0 gap-6">
+          <TemplatePicker kind={type} onPick={applyTemplate} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextInput label="Name" value={title} onChange={setTitle} />
+            {type !== 'checklist' ? (
+              <SelectInput label="Priority" value={priority} values={priorities} onChange={(v) => setPriority(v as GuidePriority)} />
+            ) : <span className="hidden sm:block" />}
+            <div className="sm:col-span-2">
+              <TextInput label="Description (only you see this)" value={description} onChange={setDescription} />
             </div>
           </div>
+          {type === 'guide' && <GuideTypePicker value={guideType} onChange={setGuideType} />}
+          <ContentEditor guideType={guideType} kind={type} onChange={setSteps} steps={steps} />
+          <TargetingSection>
+            <SegmentPicker onApply={setRules} />
+            <UrlTargeting rules={rules} onChange={setRules} />
+            <RuleBuilder rules={rules} onChange={setRules} />
+          </TargetingSection>
         </div>
-        <div className="flex justify-end gap-3 border-t border-slate-100 px-6 py-4">
-          <ValidationSummary errors={showErrors ? errors : []} />
-          <button onClick={onClose} className="rounded border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button">Cancel</button>
-          <button
-            onClick={() => void handleSave()}
-            disabled={saving}
-            className="flex items-center gap-2 rounded bg-slate-900 hover:bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
-            type="button"
-          >
-            <Save size={14} />
-            {saving ? 'Creating…' : `Create ${type === 'guide' ? 'Guide' : type === 'survey' ? 'Survey' : 'Checklist'}`}
-          </button>
-        </div>
+        <Preview guide={experienceMock} />
       </div>
-    </div>
+    </EditorDialog>
   );
 }
 
@@ -926,26 +940,23 @@ function PublishConfirmModal({
 }): JSX.Element | null {
   if (!isOpen || !experience) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded bg-white p-6 shadow-xl border border-slate-200">
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">Publish Experience?</h3>
-        <p className="text-sm text-slate-500 mb-6">
-          Are you sure you want to publish <span className="font-semibold text-slate-800">"{experience.title}"</span>? 
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5">
+      <div aria-modal="true" className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6" role="dialog">
+        <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700">
+          <Rocket size={18} />
+        </span>
+        <h3 className="m-0 mt-4 text-base font-semibold text-slate-900">Publish Experience?</h3>
+        <p className="m-0 mt-1.5 text-sm text-slate-500">
+          Are you sure you want to publish <span className="font-medium text-slate-800">"{experience.title}"</span>?
           This will make it live and visible to matching users immediately.
         </p>
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="rounded bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition-colors"
-          >
+        <div className="mt-6 flex flex-wrap justify-end gap-2">
+          <Button onClick={onClose}>
             Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors shadow"
-          >
+          </Button>
+          <Button onClick={onConfirm} variant="accent">
             Publish Live
-          </button>
+          </Button>
         </div>
       </div>
     </div>

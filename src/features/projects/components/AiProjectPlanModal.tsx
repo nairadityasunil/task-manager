@@ -18,7 +18,9 @@ import {
   AlertCircle,
   FolderPlus,
   Trash2,
+  Loader2,
 } from "lucide-react";
+import { Badge, Button, buttonClass, cn, Field, inputClass, selectClass, textareaClass } from "@/components/ui";
 
 interface PlanningSessionItem {
   id: string;
@@ -71,6 +73,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
   // Saved Workspace Artifacts
   const [savedWorkspacePlans, setSavedWorkspacePlans] = useState<Record<string, unknown>[]>([]);
   const [copiedText, setCopiedText] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Model Selector State
   const [selectedProvider, setSelectedProvider] = useState<"gemini" | "openai" | "anthropic">("gemini");
@@ -291,82 +294,146 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
   if (!isOpen) return null;
 
+  const subTabCls = (active: boolean) =>
+    cn(
+      "-mb-px shrink-0 border-b-2 pb-2.5 pt-1 text-sm font-medium capitalize transition-colors",
+      active ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-800"
+    );
+  const sectionLabel = "text-[13px] font-medium text-slate-500";
+
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[1000] p-4 overflow-y-auto">
-      <div className="bg-slate-950/95 border border-slate-800/90 rounded-2xl w-full max-w-5xl h-[90vh] flex shadow-xl shadow-black/80 overflow-hidden text-slate-100 backdrop-blur-xl animate-modalIn">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center overflow-y-auto bg-slate-900/40 p-3 backdrop-blur-sm sm:p-4">
+      <div className="relative flex h-[92vh] w-full max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-xl animate-modalIn sm:h-[90vh]">
+        {/* Mobile history backdrop */}
+        {showHistory && (
+          <div className="absolute inset-0 z-20 bg-slate-900/20 md:hidden" onClick={() => setShowHistory(false)} />
+        )}
+
         {/* Left History Sidebar */}
-        <div className="w-64 border-r border-slate-800/80 bg-slate-950/80 p-4 flex flex-col justify-between shrink-0">
-          <div className="space-y-4 flex-1 overflow-y-auto pr-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-300 uppercase tracking-wide flex items-center space-x-1.5">
-                <History className="w-3.5 h-3.5 text-emerald-400" />
+        <div
+          className={cn(
+            "absolute inset-y-0 left-0 z-30 flex w-64 shrink-0 flex-col justify-between border-r border-slate-200 bg-slate-50 p-3 transition-transform md:static md:translate-x-0",
+            showHistory ? "translate-x-0 shadow-xl" : "-translate-x-full"
+          )}
+        >
+          <div className="flex-1 space-y-3 overflow-y-auto pr-0.5">
+            <div className="flex items-center justify-between px-1 pt-1">
+              <span className="flex items-center gap-1.5 text-[13px] font-medium text-slate-700">
+                <History className="h-4 w-4 text-slate-400" />
                 <span>Conversation History</span>
               </span>
+              <button
+                aria-label="Close history"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-200/60 md:hidden"
+                onClick={() => setShowHistory(false)}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
             {/* New Chat Button */}
             <button
-              onClick={startNewSession}
-              className="w-full py-2 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-2 shadow-lg shadow-emerald-950/50 transition"
+              onClick={() => {
+                void startNewSession();
+                setShowHistory(false);
+              }}
+              className={buttonClass("secondary", "sm", "w-full")}
+              type="button"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="h-4 w-4" />
               <span>+ New Planning Chat</span>
             </button>
 
             {/* Sessions List */}
-            <div className="space-y-1.5 pt-2">
+            <div className="space-y-0.5 pt-1">
               {sessions.map((sess) => (
                 <div
                   key={sess.id}
-                  onClick={() => handleSelectSession(sess)}
-                  className={`w-full group flex items-center justify-between p-2.5 rounded-xl border text-xs cursor-pointer transition ${
-                    sess.id === activeSessionId
-                      ? "bg-slate-800/90 border-emerald-500/50 text-emerald-300 font-semibold shadow-inner"
-                      : "bg-slate-900/50 border-slate-800/80 text-slate-300 hover:bg-slate-800/40 hover:text-white"
-                  }`}
+                  onClick={() => {
+                    void handleSelectSession(sess);
+                    setShowHistory(false);
+                  }}
+                  className={cn(
+                    "group flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-2 text-sm transition-colors",
+                    sess.id === activeSessionId ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200" : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900"
+                  )}
                 >
-                  <div className="flex-1 min-w-0 pr-2">
-                    <div className="truncate font-medium text-slate-200">{sess.title}</div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">{sess.createdAt}</div>
+                  <div className="min-w-0 flex-1 pr-2">
+                    <div className="truncate font-medium">{sess.title}</div>
+                    <div className="mt-0.5 text-xs text-slate-500">{sess.createdAt}</div>
                   </div>
                   <button
                     type="button"
                     onClick={(e) => handleDeleteSession(e, sess.id)}
                     title="Delete Session"
-                    className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition-all hover:bg-red-50 hover:text-red-600 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-800/80 text-[11px] text-slate-500 flex items-center justify-between font-medium">
+          <div className="flex items-center justify-between border-t border-slate-200 px-1 pt-3 text-xs text-slate-500">
             <span>Workspace AI Planner</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
           </div>
         </div>
 
         {/* Right Main Content */}
-        <div className="flex-1 flex flex-col bg-slate-900/70 overflow-hidden">
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-white">
           {/* Header & Main Tabs */}
-          <div className="px-6 py-4 bg-slate-950/80 border-b border-slate-800/80 flex items-center justify-between shrink-0">
-            <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-                <Sparkles className="w-4 h-4" />
+          <div className="shrink-0 border-b border-slate-200 px-4 pt-4 sm:px-6">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 items-start gap-3">
+                <button
+                  aria-label="Conversation History"
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 md:hidden"
+                  onClick={() => setShowHistory(true)}
+                  type="button"
+                >
+                  <History className="h-4 w-4" />
+                </button>
+                <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700 md:flex">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="m-0 text-[15px] font-semibold text-slate-900 sm:text-base">AI Project Architect & Master Planner</h3>
+                  <p className="m-0 mt-0.5 hidden text-[13px] text-slate-500 sm:block">Transform high-level system ideas into reviewable blueprints & PRDs</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-semibold text-white">AI Project Architect & Master Planner</h3>
-                <p className="text-xs text-slate-400">Transform high-level system ideas into reviewable blueprints & PRDs</p>
-              </div>
+
+              <button aria-label="Close" onClick={onClose} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900" type="button">
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="mt-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+              {/* Main Tabs: Chat vs Artifacts */}
+              <div className="flex gap-5 overflow-x-auto hide-scrollbar">
+                <button
+                  onClick={() => setActiveMainTab("chat")}
+                  className={cn(subTabCls(activeMainTab === "chat"), "flex items-center gap-1.5 normal-case")}
+                  type="button"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Planner Chat</span>
+                </button>
+                <button
+                  onClick={() => setActiveMainTab("artifacts")}
+                  className={cn(subTabCls(activeMainTab === "artifacts"), "flex items-center gap-1.5 normal-case")}
+                  type="button"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  <span>Artifacts & PRDs ({generatedPlan ? 1 + savedWorkspacePlans.length : savedWorkspacePlans.length})</span>
+                </button>
+              </div>
+
               {/* Model Selector Dropdown */}
-              <div className="flex items-center bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 shadow-inner space-x-2 text-xs">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="font-semibold text-slate-300 hidden sm:inline">Model:</span>
+              <label className="mb-2 flex min-w-0 items-center gap-2 text-[13px] text-slate-500">
+                <span className="hidden sm:inline">Model:</span>
                 <select
                   value={`${selectedProvider}:${selectedModel}`}
                   onChange={(e) => {
@@ -374,59 +441,29 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                     setSelectedProvider(p as "gemini" | "openai" | "anthropic");
                     setSelectedModel(m);
                   }}
-                  className="bg-transparent text-slate-100 font-semibold text-xs focus:outline-none cursor-pointer pr-1"
+                  className={cn(selectClass, "h-8 w-auto max-w-[240px] cursor-pointer text-[13px]")}
                 >
-                  <option value="gemini:gemini-3.6-flash" className="bg-slate-900 text-slate-100">✨ Google Gemini 3.6 Flash (Default)</option>
-                  <option value="gemini:gemini-2.5-pro" className="bg-slate-900 text-slate-100">🧠 Google Gemini 2.5 Pro</option>
-                  <option value="openai:gpt-4o" className="bg-slate-900 text-slate-100">🚀 OpenAI GPT-4o</option>
-                  <option value="openai:gpt-4o-mini" className="bg-slate-900 text-slate-100">⚡ OpenAI GPT-4o Mini</option>
-                  <option value="anthropic:claude-3-5-sonnet" className="bg-slate-900 text-slate-100">🎭 Anthropic Claude 3.5 Sonnet</option>
+                  <option value="gemini:gemini-3.6-flash">✨ Google Gemini 3.6 Flash (Default)</option>
+                  <option value="gemini:gemini-2.5-pro">🧠 Google Gemini 2.5 Pro</option>
+                  <option value="openai:gpt-4o">🚀 OpenAI GPT-4o</option>
+                  <option value="openai:gpt-4o-mini">⚡ OpenAI GPT-4o Mini</option>
+                  <option value="anthropic:claude-3-5-sonnet">🎭 Anthropic Claude 3.5 Sonnet</option>
                 </select>
-              </div>
-
-              {/* Main Tabs: Chat vs Artifacts */}
-              <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 space-x-1">
-                <button
-                  onClick={() => setActiveMainTab("chat")}
-                  className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    activeMainTab === "chat"
-                      ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
-                  }`}
-                >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  <span>Planner Chat</span>
-                </button>
-                <button
-                  onClick={() => setActiveMainTab("artifacts")}
-                  className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    activeMainTab === "artifacts"
-                      ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
-                  }`}
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>Artifacts & PRDs ({generatedPlan ? 1 + savedWorkspacePlans.length : savedWorkspacePlans.length})</span>
-                </button>
-              </div>
-
-              <button onClick={onClose} className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
-                <X className="w-4 h-4" />
-              </button>
+              </label>
             </div>
           </div>
 
           {/* Main Body */}
           {activeMainTab === "chat" ? (
-            <div className="flex-1 p-6 overflow-y-auto space-y-6">
+            <div className="flex-1 space-y-5 overflow-y-auto px-4 py-5 sm:px-6">
               {error && (
-                <div className="p-3.5 bg-rose-950/40 border border-rose-800/80 text-rose-200 rounded-xl text-xs space-y-1.5 shadow-sm">
-                  <div className="flex items-center space-x-2 font-semibold text-rose-300">
-                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <div className="space-y-1.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-3 text-[13px] text-red-700">
+                  <div className="flex items-center gap-2 font-medium">
+                    <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
                     <span>{error}</span>
                   </div>
                   {(error.includes("429") || error.includes("quota") || error.includes("RESOURCE_EXHAUSTED")) && (
-                    <div className="pt-1.5 text-[11px] text-rose-300/80 border-t border-rose-800/60 flex items-center justify-between">
+                    <div className="border-t border-red-200 pt-1.5 text-xs text-red-700/90">
                       <span>💡 Quota limit reached on {selectedModel}. Switch to another AI Model using the dropdown in the top header above!</span>
                     </div>
                   )}
@@ -435,158 +472,136 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
               {!generatedPlan ? (
                 /* System Prompt Input */
-                <form onSubmit={handleGenerate} className="space-y-5 max-w-2xl mx-auto pt-6">
-                  <div className="text-center space-y-2 mb-6">
-                    <h4 className="text-xl font-semibold text-white tracking-tight">Describe Your System or Product Idea</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed max-w-lg mx-auto">Describe the basic workflow in simple language. The AI will decompose actors, system modules, feature specs, effort, and risks without writing source code.</p>
+                <form onSubmit={handleGenerate} className="mx-auto max-w-2xl space-y-5 pt-2 sm:pt-6">
+                  <div className="mb-2 space-y-1.5 text-center">
+                    <h4 className="m-0 text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">Describe Your System or Product Idea</h4>
+                    <p className="mx-auto m-0 max-w-lg text-[13px] leading-relaxed text-slate-500">Describe the basic workflow in simple language. The AI will decompose actors, system modules, feature specs, effort, and risks without writing source code.</p>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wide mb-2">
-                      High-Level System Requirement
-                    </label>
+                  <Field label="High-Level System Requirement">
                     <textarea
                       rows={5}
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
                       placeholder="e.g. I want to build a SaaS CRM where sales reps manage leads and opportunities, managers monitor team pipelines and metrics, and admins configure user permissions."
-                      className="w-full bg-slate-950/90 border border-slate-800 rounded-xl p-4 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500/80 focus:ring-1 focus:ring-emerald-500/40 leading-relaxed font-sans transition"
+                      className={textareaClass}
                       required
                     />
-                  </div>
+                  </Field>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wide mb-2">
-                      Technical Stack / Constraints (Optional)
-                    </label>
+                  <Field label="Technical Stack / Constraints (Optional)">
                     <textarea
                       rows={2}
                       value={context}
                       onChange={(e) => setContext(e.target.value)}
                       placeholder="e.g. Stack: Node, React, Mongoose. Target: Launch MVP in 6 weeks."
-                      className="w-full bg-slate-950/90 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500/80 focus:ring-1 focus:ring-emerald-500/40 transition"
+                      className={textareaClass}
                     />
-                  </div>
+                  </Field>
 
                   {loading && (
-                    <div className="p-4 bg-slate-950/90 border border-slate-800 rounded-2xl space-y-3 shadow-inner">
-                      <div className="flex items-center space-x-3 text-white font-semibold text-xs">
-                        <Sparkles className="w-4 h-4 text-emerald-400 animate-spin shrink-0" />
+                    <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="flex items-center gap-2.5 text-sm font-medium text-slate-900">
+                        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-slate-500" />
                         <span>AI Architect is synthesizing your technical blueprint...</span>
                       </div>
-                      <div className="space-y-1.5 text-[11px] text-slate-300">
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                      <div className="space-y-1.5 text-[13px] text-slate-600">
+                        <div className="flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-emerald-500" />
                           <span>Decomposing user workflows, actors, permissions, and core modules</span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 rounded-full bg-teal-400 shrink-0" />
+                        <div className="flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-300" />
                           <span>Generating frontend, backend, database schema & API specifications</span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" />
+                        <div className="flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-300" />
                           <span>Estimating engineering effort, risk mitigations & milestone roadmap</span>
                         </div>
                       </div>
-                      <div className="text-[11px] text-slate-400 italic">
+                      <div className="text-xs text-slate-500">
                         Detailed production engineering blueprints take ~30–60 seconds to synthesize.
                       </div>
                     </div>
                   )}
 
-                  <div className="flex justify-end pt-2">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-semibold text-xs shadow-xl shadow-emerald-950/60 transition disabled:opacity-50 flex items-center justify-center space-x-2"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                      <span>{loading ? "Synthesizing Architecture..." : "Synthesize Technical Plan & PRD"}</span>
-                    </button>
+                  <div className="flex justify-end pt-1">
+                    <Button className="h-10 w-full" disabled={loading} icon={Sparkles} type="submit" variant="primary">
+                      {loading ? "Synthesizing Architecture..." : "Synthesize Technical Plan & PRD"}
+                    </Button>
                   </div>
                 </form>
               ) : (
                 /* Generated Plan Interactive Workspace */
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {/* Top Action Ribbon */}
-                  <div className="p-4 bg-slate-950/90 border border-emerald-500/40 rounded-2xl flex items-center justify-between shadow-xl">
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <h4 className="text-base font-semibold text-white">{generatedPlan.name}</h4>
-                        <span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded text-[11px] font-semibold">
-                          BLUEPRINT SYNTHESIZED
-                        </span>
+                  <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="m-0 text-[15px] font-semibold text-slate-900">{generatedPlan.name}</h4>
+                        <Badge dot tone="success">Blueprint synthesized</Badge>
                       </div>
-                      <p className="text-xs text-slate-400 line-clamp-1">{generatedPlan.description}</p>
+                      <p className="m-0 text-[13px] text-slate-500 line-clamp-1">{generatedPlan.description}</p>
                     </div>
 
-                    <div className="flex items-center space-x-3 shrink-0">
-                      <button
-                        onClick={() => setShowApprovalDialog(true)}
-                        className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-950/60 transition flex items-center space-x-2"
-                      >
-                        <FolderPlus className="w-4 h-4" />
-                        <span>Materialize Project Structure</span>
-                      </button>
-                    </div>
+                    <Button className="shrink-0" icon={FolderPlus} onClick={() => setShowApprovalDialog(true)} variant="accent">
+                      Materialize Project Structure
+                    </Button>
                   </div>
 
                   {/* Delta Notification Callout */}
                   {lastDelta && (
-                    <div className="p-3.5 bg-emerald-950/40 border border-emerald-800/80 text-emerald-200 rounded-xl text-xs space-y-1">
-                      <div className="font-semibold text-emerald-300 flex items-center space-x-1.5">
-                        <Check className="w-4 h-4 text-emerald-400" />
+                    <div className="space-y-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-3 text-[13px]">
+                      <div className="flex items-center gap-1.5 font-medium text-emerald-800">
+                        <Check className="h-4 w-4 text-emerald-600" />
                         <span>Modification Applied cleanly:</span>
                       </div>
-                      <p className="text-[11px] text-slate-300">{lastDelta.summary}</p>
+                      <p className="m-0 text-emerald-800/80">{lastDelta.summary}</p>
                     </div>
                   )}
 
                   {/* Sub-Tabs for Blueprint Sections */}
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <div className="flex space-x-2">
+                  <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1 border-b border-slate-200">
+                    <div className="flex gap-5 overflow-x-auto hide-scrollbar">
                       {(["blueprint", "features", "risks", "timeline"] as const).map((tab) => (
                         <button
                           key={tab}
                           onClick={() => setActiveBlueprintSubTab(tab)}
-                          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold capitalize transition ${
-                            activeBlueprintSubTab === tab
-                              ? "bg-slate-800 text-emerald-300 border border-slate-700"
-                              : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-                          }`}
+                          className={subTabCls(activeBlueprintSubTab === tab)}
+                          type="button"
                         >
                           {tab}
                         </button>
                       ))}
                     </div>
 
-                    <span className="text-[11px] text-slate-400 font-mono">
+                    <span className="pb-2.5 text-xs text-slate-500">
                       Estimated Timeline: {generatedPlan.timeline?.estimatedCalendarWeeks || 4} Weeks
                     </span>
                   </div>
 
                   {/* Sub-Tab Content Views */}
                   {activeBlueprintSubTab === "blueprint" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                      <div className="p-4 bg-slate-950/80 border border-slate-800/80 rounded-xl space-y-2">
-                        <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">System Goal</h5>
-                        <p className="text-slate-300 leading-relaxed">{generatedPlan.systemGoal || generatedPlan.description}</p>
+                    <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
+                      <div className="space-y-1.5 rounded-xl border border-slate-200 p-4">
+                        <h5 className={cn(sectionLabel, "m-0")}>System Goal</h5>
+                        <p className="m-0 leading-relaxed text-slate-700">{generatedPlan.systemGoal || generatedPlan.description}</p>
                       </div>
 
-                      <div className="p-4 bg-slate-950/80 border border-slate-800/80 rounded-xl space-y-2">
-                        <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">Target Tech Stack</h5>
-                        <p className="text-slate-300 leading-relaxed font-mono">{generatedPlan.recommendedStack || "React, Node.js, TypeScript, PostgreSQL"}</p>
+                      <div className="space-y-1.5 rounded-xl border border-slate-200 p-4">
+                        <h5 className={cn(sectionLabel, "m-0")}>Target Tech Stack</h5>
+                        <p className="m-0 leading-relaxed text-slate-700">{generatedPlan.recommendedStack || "React, Node.js, TypeScript, PostgreSQL"}</p>
                       </div>
 
-                      <div className="p-4 bg-slate-950/80 border border-slate-800/80 rounded-xl space-y-2 md:col-span-2">
-                        <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">System Modules & Epic Specs</h5>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      <div className="space-y-2 rounded-xl border border-slate-200 p-4 md:col-span-2">
+                        <h5 className={cn(sectionLabel, "m-0")}>System Modules & Epic Specs</h5>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                           {generatedPlan.modules?.map((m, idx) => (
-                            <div key={idx} className="p-3 bg-slate-900/90 border border-slate-800 rounded-lg space-y-1">
-                              <div className="font-semibold text-white">{m.name}</div>
-                              <div className="text-[11px] text-slate-400">{m.description}</div>
+                            <div key={idx} className="space-y-1 rounded-lg bg-slate-50 p-3">
+                              <div className="font-medium text-slate-900">{m.name}</div>
+                              <div className="text-[13px] text-slate-600">{m.description}</div>
                               {m.features && (
-                                <div className="text-[11px] text-slate-500 font-mono pt-1">
+                                <div className="pt-1 text-xs text-slate-500">
                                   Features: {m.features.join(", ")}
                                 </div>
                               )}
@@ -598,18 +613,16 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   )}
 
                   {activeBlueprintSubTab === "features" && (
-                    <div className="space-y-3 text-xs">
-                      <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">Synthesized User Tasks & Work Breakdown</h5>
-                      <div className="space-y-2">
+                    <div className="space-y-2 text-sm">
+                      <h5 className={cn(sectionLabel, "m-0")}>Synthesized User Tasks & Work Breakdown</h5>
+                      <div className="divide-y divide-slate-100 rounded-xl border border-slate-200">
                         {generatedPlan.tasks?.map((t, idx) => (
-                          <div key={idx} className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between">
-                            <div className="space-y-0.5">
-                              <span className="font-semibold text-white">{t.title}</span>
-                              <p className="text-[11px] text-slate-400">{t.description}</p>
+                          <div key={idx} className="flex items-start justify-between gap-3 px-4 py-3">
+                            <div className="min-w-0 space-y-0.5">
+                              <span className="font-medium text-slate-900">{t.title}</span>
+                              <p className="m-0 text-[13px] text-slate-500">{t.description}</p>
                             </div>
-                            <span className="px-2 py-0.5 bg-slate-800 text-slate-300 rounded text-[11px] font-mono border border-slate-700">
-                              {t.estimatedHours || 4}h
-                            </span>
+                            <Badge className="tabular-nums">{t.estimatedHours || 4}h</Badge>
                           </div>
                         ))}
                       </div>
@@ -617,18 +630,18 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   )}
 
                   {activeBlueprintSubTab === "risks" && (
-                    <div className="space-y-3 text-xs">
-                      <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">Engineering Risk Assessment</h5>
+                    <div className="space-y-2 text-sm">
+                      <h5 className={cn(sectionLabel, "m-0")}>Engineering Risk Assessment</h5>
                       <div className="grid grid-cols-1 gap-2">
                         {generatedPlan.risks?.map((r, idx) => (
-                          <div key={idx} className="p-3.5 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
-                            <div className="flex items-center justify-between">
-                              <span className="font-semibold text-rose-300">{r.title}</span>
-                              <span className="px-2 py-0.5 bg-rose-950 text-rose-300 border border-rose-800 rounded text-[11px] font-mono uppercase font-semibold">
+                          <div key={idx} className="space-y-1 rounded-xl border border-slate-200 p-3.5">
+                            <div className="flex items-start justify-between gap-3">
+                              <span className="font-medium text-slate-900">{r.title}</span>
+                              <Badge dot tone={String(r.severity || "MEDIUM").toUpperCase() === "HIGH" || String(r.severity).toUpperCase() === "CRITICAL" ? "danger" : String(r.severity || "MEDIUM").toUpperCase() === "LOW" ? "neutral" : "warning"}>
                                 {r.severity || "MEDIUM"}
-                              </span>
+                              </Badge>
                             </div>
-                            <p className="text-[11px] text-slate-400">Mitigation: {r.mitigation}</p>
+                            <p className="m-0 text-[13px] text-slate-500">Mitigation: {r.mitigation}</p>
                           </div>
                         ))}
                       </div>
@@ -636,15 +649,15 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   )}
 
                   {activeBlueprintSubTab === "timeline" && (
-                    <div className="p-4 bg-slate-950/80 border border-slate-800 rounded-xl text-xs space-y-2">
-                      <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">Execution Timeline & Milestones</h5>
-                      <div className="text-slate-300 space-y-2 pt-1">
-                        <div>Estimated Engineering Duration: <span className="font-semibold text-white">{generatedPlan.timeline?.estimatedCalendarWeeks || 4} Weeks</span></div>
-                        <div className="space-y-1 pt-2">
+                    <div className="space-y-2 rounded-xl border border-slate-200 p-4 text-sm">
+                      <h5 className={cn(sectionLabel, "m-0")}>Execution Timeline & Milestones</h5>
+                      <div className="space-y-2 text-slate-700">
+                        <div>Estimated Engineering Duration: <span className="font-semibold text-slate-900">{generatedPlan.timeline?.estimatedCalendarWeeks || 4} Weeks</span></div>
+                        <div className="divide-y divide-slate-100 rounded-lg border border-slate-200">
                           {generatedPlan.timeline?.milestones?.map((m, idx) => (
-                            <div key={idx} className="p-2 bg-slate-900 border border-slate-800 rounded flex justify-between">
-                              <span className="font-semibold text-slate-200">{m.name}</span>
-                              <span className="text-slate-400 font-mono">{m.targetWeek}</span>
+                            <div key={idx} className="flex justify-between gap-3 px-3 py-2">
+                              <span className="font-medium text-slate-900">{m.name}</span>
+                              <span className="shrink-0 tabular-nums text-slate-500">{m.targetWeek}</span>
                             </div>
                           ))}
                         </div>
@@ -653,30 +666,26 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   )}
 
                   {/* Refinement Change Request Input */}
-                  <form onSubmit={handleApplyChangeRequest} className="p-4 bg-slate-950/90 border border-slate-800 rounded-2xl space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold text-slate-200 uppercase tracking-wide flex items-center space-x-1.5">
-                        <Edit3 className="w-3.5 h-3.5 text-emerald-400" />
+                  <form onSubmit={handleApplyChangeRequest} className="space-y-2.5 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                      <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700">
+                        <Edit3 className="h-4 w-4 text-slate-400" />
                         <span>Refine / Modify Blueprint</span>
                       </label>
-                      <span className="text-[11px] text-slate-500">Ask the AI to add modules, tweak tech stack, adjust effort</span>
+                      <span className="text-xs text-slate-500">Ask the AI to add modules, tweak tech stack, adjust effort</span>
                     </div>
 
-                    <div className="flex space-x-2">
+                    <div className="flex flex-col gap-2 sm:flex-row">
                       <input
                         type="text"
                         value={changeRequest}
                         onChange={(e) => setChangeRequest(e.target.value)}
                         placeholder="e.g. Add a Stripe Payment Integration module and increase high availability effort"
-                        className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500/80"
+                        className={cn(inputClass, "flex-1")}
                       />
-                      <button
-                        type="submit"
-                        disabled={modifying || !changeRequest.trim()}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl shadow-md transition disabled:opacity-50 shrink-0"
-                      >
+                      <Button disabled={modifying || !changeRequest.trim()} loading={modifying} type="submit" variant="primary">
                         {modifying ? "Updating..." : "Apply Edit"}
-                      </button>
+                      </Button>
                     </div>
                   </form>
                 </div>
@@ -684,37 +693,33 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
             </div>
           ) : (
             /* Artifacts Tab View */
-            <div className="flex-1 p-6 overflow-y-auto space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex space-x-2">
+            <div className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex gap-1 overflow-x-auto rounded-lg bg-slate-100 p-1 hide-scrollbar">
                   {(["project_plan", "prd", "tech_spec", "timeline", "risks"] as const).map((type) => (
                     <button
                       key={type}
                       onClick={() => setSelectedArtifactType(type)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide transition ${
-                        selectedArtifactType === type
-                          ? "bg-emerald-600 text-white shadow"
-                          : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-                      }`}
+                      className={cn(
+                        "shrink-0 rounded-md px-2.5 py-1 text-[13px] font-medium capitalize transition-colors",
+                        selectedArtifactType === type ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                      )}
+                      type="button"
                     >
-                      {type.replace("_", " ")}
+                      {type === "prd" ? "PRD" : type.replace("_", " ")}
                     </button>
                   ))}
                 </div>
 
                 {generatedPlan && (
-                  <button
-                    onClick={() => copyArtifactToClipboard(JSON.stringify(generatedPlan, null, 2))}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>{copiedText ? "Copied JSON!" : "Copy JSON Schema"}</span>
-                  </button>
+                  <Button icon={copiedText ? Check : Copy} onClick={() => copyArtifactToClipboard(JSON.stringify(generatedPlan, null, 2))} size="sm" variant="secondary">
+                    {copiedText ? "Copied JSON!" : "Copy JSON Schema"}
+                  </Button>
                 )}
               </div>
 
               {generatedPlan ? (
-                <div className="p-4 bg-slate-950/90 border border-slate-800 rounded-2xl font-mono text-xs text-slate-300 overflow-x-auto max-h-[60vh]">
+                <div className="max-h-[60vh] overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-4 text-[13px] text-slate-700">
                   <div className="space-y-4">
                     {selectedArtifactType === "project_plan" && (
                       <pre className="whitespace-pre-wrap font-sans">
@@ -783,8 +788,11 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-12 text-slate-500 text-xs">
-                  No active artifact generated for this conversation yet. Enter your system prompt in the Planner Chat tab to generate artifacts.
+                <div className="flex flex-col items-center rounded-xl border border-dashed border-slate-200 px-6 py-12 text-center">
+                  <BookOpen className="mb-3 h-5 w-5 text-slate-400" />
+                  <p className="m-0 max-w-sm text-[13px] text-slate-500">
+                    No active artifact generated for this conversation yet. Enter your system prompt in the Planner Chat tab to generate artifacts.
+                  </p>
                 </div>
               )}
             </div>
@@ -794,56 +802,48 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
       {/* Explicit Approval Safety Confirmation Modal */}
       {showApprovalDialog && generatedPlan && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[1100] p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl text-slate-100">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 shrink-0">
-                <FolderPlus className="w-5 h-5" />
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/40 p-3 sm:p-4">
+          <div className="max-h-[90vh] w-full max-w-md space-y-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 text-slate-900 shadow-xl sm:p-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600">
+                <FolderPlus className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-semibold text-white text-base">Approve & Create Project</h4>
-                <p className="text-xs text-slate-400">Confirm project materialization from approved plan</p>
+                <h4 className="m-0 text-base font-semibold text-slate-900">Approve & Create Project</h4>
+                <p className="m-0 text-[13px] text-slate-500">Confirm project materialization from approved plan</p>
               </div>
             </div>
 
-            <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-xs space-y-2">
-              <div className="flex justify-between text-slate-300">
-                <span>Project Name:</span>
-                <span className="font-semibold text-white">{generatedPlan.name}</span>
+            <dl className="m-0 divide-y divide-slate-100 rounded-lg border border-slate-200 text-sm">
+              <div className="flex justify-between gap-3 px-3.5 py-2.5">
+                <dt className="text-slate-500">Project Name:</dt>
+                <dd className="m-0 text-right font-medium text-slate-900">{generatedPlan.name}</dd>
               </div>
-              <div className="flex justify-between text-slate-300">
-                <span>Modules & Epics:</span>
-                <span className="font-semibold text-white">{generatedPlan.modules?.length || 0} Modules</span>
+              <div className="flex justify-between gap-3 px-3.5 py-2.5">
+                <dt className="text-slate-500">Modules & Epics:</dt>
+                <dd className="m-0 font-medium text-slate-900">{generatedPlan.modules?.length || 0} Modules</dd>
               </div>
-              <div className="flex justify-between text-slate-300">
-                <span>Tasks & Subtasks:</span>
-                <span className="font-semibold text-white">{generatedPlan.tasks?.length || 0} Tasks</span>
+              <div className="flex justify-between gap-3 px-3.5 py-2.5">
+                <dt className="text-slate-500">Tasks & Subtasks:</dt>
+                <dd className="m-0 font-medium text-slate-900">{generatedPlan.tasks?.length || 0} Tasks</dd>
               </div>
-              <div className="flex justify-between text-slate-300">
-                <span>Estimated Duration:</span>
-                <span className="font-semibold text-white">~{generatedPlan.timeline?.estimatedCalendarWeeks || 4} Weeks</span>
+              <div className="flex justify-between gap-3 px-3.5 py-2.5">
+                <dt className="text-slate-500">Estimated Duration:</dt>
+                <dd className="m-0 font-medium text-slate-900">~{generatedPlan.timeline?.estimatedCalendarWeeks || 4} Weeks</dd>
               </div>
-            </div>
+            </dl>
 
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="m-0 text-[13px] leading-relaxed text-slate-500">
               Clicking Confirm will create the Project, Custom Workflow States, Epics, Tasks, Subtasks, Dependencies, and canonical PRD Document.
             </p>
 
-            <div className="flex justify-end space-x-2 pt-2">
-              <button
-                onClick={() => setShowApprovalDialog(false)}
-                className="px-4 py-2 bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white rounded-xl text-xs font-semibold transition"
-              >
+            <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+              <Button onClick={() => setShowApprovalDialog(false)} variant="secondary">
                 Cancel
-              </button>
-              <button
-                onClick={handleConfirmPlanExecution}
-                disabled={confirming}
-                className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-950/50 transition disabled:opacity-50 flex items-center space-x-1.5"
-              >
-                <Check className="w-3.5 h-3.5" />
-                <span>{confirming ? "Creating Project..." : "Confirm & Create"}</span>
-              </button>
+              </Button>
+              <Button disabled={confirming} icon={Check} loading={confirming} onClick={handleConfirmPlanExecution} variant="accent">
+                {confirming ? "Creating Project..." : "Confirm & Create"}
+              </Button>
             </div>
           </div>
         </div>

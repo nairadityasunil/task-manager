@@ -3,6 +3,7 @@ import { AlertTriangle, Trash2 } from 'lucide-react';
 import { workspaceService } from '../services/workspaceService';
 import { useWorkspace } from '../context/WorkspaceContext';
 import type { Workspace } from '../types/workspace';
+import { Button, inputClass } from '@/components/ui';
 
 interface WorkspaceDangerZoneProps {
   workspace: Workspace;
@@ -35,59 +36,55 @@ export function WorkspaceDangerZone({ workspace }: WorkspaceDangerZoneProps): JS
   };
 
   return (
-    <div className="border border-red-900/40 rounded-xl p-5 bg-red-950/10 space-y-4">
-      <div className="flex items-center gap-2.5">
-        <AlertTriangle className="w-4.5 h-4.5 text-red-500 flex-shrink-0" />
-        <h4 className="text-sm font-semibold text-red-400">Danger Zone</h4>
+    <div className="overflow-hidden rounded-xl border border-red-200 bg-white">
+      <div className="flex items-center gap-2 border-b border-red-100 bg-red-50/60 px-4 py-3">
+        <AlertTriangle className="h-4 w-4 shrink-0 text-red-600" />
+        <h4 className="m-0 text-sm font-semibold text-red-700">Danger Zone</h4>
       </div>
 
-      {!showConfirm ? (
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="text-sm font-medium text-slate-200">Delete this workspace</div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              Permanently deletes the workspace and removes all member access. Projects are preserved but unlinked.
+      <div className="p-4">
+        {!showConfirm ? (
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-slate-900">Delete this workspace</div>
+              <div className="mt-0.5 text-[13px] text-slate-500">
+                Permanently deletes the workspace and removes all member access. Projects are preserved but unlinked.
+              </div>
+            </div>
+            <Button variant="danger" size="sm" icon={Trash2} onClick={() => setShowConfirm(true)}>
+              Delete Workspace
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="m-0 text-sm text-slate-700">
+              Type <span className="font-semibold text-red-700">{workspace.name}</span> to confirm deletion:
+            </p>
+            <input
+              type="text"
+              value={confirmName}
+              onChange={(e) => setConfirmName(e.target.value)}
+              placeholder={workspace.name}
+              className={`${inputClass} focus:border-red-500 focus:ring-red-600/10`}
+            />
+            {error && <p className="m-0 text-xs text-red-600">{error}</p>}
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button onClick={() => { setShowConfirm(false); setConfirmName(''); setError(''); }}>
+                Cancel
+              </Button>
+              <button
+                type="button"
+                onClick={() => void handleDelete()}
+                disabled={isDeleting || confirmName !== workspace.name}
+                className="inline-flex h-9 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-red-600 px-3.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-600/30 disabled:pointer-events-none disabled:opacity-50"
+              >
+                <Trash2 className="h-4 w-4" />
+                {isDeleting ? 'Deleting…' : 'Permanently Delete'}
+              </button>
             </div>
           </div>
-          <button
-            onClick={() => setShowConfirm(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-red-900/30 hover:bg-red-900/60 border border-red-800/50 text-red-400 hover:text-red-300 text-xs font-semibold rounded-lg transition flex-shrink-0"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            Delete Workspace
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <p className="text-sm text-slate-300">
-            Type <span className="font-semibold text-red-400">{workspace.name}</span> to confirm deletion:
-          </p>
-          <input
-            type="text"
-            value={confirmName}
-            onChange={(e) => setConfirmName(e.target.value)}
-            placeholder={workspace.name}
-            className="w-full bg-slate-900 border border-red-800/50 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-red-500 transition"
-          />
-          {error && <p className="text-xs text-red-400">{error}</p>}
-          <div className="flex gap-3">
-            <button
-              onClick={() => { setShowConfirm(false); setConfirmName(''); setError(''); }}
-              className="px-4 py-2 text-sm text-slate-400 hover:text-slate-200 transition"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => void handleDelete()}
-              disabled={isDeleting || confirmName !== workspace.name}
-              className="flex items-center gap-1.5 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white text-sm font-semibold rounded-lg transition"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              {isDeleting ? 'Deleting…' : 'Permanently Delete'}
-            </button>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

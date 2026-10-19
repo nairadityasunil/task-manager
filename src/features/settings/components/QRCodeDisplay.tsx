@@ -70,12 +70,12 @@ export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
   if (isPaired) {
     return (
       <div className="flex flex-col items-center justify-center p-6 bg-emerald-50 border border-emerald-200 rounded-xl space-y-3 text-center font-sans">
-        <div className="w-14 h-14 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-md animate-bounce">
-          <CheckCircle2 className="w-8 h-8" />
+        <div className="w-12 h-12 bg-emerald-600 text-white rounded-full flex items-center justify-center">
+          <CheckCircle2 className="w-6 h-6" />
         </div>
         <div>
-          <h4 className="text-base font-semibold text-emerald-950">Companion Device Connected!</h4>
-          <p className="text-xs text-emerald-700 mt-1">
+          <h4 className="m-0 text-[15px] font-semibold text-emerald-900">Companion Device Connected!</h4>
+          <p className="m-0 mt-1 text-[13px] text-emerald-700">
             {pairedDeviceName ? `Linked to ${pairedDeviceName}` : "Device linked successfully via QR code."}
           </p>
         </div>
@@ -84,17 +84,17 @@ export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
   }
 
   return (
-    <div className="flex flex-col items-center justify-center p-5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-4 font-sans">
+    <div className="flex flex-col items-center justify-center p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-4 font-sans">
       {/* QR Code Image Frame */}
-      <div className="relative p-3 bg-white border border-slate-200 rounded-2xl shadow-md flex items-center justify-center">
+      <div className="relative p-3 bg-white border border-slate-200 rounded-xl shadow-sm flex items-center justify-center">
         {isExpired ? (
-          <div className="w-48 h-48 flex flex-col items-center justify-center p-4 bg-slate-900/90 text-white rounded-xl text-center space-y-3">
-            <p className="text-xs font-semibold text-slate-300">QR Code Expired</p>
-            <p className="text-[11px] text-slate-400">Generate a new short-lived QR code to link your companion device.</p>
+          <div className="w-48 h-48 flex flex-col items-center justify-center p-4 bg-slate-900 text-white rounded-lg text-center space-y-3">
+            <p className="m-0 text-sm font-medium text-white">QR Code Expired</p>
+            <p className="m-0 text-xs text-slate-300">Generate a new short-lived QR code to link your companion device.</p>
             <button
               type="button"
               onClick={onRefresh}
-              className="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
+              className="h-8 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-medium transition flex items-center gap-1.5"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Refresh QR Code
@@ -126,15 +126,15 @@ export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
       {/* Real-Time Status & Timer */}
       <div className="text-center space-y-1">
         {!isExpired && (
-          <div className="flex items-center justify-center gap-2 text-xs text-slate-800 font-semibold">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          <div className="flex items-center justify-center gap-2 text-[13px] text-slate-700 font-medium">
+            <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" /></span>
             <span>Waiting for companion device to scan...</span>
           </div>
         )}
 
-        <div className="text-[11px] font-mono text-slate-500">
+        <div className="text-xs text-slate-500">
           {isExpired ? (
-            <span className="text-rose-600 font-semibold">Expired</span>
+            <span className="text-red-600 font-medium">Expired</span>
           ) : (
             <span>
               Expires in <strong className="text-slate-900 font-semibold">{formatSeconds(timeLeft)}</strong>

@@ -64,22 +64,22 @@ function ExperienceAnalyticsModal({ experience, sdkIntegrationId, onClose }: Exp
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >
-        <header className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-6 py-5">
+        <header className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-4 py-4 sm:px-6">
           <div className="min-w-0">
-            <p className="m-0 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
-              <BarChart3 size={13} /> {isSurvey ? 'Survey' : 'Guide'} analytics
+            <p className="m-0 flex items-center gap-1.5 text-[13px] font-medium text-slate-500">
+              <BarChart3 size={14} /> {isSurvey ? 'Survey' : 'Guide'} analytics
             </p>
-            <h2 className="m-0 mt-1 truncate text-lg font-semibold text-slate-900">{experience.title}</h2>
+            <h2 className="m-0 mt-0.5 truncate text-lg font-semibold tracking-tight text-slate-900">{experience.title}</h2>
           </div>
-          <button aria-label="Close" className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700" onClick={onClose} type="button">
+          <button aria-label="Close" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900" onClick={onClose} type="button">
             <X size={18} />
           </button>
         </header>
 
-        <div className="flex-1 space-y-5 overflow-y-auto p-6">
+        <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:space-y-5 sm:p-6">
           {loading && (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-busy="true">
-              {[0, 1, 2, 3].map((tile) => <div className="h-20 animate-pulse rounded-xl bg-white" key={tile} />)}
+              {[0, 1, 2, 3].map((tile) => <div className="h-[76px] animate-pulse rounded-xl border border-slate-200 bg-white" key={tile} />)}
             </div>
           )}
           {!loading && error && <p className="m-0 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
@@ -93,19 +93,19 @@ function ExperienceAnalyticsModal({ experience, sdkIntegrationId, onClose }: Exp
 
 function StatTile({ label, value, hint }: { label: string; value: string; hint?: string }): JSX.Element {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-      <p className="m-0 text-xs font-medium text-slate-500">{label}</p>
-      <p className="m-0 mt-1 text-xl font-semibold tabular-nums text-slate-900">{value}</p>
-      {hint && <p className="m-0 mt-0.5 text-[11px] text-slate-400">{hint}</p>}
+    <div className="min-w-0 rounded-xl border border-slate-200 bg-white px-3.5 py-3 shadow-sm sm:px-4">
+      <p className="m-0 truncate text-[13px] text-slate-500">{label}</p>
+      <p className="m-0 mt-1 text-xl font-semibold tracking-tight tabular-nums text-slate-900">{value}</p>
+      {hint && <p className="m-0 mt-0.5 truncate text-xs text-slate-500">{hint}</p>}
     </div>
   );
 }
 
 function Panel({ title, children, subtitle }: { title: string; subtitle?: string; children: React.ReactNode }): JSX.Element {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5">
-      <h3 className="m-0 text-sm font-semibold text-slate-900">{title}</h3>
-      {subtitle && <p className="m-0 mt-0.5 text-xs text-slate-500">{subtitle}</p>}
+    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <h3 className="m-0 text-[15px] font-semibold text-slate-900">{title}</h3>
+      {subtitle && <p className="m-0 mt-0.5 text-[13px] text-slate-500">{subtitle}</p>}
       <div className="mt-4">{children}</div>
     </section>
   );
@@ -116,12 +116,12 @@ function RateBar({ label, rate, tone }: { label: string; rate: number; tone: 'po
   const pct = Math.max(0, Math.min(100, rate * 100));
   return (
     <div>
-      <div className="flex items-baseline justify-between text-xs">
-        <span className="font-medium text-slate-600">{label}</span>
+      <div className="flex items-baseline justify-between text-[13px]">
+        <span className="text-slate-600">{label}</span>
         <span className="font-semibold tabular-nums text-slate-900">{formatPercent(pct)}</span>
       </div>
       <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-slate-100">
-        <div className={`h-full rounded-full ${tone === 'positive' ? 'bg-emerald-600' : 'bg-rose-600'}`} style={{ width: `${pct}%` }} />
+        <div className={`h-full rounded-full ${tone === 'positive' ? 'bg-emerald-600' : 'bg-red-500'}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -176,7 +176,7 @@ function SurveyAnalyticsView({ data }: { data: SurveyExperienceAnalytics }): JSX
 function NpsPanel({ data }: { data: SurveyExperienceAnalytics }): JSX.Element {
   const total = data.promoters + data.passives + data.detractors;
   const segments = [
-    { key: 'detractors', label: 'Detractors (0–6)', count: data.detractors, fill: 'bg-rose-600', swatch: 'bg-rose-600' },
+    { key: 'detractors', label: 'Detractors (0–6)', count: data.detractors, fill: 'bg-red-500', swatch: 'bg-red-500' },
     { key: 'passives', label: 'Passives (7–8)', count: data.passives, fill: 'bg-slate-400', swatch: 'bg-slate-400' },
     { key: 'promoters', label: 'Promoters (9–10)', count: data.promoters, fill: 'bg-emerald-600', swatch: 'bg-emerald-600' }
   ];
@@ -224,7 +224,7 @@ function TrendPanel({ trends }: { trends: SurveyExperienceAnalytics['weeklyTrend
           </div>
         ))}
       </div>
-      <div className="mt-1.5 flex justify-between text-[11px] text-slate-400">
+      <div className="mt-1.5 flex justify-between text-xs text-slate-500">
         <span>{sorted[0]?.period}</span>
         <span>{sorted[sorted.length - 1]?.period}</span>
       </div>
@@ -249,7 +249,7 @@ function QuestionPanel({ question }: { question: SurveyQuestionAnalytics }): JSX
       subtitle={`${formatNumber(answered)} answered · ${formatNumber(question.skippedCount)} skipped${isScale && answered > 0 ? ` · average ${question.averageScore.toFixed(1)}` : ''}`}
     >
       {answered === 0 ? (
-        <p className="m-0 text-sm text-slate-400">No answers yet.</p>
+        <p className="m-0 text-sm text-slate-500">No answers yet.</p>
       ) : isFreeText ? (
         <ul className="m-0 list-none space-y-1.5 p-0">
           {ordered.map(([answer]) => (
@@ -257,7 +257,7 @@ function QuestionPanel({ question }: { question: SurveyQuestionAnalytics }): JSX
               “{answer}”
             </li>
           ))}
-          {entries.length > MAX_BARS && <li className="text-xs text-slate-400">Showing {MAX_BARS} of {entries.length}. See Responses for every answer.</li>}
+          {entries.length > MAX_BARS && <li className="text-xs text-slate-500">Showing {MAX_BARS} of {entries.length}. See Responses for every answer.</li>}
         </ul>
       ) : (
         <ul className="m-0 list-none space-y-2 p-0">
@@ -280,9 +280,12 @@ function QuestionPanel({ question }: { question: SurveyQuestionAnalytics }): JSX
 
 function EmptyAnalytics({ message }: { message: string }): JSX.Element {
   return (
-    <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-      <BarChart3 className="mx-auto text-slate-300" size={28} />
-      <p className="m-0 mt-3 text-sm text-slate-500">{message}</p>
+    <div className="flex flex-col items-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+      <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
+        <BarChart3 size={20} />
+      </span>
+      <p className="m-0 mt-4 text-[15px] font-semibold text-slate-900">No data yet</p>
+      <p className="m-0 mt-1 max-w-sm text-sm text-slate-500">{message}</p>
     </div>
   );
 }

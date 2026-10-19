@@ -1,10 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ShieldCheck, ShieldAlert, CheckCircle2, XCircle, Plus, Loader2 } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, CheckCircle2, XCircle, Plus, Loader2, Clock3 } from 'lucide-react';
 import { listApprovals, createApproval, decideApproval, type ApprovalWorkflow, type ApprovalAction } from '@/services/approvals';
 import type { ProjectMember } from '@/types/project';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import Modal from '@/components/Modal';
+import { Badge, Button, cn, Field, selectClass, textareaClass, type BadgeTone } from '@/components/ui';
+
+const STATUS_TONE: Record<string, BadgeTone> = {
+  APPROVED: 'success',
+  REJECTED: 'danger',
+  PENDING: 'warning',
+  CANCELLED: 'neutral',
+};
 
 interface ApprovalSectionProps {
   projectId: string;
@@ -90,75 +98,62 @@ export default function ApprovalSection({ projectId, taskId, members }: Approval
   };
 
   return (
-    <div className="mt-8 border-t border-slate-200 pt-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-slate-600" />
+    <section className="border-t border-slate-200 pt-6">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="m-0 flex items-center gap-2 text-[15px] font-semibold text-slate-900">
+          <ShieldCheck className="h-4 w-4 text-slate-400" />
           Approval Workflows
         </h3>
-        <button
-          onClick={() => setRequestModalOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors"
-        >
-          <Plus className="w-3 h-3" />
+        <Button icon={Plus} onClick={() => setRequestModalOpen(true)} size="sm" variant="secondary">
           Request Approval
-        </button>
+        </Button>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-4">
-          <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />
+        <div className="flex items-center justify-center gap-2 py-4 text-[13px] text-slate-500">
+          <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+          Loading approvals…
         </div>
       ) : approvals.length === 0 ? (
-        <p className="text-xs text-slate-500 italic text-center py-2">No approval workflows for this task.</p>
+        <p className="m-0 rounded-lg border border-dashed border-slate-200 px-4 py-4 text-center text-[13px] text-slate-500">No approval workflows for this task.</p>
       ) : (
         <div className="grid gap-3">
           {approvals.map((approval) => {
-            const isPendingForMe = approval.status === 'PENDING' && 
+            const isPendingForMe = approval.status === 'PENDING' &&
               approval.signOffChain.some(s => s.approverUserId === user?.id && s.status === 'PENDING');
-            
+
             return (
-              <div key={approval.id} className="p-3 bg-white border border-slate-200 rounded-lg text-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-slate-900">{ACTION_LABELS[approval.action] || approval.action}</span>
-                  <span className={`text-[11px] px-2 py-0.5 rounded uppercase font-semibold tracking-wide ${
-                    approval.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
-                    approval.status === 'REJECTED' ? 'bg-red-100 text-red-700' :
-                    'bg-amber-100 text-amber-700'
-                  }`}>
-                    {approval.status}
-                  </span>
+              <div key={approval.id} className="rounded-lg border border-slate-200 bg-white p-3 text-sm">
+                <div className="mb-1.5 flex items-start justify-between gap-3">
+                  <span className="font-medium text-slate-900">{ACTION_LABELS[approval.action] || approval.action}</span>
+                  <Badge dot tone={STATUS_TONE[approval.status] ?? 'neutral'}>
+                    {approval.status.charAt(0) + approval.status.slice(1).toLowerCase()}
+                  </Badge>
                 </div>
-                <p className="text-xs text-slate-600 mb-3">{approval.reason}</p>
-                
-                <div className="space-y-1 mb-3">
+                {approval.reason ? <p className="m-0 mb-3 text-[13px] text-slate-600">{approval.reason}</p> : null}
+
+                <ol className="m-0 mb-1 list-none space-y-1.5 p-0">
                   {approval.signOffChain.map((step) => {
                     const memberName = members.find(m => m.userId === step.approverUserId)?.user.name || 'Unknown User';
                     return (
-                      <div key={step.order} className="flex items-center gap-2 text-xs text-slate-500">
-                        {step.status === 'APPROVED' ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> :
-                         step.status === 'REJECTED' ? <XCircle className="w-3.5 h-3.5 text-red-500" /> :
-                         <Loader2 className="w-3.5 h-3.5 text-amber-500" />}
+                      <li key={step.order} className="flex items-center gap-2 text-[13px] text-slate-600">
+                        {step.status === 'APPROVED' ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> :
+                         step.status === 'REJECTED' ? <XCircle className="h-4 w-4 text-red-500" /> :
+                         <Clock3 className="h-4 w-4 text-amber-500" />}
                         <span>{memberName}</span>
-                      </div>
+                      </li>
                     );
                   })}
-                </div>
+                </ol>
 
                 {isPendingForMe && (
-                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100 mt-2">
-                    <button
-                      onClick={() => handleDecision(approval.id, 'APPROVED')}
-                      className="flex-1 py-1.5 bg-green-50 hover:bg-green-100 text-green-700 text-xs font-semibold rounded-md transition-colors"
-                    >
+                  <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
+                    <Button className="flex-1" onClick={() => handleDecision(approval.id, 'APPROVED')} size="sm" variant="accent">
                       Approve
-                    </button>
-                    <button
-                      onClick={() => handleDecision(approval.id, 'REJECTED')}
-                      className="flex-1 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold rounded-md transition-colors"
-                    >
+                    </Button>
+                    <Button className="flex-1" onClick={() => handleDecision(approval.id, 'REJECTED')} size="sm" variant="danger">
                       Reject
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -170,67 +165,64 @@ export default function ApprovalSection({ projectId, taskId, members }: Approval
       {requestModalOpen && (
         <Modal onClose={() => setRequestModalOpen(false)} title="Request Approval">
           <div className="grid gap-4">
-            <div className="grid gap-1">
-              <label className="text-sm font-semibold text-slate-900">Action Type</label>
+            <Field label="Action Type">
               <select
                 value={action}
                 onChange={(e) => setAction(e.target.value as ApprovalAction)}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-500"
+                className={selectClass}
               >
                 {Object.entries(ACTION_LABELS).map(([key, label]) => (
                   <option key={key} value={key}>{label}</option>
                 ))}
               </select>
-            </div>
+            </Field>
 
-            <div className="grid gap-1">
-              <label className="text-sm font-semibold text-slate-900">Reason</label>
+            <Field label="Reason">
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Why is this approval needed?"
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-slate-500 min-h-[80px]"
+                className={cn(textareaClass, 'min-h-[80px]')}
               />
-            </div>
+            </Field>
 
-            <div className="grid gap-1">
-              <label className="text-sm font-semibold text-slate-900 mb-1">Select Approvers (ordered)</label>
-              <div className="max-h-40 overflow-y-auto border border-slate-200 rounded-lg bg-white custom-scrollbar">
+            <div className="grid gap-1.5">
+              <span className="text-sm font-medium text-slate-700">Select Approvers (ordered)</span>
+              <div className="max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white custom-scrollbar">
                 {members.map(member => (
-                  <label key={member.userId} className="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0">
+                  <label key={member.userId} className="flex cursor-pointer items-center gap-3 border-b border-slate-100 px-3 py-2.5 last:border-0 hover:bg-slate-50">
                     <input
                       type="checkbox"
                       checked={selectedApprovers.includes(member.userId)}
                       onChange={() => toggleApprover(member.userId)}
-                      className="w-4 h-4 text-slate-600 bg-white border-slate-300 rounded focus:ring-slate-500"
+                      className="h-4 w-4 rounded border-slate-300 accent-slate-900"
                     />
-                    <span className="text-sm text-slate-800">{member.user.name || member.user.email}</span>
+                    <span className="min-w-0 flex-1 truncate text-sm text-slate-800">{member.user.name || member.user.email}</span>
+                    {selectedApprovers.includes(member.userId) ? (
+                      <span className="text-xs tabular-nums text-slate-500">#{selectedApprovers.indexOf(member.userId) + 1}</span>
+                    ) : null}
                   </label>
                 ))}
               </div>
             </div>
 
-            <div className="flex gap-3 justify-end pt-2">
-              <button
-                type="button"
-                className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors"
-                onClick={() => setRequestModalOpen(false)}
-              >
+            <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+              <Button onClick={() => setRequestModalOpen(false)} variant="secondary">
                 Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleRequestApproval}
+              </Button>
+              <Button
                 disabled={submittingRequest || selectedApprovers.length === 0}
-                className="px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                icon={ShieldAlert}
+                loading={submittingRequest}
+                onClick={handleRequestApproval}
+                variant="primary"
               >
-                {submittingRequest ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldAlert className="w-4 h-4" />}
                 {submittingRequest ? 'Submitting...' : 'Request'}
-              </button>
+              </Button>
             </div>
           </div>
         </Modal>
       )}
-    </div>
+    </section>
   );
 }

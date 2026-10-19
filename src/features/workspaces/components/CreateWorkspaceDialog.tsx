@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { buttonClass, inputClass } from '@/components/ui';
 import { Building2, X } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
 
@@ -37,33 +38,34 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps): 
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-150">
-      <div className="bg-white border border-slate-200/90 rounded-2xl w-full max-w-md p-6 shadow-xl shadow-slate-400/20">
-        <div className="flex items-center justify-between mb-6">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm animate-in fade-in duration-150 sm:p-5" role="dialog" aria-modal="true">
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6">
+        <div className="mb-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center">
-              <Building2 className="w-4.5 h-4.5 text-blue-600" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
+              <Building2 className="h-[18px] w-[18px] text-slate-600" />
             </div>
-            <h3 className="text-base font-semibold text-slate-900">Create New Workspace</h3>
+            <h3 className="m-0 text-base font-semibold text-slate-900">Create New Workspace</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+            aria-label="Close"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 px-3.5 py-2.5 text-sm text-red-600 bg-red-50 border border-red-200/80 rounded-xl">
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] text-red-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
               Workspace Name
             </label>
             <input
@@ -71,37 +73,37 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps): 
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="e.g. Acme Product Team"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
+              className={inputClass}
               autoFocus
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-              Slug <span className="text-slate-400 normal-case font-normal">(auto-generated)</span>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Slug <span className="font-normal text-slate-400">(auto-generated)</span>
             </label>
             <input
               type="text"
               value={slug}
               onChange={(e) => setSlug(deriveSlug(e.target.value))}
               placeholder="acme-product-team"
-              className="w-full bg-slate-100/60 border border-slate-200/80 rounded-xl px-3.5 py-2.5 text-sm text-slate-600 font-mono focus:outline-none focus:border-blue-400 transition"
+              className={`${inputClass} font-mono text-[13px]`}
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition"
+              className={buttonClass('secondary')}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition shadow-sm shadow-blue-500/20"
+              className={buttonClass('primary')}
             >
               {loading ? 'Creating…' : 'Create Workspace'}
             </button>

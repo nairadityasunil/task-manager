@@ -15,17 +15,23 @@ import EventTrackingPage from './EventTrackingPage';
 import SdkSetupGuide from '@/features/sdk-integrations/components/SdkSetupGuide';
 import {
   Activity,
+  ArrowLeft,
+  BookOpen,
   Check,
-  Code,
   Copy,
+  Globe,
+  KeyRound,
+  Pencil,
   RefreshCw,
   Settings,
   ShieldAlert,
+  Target,
   Trash2,
   AlertTriangle,
   Play,
   Pause
 } from 'lucide-react';
+import { Badge, Button, Card, CardHeader, Field, Tabs, cn, inputClass, selectClass, textareaClass, type BadgeTone } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
 
 const SdkIntegrationDetailPage: React.FC = () => {
@@ -189,75 +195,89 @@ const SdkIntegrationDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <RefreshCw className="h-8 w-8 animate-spin text-slate-600" />
+      <div className="min-h-full bg-slate-50">
+        <div className="border-b border-slate-200 bg-white px-4 pb-5 pt-5 sm:px-6 lg:px-8">
+          <div className="h-4 w-28 animate-pulse rounded bg-slate-100" />
+          <div className="mt-3 h-7 w-56 animate-pulse rounded bg-slate-100" />
+          <div className="mt-2 h-4 w-40 animate-pulse rounded bg-slate-100" />
+        </div>
+        <div className="grid gap-4 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+          <div className="h-40 animate-pulse rounded-xl border border-slate-200 bg-white" />
+          <div className="h-56 animate-pulse rounded-xl border border-slate-200 bg-white" />
+        </div>
       </div>
     );
   }
 
   if (error || !integration) {
     return (
-      <div className="p-8 text-center bg-white shadow-sm rounded-md max-w-md mx-auto mt-10">
-        <AlertTriangle className="mx-auto h-12 w-12 text-rose-500" />
-        <h3 className="mt-4 text-lg font-semibold text-slate-900">Integration Not Found</h3>
-        <p className="mt-2 text-sm text-slate-500">{error || 'The requested SDK integration could not be loaded.'}</p>
-        <button
-          onClick={() => navigate('/sdk-integrations')}
-          className="mt-5 rounded bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 transition-colors"
-        >
-          Back to List
-        </button>
+      <div className="px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-md justify-items-center gap-3 rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
+          <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600">
+            <AlertTriangle size={20} />
+          </span>
+          <h3 className="m-0 text-[15px] font-semibold text-slate-900">Integration Not Found</h3>
+          <p className="m-0 text-sm text-slate-500">{error || 'The requested SDK integration could not be loaded.'}</p>
+          <Button className="mt-2" variant="primary" onClick={() => navigate('/sdk-integrations')}>
+            Back to List
+          </Button>
+        </div>
       </div>
     );
   }
 
-  const statusColors = {
-    pending: 'bg-amber-50 text-amber-705 shadow-xs',
-    connected: 'bg-emerald-50 text-emerald-705 shadow-xs',
-    disabled: 'bg-rose-50 text-rose-705 shadow-xs',
-    revoked: 'bg-slate-50 text-slate-705 shadow-xs'
+  const statusTone: Record<SdkIntegration['status'], BadgeTone> = {
+    pending: 'warning',
+    connected: 'success',
+    disabled: 'neutral',
+    revoked: 'danger'
   };
 
-  const envGradient: Record<string, string> = {
-    production: 'from-slate-700 to-slate-900',
-    staging: 'from-amber-500 to-orange-500',
-    development: 'from-emerald-500 to-teal-600',
-  };
+  const fmt = (d?: string | null) => (d ? new Date(d).toLocaleString() : 'Never');
+  const labelCls = 'text-xs text-slate-500';
 
   return (
     <div className="min-h-full bg-slate-50">
       {/* Detail Header */}
-      <div className="relative overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${envGradient[integration.environment] ?? 'from-slate-100 to-slate-200'} opacity-[0.05]`} />
-        <div className="relative bg-white px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-200">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className={`w-2.5 h-2.5 rounded-full bg-gradient-to-br ${envGradient[integration.environment] ?? 'from-slate-400 to-slate-600'} shrink-0`} />
-                <h2 className="m-0 text-lg sm:text-xl font-semibold text-slate-900">{integration.name}</h2>
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide ${statusColors[integration.status]}`}>
-                  {integration.status}
-                </span>
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium text-white uppercase bg-gradient-to-r ${envGradient[integration.environment] ?? 'from-slate-600 to-slate-800'}`}>
-                  {integration.environment}
-                </span>
+      <div className="border-b border-slate-200 bg-white px-4 pt-4 sm:px-6 sm:pt-5 lg:px-8">
+        <button
+          onClick={() => navigate('/sdk-integrations')}
+          type="button"
+          className="-ml-1 inline-flex h-8 items-center gap-1.5 rounded-lg px-1 text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-900"
+        >
+          <ArrowLeft size={14} /> All integrations
+        </button>
+        <div className="mt-2 flex flex-wrap items-start justify-between gap-3 pb-4">
+          <div className="flex min-w-0 items-start gap-3">
+            <span className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 sm:flex">
+              <Globe size={18} />
+            </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="m-0 truncate text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">{integration.name}</h1>
+                <Badge className="capitalize" dot tone={statusTone[integration.status]}>{integration.status}</Badge>
+                <Badge className="capitalize">{integration.environment}</Badge>
               </div>
-              <p className="m-0 mt-1.5 text-sm text-slate-500">
-                Target: <span className="font-mono text-slate-600 text-xs">{integration.domain}</span>
+              <p className="m-0 mt-1 truncate text-sm text-slate-500">
+                Target: <span className="font-mono text-[13px] text-slate-700">{integration.domain}</span>
               </p>
             </div>
-            <button
-              onClick={() => navigate('/sdk-integrations')}
-              className="self-start md:self-auto rounded-lg border border-slate-200 bg-white px-3.5 h-9 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
-            >
-              ← All integrations
-            </button>
           </div>
         </div>
+        <Tabs
+          items={[
+            { value: 'overview', label: 'Overview', icon: Settings },
+            { value: 'guides', label: 'Guides', icon: BookOpen },
+            { value: 'surveys', label: 'Surveys', icon: Target },
+            { value: 'events', label: 'Events', icon: Activity }
+          ]}
+          value={activeTab}
+          onChange={(next) => navigate(`/sdk-integrations/${integration.id}/${next}`)}
+        />
       </div>
 
       {/* Tab Panels */}
-      <div className="p-4 sm:p-8">
+      <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
         {activeTab === 'overview' && (
           <div className="mb-6">
             <SdkSetupGuide
@@ -269,322 +289,269 @@ const SdkIntegrationDetailPage: React.FC = () => {
           </div>
         )}
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
             {/* Left 2 Columns: Config & Keys */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="grid content-start gap-4 lg:col-span-2 lg:gap-6">
               {/* SDK Key Panel */}
-              <div className="rounded-md bg-white p-4 shadow-sm border-l-4 border-slate-800">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center">
-                    <Code className="h-4 w-4 text-slate-700" />
-                  </div>
-                  <h3 className="m-0 text-base font-semibold text-slate-800">Integration SDK Key</h3>
-                </div>
-
-                {newKey ? (
-                  <div className="mb-4 rounded bg-amber-50 p-4 shadow-sm">
-                    <div className="flex items-center gap-2 text-amber-800 font-semibold text-sm mb-1">
-                      <AlertTriangle className="h-4 w-4" />
-                      Copy your new SDK Key
+              <Card>
+                <CardHeader
+                  title="Integration SDK Key"
+                  description="Used by the SDK to identify this app. Regenerating it stops the old key immediately."
+                />
+                <div className="grid gap-4 p-4 sm:p-5">
+                  {newKey ? (
+                    <div className="grid gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 sm:p-4">
+                      <div>
+                        <div className="flex items-center gap-2 text-sm font-medium text-amber-900">
+                          <AlertTriangle className="h-4 w-4" />
+                          Copy your new SDK Key
+                        </div>
+                        <p className="m-0 mt-1 text-[13px] text-amber-800">
+                          This key will only be shown once. Copy it now and store it securely.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-white py-1 pl-3 pr-1">
+                        <code className="min-w-0 flex-1 select-all break-all font-mono text-[13px] text-slate-800">{newKey}</code>
+                        <Button
+                          aria-label="Copy Key"
+                          onClick={() => handleCopy(newKey)}
+                          size="icon-sm"
+                          variant="ghost"
+                          title="Copy Key"
+                        >
+                          {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
                     </div>
-                    <p className="text-xs text-amber-700 mb-3">
-                      This key will only be shown once. Copy it now and store it securely.
-                    </p>
-                    <div className="flex items-center gap-2 rounded bg-white  p-2.5 shadow-inner">
-                      <code className="flex-1 font-mono text-xs text-slate-800 break-all select-all">{newKey}</code>
-                      <button
-                        onClick={() => handleCopy(newKey)}
-                        className="rounded p-1 text-slate-600 hover:bg-slate-50 transition-colors"
-                        title="Copy Key"
+                  ) : (
+                    <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 py-1 pl-3 pr-1">
+                      <KeyRound size={14} className="shrink-0 text-slate-400" />
+                      <code className="min-w-0 flex-1 select-none break-all font-mono text-[13px] text-slate-600">{integration.sdkKeyMasked}</code>
+                      <Button
+                        aria-label="Masked Key cannot be copied"
+                        onClick={() => handleCopy(integration.sdkKeyMasked)}
+                        disabled={true}
+                        size="icon-sm"
+                        variant="ghost"
+                        title="Masked Key cannot be copied"
                       >
-                        {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
-                      </button>
+                        <Copy className="h-4 w-4" />
+                      </Button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="mb-4 flex items-center gap-2 rounded bg-slate-50  p-2.5 shadow-inner">
-                    <code className="flex-1 font-mono text-xs text-slate-600 break-all select-none">{integration.sdkKeyMasked}</code>
-                    <button
-                      onClick={() => handleCopy(integration.sdkKeyMasked)}
-                      disabled={true}
-                      className="rounded p-1 text-slate-400 cursor-not-allowed opacity-50"
-                      title="Masked Key cannot be copied"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </button>
-                  </div>
-                )}
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleRegenerateKey}
-                    className="rounded bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 transition-colors"
-                  >
-                    Regenerate Key
-                  </button>
-                  {newKey && (
-                    <button
-                      onClick={() => setNewKey(null)}
-                      className="rounded bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition-colors shadow-xs"
-                    >
-                      Done Viewing
-                    </button>
                   )}
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button icon={RefreshCw} onClick={handleRegenerateKey}>
+                      Regenerate Key
+                    </Button>
+                    {newKey && (
+                      <Button variant="primary" onClick={() => setNewKey(null)}>
+                        Done Viewing
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </Card>
 
               {/* Edit Details Form */}
-              <div className="rounded bg-white p-5 shadow-sm border-l-4 border-slate-800">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center">
-                      <Settings className="h-4 w-4 text-slate-700" />
-                    </div>
-                    <h3 className="m-0 text-base font-semibold text-slate-800">Configuration Details</h3>
-                  </div>
-                  {!isEditing && (
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
-                    >
+              <Card>
+                <CardHeader
+                  title="Configuration Details"
+                  description="Where the SDK is allowed to run."
+                  actions={!isEditing ? (
+                    <Button size="sm" icon={Pencil} onClick={() => setIsEditing(true)}>
                       Edit Configuration
-                    </button>
-                  )}
-                </div>
+                    </Button>
+                  ) : undefined}
+                />
 
-                {isEditing ? (
-                  <form onSubmit={handleSaveChanges} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
-                        Integration Name
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        className="w-full rounded bg-slate-50 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-xs focus:shadow-sm"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
-                          Primary Domain
-                        </label>
+                <div className="p-4 sm:p-5">
+                  {isEditing ? (
+                    <form onSubmit={handleSaveChanges} className="grid gap-4">
+                      <Field label="Integration name">
                         <input
                           type="text"
                           required
-                          value={editDomain}
-                          onChange={(e) => setEditDomain(e.target.value)}
-                          placeholder="example.com"
-                          className="w-full rounded bg-slate-50 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-xs"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          className={inputClass}
                         />
+                      </Field>
+
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <Field label="Primary domain">
+                          <input
+                            type="text"
+                            required
+                            value={editDomain}
+                            onChange={(e) => setEditDomain(e.target.value)}
+                            placeholder="example.com"
+                            className={inputClass}
+                          />
+                        </Field>
+                        <Field label="Environment">
+                          <select
+                            value={editEnvironment}
+                            onChange={(e) => setEditEnvironment(e.target.value as SdkEnvironment)}
+                            className={selectClass}
+                          >
+                            <option value="development">Development</option>
+                            <option value="staging">Staging</option>
+                            <option value="production">Production</option>
+                          </select>
+                        </Field>
                       </div>
-                      <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
-                          Environment
-                        </label>
-                        <select
-                          value={editEnvironment}
-                          onChange={(e) => setEditEnvironment(e.target.value as SdkEnvironment)}
-                          className="w-full rounded bg-slate-50 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-xs"
+
+                      <Field label="Allowed CORS origins" hint="Comma-separated URLs.">
+                        <input
+                          type="text"
+                          value={editAllowedOrigins}
+                          onChange={(e) => setEditAllowedOrigins(e.target.value)}
+                          placeholder="http://localhost:3000, https://staging.example.com"
+                          className={inputClass}
+                        />
+                      </Field>
+
+                      <Field label="Description">
+                        <textarea
+                          value={editDescription}
+                          onChange={(e) => setEditDescription(e.target.value)}
+                          rows={3}
+                          className={cn(textareaClass, 'resize-none')}
+                        />
+                      </Field>
+
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        <Button type="submit" variant="primary" loading={saving}>
+                          {saving ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setIsEditing(false);
+                            loadData();
+                          }}
                         >
-                          <option value="development">Development</option>
-                          <option value="staging">Staging</option>
-                          <option value="production">Production</option>
-                        </select>
+                          Cancel
+                        </Button>
                       </div>
-                    </div>
+                    </form>
+                  ) : (
+                    <dl className="m-0 grid gap-4">
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="min-w-0">
+                          <dt className={labelCls}>Primary domain</dt>
+                          <dd className="m-0 mt-0.5 truncate text-sm font-medium text-slate-900">{integration.domain}</dd>
+                        </div>
+                        <div>
+                          <dt className={labelCls}>Environment</dt>
+                          <dd className="m-0 mt-0.5 text-sm font-medium capitalize text-slate-900">{integration.environment}</dd>
+                        </div>
+                      </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
-                        Allowed CORS Origins (comma-separated URLs)
-                      </label>
-                      <input
-                        type="text"
-                        value={editAllowedOrigins}
-                        onChange={(e) => setEditAllowedOrigins(e.target.value)}
-                        placeholder="http://localhost:3000, https://staging.example.com"
-                        className="w-full rounded bg-slate-50 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-xs"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
-                        Description
-                      </label>
-                      <textarea
-                        value={editDescription}
-                        onChange={(e) => setEditDescription(e.target.value)}
-                        rows={3}
-                        className="w-full rounded bg-slate-50 px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-xs resize-none"
-                      />
-                    </div>
-
-                    <div className="flex gap-2 pt-2 pb-1">
-                      <button
-                        type="submit"
-                        disabled={saving}
-                        className="rounded bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-slate-800 transition-colors disabled:opacity-50"
-                      >
-                        {saving ? 'Saving...' : 'Save Changes'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsEditing(false);
-                          loadData();
-                        }}
-                        className="rounded bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition-colors shadow-xs"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">Primary Domain</span>
-                        <span className="text-sm font-semibold text-slate-800">{integration.domain}</span>
+                        <dt className={labelCls}>Allowed origins</dt>
+                        <dd className="m-0 mt-1.5 flex flex-wrap gap-1.5">
+                          {integration.allowedOrigins.length > 0 ? (
+                            integration.allowedOrigins.map((origin) => (
+                              <span key={origin} className="max-w-full truncate rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-xs text-slate-700">
+                                {origin}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-[13px] text-slate-500">Only matching primary domain requests allowed</span>
+                          )}
+                        </dd>
                       </div>
+
                       <div>
-                        <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">Environment</span>
-                        <span className="text-sm font-semibold text-slate-800 capitalize">{integration.environment}</span>
+                        <dt className={labelCls}>Description</dt>
+                        <dd className="m-0 mt-0.5 whitespace-pre-wrap text-sm text-slate-700">{integration.description || 'No description provided.'}</dd>
                       </div>
-                    </div>
-
-                    <div>
-                      <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">Allowed Origins</span>
-                      <div className="mt-1 flex flex-wrap gap-1.5">
-                        {integration.allowedOrigins.length > 0 ? (
-                          integration.allowedOrigins.map((origin) => (
-                            <span key={origin} className="rounded bg-slate-105 px-2 py-0.5 text-xs text-slate-700 font-mono shadow-xs">
-                              {origin}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-sm italic text-slate-400">Only matching primary domain requests allowed</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">Description</span>
-                      <p className="mt-1 text-sm text-slate-700 whitespace-pre-wrap">{integration.description || 'No description provided.'}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+                    </dl>
+                  )}
+                </div>
+              </Card>
             </div>
 
             {/* Right Column: Connection Diagnostics & Control */}
-            <div className="space-y-8">
+            <div className="grid content-start gap-4 lg:gap-6">
               {/* Health Diagnostics Panel */}
-              <div className="rounded-md bg-white p-4 shadow-sm border-l-4 border-emerald-500">
-                <div className="flex items-center gap-2 mb-5">
-                  <div className="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center">
-                    <Activity className="h-4 w-4 text-emerald-600" />
+              <Card>
+                <CardHeader title="Diagnostics &amp; Health" description="Latest signals from the SDK." />
+                <div className="p-4 sm:p-5">
+                  <div className="mb-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+                    <span className="text-[13px] text-slate-600">Connections (all-time)</span>
+                    <span className="text-xl font-semibold tracking-tight text-slate-900">{integration.connectionCount}</span>
                   </div>
-                  <h3 className="m-0 text-base font-semibold text-slate-800">Diagnostics &amp; Health</h3>
-                </div>
 
-                {/* Connection count highlight */}
-                <div className="mb-4 rounded bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 flex items-center justify-between">
-                  <span className="text-xs text-emerald-700">Connections (All-time)</span>
-                  <span className="text-2xl font-semibold text-emerald-700">{integration.connectionCount}</span>
+                  <dl className="m-0 divide-y divide-slate-100">
+                    {[
+                      { label: 'SDK client version', value: integration.sdkVersion || 'Not connected' },
+                      { label: 'Latest active origin', value: integration.latestOrigin || '—', mono: true },
+                      { label: 'First registered', value: fmt(integration.firstConnectedAt) },
+                      { label: 'Last live connect', value: fmt(integration.lastConnectedAt) },
+                      { label: 'Last heartbeat', value: fmt(integration.lastHeartbeatAt) },
+                      { label: 'Last setup fetch', value: fmt(integration.lastRuntimeRequestAt) },
+                      { label: 'Last logged event', value: fmt(integration.lastEventRequestAt) },
+                    ].map(({ label, value, mono }) => (
+                      <div key={label} className="flex items-center justify-between gap-3 py-2.5">
+                        <dt className="shrink-0 text-[13px] text-slate-500">{label}</dt>
+                        <dd className={`m-0 min-w-0 truncate text-right text-[13px] ${mono ? 'font-mono text-slate-600' : 'text-slate-800'}`} title={String(value)}>{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
-
-                <div className="space-y-0 divide-y divide-slate-100">
-                  {[
-                    { label: 'SDK Client Version', value: integration.sdkVersion || 'Not connected', accent: 'text-slate-900' },
-                    { label: 'Latest Active Origin', value: integration.latestOrigin || '—', mono: true },
-                    { label: 'First Registered', value: integration.firstConnectedAt ? new Date(integration.firstConnectedAt).toLocaleString() : 'Never', accent: 'text-slate-900' },
-                    { label: 'Last Live Connect', value: integration.lastConnectedAt ? new Date(integration.lastConnectedAt).toLocaleString() : 'Never' },
-                    { label: 'Last Heartbeat', value: integration.lastHeartbeatAt ? new Date(integration.lastHeartbeatAt).toLocaleString() : 'Never' },
-                    { label: 'Last Setup Fetch', value: integration.lastRuntimeRequestAt ? new Date(integration.lastRuntimeRequestAt).toLocaleString() : 'Never' },
-                    { label: 'Last Logged Event', value: integration.lastEventRequestAt ? new Date(integration.lastEventRequestAt).toLocaleString() : 'Never', accent: 'text-amber-600' },
-                  ].map(({ label, value, mono, accent }) => (
-                    <div key={label} className="flex justify-between items-center py-2.5">
-                      <span className="text-xs text-slate-500">{label}</span>
-                      <span className={`text-xs truncate max-w-[160px] text-right ${mono ? 'font-mono text-slate-600' : accent ?? 'text-slate-700'}`}>{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              </Card>
 
               {/* Danger Zone */}
-              <div className="rounded-md bg-rose-50/50 p-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                  <ShieldAlert className="h-5 w-5 text-rose-600" />
-                  <h3 className="m-0 text-lg font-semibold text-rose-900">Danger Zone</h3>
-                </div>
-
-                <p className="text-xs text-rose-705 mb-4 leading-relaxed font-medium">
-                  Temporarily disable administrative operations or permanently delete this entire integration context.
-                </p>
-
-                <div className="space-y-3">
-                  <button
+              <Card className="border-red-200">
+                <CardHeader className="border-red-100" title={<span className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-red-600" />Danger Zone</span>} />
+                <div className="grid gap-3 p-4 sm:p-5">
+                  <p className="m-0 text-[13px] leading-relaxed text-slate-600">
+                    Temporarily disable administrative operations or permanently delete this entire integration context.
+                  </p>
+                  <Button
+                    className="w-full"
+                    icon={integration.status === 'disabled' ? Play : Pause}
                     onClick={handleToggleStatus}
-                    className={`w-full rounded px-4 py-2.5 text-sm font-semibold shadow transition-colors flex items-center justify-center gap-2 ${
-                      integration.status === 'disabled'
-                        ? 'bg-emerald-600 text-white hover:bg-emerald-500'
-                        : 'bg-amber-600 text-white hover:bg-amber-500'
-                    }`}
+                    variant={integration.status === 'disabled' ? 'accent' : 'secondary'}
                   >
-                    {integration.status === 'disabled' ? (
-                      <>
-                        <Play className="h-4 w-4" />
-                        Enable Integration
-                      </>
-                    ) : (
-                      <>
-                        <Pause className="h-4 w-4" />
-                        Disable Integration
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={handleDelete}
-                    className="w-full rounded bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-rose-500 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Trash2 className="h-4 w-4" />
+                    {integration.status === 'disabled' ? 'Enable Integration' : 'Disable Integration'}
+                  </Button>
+                  <Button className="w-full" icon={Trash2} onClick={handleDelete} variant="danger">
                     Delete Integration
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
         )}
 
         {activeTab === 'guides' && (
-          <div className="space-y-4">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
             <div>
-              <h2 className="m-0 text-lg font-semibold text-slate-900">Guides</h2>
-              <p className="m-0 mt-0.5 text-sm text-slate-500">Tours, modals, tips, hotspots and banners shown in this app.</p>
+              <h2 className="m-0 text-[15px] font-semibold text-slate-900">Guides</h2>
+              <p className="m-0 mt-0.5 text-[13px] text-slate-500">Tours, modals, tips, hotspots and banners shown in this app.</p>
             </div>
             <EngagementPage sdkIntegrationId={integrationId} defaultTab="guides" hideHeader={true} />
           </div>
         )}
 
         {activeTab === 'surveys' && (
-          <div className="space-y-4">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
             <div>
-              <h2 className="m-0 text-lg font-semibold text-slate-900">Surveys</h2>
-              <p className="m-0 mt-0.5 text-sm text-slate-500">Feedback and NPS surveys shown to users of this app.</p>
+              <h2 className="m-0 text-[15px] font-semibold text-slate-900">Surveys</h2>
+              <p className="m-0 mt-0.5 text-[13px] text-slate-500">Feedback and NPS surveys shown to users of this app.</p>
             </div>
             <EngagementPage sdkIntegrationId={integrationId} defaultTab="surveys" hideHeader={true} />
           </div>
         )}
 
         {activeTab === 'events' && (
-          <div className="space-y-4">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
             <div>
-              <h2 className="m-0 text-lg font-semibold text-slate-900">Events</h2>
-              <p className="m-0 mt-0.5 text-sm text-slate-500">Everything this app sends through the SDK. Click an event to see its payload.</p>
+              <h2 className="m-0 text-[15px] font-semibold text-slate-900">Events</h2>
+              <p className="m-0 mt-0.5 text-[13px] text-slate-500">Everything this app sends through the SDK. Click an event to see its payload.</p>
             </div>
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
               <EventTrackingPage sdkIntegrationId={integrationId} hideHeader={true} onOpenDocs={() => navigate('/sdk-docs')} />

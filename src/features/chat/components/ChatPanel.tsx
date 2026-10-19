@@ -12,6 +12,7 @@ import {
   BellOff,
   Loader2,
   Users,
+  X,
 } from 'lucide-react';
 import type { ChatMessage as ChatMessageType } from '@/types/chat';
 import type { Project, ProjectMember } from '@/types/project';
@@ -23,6 +24,7 @@ import {
 import { useDebounce } from '@/hooks/useDebounce';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
+import { Button, cn, inputClass } from '@/components/ui';
 
 export interface ChatPanelProps {
   project: Project;
@@ -31,7 +33,7 @@ export interface ChatPanelProps {
   onClose: () => void;
 }
 
-export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
+export function ChatPanel({ project, members, isOpen, onClose }: ChatPanelProps) {
   const { user } = useAuth();
   const {
     messages,
@@ -143,70 +145,73 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="flex flex-col h-full bg-white relative font-sans">
+    <div className="relative flex h-full min-h-0 flex-col bg-white">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-slate-200/80 bg-white flex items-center justify-between shadow-xs z-10 shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700 font-semibold shrink-0">
-            <MessageSquare size={18} />
+      <div className="z-10 flex shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-5">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600">
+            <MessageSquare size={17} />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-slate-950 truncate tracking-tight m-0">
+              <h3 className="m-0 truncate text-[15px] font-semibold text-slate-900">
                 {project.name}
               </h3>
               <span
-                className={`w-2 h-2 rounded-full shrink-0 ${
-                  isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'
-                }`}
+                className={cn('h-2 w-2 shrink-0 rounded-full', isConnected ? 'bg-emerald-500' : 'bg-amber-400')}
                 title={isConnected ? 'Connected' : 'Reconnecting...'}
               />
             </div>
-            <p className="text-[11px] text-slate-500 font-medium truncate m-0">
+            <p className="m-0 truncate text-xs text-slate-500">
               {members.length} member{members.length === 1 ? '' : 's'}
+              <span className="mx-1.5 text-slate-300">·</span>
+              {isConnected ? 'Connected' : 'Reconnecting...'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <button
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            aria-label="Search channel history"
+            aria-pressed={showSearch}
+            className={showSearch ? 'bg-slate-100 text-slate-900' : ''}
+            icon={Search}
             onClick={() => setShowSearch(!showSearch)}
-            className={`p-2 rounded-lg transition-colors ${
-              showSearch
-                ? 'bg-slate-100 text-slate-700'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-            }`}
+            size="icon-sm"
             title="Search channel history"
-            type="button"
-          >
-            <Search size={16} />
-          </button>
-          <button
+            variant="ghost"
+          />
+          <Button
+            aria-label={notificationsEnabled ? 'Mute notifications' : 'Enable notifications'}
+            icon={notificationsEnabled ? Bell : BellOff}
             onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-            className={`p-2 rounded-lg transition-colors ${
-              notificationsEnabled
-                ? 'text-slate-700 hover:bg-slate-50'
-                : 'text-slate-400 hover:bg-slate-50'
-            }`}
+            size="icon-sm"
             title={notificationsEnabled ? 'Mute notifications' : 'Enable notifications'}
-            type="button"
-          >
-            {notificationsEnabled ? <Bell size={16} /> : <BellOff size={16} />}
-          </button>
+            variant="ghost"
+          />
+          <Button
+            aria-label="Close chat"
+            icon={X}
+            onClick={onClose}
+            size="icon-sm"
+            title="Close chat"
+            variant="ghost"
+          />
         </div>
       </div>
 
       {/* Search Input Banner */}
       {showSearch && (
-        <div className="p-3 bg-slate-50/80 border-b border-slate-200 animate-in slide-in-from-top-2 duration-200 shrink-0">
+        <div className="shrink-0 border-b border-slate-200 bg-slate-50 px-4 py-2.5 sm:px-5">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
             <input
+              autoFocus
               type="text"
               placeholder="Search in message history..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-slate-500/20"
+              className={cn(inputClass, 'pl-9')}
             />
           </div>
         </div>
@@ -216,7 +221,7 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
       <div
         ref={messagesContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4"
+        className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-4 custom-scrollbar sm:px-5"
       >
         {isLoading && hasMore && (
           <div className="flex justify-center py-2">
@@ -226,15 +231,16 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
 
         {showSearch && searchQuery.trim() ? (
           <div>
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
+            <div className="mb-3 text-[13px] font-medium text-slate-500">
               Search Results ({searchResults.length})
             </div>
             {isSearching ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="animate-spin text-slate-500" size={18} />
+              <div className="flex items-center justify-center gap-2 py-6 text-[13px] text-slate-500">
+                <Loader2 className="animate-spin text-slate-400" size={16} />
+                Searching…
               </div>
             ) : searchResults.length === 0 ? (
-              <div className="text-center py-8 text-xs text-slate-400">
+              <div className="py-8 text-center text-[13px] text-slate-500">
                 No matching messages found
               </div>
             ) : (
@@ -243,6 +249,7 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
                   key={msg.id}
                   message={msg}
                   currentUserId={currentUserId}
+                  currentUserEmail={user?.email}
                   isAdmin={isAdmin}
                   onEdit={editMessage}
                   onDelete={deleteMessage}
@@ -256,17 +263,27 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
         ) : (
           <>
             {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center text-slate-400 py-12">
-                <Users size={32} className="opacity-30 mb-2" />
-                <p className="text-xs font-semibold m-0">No chat messages yet</p>
-                <p className="text-[11px] mt-1 m-0">Start the conversation with your team!</p>
-              </div>
+              isLoading ? (
+                <div className="flex h-full items-center justify-center gap-2 py-12 text-[13px] text-slate-500">
+                  <Loader2 className="animate-spin text-slate-400" size={16} />
+                  Loading messages…
+                </div>
+              ) : (
+                <div className="flex h-full flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
+                    <Users size={18} className="text-slate-400" />
+                  </div>
+                  <p className="m-0 text-sm font-medium text-slate-900">No chat messages yet</p>
+                  <p className="m-0 mt-1 text-[13px] text-slate-500">Start the conversation with your team!</p>
+                </div>
+              )
             ) : (
               messages.map(msg => (
                 <ChatMessage
                   key={msg.id}
                   message={msg}
                   currentUserId={currentUserId}
+                  currentUserEmail={user?.email}
                   isAdmin={isAdmin}
                   onEdit={editMessage}
                   onDelete={deleteMessage}
@@ -283,8 +300,8 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
 
       {/* Typing Indicator Bar */}
       {activeTypingUsers.length > 0 && (
-        <div className="px-5 py-1 text-[11px] font-medium text-slate-500 italic bg-white border-t border-slate-100 flex items-center gap-1.5 shrink-0">
-          <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-ping" />
+        <div className="flex shrink-0 items-center gap-1.5 bg-white px-4 py-1 text-xs text-slate-500 sm:px-5">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
           <span>
             {activeTypingUsers.map(u => u.userName).join(', ')} {activeTypingUsers.length === 1 ? 'is' : 'are'} typing...
           </span>
@@ -292,7 +309,7 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
       )}
 
       {/* Chat Input Container */}
-      <div className="p-3 bg-white border-t border-slate-200/80 shrink-0">
+      <div className="shrink-0 border-t border-slate-200 bg-white px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-5">
         <ChatInput
           onSendMessage={(content) => {
             sendMessage(content, replyingTo?.id);

@@ -16,6 +16,8 @@ import { PromptGrid } from "./PromptGrid";
 import { PromptFolderGrid } from "./PromptFolderGrid";
 import { PromptMoveModal } from "./PromptMoveModal";
 import { PromptVersionCompareModal } from "@/components/PromptVersionCompareModal";
+import PageHeader from "@/components/PageHeader";
+import { Button, buttonClass, inputClass } from "@/components/ui";
 
 interface PromptLibraryLayoutProps {
   workspaceId: string;
@@ -133,74 +135,65 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-full bg-slate-50 text-slate-950 p-6 space-y-6 font-sans">
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-2xl bg-slate-900 text-white shadow-md shadow-slate-900/10">
-            <Sparkles className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-xl font-semibold text-slate-950 flex items-center gap-2.5">
-              Prompt Library
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200 font-mono">
-                PromptOps v1.0
-              </span>
-            </h1>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Browse reusable prompt templates, organization folders, and versions.
-            </p>
-          </div>
-        </div>
+    <div className="min-h-full bg-slate-50 font-sans text-slate-900">
+      <PageHeader
+        icon={Sparkles}
+        title={
+          <span className="flex flex-wrap items-center gap-2">
+            Prompt Library
+            <span className="rounded-full bg-slate-50 px-2 py-0.5 font-mono text-[11px] font-medium tracking-normal text-slate-500 ring-1 ring-inset ring-slate-200">
+              PromptOps v1.0
+            </span>
+          </span>
+        }
+        description="Browse reusable prompt templates, organization folders, and versions."
+        actions={
+          <>
+            <Button
+              icon={FolderPlus}
+              onClick={() => {
+                setActiveView("folders");
+                setIsCreatingFolder(true);
+              }}
+            >
+              New Folder
+            </Button>
+            <Button variant="primary" onClick={() => onNewPrompt(onOpenPlayground)} disabled={isCreatingPrompt}>
+              {isCreatingPrompt ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" /> New Prompt
+                </>
+              )}
+            </Button>
+          </>
+        }
+      />
 
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            onClick={() => {
-              setActiveView("folders");
-              setIsCreatingFolder(true);
-            }}
-            className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-950 text-xs font-semibold flex items-center gap-2 transition shadow-2xs cursor-pointer"
-          >
-            <FolderPlus className="w-4 h-4 text-slate-600" /> New Folder
-          </button>
-
-          <button
-            onClick={() => onNewPrompt(onOpenPlayground)}
-            disabled={isCreatingPrompt}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold shadow-md shadow-slate-900/20 flex items-center gap-2 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isCreatingPrompt ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Creating...
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4" /> New Prompt
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
+      <div className="space-y-5 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
       {errorMessage && (
-        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center justify-between shadow-2xs">
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] text-red-700">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
-          <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800 font-semibold">
-            ×
+          <button type="button" aria-label="Dismiss" onClick={() => setErrorMessage(null)} className="flex h-6 w-6 items-center justify-center rounded text-red-500 hover:bg-red-100 hover:text-red-800">
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
 
       {successMessage && (
-        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between shadow-2xs">
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[13px] text-emerald-800">
           <div className="flex items-center gap-2">
-            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+            <Check className="h-4 w-4 shrink-0 text-emerald-600" />
             <span>{successMessage}</span>
           </div>
-          <button onClick={() => setSuccessMessage(null)} className="text-emerald-500 hover:text-emerald-900 font-semibold">
-            ×
+          <button type="button" aria-label="Dismiss" onClick={() => setSuccessMessage(null)} className="flex h-6 w-6 items-center justify-center rounded text-emerald-600 hover:bg-emerald-100 hover:text-emerald-900">
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
@@ -257,41 +250,42 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
         />
       ) : (
         <div className="space-y-5">
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
             {selectedFolderId !== null ? (
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 flex-wrap items-center gap-3">
                 <button
+                  type="button"
                   onClick={() => setSelectedFolderId(null)}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer border border-slate-200"
+                  className={buttonClass("ghost", "sm", "-ml-2")}
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Back to Folders
                 </button>
                 <div className="h-5 w-px bg-slate-200" />
-                <div className="flex items-center gap-2">
-                  <FolderIcon className="w-5 h-5 text-slate-800" />
-                  <h2 className="text-base font-semibold text-slate-950">
+                <div className="flex min-w-0 items-center gap-2">
+                  <FolderIcon className="h-4 w-4 shrink-0 text-slate-400" />
+                  <h2 className="m-0 truncate text-[15px] font-semibold text-slate-900">
                     {currentFolder?.name || "Folder"}
                   </h2>
-                  <span className="text-xs text-slate-500 font-mono px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200">
+                  <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[11px] text-slate-500 ring-1 ring-inset ring-slate-200">
                     {displayedPrompts.length} prompts
                   </span>
                 </div>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <FolderIcon className="w-5 h-5 text-slate-800" />
-                <h2 className="text-base font-semibold text-slate-950">All Folders ({folders.length})</h2>
+                <FolderIcon className="h-4 w-4 text-slate-400" />
+                <h2 className="m-0 text-[15px] font-semibold text-slate-900">All Folders ({folders.length})</h2>
               </div>
             )}
 
             {isCreatingFolder ? (
-              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
+              <div className="flex w-full items-center gap-2 sm:w-auto">
                 <input
                   type="text"
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
                   placeholder="New folder name..."
-                  className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-950 focus:outline-none focus:border-slate-400"
+                  className={`${inputClass} h-8 min-w-0 flex-1 sm:w-56`}
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter") onCreateFolder();
@@ -299,24 +293,28 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
                   }}
                 />
                 <button
+                  type="button"
                   onClick={onCreateFolder}
-                  className="px-2.5 py-1 text-xs bg-slate-900 text-white rounded-lg font-semibold cursor-pointer"
+                  className={buttonClass("primary", "sm")}
                 >
                   Save
                 </button>
                 <button
+                  type="button"
+                  aria-label="Cancel"
                   onClick={() => setIsCreatingFolder(false)}
-                  className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"
+                  className={buttonClass("ghost", "icon-sm")}
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             ) : (
               <button
+                type="button"
                 onClick={() => setIsCreatingFolder(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-semibold flex items-center gap-2 transition cursor-pointer border border-slate-300"
+                className={buttonClass("secondary", "sm")}
               >
-                <FolderPlus className="w-4 h-4" /> Add Folder
+                <FolderPlus className="h-3.5 w-3.5" /> Add Folder
               </button>
             )}
           </div>
@@ -371,6 +369,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
           )}
         </div>
       )}
+      </div>
 
       {comparePrompt && (
         <PromptVersionCompareModal
@@ -398,11 +397,11 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
       )}
 
       {deleteModalPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="p-5 space-y-3">
-              <h3 className="text-base font-semibold text-slate-900">Delete prompt?</h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <h3 className="m-0 text-base font-semibold text-slate-900">Delete prompt?</h3>
+              <p className="m-0 text-sm leading-relaxed text-slate-600">
                 Are you sure you want to delete <span className="font-semibold text-slate-900">"{deleteModalPrompt.name}"</span>? This action cannot be undone.
               </p>
             </div>
@@ -412,7 +411,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setDeleteModalPrompt(null)}
-                className="px-4 py-1.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-100 transition cursor-pointer disabled:opacity-50"
+                className={buttonClass("secondary", "sm")}
               >
                 Cancel
               </button>
@@ -420,7 +419,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
                 type="button"
                 disabled={isDeleting}
                 onClick={onConfirmDelete}
-                className="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition shadow-2xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-red-600 px-3 text-[13px] font-medium text-white shadow-sm transition hover:bg-red-700 disabled:opacity-50"
               >
                 {isDeleting ? (
                   <>

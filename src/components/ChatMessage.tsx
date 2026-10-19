@@ -52,14 +52,14 @@ const getInitials = (user: MessageSender | null): string => {
 const getAvatarColor = (userId: string | null): string => {
   if (!userId) return 'bg-slate-400';
   const colors = [
-    'bg-slate-500',
-    'bg-green-500',
-    'bg-purple-500',
-    'bg-pink-500',
-    'bg-slate-500',
-    'bg-teal-500',
-    'bg-orange-500',
-    'bg-cyan-500'
+    'bg-slate-600',
+    'bg-emerald-600',
+    'bg-sky-600',
+    'bg-amber-600',
+    'bg-teal-600',
+    'bg-rose-600',
+    'bg-cyan-700',
+    'bg-slate-500'
   ];
   let hash = 0;
   for (let i = 0; i < userId.length; i++) {
@@ -177,15 +177,13 @@ function ChatMessageComponent({
   // Render system message
   if (isSystemMessage) {
     return (
-      <div className="flex items-center justify-center py-2 my-1">
-        <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-100/50  rounded-full border border-slate-200/50 ">
-          <span className="text-[11px] font-medium text-slate-500 ">
-            {message.content}
-          </span>
-          <span className="text-[11px] text-slate-400 ">
-            {formatTime(message.createdAt)}
-          </span>
-        </div>
+      <div className="flex items-center gap-3 py-1">
+        <div className="h-px flex-1 bg-slate-200" />
+        <span className="text-xs text-slate-500">
+          {message.content}
+          <span className="ml-1.5 text-slate-400">{formatTime(message.createdAt)}</span>
+        </span>
+        <div className="h-px flex-1 bg-slate-200" />
       </div>
     );
   }
@@ -193,49 +191,57 @@ function ChatMessageComponent({
   // Render deleted message
   if (isDeleted) {
     return (
-      <div className="flex items-center justify-center py-2 my-1 opacity-50">
-        <span className="text-[11px] text-slate-400  italic px-4 py-1 bg-slate-50  rounded-lg">
+      <div className="flex items-center justify-center py-1">
+        <span className="rounded-md bg-slate-50 px-2.5 py-1 text-xs italic text-slate-400">
           Message deleted
         </span>
       </div>
     );
   }
 
+  const iconBtn =
+    'inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800';
+
   return (
     <div
       id={`message-${message.id}`}
       className={[
-        'group flex gap-4 px-6 py-2 transition-all duration-300 relative w-full hover:bg-slate-50/80',
+        'group relative flex w-full gap-2.5 rounded-lg px-1 py-1 sm:gap-3',
         isOwnMessage ? 'flex-row-reverse' : 'flex-row'
       ].join(' ')}
     >
       {/* Avatar */}
       <div
         className={[
-          'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-md transform transition-transform group-hover:scale-105',
-          'text-white text-sm font-semibold select-none ring-2 ring-white',
+          'flex h-8 w-8 flex-shrink-0 select-none items-center justify-center rounded-full text-xs font-semibold text-white',
           getAvatarColor(message.senderId),
         ].join(' ')}
+        title={message.sender?.name || message.sender?.email || 'Unknown'}
       >
         {getInitials(message.sender)}
       </div>
 
       {/* Message content */}
-      <div className={['flex flex-col max-w-[92%] min-w-0', isOwnMessage ? 'items-end' : 'items-start'].join(' ')}>
-        
-        {/* The Card Bubble */}
-        <div className="relative group/bubble w-full min-w-[200px]">
+      <div className={['flex min-w-0 max-w-[80%] flex-col', isOwnMessage ? 'items-end' : 'items-start'].join(' ')}>
+        {/* Name + time */}
+        <div className={['mb-1 flex max-w-full items-baseline gap-2 px-0.5', isOwnMessage ? 'flex-row-reverse' : ''].join(' ')}>
+          <span className="truncate text-[13px] font-medium text-slate-900">
+            {message.sender?.name || 'Unknown'}
+          </span>
+          <span className="shrink-0 text-xs text-slate-400">
+            {formatTime(message.createdAt)}
+            {message.isEdited && <span className="ml-1">(edited)</span>}
+          </span>
+        </div>
+
+        {/* The bubble */}
+        <div className="relative max-w-full">
           {isEditing ? (
-            <div className="flex flex-col gap-3 min-w-[300px] w-full bg-white  p-4 rounded-2xl border-2 border-slate-500 shadow-xl">
+            <div className="flex w-[min(320px,70vw)] flex-col gap-2 rounded-xl border border-slate-300 bg-white p-2 shadow-sm">
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className={[
-                  'w-full px-4 py-3 text-sm rounded-xl resize-none outline-none',
-                  'bg-slate-50  border border-slate-200',
-                  'text-slate-950',
-                  'focus:ring-2 focus:ring-slate-500/20'
-                ].join(' ')}
+                className="w-full resize-none rounded-lg border-0 bg-transparent px-2 py-1.5 text-sm text-slate-900 outline-none"
                 rows={3}
                 autoFocus
                 onKeyDown={(e) => {
@@ -248,19 +254,21 @@ function ChatMessageComponent({
                   }
                 }}
               />
-              <div className="flex items-center gap-2 justify-end">
+              <div className="flex items-center justify-end gap-2">
                 <button
                   onClick={handleEditCancel}
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700   transition-colors"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-100"
+                  type="button"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="h-3.5 w-3.5" />
                   Cancel
                 </button>
                 <button
                   onClick={handleEditSubmit}
-                  className="flex items-center gap-1.5 px-6 py-2 text-xs font-semibold bg-slate-600 text-white rounded-xl hover:bg-slate-700 shadow-lg shadow-slate-500/20 active:scale-95 transition-all"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-slate-900 px-3 text-[13px] font-medium text-white transition-colors hover:bg-slate-800"
+                  type="button"
                 >
-                  <Check className="w-3.5 h-3.5" />
+                  <Check className="h-3.5 w-3.5" />
                   Save
                 </button>
               </div>
@@ -268,54 +276,36 @@ function ChatMessageComponent({
           ) : (
             <div
               className={[
-                'flex flex-col shadow-sm transition-all duration-300 overflow-hidden',
+                'rounded-2xl px-3.5 py-2',
                 isOwnMessage
-                  ? 'bg-slate-600  text-white rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-2xl'
-                  : 'bg-white  border border-slate-200/60  text-slate-900  rounded-tl-md rounded-tr-2xl rounded-br-2xl rounded-bl-2xl'
+                  ? 'rounded-tr-md bg-slate-900 text-white'
+                  : 'rounded-tl-md border border-slate-200 bg-white text-slate-800'
               ].join(' ')}
             >
-              {/* Card Header (Owner Name) */}
-              <div className={['px-4 py-2 text-xs font-semibold uppercase tracking-wide border-b', 
-                isOwnMessage ? 'border-white/10 text-white/90' : 'border-slate-100  text-slate-600'
-              ].join(' ')}>
-                {((name) => name.length > 10 ? name.slice(0, 10) + '…' : name)(message.sender?.name || 'Unknown')}
-              </div>
-
-              {/* Card Body */}
-              <div className="px-5 py-3.5">
-                {/* Reply preview inside bubble */}
-                {message.replyTo && (
-                  <div
-                    className={[
-                      'mb-3 p-2 rounded-lg text-xs flex items-center gap-3 transition-colors',
-                      isOwnMessage ? 'bg-black/10 hover:bg-black/20 text-white/80' : 'bg-slate-50  hover:bg-slate-100 text-slate-500',
-                      'cursor-pointer border-l-2',
-                      isOwnMessage ? 'border-white/30' : 'border-slate-500'
-                    ].join(' ')}
-                    onClick={() => onLoadThread?.(message.replyTo!.id)}
-                  >
-                    <CornerDownRight className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate">{message.replyTo.content}</span>
-                  </div>
-                )}
-
-                <div className="leading-relaxed text-[15px] whitespace-pre-wrap" style={{ wordBreak: 'break-word' }}>
-                  {message.content}
+              {/* Reply preview inside bubble */}
+              {message.replyTo && (
+                <div
+                  className={[
+                    'mb-2 flex cursor-pointer items-center gap-2 rounded-md border-l-2 px-2 py-1.5 text-xs transition-colors',
+                    isOwnMessage ? 'border-white/40 bg-white/10 text-white/80 hover:bg-white/15' : 'border-slate-300 bg-slate-50 text-slate-500 hover:bg-slate-100'
+                  ].join(' ')}
+                  onClick={() => onLoadThread?.(message.replyTo!.id)}
+                >
+                  <CornerDownRight className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{message.replyTo.content}</span>
                 </div>
+              )}
 
-                {/* Footer Info */}
-                <div className={['mt-3 flex items-center justify-between gap-4 text-[11px] uppercase font-semibold tracking-wide opacity-60'].join(' ')}>
-                  <span>{formatTime(message.createdAt)}</span>
-                  {message.isEdited && <span>(edited)</span>}
-                </div>
+              <div className="whitespace-pre-wrap text-sm leading-relaxed" style={{ wordBreak: 'break-word' }}>
+                {message.content}
               </div>
             </div>
           )}
         </div>
 
-        {/* Dynamic Horizontal Reactions Bar */}
+        {/* Reactions */}
         {groupedReactions.size > 0 && (
-          <div className={['flex flex-wrap gap-1.5 mt-2', isOwnMessage ? 'justify-end' : ''].join(' ')}>
+          <div className={['mt-1.5 flex flex-wrap gap-1', isOwnMessage ? 'justify-end' : ''].join(' ')}>
             {Array.from(groupedReactions.entries()).map(([emoji, users]) => {
               const hasReacted = userReactions.includes(emoji);
               return (
@@ -323,17 +313,16 @@ function ChatMessageComponent({
                   key={emoji}
                   onClick={() => handleReactionClick(emoji)}
                   className={[
-                    'flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-semibold shadow-xs transition-all active:scale-90',
-                    'border',
+                    'flex h-7 items-center gap-1.5 rounded-full border px-2 text-xs font-medium transition-colors',
                     hasReacted
-                      ? 'bg-slate-50 border-slate-200 text-slate-700'
-                      : 'bg-white border-slate-200 text-slate-600',
-                    'hover:border-slate-400'
+                      ? 'border-slate-300 bg-slate-100 text-slate-800'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                   ].join(' ')}
                   title={`Reacted by ${users.length} user${users.length > 1 ? 's' : ''}`}
+                  type="button"
                 >
-                  <span className="text-base leading-none">{emoji}</span>
-                  <span>{users.length}</span>
+                  <span className="text-sm leading-none">{emoji}</span>
+                  <span className="tabular-nums">{users.length}</span>
                 </button>
               );
             })}
@@ -345,26 +334,27 @@ function ChatMessageComponent({
           <button
             onClick={() => onLoadThread?.(message.id)}
             className={[
-              'mt-2 text-xs font-semibold uppercase tracking-wide text-slate-600 hover:text-slate-700   transition-colors',
-              'flex items-center gap-1.5',
+              'mt-1.5 flex items-center gap-1.5 text-xs font-medium text-slate-600 transition-colors hover:text-slate-900',
               isOwnMessage ? 'justify-end' : ''
             ].join(' ')}
+            type="button"
           >
-            <CornerDownRight className="w-3.5 h-3.5" />
+            <CornerDownRight className="h-3.5 w-3.5" />
             {message.replyCount} {message.replyCount === 1 ? 'reply' : 'replies'}
           </button>
         )}
       </div>
 
-      {/* Floating Actions Overlay */}
+      {/* Actions */}
       {!isEditing && (
         <div
           className={[
-            'flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 mt-1',
-            isOwnMessage ? 'mr-2' : 'ml-2'
+            'flex items-start pt-5 transition-opacity',
+            '[@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:focus-within:opacity-100',
+            showActions || showEmojiPicker ? '[@media(hover:hover)]:opacity-100' : ''
           ].join(' ')}
         >
-          <div className="flex bg-white  rounded-xl shadow-xl border border-slate-200/50  p-1">
+          <div className="flex rounded-lg border border-slate-200 bg-white p-0.5 shadow-sm">
             {/* Emoji toggle icon */}
             <div className="relative">
               <button
@@ -374,34 +364,36 @@ function ChatMessageComponent({
                     const rect = emojiButtonRef.current.getBoundingClientRect();
                     setEmojiPickerPos({
                       top: rect.top - 8,
-                      left: Math.max(8, rect.left - 120),
+                      left: Math.max(8, Math.min(rect.left - 120, window.innerWidth - 200)),
                     });
                   }
                   setShowEmojiPicker(!showEmojiPicker);
                 }}
-                className="p-2 text-slate-500 hover:text-slate-600   rounded-lg hover:bg-slate-50  transition-colors"
+                className={iconBtn}
                 title="Add reaction"
+                type="button"
               >
-                <Smile size={16} />
+                <Smile size={15} />
               </button>
 
               {showEmojiPicker && emojiPickerPos && (
                 <>
                   <div className="fixed inset-0 z-[6000]" onClick={() => setShowEmojiPicker(false)} />
                   <div
-                    className="fixed p-2.5 bg-white  rounded-2xl shadow-xl border border-slate-200  z-[6001]"
+                    className="fixed z-[6001] rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg"
                     style={{
                       top: `${emojiPickerPos.top}px`,
                       left: `${emojiPickerPos.left}px`,
                       transform: 'translateY(-100%)'
                     }}
                   >
-                    <div className="grid grid-cols-4 gap-1.5 min-w-[180px]">
+                    <div className="grid min-w-[176px] grid-cols-4 gap-1">
                       {QUICK_REACTIONS.map((emoji) => (
                         <button
                           key={emoji}
                           onClick={() => handleReactionClick(emoji)}
-                          className="w-10 h-10 flex items-center justify-center text-xl rounded-xl hover:bg-slate-100  transition-all hover:scale-110 active:scale-90"
+                          className="flex h-10 w-10 items-center justify-center rounded-lg text-xl transition-colors hover:bg-slate-100"
+                          type="button"
                         >
                           {emoji}
                         </button>
@@ -414,57 +406,62 @@ function ChatMessageComponent({
 
             <button
               onClick={() => onReply(message)}
-              className="p-2 text-slate-500 hover:text-slate-600   rounded-lg hover:bg-slate-50  transition-colors"
+              className={iconBtn}
               title="Reply"
+              type="button"
             >
-              <CornerDownRight size={16} />
+              <CornerDownRight size={15} />
             </button>
 
             {/* Overflow Actions */}
-            <div className="relative">
-              <button
-                onClick={() => setShowActions(!showActions)}
-                className="p-2 text-slate-500 hover:text-slate-600   rounded-lg hover:bg-slate-50  transition-colors"
-              >
-                <MoreHorizontal size={16} />
-              </button>
+              <div className="relative">
+                <button
+                  aria-label="More actions"
+                  onClick={() => setShowActions(!showActions)}
+                  className={iconBtn}
+                  type="button"
+                >
+                  <MoreHorizontal size={15} />
+                </button>
 
-              {showActions && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowActions(false)} />
-                  <div className="absolute right-0 top-full mt-2 py-1.5 bg-white  rounded-xl shadow-xl border border-slate-200  z-50 min-w-[140px] overflow-hidden">
-                    {canEdit && (
-                      <button
-                        onClick={handleStartEdit}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] font-semibold text-slate-700  hover:bg-slate-50  transition-colors"
-                      >
-                        <Edit2 size={14} />
-                        Edit Message
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button
-                        onClick={() => {
-                          handleDelete();
-                          setShowActions(false);
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] font-semibold text-red-600  hover:bg-red-50  transition-colors"
-                      >
-                        <Trash2 size={14} />
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
+                {showActions && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowActions(false)} />
+                    <div className={['absolute top-full z-50 mt-1 min-w-[150px] overflow-hidden rounded-lg border border-slate-200 bg-white p-1 shadow-lg', isOwnMessage ? 'left-0' : 'right-0'].join(' ')}>
+                      {canEdit && (
+                        <button
+                          onClick={handleStartEdit}
+                          className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                          type="button"
+                        >
+                          <Edit2 size={14} />
+                          Edit Message
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={() => {
+                            handleDelete();
+                            setShowActions(false);
+                          }}
+                          className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] font-medium text-red-600 transition-colors hover:bg-red-50"
+                          type="button"
+                        >
+                          <Trash2 size={14} />
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
           </div>
         </div>
       )}
 
       {/* Render replies recursively */}
       {sortedReplies.length > 0 && depth < 5 && (
-        <div className="mt-2 ml-4 flex flex-col gap-2 border-l-2 border-slate-100  pl-4">
+        <div className="ml-4 mt-2 flex flex-col gap-2 border-l-2 border-slate-100 pl-3">
           {sortedReplies.map((reply) => (
             <ChatMessageComponent
               key={reply.id}

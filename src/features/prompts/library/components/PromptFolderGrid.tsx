@@ -1,6 +1,8 @@
 import React from "react";
 import { Folder as FolderIcon, Trash2, FolderPlus } from "lucide-react";
 import { PromptFolder } from "@/services/prompts";
+import EmptyState from "@/components/EmptyState";
+import { Button } from "@/components/ui";
 
 interface PromptFolderGridProps {
   folders: PromptFolder[];
@@ -21,11 +23,11 @@ export const PromptFolderGrid: React.FC<PromptFolderGridProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {[1, 2, 3].map((n) => (
-          <div key={n} className="p-5 rounded-2xl bg-white border border-slate-200 animate-pulse space-y-3 shadow-2xs">
-            <div className="h-5 bg-slate-100 rounded-md w-1/2" />
-            <div className="h-3 bg-slate-100 rounded-md w-1/3" />
+          <div key={n} className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+            <div className="h-5 w-1/2 animate-pulse rounded bg-slate-100" />
+            <div className="h-3 w-1/3 animate-pulse rounded bg-slate-100" />
           </div>
         ))}
       </div>
@@ -34,67 +36,58 @@ export const PromptFolderGrid: React.FC<PromptFolderGridProps> = ({
 
   if (folders.length === 0) {
     return (
-      <div className="p-12 text-center rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-4">
-        <div className="p-4 w-14 h-14 rounded-2xl bg-slate-100 text-slate-800 border border-slate-200 mx-auto flex items-center justify-center">
-          <FolderIcon className="w-7 h-7" />
-        </div>
-        <div className="space-y-1">
-          <h3 className="text-base font-semibold text-slate-950">No folders yet</h3>
-          <p className="text-xs text-slate-600 max-w-sm mx-auto">
-            Create a folder to organize your prompts into logical groups.
-          </p>
-        </div>
-        <button
-          onClick={onCreateFolderClick}
-          className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold shadow-md shadow-slate-900/20 hover:bg-black transition inline-flex items-center gap-2 cursor-pointer"
-        >
-          <FolderPlus className="w-4 h-4" /> Create Folder
-        </button>
-      </div>
+      <EmptyState
+        icon={FolderIcon}
+        title="No folders yet"
+        description="Create a folder to organize your prompts into logical groups."
+        action={
+          <Button variant="primary" icon={FolderPlus} onClick={onCreateFolderClick}>
+            Create Folder
+          </Button>
+        }
+      />
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       {folders.map((f) => {
         const count = folderPromptCounts.get(f._id) || 0;
         return (
           <div
             key={f._id}
             onClick={() => onSelectFolder(f._id)}
-            className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-400 transition-all shadow-2xs hover:shadow-md cursor-pointer flex flex-col justify-between group space-y-4"
+            className="group flex min-w-0 cursor-pointer flex-col justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md sm:p-5"
           >
             <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-slate-100 text-slate-800 border border-slate-200 group-hover:bg-slate-900 group-hover:text-white transition">
-                  <FolderIcon className="w-5 h-5" />
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition group-hover:text-slate-800">
+                  <FolderIcon className="h-[18px] w-[18px]" />
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-950 group-hover:text-slate-700 transition">
-                    {f.name}
-                  </h3>
+                <div className="min-w-0">
+                  <h3 className="m-0 truncate text-[15px] font-semibold text-slate-900">{f.name}</h3>
                   {f.description && (
-                    <p className="text-xs text-slate-600 line-clamp-1 mt-0.5">
-                      {f.description}
-                    </p>
+                    <p className="m-0 mt-0.5 line-clamp-1 text-[13px] text-slate-500">{f.description}</p>
                   )}
                 </div>
               </div>
 
               <button
+                type="button"
                 onClick={(e) => onDeleteFolder(f._id, e)}
-                className="p-1.5 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                 title="Delete folder"
+                aria-label="Delete folder"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="flex items-center justify-between border-t border-slate-100 pt-3 text-xs text-slate-500">
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200 font-mono">
+            <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+              <span className="text-xs text-slate-500">
                 {count} {count === 1 ? "prompt" : "prompts"}
               </span>
-              <span className="text-xs font-semibold text-slate-900 group-hover:text-emerald-700 transition">
+              <span className="text-[13px] font-medium text-slate-700 transition group-hover:text-slate-900">
                 View Folder →
               </span>
             </div>

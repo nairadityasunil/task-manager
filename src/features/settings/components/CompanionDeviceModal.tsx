@@ -11,6 +11,7 @@ import {
 import type { CompanionDevice } from "../hooks/useSettings";
 import { QRCodeDisplay } from "./QRCodeDisplay";
 import api from "@/services/api";
+import { buttonClass, inputClass, selectClass } from "@/components/ui";
 import socketService from "@/services/socket";
 
 interface CompanionDeviceModalProps {
@@ -149,18 +150,19 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center z-[9999] p-4 font-sans">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md p-6 shadow-xl relative">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/40 p-3 font-sans backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true">
+      <div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6">
         <button
           type="button"
           onClick={handleClose}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-900 transition"
+          aria-label="Close"
+          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-900"
         >
           <X className="w-4 h-4" />
         </button>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-[13px] text-red-700">
             <AlertTriangle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
@@ -170,22 +172,22 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
         {mode === "select_method" && (
           <div className="space-y-5">
             <div>
-              <h3 className="text-base font-semibold text-slate-950">Add Companion Device</h3>
-              <p className="text-xs text-slate-600 mt-1">Choose how you want to connect your companion device:</p>
+              <h3 className="m-0 pr-8 text-base font-semibold text-slate-900">Add Companion Device</h3>
+              <p className="m-0 mt-1 text-[13px] text-slate-500">Choose how you want to connect your companion device:</p>
             </div>
 
             <div className="grid grid-cols-1 gap-3.5 text-xs">
               <button
                 type="button"
                 onClick={() => setMode("form_key")}
-                className="p-4 rounded-xl border border-slate-200 hover:border-slate-500 bg-slate-50/40 hover:bg-slate-100/50 text-left transition flex items-start gap-3.5 cursor-pointer group shadow-2xs"
+                className="group flex cursor-pointer items-start gap-3.5 rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:border-slate-300 hover:bg-slate-50"
               >
-                <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                  <Key className="w-5 h-5" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700">
+                  <Key className="h-4 w-4" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-slate-950 text-sm group-hover:text-slate-900">🔑 Generate Pairing Key</h4>
-                  <p className="text-[11px] text-slate-600 mt-1 leading-snug">
+                  <h4 className="m-0 text-sm font-medium text-slate-900">🔑 Generate Pairing Key</h4>
+                  <p className="m-0 mt-1 text-[13px] leading-snug text-slate-500">
                     Enter device details to generate a secure key to enter manually on the companion login screen.
                   </p>
                 </div>
@@ -195,14 +197,14 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
                 type="button"
                 onClick={handleStartQrSession}
                 disabled={loading}
-                className="p-4 rounded-xl border border-slate-200 hover:border-slate-500 bg-slate-50/40 hover:bg-slate-100/50 text-left transition flex items-start gap-3.5 cursor-pointer group shadow-2xs disabled:opacity-50"
+                className="group flex cursor-pointer items-start gap-3.5 rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
               >
-                <div className="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-                  <QrCode className="w-5 h-5" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700">
+                  <QrCode className="h-4 w-4" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-slate-950 text-sm group-hover:text-slate-900">▣ Show QR Code</h4>
-                  <p className="text-[11px] text-slate-600 mt-1 leading-snug">
+                  <h4 className="m-0 text-sm font-medium text-slate-900">▣ Show QR Code</h4>
+                  <p className="m-0 mt-1 text-[13px] leading-snug text-slate-500">
                     Display a WhatsApp-style QR code to scan directly from your companion device camera.
                   </p>
                 </div>
@@ -215,15 +217,15 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
         {mode === "form_key" && (
           <form onSubmit={handleCreateKeySubmit} className="space-y-4">
             <div>
-              <h3 className="text-base font-semibold text-slate-950">Generate Pairing Key</h3>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <h3 className="m-0 pr-8 text-base font-semibold text-slate-900">Generate Pairing Key</h3>
+              <p className="m-0 mt-1 text-[13px] text-slate-500">
                 Provide device details. Click <strong>Generate Key</strong> to receive a one-time credential.
               </p>
             </div>
 
             <div className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-800 uppercase tracking-wide mb-1.5">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Device Name
                 </label>
                 <input
@@ -231,18 +233,18 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
                   placeholder="e.g. My iPhone, Personal Tablet"
                   value={deviceName}
                   onChange={(e) => setDeviceName(e.target.value)}
-                  className="w-full bg-white border border-slate-200 focus:border-slate-600 rounded-xl px-3.5 py-2.5 text-xs text-slate-950 outline-none transition"
+                  className={inputClass}
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-800 uppercase tracking-wide mb-1.5">
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Device Type
                 </label>
                 <select
                   value={deviceType}
                   onChange={(e) => setDeviceType(e.target.value)}
-                  className="w-full bg-white border border-slate-200 focus:border-slate-600 rounded-xl px-3.5 py-2.5 text-xs text-slate-950 outline-none transition"
+                  className={selectClass}
                 >
                   <option value="mobile">Mobile</option>
                   <option value="tablet">Tablet</option>
@@ -252,11 +254,11 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+            <div className="flex items-center justify-between border-t border-slate-100 pt-4">
               <button
                 type="button"
                 onClick={() => setMode("select_method")}
-                className="text-xs font-semibold text-slate-700 hover:text-slate-950 underline"
+                className={buttonClass("ghost", "sm")}
               >
                 ← Back
               </button>
@@ -264,7 +266,7 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
               <button
                 type="submit"
                 disabled={!isCreateValid || loading}
-                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-md"
+                className={buttonClass("primary", "md")}
               >
                 <Key className="w-3.5 h-3.5" />
                 {loading ? "Generating..." : "Generate Key"}
@@ -277,37 +279,37 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
         {mode === "one_time_key" && (
           <div className="space-y-4">
             <div>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+              <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">
                 Pairing Key Generated
               </span>
-              <h3 className="text-base font-semibold text-slate-950 mt-2">Save Your Pairing Key</h3>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <h3 className="m-0 mt-2 text-base font-semibold text-slate-900">Save Your Pairing Key</h3>
+              <p className="m-0 mt-1 text-[13px] text-slate-500">
                 Device: <strong>{deviceName}</strong> ({deviceType})
               </p>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
+            <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-900">
               <ShieldAlert className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-              <p className="text-[11px] leading-snug">
+              <p className="m-0 text-[13px] leading-snug">
                 ⚠ <strong>Warning:</strong> This key will only be shown once. Save it before closing this window.
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-900 text-slate-100 font-mono text-xs space-y-2">
+            <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3.5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wide">Pairing Key</span>
-                <span className="text-[11px] text-emerald-400 font-semibold">One-time visibility</span>
+                <span className="text-sm font-medium text-slate-700">Pairing Key</span>
+                <span className="text-xs text-slate-500">One-time visibility</span>
               </div>
-              <div className="p-3 bg-slate-900 rounded-lg border border-slate-800 font-semibold text-emerald-400 break-all select-all font-mono text-xs text-center tracking-wide">
+              <div className="select-all break-all rounded-lg border border-slate-200 bg-white p-3 text-center font-mono text-[13px] font-medium tracking-wide text-slate-900">
                 {oneTimeSecret}
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+            <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
               <button
                 type="button"
                 onClick={handleCopyKey}
-                className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs font-semibold transition flex items-center gap-1.5 shadow-xs"
+                className={buttonClass("secondary", "md")}
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? "Copied Key" : "Copy Key"}
@@ -315,7 +317,7 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition shadow-md"
+                className={buttonClass("primary", "md")}
               >
                 Done
               </button>
@@ -327,8 +329,8 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
         {mode === "show_qr" && qrPayload && qrExpiresAt && (
           <div className="space-y-4">
             <div>
-              <h3 className="text-base font-semibold text-slate-950">Scan QR Code</h3>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <h3 className="m-0 pr-8 text-base font-semibold text-slate-900">Scan QR Code</h3>
+              <p className="m-0 mt-1 text-[13px] text-slate-500">
                 Scan this QR code from your companion device to link it instantly.
               </p>
             </div>
@@ -341,18 +343,18 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
               pairedDeviceName={pairedDeviceName}
             />
 
-            <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+            <div className="flex items-center justify-between border-t border-slate-100 pt-4">
               <button
                 type="button"
                 onClick={() => setMode("select_method")}
-                className="text-xs font-semibold text-slate-700 hover:text-slate-950 underline"
+                className={buttonClass("ghost", "sm")}
               >
                 ← Back
               </button>
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition shadow-sm"
+                className={buttonClass("primary", "md")}
               >
                 Done
               </button>

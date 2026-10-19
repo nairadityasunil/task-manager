@@ -7,15 +7,10 @@ import {
   Trash2,
   FileText,
   AlertCircle,
-  CheckCircle,
   Zap,
   NotebookPen,
   MessageSquare,
   Clock,
-  Siren,
-  ArrowUpCircle,
-  ArrowDownCircle,
-  MinusCircle,
 } from 'lucide-react';
 import type {
   Task,
@@ -32,6 +27,8 @@ import SourceBadge from '@/components/SourceBadge';
 import ApprovalSection from '@/components/ApprovalSection';
 import CommentSection from '@/components/CommentSection';
 import SubtaskInlineEdit from '@/components/SubtaskInlineEdit';
+import { PRIORITY_META, PriorityIcon, TASK_STATUS_TONE, taskDateInfo, taskStatusLabel } from '@/components/TaskCard';
+import { Badge, Button, cn, selectClass } from '@/components/ui';
 
 export interface TaskInspectorProps {
   isOpen: boolean;
@@ -63,38 +60,29 @@ export interface TaskInspectorProps {
   handleUpdateTaskField: (taskId: string, updates: UpdateTaskInput) => Promise<void> | void;
 }
 
-const statusPillCls: Record<string, string> = {
-  planned: 'bg-slate-100 text-slate-700 shadow-xs',
-  active: 'bg-amber-50 text-amber-800 shadow-xs',
-  completed: 'bg-emerald-50 text-emerald-800 shadow-xs',
-  archived: 'bg-slate-100/50 text-slate-650 shadow-xs',
-};
+const tabCls = (active: boolean) =>
+  cn(
+    '-mb-px border-b-2 pb-3 pt-3 text-sm font-medium transition-colors',
+    active ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800',
+  );
 
-const priorityBadge: Record<
-  string,
-  { icon: React.ReactNode; label: string; color: string }
-> = {
-  CRITICAL: {
-    icon: <Siren size={12} className="text-red-600 animate-pulse" />,
-    label: 'Critical',
-    color: 'bg-red-50 text-red-700 shadow-xs',
-  },
-  HIGH: {
-    icon: <ArrowUpCircle size={12} className="text-orange-500" />,
-    label: 'High',
-    color: 'bg-orange-50 text-orange-700 shadow-xs',
-  },
-  MEDIUM: {
-    icon: <MinusCircle size={12} className="text-amber-500" />,
-    label: 'Medium',
-    color: 'bg-amber-50 text-amber-700 shadow-xs',
-  },
-  LOW: {
-    icon: <ArrowDownCircle size={12} className="text-slate-500" />,
-    label: 'Low',
-    color: 'bg-slate-50 text-slate-700 shadow-xs',
-  },
-};
+function PropertyRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-[96px_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[112px_minmax(0,1fr)]">
+      <dt className="text-[13px] text-slate-500">{label}</dt>
+      <dd className="m-0 flex min-h-9 min-w-0 flex-wrap items-center gap-2">{children}</dd>
+    </div>
+  );
+}
+
+function DetailRow({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-2">
+      <dt className="text-[13px] text-slate-500">{label}</dt>
+      <dd className={cn('m-0 text-right text-[13px] tabular-nums text-slate-700', className)}>{children}</dd>
+    </div>
+  );
+}
 
 export function TaskInspector({
   isOpen,
@@ -133,6 +121,9 @@ export function TaskInspector({
 
   const completedSubtasks = task.subtasks.filter(s => s.status === 'DONE').length;
   const isUpdating = actionTaskId === task.id;
+  const dynamicMeta = task.dynamicPriority ? PRIORITY_META[task.dynamicPriority] : null;
+  const dateInfo = taskDateInfo(task);
+  const subtaskPct = task.subtasks.length ? Math.round((completedSubtasks / task.subtasks.length) * 100) : 0;
 
   return (
     <AnimatePresence>
@@ -144,7 +135,7 @@ export function TaskInspector({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-950/20 backdrop-blur-[2px] z-[5000]"
+            className="fixed inset-0 bg-slate-900/30 z-[5000]"
           />
 
           {/* Drawer container */}
@@ -153,81 +144,84 @@ export function TaskInspector({
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            className="fixed top-0 right-0 w-full sm:w-[480px] h-full bg-white/95 shadow-xl backdrop-blur-xl z-[5001] flex flex-col"
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="fixed top-0 right-0 z-[5001] flex h-full w-full flex-col border-l border-slate-200 bg-white shadow-xl sm:w-[480px]"
             role="dialog"
             aria-modal="true"
+            aria-label={task.title}
           >
             {/* Header */}
-            <div className="flex items-start justify-between px-6 py-5 bg-gradient-to-b from-white to-slate-50/20 shadow-xs">
-              <div className="flex items-start gap-3 flex-1 min-w-0">
-                <div className="w-2.5 h-2.5 rounded-full bg-slate-500 animate-pulse mt-1.5 shrink-0" />
+            <div className="shrink-0 border-b border-slate-200 px-4 pt-4 sm:px-5">
+              <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-[11px] uppercase tracking-wide font-semibold text-slate-500">
-                      TASK INSPECTOR
-                    </span>
-                    {task.dynamicPriority && priorityBadge[task.dynamicPriority] && (
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide ${
-                          priorityBadge[task.dynamicPriority].color
-                        }`}
+                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-slate-500">Task inspector</span>
+                    {dynamicMeta && (
+                      <Badge
+                        tone={task.dynamicPriority === 'CRITICAL' || task.dynamicPriority === 'HIGH' ? 'danger' : task.dynamicPriority === 'MEDIUM' ? 'warning' : 'neutral'}
+                        title="Dynamic priority"
                       >
-                        {priorityBadge[task.dynamicPriority].icon}
-                        {priorityBadge[task.dynamicPriority].label}
-                      </span>
+                        <PriorityIcon priority={task.dynamicPriority} size={12} />
+                        {dynamicMeta.label}
+                      </Badge>
                     )}
                   </div>
-                  <h3 className="text-base font-semibold font-sans text-slate-900 m-0 tracking-tight line-clamp-2 max-w-[300px]">
+                  <h3 className="m-0 text-lg font-semibold leading-snug tracking-tight text-slate-900 line-clamp-3">
                     {task.title}
                   </h3>
                 </div>
+                <Button
+                  aria-label="Close inspector"
+                  className="-mr-1.5 -mt-1"
+                  icon={X}
+                  onClick={onClose}
+                  size="icon-sm"
+                  title="Close inspector"
+                  variant="ghost"
+                />
               </div>
-              <button
-                onClick={onClose}
-                className="p-1.5 text-slate-400 hover:text-red-500 transition-colors rounded-lg hover:bg-red-50 shrink-0 ml-2"
-                title="Close inspector"
-              >
-                <X size={18} />
-              </button>
-            </div>
 
-            {/* Subtask & Comments tab switcher */}
-            <div className="flex gap-6 px-6 shadow-xs bg-white">
-              <button
-                onClick={() => setSidePanelTab('subtasks')}
-                className={`pb-3 pt-3 text-xs font-semibold uppercase tracking-wide transition-all relative ${
-                  sidePanelTab === 'subtasks' ? 'text-slate-700' : 'text-slate-400 hover:text-slate-700'
-                }`}
-              >
-                Subtasks & Specs
-                {sidePanelTab === 'subtasks' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-900 rounded-full" />
-                )}
-              </button>
-              <button
-                onClick={() => setSidePanelTab('comments')}
-                className={`pb-3 pt-3 text-xs font-semibold uppercase tracking-wide transition-all relative ${
-                  sidePanelTab === 'comments' ? 'text-slate-700' : 'text-slate-400 hover:text-slate-700'
-                }`}
-              >
-                Comments ({task.subtasks.length ? 'Live' : '0'})
-                {sidePanelTab === 'comments' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-900 rounded-full" />
-                )}
-              </button>
+              {/* Subtask & Comments tab switcher */}
+              <div className="mt-3 flex gap-5">
+                <button
+                  onClick={() => setSidePanelTab('subtasks')}
+                  className={tabCls(sidePanelTab === 'subtasks')}
+                  type="button"
+                >
+                  Subtasks & Specs
+                </button>
+                <button
+                  onClick={() => setSidePanelTab('comments')}
+                  className={tabCls(sidePanelTab === 'comments')}
+                  type="button"
+                >
+                  Comments ({task.subtasks.length ? 'Live' : '0'})
+                </button>
+              </div>
             </div>
 
             {/* Main content drawer container */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 bg-white flex flex-col gap-6">
+            <div className="flex flex-1 flex-col gap-6 overflow-y-auto bg-white px-4 py-5 custom-scrollbar sm:px-5">
               {sidePanelTab === 'subtasks' ? (
                 <div className="flex flex-col gap-6">
-                  {/* Action / Assignee / Priority quick properties grid */}
-                  <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50/50">
-                    <div>
-                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">
-                        Assignee
-                      </span>
+                  {/* Properties */}
+                  <dl className="m-0 grid gap-1.5">
+                    <PropertyRow label="Status">
+                      <Badge dot tone={TASK_STATUS_TONE[task.status] ?? 'neutral'}>{taskStatusLabel(task.status)}</Badge>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleBlocked(task)}
+                        className={cn(
+                          'inline-flex h-7 items-center gap-1 rounded-md border px-2 text-xs font-medium transition-colors',
+                          task.isBlocked
+                            ? 'border-red-600 bg-red-600 text-white hover:bg-red-700'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-red-200 hover:bg-red-50 hover:text-red-600',
+                        )}
+                      >
+                        <AlertCircle size={12} /> {task.isBlocked ? 'Unblock Task' : 'Block Task'}
+                      </button>
+                    </PropertyRow>
+                    <PropertyRow label="Assignee">
                       <AssigneeSelector
                         projectId={task.projectId || null}
                         selectedUserId={task.assignedTo?.id || ''}
@@ -236,67 +230,87 @@ export function TaskInspector({
                         }}
                         className="w-full"
                       />
-                    </div>
-                    <div>
-                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">
-                        Priority
-                      </span>
-                      <div className="relative">
-                        <select
-                          value={task.priority || 'MEDIUM'}
-                          onChange={(e) => {
-                            void handleUpdateTaskField(task.id, {
-                              priority: e.target.value as TaskPriority,
-                            });
-                          }}
-                          className="w-full text-sm font-medium text-slate-700 bg-slate-100/50 shadow-sm rounded-xl px-3 py-2 cursor-pointer focus:ring-2 focus:ring-slate-500/10 focus:outline-none"
-                        >
-                          <option value="LOW">Low</option>
-                          <option value="MEDIUM">Medium</option>
-                          <option value="HIGH">High</option>
-                          <option value="CRITICAL">Critical</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
+                    </PropertyRow>
+                    <PropertyRow label="Priority">
+                      <select
+                        aria-label="Priority"
+                        value={task.priority || 'MEDIUM'}
+                        onChange={(e) => {
+                          void handleUpdateTaskField(task.id, {
+                            priority: e.target.value as TaskPriority,
+                          });
+                        }}
+                        className={cn(selectClass, 'cursor-pointer')}
+                      >
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="CRITICAL">Critical</option>
+                      </select>
+                    </PropertyRow>
+                    {dateInfo && (
+                      <PropertyRow label="Date">
+                        <span className={cn('text-sm', dateInfo.overdue ? 'text-red-600' : 'text-slate-700')}>{dateInfo.label}</span>
+                      </PropertyRow>
+                    )}
+                    <PropertyRow label="SLA">
+                      <SlaIndicator task={task} compact />
+                    </PropertyRow>
+                    <PropertyRow label="Source">
+                      <SourceBadge source={task.source} />
+                    </PropertyRow>
+                  </dl>
+
+                  {task.description && (
+                    <section>
+                      <h4 className="m-0 mb-1.5 text-[13px] font-medium text-slate-500">Description</h4>
+                      <p className="m-0 whitespace-pre-line text-sm leading-relaxed text-slate-700">{task.description}</p>
+                    </section>
+                  )}
 
                   {/* Subtask list */}
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                        Checklist Subtasks ({completedSubtasks}/{task.subtasks.length})
-                      </span>
-                      <button
-                        className="flex items-center justify-center w-7 h-7 bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-md transition-all transform active:scale-95 disabled:opacity-40"
+                  <section className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <h4 className="m-0 text-[15px] font-semibold text-slate-900">
+                        Checklist Subtasks <span className="font-normal tabular-nums text-slate-500">({completedSubtasks}/{task.subtasks.length})</span>
+                      </h4>
+                      <Button
+                        aria-label="New Subtask"
                         disabled={!task.permissions.canUpdate}
+                        icon={Plus}
                         onClick={() => setSubtaskModalTask(task)}
+                        size="icon-sm"
                         title="New Subtask"
-                        type="button"
-                      >
-                        <Plus size={15} />
-                      </button>
+                        variant="secondary"
+                      />
                     </div>
+                    {task.subtasks.length > 0 && (
+                      <div className="h-1 overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${subtaskPct}%` }} />
+                      </div>
+                    )}
 
                     {task.subtasks.length === 0 ? (
-                      <div className="rounded-xl p-6 text-center text-xs text-slate-400 bg-slate-50/50 shadow-xs">
+                      <div className="rounded-lg border border-dashed border-slate-200 px-4 py-6 text-center text-[13px] text-slate-500">
                         No subtasks added. Click "+" to create one.
                       </div>
                     ) : (
-                      <div className="flex flex-col gap-2.5">
+                      <ul className="m-0 list-none divide-y divide-slate-100 rounded-lg border border-slate-200 p-0">
                         {task.subtasks.map((subtask) => {
                           const isEditingThisSubtask =
                             editingSubtask?.task.id === task.id &&
                             editingSubtask?.subtask.id === subtask.id;
                           return (
-                            <div
+                            <li
                               key={subtask.id}
-                              className="group relative bg-white shadow-sm rounded-xl p-3.5 transition-all duration-200 hover:shadow-md"
+                              className="group relative px-3 py-2.5 transition-colors hover:bg-slate-50/70"
                             >
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex items-start gap-3 flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex min-w-0 flex-1 items-start gap-3">
                                   <input
+                                    aria-label={`Mark ${subtask.title} as ${subtask.status === 'DONE' ? 'not done' : 'done'}`}
                                     checked={subtask.status === 'DONE'}
-                                    className="w-5 h-5 accent-slate-700 cursor-pointer rounded mt-0.5"
+                                    className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded accent-slate-900"
                                     disabled={!task.permissions.canUpdate}
                                     onChange={() =>
                                       void handleUpdateSubtaskStatus(
@@ -307,229 +321,165 @@ export function TaskInspector({
                                     }
                                     type="checkbox"
                                   />
-                                  <div className="flex flex-col gap-1 min-w-0">
-                                    <div className="flex items-center gap-2 min-w-0">
-                                      <span
-                                        className={`text-sm transition-all ${
-                                          subtask.status === 'DONE'
-                                            ? 'text-slate-400 line-through'
-                                            : 'text-slate-900 font-semibold'
-                                        }`}
-                                      >
-                                        {subtask.title}
-                                      </span>
-                                      {subtask.assignedToUser && (
-                                        <UserAvatar
-                                          name={subtask.assignedToUser.name}
-                                          email={subtask.assignedToUser.email}
-                                          size="sm"
-                                        />
+                                  <div className="flex min-w-0 flex-col gap-1">
+                                    <span
+                                      className={cn(
+                                        'text-sm leading-5',
+                                        subtask.status === 'DONE' ? 'text-slate-400 line-through' : 'text-slate-900',
                                       )}
-                                    </div>
+                                    >
+                                      {subtask.title}
+                                    </span>
                                     {!isEditingThisSubtask && subtask.description && (
-                                      <p className="text-slate-400 text-xs leading-relaxed line-clamp-2">
+                                      <p className="m-0 text-xs leading-relaxed text-slate-500 line-clamp-2">
                                         {subtask.description}
                                       </p>
                                     )}
                                     {!isEditingThisSubtask && subtask.note && (
-                                      <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-1 bg-slate-50 rounded-lg text-slate-500 text-[11px] font-medium italic shadow-xs">
-                                        <MessageSquare
-                                          size={12}
-                                          className="shrink-0 text-slate-400"
-                                        />
+                                      <div className="flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
+                                        <MessageSquare size={12} className="shrink-0 text-slate-400" />
                                         <span className="truncate">{subtask.note}</span>
                                       </div>
                                     )}
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                                  <button
-                                    className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-700"
-                                    disabled={!task.permissions.canUpdate}
-                                    onClick={() =>
-                                      setEditingSubtask(
-                                        isEditingThisSubtask ? null : { task, subtask },
-                                      )
-                                    }
-                                    title={isEditingThisSubtask ? 'Cancel' : 'Edit Subtask'}
-                                    type="button"
-                                  >
-                                    <Edit3 size={13} />
-                                  </button>
-                                  <button
-                                    className="p-1.5 rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-700"
-                                    onClick={() => handleOpenSubtaskNote(task, subtask)}
-                                    title="Subtask Note"
-                                    type="button"
-                                  >
-                                    <FileText size={13} />
-                                  </button>
-                                  <button
-                                    className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-650"
-                                    disabled={!task.permissions.canUpdate}
-                                    onClick={() => void handleDeleteSubtask(task, subtask.id)}
-                                    title="Delete Subtask"
-                                    type="button"
-                                  >
-                                    <Trash2 size={13} />
-                                  </button>
+                                <div className="flex shrink-0 items-center gap-1">
+                                  <div className="flex items-center transition-opacity [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100">
+                                    <button
+                                      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40"
+                                      disabled={!task.permissions.canUpdate}
+                                      onClick={() =>
+                                        setEditingSubtask(
+                                          isEditingThisSubtask ? null : { task, subtask },
+                                        )
+                                      }
+                                      title={isEditingThisSubtask ? 'Cancel' : 'Edit Subtask'}
+                                      type="button"
+                                    >
+                                      <Edit3 size={13} />
+                                    </button>
+                                    <button
+                                      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                                      onClick={() => handleOpenSubtaskNote(task, subtask)}
+                                      title="Subtask Note"
+                                      type="button"
+                                    >
+                                      <FileText size={13} />
+                                    </button>
+                                    <button
+                                      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                                      disabled={!task.permissions.canUpdate}
+                                      onClick={() => void handleDeleteSubtask(task, subtask.id)}
+                                      title="Delete Subtask"
+                                      type="button"
+                                    >
+                                      <Trash2 size={13} />
+                                    </button>
+                                  </div>
+                                  {subtask.assignedToUser && (
+                                    <UserAvatar
+                                      name={subtask.assignedToUser.name}
+                                      email={subtask.assignedToUser.email}
+                                      size="sm"
+                                    />
+                                  )}
                                 </div>
                               </div>
                               {isEditingThisSubtask && (
-                                <div className="mt-3 pt-3 shadow-xs">
-                                  <SubtaskInlineEdit
-                                    subtask={subtask}
-                                    onSave={(patch) =>
-                                      void handleUpdateSubtask(task, subtask, patch)
-                                    }
-                                    onCancel={() => setEditingSubtask(null)}
-                                    isSaving={isUpdating}
-                                    members={members}
-                                  />
-                                </div>
+                                <SubtaskInlineEdit
+                                  subtask={subtask}
+                                  onSave={(patch) =>
+                                    void handleUpdateSubtask(task, subtask, patch)
+                                  }
+                                  onCancel={() => setEditingSubtask(null)}
+                                  isSaving={isUpdating}
+                                  members={members}
+                                />
                               )}
-                            </div>
+                            </li>
                           );
                         })}
-                      </div>
+                      </ul>
                     )}
-                  </div>
+                  </section>
 
                   {/* SLA timers and details */}
-                  <div className="shadow-sm rounded-xl p-5 bg-white relative overflow-hidden">
-                    <div className="absolute -top-12 -right-12 w-24 h-24 bg-slate-500/5 rounded-full blur-2xl" />
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-800 m-0 mb-4 flex items-center gap-2">
-                      <Clock size={14} className="text-slate-650" /> Dual-Timers
-                    </h4>
-                    {task.description && (
-                      <p className="text-xs text-slate-600 leading-relaxed pl-3 italic mb-4">
-                        {task.description}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap items-center gap-2.5 mb-4">
-                      <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-semibold uppercase tracking-wide ${
-                          statusPillCls[task.status] ?? 'bg-slate-50 text-slate-600 shadow-xs'
-                        }`}
-                      >
-                        <CheckCircle size={10} /> {task.status.replace(/_/g, ' ')}
-                      </span>
-                      <SourceBadge source={task.source} />
-                      <SlaIndicator task={task} compact />
-                      <button
-                        type="button"
-                        onClick={() => handleToggleBlocked(task)}
-                        className={`flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-semibold uppercase tracking-wide transition-all shadow-sm ${
-                          task.isBlocked
-                            ? 'bg-red-500 text-white'
-                            : 'bg-white text-red-500 hover:bg-red-50'
-                        }`}
-                      >
-                        <AlertCircle size={10} /> {task.isBlocked ? 'Unblock Task' : 'Block Task'}
-                      </button>
+                  <section className="rounded-xl border border-slate-200">
+                    <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
+                      <Clock size={16} className="text-slate-400" />
+                      <h4 className="m-0 text-[15px] font-semibold text-slate-900">Dual-Timers</h4>
                     </div>
-
-                    <div className="grid gap-2.5 text-xs text-slate-700">
-                      <div className="flex items-center justify-between pb-1.5">
-                        <span className="font-semibold text-slate-500">Response target due:</span>
-                        <span className="font-mono text-[11px]">
+                    <div className="px-4 pb-4 pt-3">
+                      <SlaIndicator task={task} />
+                      <dl className="m-0 mt-3 divide-y divide-slate-100">
+                        <DetailRow label="Response target due">
                           {task.slaResponseDueAt
                             ? new Date(task.slaResponseDueAt).toLocaleString()
                             : 'Not configured'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between pb-1.5">
-                        <span className="font-semibold text-slate-500">Resolution target due:</span>
-                        <span className="font-mono text-[11px]">
+                        </DetailRow>
+                        <DetailRow label="Resolution target due">
                           {task.slaResolutionDueAt
                             ? new Date(task.slaResolutionDueAt).toLocaleString()
                             : 'Not configured'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between pb-1.5">
-                        <span className="font-semibold text-slate-500">First Response registered:</span>
-                        <span
-                          className={`font-mono text-[11px] ${
-                            task.firstResponseAt ? 'text-emerald-700' : 'text-slate-400'
-                          }`}
-                        >
+                        </DetailRow>
+                        <DetailRow className={task.firstResponseAt ? 'text-emerald-700' : 'text-slate-400'} label="First Response registered">
                           {task.firstResponseAt
                             ? new Date(task.firstResponseAt).toLocaleString()
                             : 'Awaiting action'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between pb-1.5">
-                        <span className="font-semibold text-slate-500">Completed at:</span>
-                        <span
-                          className={`font-mono text-[11px] ${
-                            task.completedAt ? 'text-emerald-700' : 'text-slate-400'
-                          }`}
-                        >
+                        </DetailRow>
+                        <DetailRow className={task.completedAt ? 'text-emerald-700' : 'text-slate-400'} label="Completed at">
                           {task.completedAt
                             ? new Date(task.completedAt).toLocaleString()
                             : 'In-progress'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between pb-1.5">
-                        <span className="font-semibold text-slate-500">Timer Paused details:</span>
-                        <span className="font-mono text-[11px] text-amber-600">
+                        </DetailRow>
+                        <DetailRow className={task.slaPausedAt ? 'text-amber-700' : 'text-slate-700'} label="Timer Paused details">
                           {task.slaPausedAt
                             ? `Paused on ${new Date(task.slaPausedAt).toLocaleDateString()}`
                             : 'Active SLA Running'}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between pb-1.5">
-                        <span className="font-semibold text-slate-500">Vector priority factor:</span>
-                        <span className="font-semibold font-mono text-emerald-800">
+                        </DetailRow>
+                        <DetailRow className="font-medium text-slate-900" label="Vector priority factor">
                           {task.dynamicPriority} (Score: {task.dynamicPriorityScore})
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-slate-500">Cascade impact weight:</span>
-                        <span className="font-mono text-[11px]">
+                        </DetailRow>
+                        <DetailRow label="Cascade impact weight">
                           {task.impactScore} Org impact, {task.dependencyWeight} blocked items
-                        </span>
-                      </div>
+                        </DetailRow>
+                      </dl>
                       {task.priorityEscalationReason && (
-                        <div className="mt-2 p-3 bg-red-50/40 rounded-lg">
-                          <span className="font-semibold text-red-700 block mb-1">
-                            Escalation Trigger:
+                        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
+                          <span className="mb-0.5 block text-[13px] font-medium text-red-700">
+                            Escalation Trigger
                           </span>
-                          <p className="m-0 text-red-650 leading-relaxed text-xs">
+                          <p className="m-0 text-[13px] leading-relaxed text-red-700/90">
                             {task.priorityEscalationReason}
                           </p>
                         </div>
                       )}
-                    </div>
 
-                    <div className="mt-4">
-                      <button
-                        type="button"
-                        onClick={() => void handleEvaluatePriority(task.id)}
+                      <Button
+                        className="mt-4 w-full"
                         disabled={isEvaluatingPriority}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100/80 shadow-md text-slate-700 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
+                        icon={Zap}
+                        loading={isEvaluatingPriority}
+                        onClick={() => void handleEvaluatePriority(task.id)}
+                        size="sm"
+                        variant="secondary"
                       >
-                        <Zap size={13} className="text-amber-500" />
                         {isEvaluatingPriority
                           ? 'Calculating priorities...'
                           : 'Evaluate Dynamic Priority'}
-                      </button>
+                      </Button>
                     </div>
-                  </div>
+                  </section>
 
                   {/* Work Notes */}
-                  <button
-                    className="w-full group/btn relative flex items-center justify-center gap-2.5 px-5 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold text-sm shadow-md transition-all overflow-hidden"
+                  <Button
+                    className="w-full"
+                    icon={NotebookPen}
                     onClick={() => handleOpenTaskNote(task)}
-                    type="button"
+                    variant="primary"
                   >
-                    <NotebookPen
-                      size={18}
-                      className="transition-transform group-hover/btn:rotate-12"
-                    />
                     Manage Work Notes
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000" />
-                  </button>
+                  </Button>
 
                   {/* Approvals */}
                   <ApprovalSection
@@ -539,7 +489,7 @@ export function TaskInspector({
                   />
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col min-h-[350px]">
+                <div className="flex min-h-[350px] flex-1 flex-col">
                   <CommentSection taskId={task.id} />
                 </div>
               )}

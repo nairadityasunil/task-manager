@@ -1,7 +1,7 @@
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { createPortal } from 'react-dom';
 import { type Task, type TaskWorkflowStatus, TASK_WORKFLOW_STATUS_OPTIONS } from '@/types/task';
-import TaskCard from './TaskCard';
+import TaskCard, { TASK_STATUS_DOT } from './TaskCard';
 import Skeleton from './Skeleton';
 
 interface KanbanBoardProps {
@@ -52,21 +52,22 @@ function KanbanBoard({
   };
 
   return (
-    <div className="flex-1 overflow-x-auto p-4">
+    <div className="h-full overflow-x-auto overscroll-x-contain p-3 sm:p-4 snap-x snap-mandatory scroll-px-3 sm:snap-none custom-scrollbar">
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-4 h-full min-h-[600px]">
+        <div className="flex h-full min-h-[480px] w-max gap-3">
           {COLUMNS.map((status) => {
             const columnTasks = getTasksByStatus(status);
             const label = TASK_WORKFLOW_STATUS_OPTIONS.find(opt => opt.value === status)?.label || status;
 
             return (
-              <div key={status} className="flex-shrink-0 w-80 flex flex-col bg-slate-50/50  rounded-xl border border-slate-200 ">
-                <div className="p-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-slate-700  uppercase tracking-wide">
+              <div key={status} className="flex w-[calc(100vw-4.5rem)] max-w-[300px] shrink-0 snap-start flex-col rounded-xl border border-slate-200 bg-slate-50 sm:w-72">
+                <div className="flex items-center justify-between gap-2 px-3 pb-2 pt-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span aria-hidden className={`h-2 w-2 shrink-0 rounded-full ${TASK_STATUS_DOT[status] ?? 'bg-slate-400'}`} />
+                    <h3 className="m-0 truncate text-[13px] font-semibold text-slate-800">
                       {label}
                     </h3>
-                    <span className="px-2 py-0.5 rounded-full bg-slate-200  text-slate-500  text-[11px] font-semibold">
+                    <span className="rounded-full bg-white px-1.5 text-[11px] font-medium tabular-nums text-slate-500 ring-1 ring-inset ring-slate-200">
                       {columnTasks.length}
                     </span>
                   </div>
@@ -77,71 +78,71 @@ function KanbanBoard({
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className={`flex-1 p-2 space-y-3 overflow-y-auto transition-colors duration-200 ${snapshot.isDraggingOver ? 'bg-slate-50/30' : ''}`}
+                      className={`flex min-h-[120px] flex-1 flex-col gap-2 overflow-y-auto rounded-b-xl px-2 pb-2 transition-colors duration-150 ${snapshot.isDraggingOver ? 'bg-slate-100' : ''}`}
                     >
-                  {loading ? (
-                    Array.from({ length: 3 }).map((_, i) => (
-                      <div key={`skeleton-${status}-${i}`} className="p-4 bg-white  rounded-xl border border-slate-100  space-y-3">
-                        <div className="flex justify-between items-center">
-                          <Skeleton variant="text" className="w-1/2 h-4" />
-                          <Skeleton variant="rectangle" className="w-4 h-4 rounded" />
-                        </div>
-                        <Skeleton variant="text" className="w-full h-3" />
-                        <div className="flex justify-between items-center pt-2">
-                          <Skeleton variant="circle" className="w-6 h-6" />
-                          <div className="flex gap-1">
-                            <Skeleton variant="rectangle" className="w-6 h-6 rounded" />
-                            <Skeleton variant="rectangle" className="w-6 h-6 rounded" />
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    columnTasks.map((task, index) => (
-                      <Draggable key={task.id} draggableId={task.id} index={index}>
-                        {(provided, snapshot) => {
-                          const content = (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={`${snapshot.isDragging ? 'shadow-xl scale-[1.02] z-[9999]' : ''}`}
-                              style={{
-                                ...provided.draggableProps.style,
-                                // Avoid potential position jumps during portal creation
-                                cursor: snapshot.isDragging ? 'grabbing' : 'grab',
-                              }}
-                            >
-                              <TaskCard
-                                task={task}
-                                onDelete={onDeleteTask}
-                                onEditTask={onEditTask}
-                                onSelect={onSelectTask}
-                                onComment={onCommentTask}
-                                onToggleBlocked={onToggleBlocked}
-                              />
+                      {loading ? (
+                        Array.from({ length: 3 }).map((_, i) => (
+                          <div key={`skeleton-${status}-${i}`} className="space-y-3 rounded-xl border border-slate-200 bg-white p-3">
+                            <Skeleton variant="text" className="h-4 w-2/3" />
+                            <Skeleton variant="text" className="h-3 w-full" />
+                            <div className="flex items-center justify-between pt-1">
+                              <Skeleton variant="text" className="h-3 w-16" />
+                              <Skeleton variant="circle" className="h-6 w-6" />
                             </div>
-                          );
+                          </div>
+                        ))
+                      ) : (
+                        columnTasks.map((task, index) => (
+                          <Draggable key={task.id} draggableId={task.id} index={index}>
+                            {(provided, snapshot) => {
+                              const content = (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={snapshot.isDragging ? 'z-[9999] rounded-xl shadow-lg ring-1 ring-slate-900/10' : ''}
+                                  style={{
+                                    ...provided.draggableProps.style,
+                                    // Avoid potential position jumps during portal creation
+                                    cursor: snapshot.isDragging ? 'grabbing' : 'grab',
+                                  }}
+                                >
+                                  <TaskCard
+                                    task={task}
+                                    onDelete={onDeleteTask}
+                                    onEditTask={onEditTask}
+                                    onSelect={onSelectTask}
+                                    onComment={onCommentTask}
+                                    onToggleBlocked={onToggleBlocked}
+                                    variant="card"
+                                  />
+                                </div>
+                              );
 
-                          return snapshot.isDragging
-                            ? createPortal(content, document.body)
-                            : content;
-                        }}
-                      </Draggable>
-                    ))
+                              return snapshot.isDragging
+                                ? createPortal(content, document.body)
+                                : content;
+                            }}
+                          </Draggable>
+                        ))
+                      )}
+
+                      {!loading && columnTasks.length === 0 && !snapshot.isDraggingOver ? (
+                        <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-slate-200 px-3 py-6 text-center text-xs text-slate-400">
+                          No tasks
+                        </div>
+                      ) : null}
+
+                      {provided.placeholder}
+                    </div>
                   )}
-
-                  {provided.placeholder}
-              </div>
-            )
-          }
                 </Droppable>
+              </div>
+            );
+          })}
+        </div>
+      </DragDropContext>
     </div>
-  );
-})}
-        </div >
-      </DragDropContext >
-    </div >
   );
 }
 

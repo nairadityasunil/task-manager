@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { buttonClass, inputClass, selectClass } from '@/components/ui';
 import { UserPlus, X } from 'lucide-react';
 import type { WorkspaceRole } from '../types/workspace';
 
@@ -36,36 +37,37 @@ export function InviteMemberDialog({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-150">
-      <div className="bg-white border border-slate-200/90 rounded-2xl w-full max-w-md p-6 shadow-xl shadow-slate-400/20">
-        <div className="flex items-center justify-between mb-6">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm animate-in fade-in duration-150 sm:p-5" role="dialog" aria-modal="true">
+      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6">
+        <div className="mb-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-              <UserPlus className="w-4.5 h-4.5 text-emerald-600" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
+              <UserPlus className="h-[18px] w-[18px] text-slate-600" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-slate-900">Invite Member</h3>
-              <p className="text-xs text-slate-400">{workspaceName}</p>
+              <h3 className="m-0 text-base font-semibold text-slate-900">Invite Member</h3>
+              <p className="m-0 text-[13px] text-slate-500">{workspaceName}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition"
+            aria-label="Close"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 px-3.5 py-2.5 text-sm text-red-600 bg-red-50 border border-red-200/80 rounded-xl">
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] text-red-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
               Email Address
             </label>
             <input
@@ -73,20 +75,20 @@ export function InviteMemberDialog({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="colleague@example.com"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition"
+              className={inputClass}
               autoFocus
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
               Role
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as WorkspaceRole)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition"
+              className={selectClass}
             >
               {ROLES.map((r) => (
                 <option key={r} value={r}>
@@ -96,18 +98,18 @@ export function InviteMemberDialog({
             </select>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition"
+              className={buttonClass('secondary')}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !email.trim()}
-              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold rounded-xl text-sm transition shadow-sm shadow-emerald-500/20"
+              className={buttonClass('primary')}
             >
               {loading ? 'Sending…' : 'Send Invitation'}
             </button>

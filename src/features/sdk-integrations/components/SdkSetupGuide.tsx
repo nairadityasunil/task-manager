@@ -3,6 +3,7 @@ import { Check, ChevronDown, Copy, RefreshCw } from 'lucide-react';
 
 import { listGuides, listSurveys } from '@/lib/engagement/api';
 import type { SdkIntegration } from '@/lib/sdk-integrations/api';
+import { Button } from '@/components/ui';
 
 /** The npm package customers install. Change here once a new name is published. */
 export const SDK_PACKAGE_NAME = '@jamesbond007db05/events-sdk';
@@ -31,10 +32,10 @@ function CopyBlock({ code }: { code: string }): JSX.Element {
   };
   return (
     <div className="relative mt-2 rounded-lg bg-slate-900">
-      <pre className="m-0 overflow-x-auto p-3 pr-12 text-xs leading-relaxed text-slate-100"><code>{code}</code></pre>
+      <pre className="m-0 overflow-x-auto p-3 pr-12 font-mono text-xs leading-relaxed text-slate-100"><code>{code}</code></pre>
       <button
         aria-label={copied ? 'Copied' : 'Copy code'}
-        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-slate-800 hover:text-white"
+        className="absolute right-1.5 top-1.5 flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-800 hover:text-white"
         onClick={() => void copy()}
         title={copied ? 'Copied' : 'Copy'}
         type="button"
@@ -95,8 +96,8 @@ function SdkSetupGuide({ integration, onRefresh, onOpenTab, onOpenDocs }: SdkSet
       done: connected,
       body: (
         <>
-          <p className="m-0 text-xs text-slate-500">
-            Use the key you were shown when this integration was created. If you no longer have it, use <strong>Regenerate Key</strong> below; the old key stops working.
+          <p className="m-0 text-[13px] text-slate-500">
+            Use the key you were shown when this integration was created. If you no longer have it, use <span className="font-medium text-slate-700">Regenerate Key</span> below; the old key stops working.
           </p>
           <CopyBlock code={INIT_SNIPPET} />
         </>
@@ -107,8 +108,8 @@ function SdkSetupGuide({ integration, onRefresh, onOpenTab, onOpenDocs }: SdkSet
       title: 'Open your app to connect',
       done: connected,
       body: (
-        <p className="m-0 text-xs text-slate-500">
-          Load any page of {integration.domain ? <span className="font-mono">{integration.domain}</span> : 'your app'} with the SDK installed.
+        <p className="m-0 text-[13px] text-slate-500">
+          Load any page of {integration.domain ? <span className="font-mono text-slate-700">{integration.domain}</span> : 'your app'} with the SDK installed.
           Requests are only accepted from your allowed origins.
         </p>
       )
@@ -120,7 +121,7 @@ function SdkSetupGuide({ integration, onRefresh, onOpenTab, onOpenDocs }: SdkSet
       body: (
         <>
           <CopyBlock code={TRACK_SNIPPET} />
-          <button className="mt-2 text-xs font-semibold text-slate-700 underline" onClick={() => onOpenTab('events')} type="button">
+          <button className="mt-2 text-[13px] font-medium text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900" onClick={() => onOpenTab('events')} type="button">
             See incoming events
           </button>
         </>
@@ -132,12 +133,12 @@ function SdkSetupGuide({ integration, onRefresh, onOpenTab, onOpenDocs }: SdkSet
       done: hasLive,
       body: (
         <div className="flex flex-wrap gap-2">
-          <button className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800" onClick={() => onOpenTab('guides')} type="button">
+          <Button onClick={() => onOpenTab('guides')} size="sm" variant="primary">
             Create a guide
-          </button>
-          <button className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" onClick={() => onOpenTab('surveys')} type="button">
+          </Button>
+          <Button onClick={() => onOpenTab('surveys')} size="sm">
             Create a survey
-          </button>
+          </Button>
         </div>
       )
     }
@@ -159,19 +160,19 @@ function SdkSetupGuide({ integration, onRefresh, onOpenTab, onOpenDocs }: SdkSet
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-      <header className="flex flex-wrap items-center gap-3 px-5 py-4">
-        <div className="min-w-0 flex-1">
-          <h3 className="m-0 text-base font-semibold text-slate-900">{complete ? 'Setup complete' : 'Set up the SDK'}</h3>
-          <p className="m-0 mt-0.5 text-sm text-slate-500">
+      <header className="flex flex-wrap items-center gap-3 px-4 py-4 sm:px-5">
+        <div className="min-w-0 basis-full flex-1 sm:basis-auto">
+          <h3 className="m-0 text-[15px] font-semibold text-slate-900">{complete ? 'Setup complete' : 'Set up the SDK'}</h3>
+          <p className="m-0 mt-0.5 text-[13px] text-slate-500">
             {complete ? 'Your app is connected and showing experiences.' : `${doneCount} of ${steps.length} steps done. Steps tick off automatically as your app connects.`}
           </p>
         </div>
-        <div className="h-2 w-32 overflow-hidden rounded-full bg-slate-100" aria-hidden>
+        <div className="h-1.5 min-w-[96px] flex-1 overflow-hidden rounded-full bg-slate-100 sm:w-32 sm:flex-none" aria-hidden>
           <div className="h-full rounded-full bg-emerald-600 transition-all" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
         </div>
         <button
           aria-label="Refresh status"
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:text-slate-800 disabled:opacity-40"
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-slate-50 hover:text-slate-800 disabled:opacity-40"
           disabled={refreshing}
           onClick={() => void refresh()}
           title="Refresh status"
@@ -181,7 +182,7 @@ function SdkSetupGuide({ integration, onRefresh, onOpenTab, onOpenDocs }: SdkSet
         </button>
         <button
           aria-expanded={isExpanded}
-          className="flex h-8 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+          className="flex h-8 items-center gap-1 rounded-lg px-2 text-[13px] font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
           onClick={() => setExpanded(!isExpanded)}
           type="button"
         >
@@ -193,23 +194,23 @@ function SdkSetupGuide({ integration, onRefresh, onOpenTab, onOpenDocs }: SdkSet
       {isExpanded && (
         <ol className="m-0 list-none border-t border-slate-100 p-0">
           {steps.map((step, index) => (
-            <li className="flex gap-3 border-b border-slate-100 px-5 py-4 last:border-b-0" key={step.key}>
+            <li className="flex gap-3 border-b border-slate-100 px-4 py-4 last:border-b-0 sm:px-5" key={step.key}>
               <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                  step.done ? 'bg-emerald-600 text-white' : step.key === firstOpen ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium ${
+                  step.done ? 'bg-emerald-600 text-white' : step.key === firstOpen ? 'bg-slate-900 text-white' : 'border border-slate-200 bg-white text-slate-500'
                 }`}
               >
                 {step.done ? <Check size={13} /> : index + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <p className={`m-0 text-sm font-semibold ${step.done ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-900'}`}>{step.title}</p>
+                <p className={`m-0 text-sm font-medium ${step.done ? 'text-slate-500' : 'text-slate-900'}`}>{step.title}</p>
                 {(!step.done || step.key === 'init') && <div className="mt-1.5">{step.body}</div>}
               </div>
             </li>
           ))}
-          <li className="px-5 py-3 text-xs text-slate-500">
+          <li className="bg-slate-50/60 px-4 py-3 text-[13px] text-slate-500 sm:px-5 rounded-b-xl">
             Need more detail?{' '}
-            <button className="font-semibold text-slate-700 underline" onClick={onOpenDocs} type="button">
+            <button className="font-medium text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-900" onClick={onOpenDocs} type="button">
               Read the SDK docs
             </button>
           </li>

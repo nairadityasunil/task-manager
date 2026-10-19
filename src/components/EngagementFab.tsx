@@ -73,7 +73,7 @@ export function EngagementFab(): JSX.Element {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999]">
+    <div className="fixed bottom-4 right-4 z-[9999] sm:bottom-6 sm:right-6">
       <AnimatePresence>
         {isOpen && (
           <>
@@ -81,7 +81,7 @@ export function EngagementFab(): JSX.Element {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-slate-950/15 backdrop-blur-[2px] z-[9998]"
+              className="fixed inset-0 z-[9998] bg-slate-950/20"
               onClick={() => setIsOpen(false)}
             />
             <motion.div
@@ -89,27 +89,29 @@ export function EngagementFab(): JSX.Element {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="absolute bottom-16 right-0 w-80 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden z-[9999]"
+              className="absolute bottom-16 right-0 z-[9999] w-[calc(100vw-32px)] max-w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"
             >
-              <div className="p-4 bg-gradient-to-r from-slate-800 to-slate-900 text-white flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-white/10 rounded-lg">
-                    <Sparkles className="w-4 h-4 text-slate-200" />
+              <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
+                    <Sparkles className="h-4 w-4 text-slate-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-sm leading-none">Pristine Guide</h3>
-                    <p className="text-[11px] text-slate-200/80 mt-1">Manual triggers & tours</p>
+                    <h3 className="m-0 text-sm font-semibold leading-none text-slate-900">Pristine Guide</h3>
+                    <p className="m-0 mt-1 text-xs text-slate-500">Manual triggers & tours</p>
                   </div>
                 </div>
                 <button
+                  aria-label="Close"
                   onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-white/10 rounded-lg transition-colors"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                  type="button"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <div className="p-2 max-h-[350px] overflow-y-auto">
-                <div className="px-3 py-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                <div className="px-3 py-1.5 text-xs font-medium text-slate-500">
                   Page Tours
                 </div>
                 <div className="space-y-1">
@@ -117,40 +119,40 @@ export function EngagementFab(): JSX.Element {
                     <button
                       key={tour.id}
                       onClick={() => handleStartTour(tour.id, tour.path)}
-                      className="w-full text-left p-2.5 rounded-xl hover:bg-slate-50 transition-colors flex items-start gap-3 group"
+                      className="group flex w-full items-start gap-3 rounded-lg p-2.5 text-left transition-colors hover:bg-slate-50"
                     >
-                      <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-white transition-colors shrink-0">
+                      <div className="shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-2">
                         {tour.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-xs text-slate-800 group-hover:text-slate-800 flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 text-[13px] font-medium text-slate-900">
                           {tour.title}
                           {location.pathname === tour.path && (
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                           )}
                         </div>
-                        <p className="text-[11px] text-slate-500 truncate mt-0.5">{tour.description}</p>
+                        <p className="m-0 mt-0.5 truncate text-xs text-slate-500">{tour.description}</p>
                       </div>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform shrink-0 self-center" />
                     </button>
                   ))}
                 </div>
                 <div className="h-px bg-slate-100 my-2" />
-                <div className="px-3 py-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                <div className="px-3 py-1.5 text-xs font-medium text-slate-500">
                   User Surveys
                 </div>
                 <button
                   onClick={handleStartSurvey}
-                  className="w-full text-left p-2.5 rounded-xl hover:bg-slate-50 transition-colors flex items-start gap-3 group"
+                  className="group flex w-full items-start gap-3 rounded-lg p-2.5 text-left transition-colors hover:bg-slate-50"
                 >
-                  <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-white transition-colors shrink-0">
-                    <Smile className="w-4 h-4 text-emerald-600" />
+                  <div className="shrink-0 rounded-lg border border-slate-200 bg-slate-50 p-2">
+                    <Smile className="h-4 w-4 text-slate-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-xs text-slate-800 group-hover:text-slate-800">
+                    <div className="text-[13px] font-medium text-slate-900">
                       NPS Pulse Survey
                     </div>
-                    <p className="text-[11px] text-slate-500 truncate mt-0.5">Share your feedback about the portal</p>
+                    <p className="m-0 mt-0.5 truncate text-xs text-slate-500">Share your feedback about the portal</p>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform shrink-0 self-center" />
                 </button>
@@ -161,12 +163,12 @@ export function EngagementFab(): JSX.Element {
       </AnimatePresence>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-12 h-12 rounded-full bg-slate-900 hover:bg-slate-800 text-white shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-105 hover:rotate-6 relative group"
+        className="relative flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/20"
         title="View Product Tours"
         id="btn-trigger-guides-manual"
       >
-        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full animate-pulse" />
-        <Compass className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+        <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
+        <Compass className="h-5 w-5" />
       </button>
     </div>
   );

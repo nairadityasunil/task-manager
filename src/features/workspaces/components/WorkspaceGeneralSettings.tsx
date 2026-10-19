@@ -4,6 +4,7 @@ import { workspaceService } from '../services/workspaceService';
 import { useWorkspace } from '../context/WorkspaceContext';
 import type { Workspace, WorkspaceRole } from '../types/workspace';
 import { isAtLeastAdmin } from '../types/workspace';
+import { Button, Field, inputClass, selectClass } from '@/components/ui';
 
 interface WorkspaceGeneralSettingsProps {
   workspace: Workspace;
@@ -45,70 +46,64 @@ export function WorkspaceGeneralSettings({ workspace }: WorkspaceGeneralSettings
   return (
     <form onSubmit={handleSave} className="space-y-5">
       {error && (
-        <div className="px-3 py-2.5 text-sm text-red-400 bg-red-950/40 border border-red-800/40 rounded-lg">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] text-red-700">
           {error}
         </div>
       )}
       {success && (
-        <div className="px-3 py-2.5 text-sm text-emerald-400 bg-emerald-950/30 border border-emerald-800/40 rounded-lg">
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[13px] text-emerald-700">
           {success}
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
-            Workspace Name
-          </label>
+        <Field label="Workspace Name">
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={!canEdit}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className={inputClass}
           />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
-            Slug
-          </label>
+        </Field>
+        <Field label="Slug">
           <input
             type="text"
             value={slug}
             onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^\w-]/g, ''))}
             disabled={!canEdit}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-400 font-mono focus:outline-none focus:border-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`${inputClass} font-mono text-[13px]`}
           />
-        </div>
+        </Field>
       </div>
 
-      <div>
-        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
-          Default Project Role for New Members
-        </label>
+      <Field label="Default Project Role for New Members" className="sm:max-w-xs">
         <select
           value={defaultRole}
           onChange={(e) => setDefaultRole(e.target.value as WorkspaceRole)}
           disabled={!canEdit}
-          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 transition disabled:opacity-50"
+          className={selectClass}
         >
           {['ADMIN', 'MANAGER', 'MEMBER', 'GUEST'].map((r) => (
             <option key={r} value={r}>{r}</option>
           ))}
         </select>
-      </div>
+      </Field>
 
-      <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
-        <div>
-          <div className="text-sm font-medium text-slate-200">Allow Guest Invites</div>
-          <div className="text-xs text-slate-500 mt-0.5">Let admins invite users with limited guest access</div>
+      <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 p-3.5">
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-slate-900">Allow Guest Invites</div>
+          <div className="mt-0.5 text-[13px] text-slate-500">Let admins invite users with limited guest access</div>
         </div>
         <button
           type="button"
+          role="switch"
+          aria-checked={allowGuests}
+          aria-label="Allow Guest Invites"
           onClick={() => setAllowGuests((v) => !v)}
           disabled={!canEdit}
-          className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none disabled:opacity-50 ${
-            allowGuests ? 'bg-blue-600' : 'bg-slate-600'
+          className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/15 disabled:opacity-50 ${
+            allowGuests ? 'bg-slate-900' : 'bg-slate-300'
           }`}
         >
           <span
@@ -120,15 +115,10 @@ export function WorkspaceGeneralSettings({ workspace }: WorkspaceGeneralSettings
       </div>
 
       {canEdit && (
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold rounded-lg text-sm transition"
-          >
-            <Save className="w-3.5 h-3.5" />
+        <div className="flex justify-end border-t border-slate-100 pt-4">
+          <Button type="submit" variant="primary" icon={Save} loading={isSaving}>
             {isSaving ? 'Saving…' : 'Save Changes'}
-          </button>
+          </Button>
         </div>
       )}
     </form>

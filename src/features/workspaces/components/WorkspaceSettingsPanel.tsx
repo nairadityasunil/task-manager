@@ -5,6 +5,8 @@ import { WorkspaceGeneralSettings } from './WorkspaceGeneralSettings';
 import { WorkspaceMembers } from './WorkspaceMembers';
 import { WorkspaceDangerZone } from './WorkspaceDangerZone';
 import { useAuth } from '@/context/AuthContext';
+import { Badge, Card } from '@/components/ui';
+import EmptyState from '@/components/EmptyState';
 
 type Tab = 'general' | 'members' | 'danger';
 
@@ -15,9 +17,9 @@ interface TabDef {
 }
 
 const TABS: TabDef[] = [
-  { id: 'general', label: 'General', icon: <Settings2 className="w-3.5 h-3.5" /> },
-  { id: 'members', label: 'Members', icon: <Users className="w-3.5 h-3.5" /> },
-  { id: 'danger', label: 'Danger Zone', icon: <AlertTriangle className="w-3.5 h-3.5" /> },
+  { id: 'general', label: 'General', icon: <Settings2 className="h-4 w-4" /> },
+  { id: 'members', label: 'Members', icon: <Users className="h-4 w-4" /> },
+  { id: 'danger', label: 'Danger Zone', icon: <AlertTriangle className="h-4 w-4" /> },
 ];
 
 export function WorkspaceSettingsPanel(): JSX.Element {
@@ -27,76 +29,81 @@ export function WorkspaceSettingsPanel(): JSX.Element {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20 text-slate-600 font-sans text-xs">
-        <Loader2 className="w-4 h-4 animate-spin mr-2 text-slate-700" />
+      <Card className="flex items-center justify-center py-16 font-sans text-[13px] text-slate-500">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         Loading workspace…
-      </div>
+      </Card>
     );
   }
 
   if (!activeWorkspace) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-600 font-sans">
-        <Building2 className="w-9 h-9 opacity-40 text-slate-700" />
-        <p className="text-xs font-medium">No workspace selected. Create or select one above.</p>
-      </div>
+      <EmptyState
+        icon={Building2}
+        title="No workspace selected"
+        description="No workspace selected. Create or select one above."
+      />
     );
   }
 
   return (
-    <div className="space-y-6 font-sans">
-      {/* Workspace Info Header */}
-      <div className="flex items-center gap-4 p-4 bg-slate-50/60 border border-slate-200 rounded">
-        <div className="w-10 h-10 rounded bg-slate-800 text-white flex items-center justify-center flex-shrink-0 font-semibold text-base shadow-xs">
+    <Card className="font-sans">
+      {/* Workspace identity */}
+      <div className="flex items-center gap-3.5 px-4 pt-4 sm:px-5 sm:pt-5">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-base font-semibold text-white">
           {activeWorkspace.name.charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-slate-950 truncate">{activeWorkspace.name}</h3>
-          <div className="flex items-center gap-2.5 mt-0.5">
-            <span className="text-[11px] text-slate-600 font-mono">{activeWorkspace.slug}</span>
-            <span className="text-[11px] px-2 py-0.5 rounded bg-slate-200 border border-slate-300 text-slate-900 font-semibold uppercase">
-              {activeWorkspace.role}
-            </span>
-            <span className="text-xs text-slate-600">
+          <h3 className="m-0 truncate text-[15px] font-semibold text-slate-900">{activeWorkspace.name}</h3>
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <span className="font-mono text-xs text-slate-500">{activeWorkspace.slug}</span>
+            <Badge tone="neutral">
+              {activeWorkspace.role.charAt(0) + activeWorkspace.role.slice(1).toLowerCase()}
+            </Badge>
+            <span className="text-xs text-slate-500">
               {activeWorkspace.memberCount} member{activeWorkspace.memberCount !== 1 ? 's' : ''}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Sub Tabs */}
-      <div className="flex items-center gap-1.5 border-b border-slate-200 pb-3 text-xs">
-        {TABS.map((tab) => {
-          if (tab.id === 'danger' && activeWorkspace.role !== 'OWNER') return null;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-medium transition cursor-pointer ${
-                activeTab === tab.id
-                  ? 'bg-slate-800 text-white font-semibold shadow-xs'
-                  : 'text-slate-700 hover:bg-slate-100/70 hover:text-slate-950'
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          );
-        })}
+      {/* Sub tabs */}
+      <div className="mt-4 border-b border-slate-200 px-4 sm:px-5">
+        <div className="-mb-px flex gap-5 overflow-x-auto hide-scrollbar">
+          {TABS.map((tab) => {
+            if (tab.id === 'danger' && activeWorkspace.role !== 'OWNER') return null;
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                aria-current={active ? 'page' : undefined}
+                className={`flex shrink-0 cursor-pointer items-center gap-2 border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors ${
+                  active
+                    ? tab.id === 'danger'
+                      ? 'border-red-600 text-red-700'
+                      : 'border-slate-900 text-slate-900'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Tab Content */}
-      {activeTab === 'general' && (
-        <WorkspaceGeneralSettings workspace={activeWorkspace} />
-      )}
-      {activeTab === 'members' && user && (
-        <WorkspaceMembers workspace={activeWorkspace} currentUserId={user.id} />
-      )}
-      {activeTab === 'danger' && (
-        <WorkspaceDangerZone workspace={activeWorkspace} />
-      )}
-    </div>
+      {/* Tab content */}
+      <div className="p-4 sm:p-5">
+        {activeTab === 'general' && <WorkspaceGeneralSettings workspace={activeWorkspace} />}
+        {activeTab === 'members' && user && (
+          <WorkspaceMembers workspace={activeWorkspace} currentUserId={user.id} />
+        )}
+        {activeTab === 'danger' && <WorkspaceDangerZone workspace={activeWorkspace} />}
+      </div>
+    </Card>
   );
 }
 

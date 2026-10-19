@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
-  AlertCircle, CheckCircle2, Clock, Copy, EyeOff, Globe,
-  KeyRound, Loader2, Plus, RefreshCw, Server,
-  Shield, Trash2, WifiOff, Zap, ChevronDown, ChevronRight, Code2,
-  Settings, BookOpen, Target, Activity
+  AlertCircle, AlertTriangle, CheckCircle2, Clock, Copy, Eye, EyeOff, Globe,
+  KeyRound, Plus, RefreshCw, Search, Server,
+  Trash2, WifiOff, Zap, ChevronDown, ChevronRight, Code2,
+  Settings, BookOpen, Target, Activity, Plug, X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { SdkIntegration, SdkEnvironment } from '@/lib/sdk-integrations/api';
@@ -11,41 +11,69 @@ import {
   listIntegrations, createIntegration, regenerateKey,
   disableIntegration, enableIntegration, deleteIntegration
 } from '@/lib/sdk-integrations/api';
+import PageHeader from '@/components/PageHeader';
+import EmptyState from '@/components/EmptyState';
+import { Badge, Button, Field, cn, inputClass, selectClass, textareaClass, type BadgeTone } from '@/components/ui';
 
 // ---------- helpers ----------
 const ENV_LABELS: Record<SdkEnvironment, string> = { development: 'Development', staging: 'Staging', production: 'Production' };
-const ENV_COLORS: Record<SdkEnvironment, string> = {
-  development: 'bg-emerald-50 text-emerald-700',
-  staging: 'bg-amber-50 text-amber-700',
-  production: 'bg-slate-900 text-white',
-};
-const ENV_BORDER: Record<SdkEnvironment, string> = {
-  development: 'border-t-emerald-400',
-  staging: 'border-t-amber-400',
-  production: 'border-t-slate-900',
-};
-const STATUS_META: Record<SdkIntegration['status'], { label: string; icon: JSX.Element; cls: string }> = {
-  pending: { label: 'Pending', icon: <Clock size={13} />, cls: 'bg-slate-50 text-slate-600 shadow-xs' },
-  connected: { label: 'Connected', icon: <CheckCircle2 size={13} />, cls: 'bg-emerald-50 text-emerald-700 shadow-xs' },
-  disabled: { label: 'Disabled', icon: <WifiOff size={13} />, cls: 'bg-orange-50 text-orange-700 shadow-xs' },
-  revoked: { label: 'Revoked', icon: <AlertCircle size={13} />, cls: 'bg-red-50 text-red-700 shadow-xs' },
+const STATUS_META: Record<SdkIntegration['status'], { label: string; tone: BadgeTone }> = {
+  pending: { label: 'Pending', tone: 'warning' },
+  connected: { label: 'Connected', tone: 'success' },
+  disabled: { label: 'Disabled', tone: 'neutral' },
+  revoked: { label: 'Revoked', tone: 'danger' },
 };
 
 const fmtDate = (d?: string | null) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 const fmtTime = (d?: string | null) => d ? new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never';
 
-function Badge({ children, cls }: { children: React.ReactNode; cls: string }) {
-  return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${cls}`}>{children}</span>;
-}
-
-function CopyBtn({ text }: { text: string }) {
+function CopyBtn({ text, className }: { text: string; className?: string }) {
   const [done, setDone] = useState(false);
   const copy = () => { void navigator.clipboard.writeText(text); setDone(true); setTimeout(() => setDone(false), 1500); };
   return (
-    <button onClick={copy} type="button" className="flex items-center gap-1 text-xs font-semibold text-slate-650 hover:text-slate-900 transition-colors">
-      {done ? <CheckCircle2 size={13} className="text-emerald-500" /> : <Copy size={13} />}
+    <button
+      onClick={copy}
+      type="button"
+      className={cn('inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900', className)}
+    >
+      {done ? <CheckCircle2 size={14} className="text-emerald-600" /> : <Copy size={14} />}
       {done ? 'Copied' : 'Copy'}
     </button>
+  );
+}
+
+/** Centered dialog shell used by the modals on this page. */
+function DialogShell({ title, description, icon, onClose, onBackdrop, children, footer, maxWidth = 'max-w-lg' }: {
+  title: string;
+  description?: ReactNode;
+  icon?: ReactNode;
+  onClose?: () => void;
+  onBackdrop?: () => void;
+  children: ReactNode;
+  footer?: ReactNode;
+  maxWidth?: string;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5" onClick={onBackdrop}>
+      <div className={cn('flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl', maxWidth)} onClick={e => e.stopPropagation()}>
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-4 sm:px-6">
+          <div className="flex min-w-0 items-start gap-3">
+            {icon && <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600">{icon}</span>}
+            <div className="min-w-0">
+              <h2 className="m-0 text-base font-semibold text-slate-900">{title}</h2>
+              {description && <p className="m-0 mt-0.5 text-[13px] text-slate-500">{description}</p>}
+            </div>
+          </div>
+          {onClose && (
+            <button aria-label="Close" onClick={onClose} type="button" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">{children}</div>
+        {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-slate-200 bg-slate-50/60 px-4 py-3 sm:px-6">{footer}</div>}
+      </div>
+    </div>
   );
 }
 
@@ -79,47 +107,46 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-xs px-4">
-      <div className="w-full max-w-lg rounded-md bg-white shadow-sm overflow-hidden">
-        <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-5">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2"><Globe size={18} /> New SDK Integration</h2>
-          <p className="text-sm text-slate-300 mt-0.5">Connect an external website to the Engagement Platform</p>
-        </div>
-        <div className="p-6 grid gap-4 overflow-y-auto max-h-[70vh]">
-          {err && <div className="flex items-center gap-2 rounded bg-red-50 px-4 py-2.5 text-sm text-red-700 shadow-sm"><AlertCircle size={15} />{err}</div>}
-          <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-slate-700">Integration Name *</span>
-            <input className="rounded bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-sm focus:shadow-sm transition-shadow" placeholder="e.g. Production Website" value={name} onChange={e => setName(e.target.value)} />
-          </label>
-          <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-slate-700">Environment *</span>
-            <select className="rounded bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-sm focus:shadow-sm transition-shadow" value={env} onChange={e => setEnv(e.target.value as SdkEnvironment)}>
+    <DialogShell
+      title="New SDK Integration"
+      description="Connect an external website to the Engagement Platform"
+      icon={<Globe size={17} />}
+      footer={
+        <>
+          <Button onClick={onClose} variant="secondary">Cancel</Button>
+          <Button onClick={() => void submit()} loading={loading} variant="primary">Create Integration</Button>
+        </>
+      }
+    >
+      <div className="grid gap-4">
+        {err && (
+          <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+            <AlertCircle size={15} className="shrink-0" />{err}
+          </div>
+        )}
+        <Field label="Integration name">
+          <input className={inputClass} placeholder="e.g. Production Website" value={name} onChange={e => setName(e.target.value)} />
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-[1fr_1.4fr]">
+          <Field label="Environment">
+            <select className={selectClass} value={env} onChange={e => setEnv(e.target.value as SdkEnvironment)}>
               <option value="production">Production</option>
               <option value="staging">Staging</option>
               <option value="development">Development</option>
             </select>
-          </label>
-          <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-slate-700">Application URL *</span>
-            <input className="rounded bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-sm focus:shadow-sm transition-shadow" placeholder="https://app.company.com" value={domain} onChange={e => setDomain(e.target.value)} />
-          </label>
-          <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-slate-700">Additional Allowed Origins (optional, comma-separated)</span>
-            <input className="rounded bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/10 shadow-sm focus:shadow-sm transition-shadow" placeholder="https://origin2.com, http://localhost:5173" value={origins} onChange={e => setOrigins(e.target.value)} />
-          </label>
-          <label className="grid gap-1.5">
-            <span className="text-sm font-medium text-slate-700">Description (optional)</span>
-            <textarea className="rounded bg-slate-50 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500/10 resize-none h-20 shadow-sm focus:shadow-sm transition-shadow" placeholder="Brief description of this integration" value={desc} onChange={e => setDesc(e.target.value)} />
-          </label>
+          </Field>
+          <Field label="Application URL">
+            <input className={inputClass} placeholder="https://app.company.com" value={domain} onChange={e => setDomain(e.target.value)} />
+          </Field>
         </div>
-        <div className="flex justify-end gap-3 px-6 pb-6 pt-2">
-          <button onClick={onClose} type="button" className="px-4 py-2 rounded text-sm font-semibold text-slate-600 hover:bg-slate-50 shadow-xs">Cancel</button>
-          <button onClick={() => void submit()} type="button" disabled={loading} className="px-5 py-2 rounded bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 disabled:opacity-60 flex items-center gap-2 shadow-sm hover:shadow-sm transition-all">
-            {loading && <Loader2 size={14} className="animate-spin" />} Create Integration
-          </button>
-        </div>
+        <Field label="Additional allowed origins" hint="Optional. Separate multiple origins with commas.">
+          <input className={inputClass} placeholder="https://origin2.com, http://localhost:5173" value={origins} onChange={e => setOrigins(e.target.value)} />
+        </Field>
+        <Field label="Description" hint="Optional.">
+          <textarea className={cn(textareaClass, 'h-20 resize-none')} placeholder="Brief description of this integration" value={desc} onChange={e => setDesc(e.target.value)} />
+        </Field>
       </div>
-    </div>
+    </DialogShell>
   );
 }
 
@@ -127,33 +154,35 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
 function KeyRevealModal({ sdkKey, name, onClose }: { sdkKey: string; name: string; onClose: () => void }) {
   const [visible, setVisible] = useState(false);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 backdrop-blur-xs px-4">
-      <div className="w-full max-w-md rounded-md bg-white shadow-sm">
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 py-5 rounded-t-2xl">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2"><KeyRound size={18} /> SDK Key Generated</h2>
-          <p className="text-sm text-emerald-100 mt-0.5">For <span className="font-semibold">{name}</span></p>
+    <DialogShell
+      title="SDK Key Generated"
+      description={<>For <span className="font-medium text-slate-700">{name}</span></>}
+      icon={<KeyRound size={17} className="text-emerald-600" />}
+      maxWidth="max-w-md"
+      footer={<Button onClick={onClose} variant="primary">Done</Button>}
+    >
+      <div className="grid gap-4">
+        <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-[13px] text-amber-800">
+          <AlertTriangle size={15} className="mt-0.5 shrink-0" />
+          <span>This key will not be shown again. Copy it now and store it securely.</span>
         </div>
-        <div className="p-6 grid gap-4">
-          <div className="rounded bg-amber-50 px-4 py-3 text-sm text-amber-800 flex items-start gap-2 shadow-xs">
-            <AlertCircle size={15} className="mt-0.5 shrink-0" />
-            <span>This key will not be shown again. Copy it now and store it securely.</span>
+        <div className="grid gap-1.5">
+          <span className="text-sm font-medium text-slate-700">Public SDK key</span>
+          <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 py-1 pl-3 pr-1">
+            <code className="min-w-0 flex-1 break-all py-1 font-mono text-[13px] text-slate-800">{visible ? sdkKey : `${sdkKey.slice(0, 8)}${'•'.repeat(32)}`}</code>
+            <button
+              aria-label={visible ? 'Hide key' : 'Show key'}
+              onClick={() => setVisible(!visible)}
+              type="button"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            >
+              {visible ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+            <CopyBtn text={sdkKey} />
           </div>
-          <div className="rounded bg-slate-50 px-4 py-3 shadow-inner">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Public SDK Key</span>
-              <div className="flex items-center gap-3">
-                <button onClick={() => setVisible(!visible)} type="button" className="text-slate-400 hover:text-slate-600"><EyeOff size={14} /></button>
-                <CopyBtn text={sdkKey} />
-              </div>
-            </div>
-            <code className="text-xs font-mono text-slate-800 break-all">{visible ? sdkKey : `${sdkKey.slice(0, 8)}${'•'.repeat(32)}`}</code>
-          </div>
-        </div>
-        <div className="flex justify-end px-6 pb-6">
-          <button onClick={onClose} type="button" className="px-5 py-2 rounded bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 shadow-sm">Done</button>
         </div>
       </div>
-    </div>
+    </DialogShell>
   );
 }
 
@@ -161,41 +190,49 @@ function KeyRevealModal({ sdkKey, name, onClose }: { sdkKey: string; name: strin
 function InstallGuide({ integration }: { integration: SdkIntegration }) {
   const [open, setOpen] = useState(false);
   const masked = integration.sdkKeyMasked;
+  const code = 'overflow-auto rounded-lg bg-slate-900 px-4 py-3 font-mono text-xs leading-relaxed text-slate-100';
   return (
-    <div className="rounded bg-slate-50/60 overflow-hidden shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-slate-200">
       <button
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-100/50 transition-colors text-sm font-semibold text-slate-700"
+        className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
         onClick={() => setOpen(!open)} type="button"
       >
-        <span className="flex items-center gap-2"><Code2 size={15} />SDK Installation Guide</span>
+        <span className="flex items-center gap-2"><Code2 size={15} className="text-slate-400" />SDK Installation Guide</span>
         {open ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
       </button>
       {open && (
-        <div className="p-5 grid gap-4 bg-white shadow-xs">
+        <div className="grid gap-4 border-t border-slate-200 bg-white p-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">1. Install the SDK</p>
-            <pre className="bg-slate-900 text-emerald-300 rounded px-4 py-3 text-xs overflow-auto shadow-inner">{`npm install @engagement/sdk`}</pre>
+            <p className="mb-2 text-[13px] font-medium text-slate-700">1. Install the SDK</p>
+            <pre className={code}>{`npm install @engagement/sdk`}</pre>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">2. Initialize</p>
-            <pre className="bg-slate-900 text-emerald-300 rounded px-4 py-3 text-xs overflow-auto shadow-inner">{`import { EngagementSDK } from '@engagement/sdk';
+            <p className="mb-2 text-[13px] font-medium text-slate-700">2. Initialize</p>
+            <pre className={code}>{`import { EngagementSDK } from '@engagement/sdk';
 
 EngagementSDK.init({
   sdkKey: '${masked}',
 });`}</pre>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">3. Identify user (optional)</p>
-            <pre className="bg-slate-900 text-emerald-300 rounded px-4 py-3 text-xs overflow-auto shadow-inner">{`EngagementSDK.identify({ userId: 'user-123', role: 'admin' });`}</pre>
+            <p className="mb-2 text-[13px] font-medium text-slate-700">3. Identify user (optional)</p>
+            <pre className={code}>{`EngagementSDK.identify({ userId: 'user-123', role: 'admin' });`}</pre>
           </div>
-          <div className="rounded bg-sky-50 px-4 py-3 text-xs text-sky-700 shadow-xs">
-            <strong>Domain:</strong> {integration.domain} &nbsp;·&nbsp; <strong>Environment:</strong> {integration.environment}
+          <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2.5 text-xs text-sky-800">
+            <span className="font-medium">Domain:</span> {integration.domain} &nbsp;·&nbsp; <span className="font-medium">Environment:</span> {integration.environment}
           </div>
         </div>
       )}
     </div>
   );
 }
+
+const SECTION_LINKS = [
+  { label: 'Overview', icon: Settings, tab: 'overview' },
+  { label: 'Guides', icon: BookOpen, tab: 'guides' },
+  { label: 'Surveys', icon: Target, tab: 'surveys' },
+  { label: 'Events', icon: Activity, tab: 'events' },
+];
 
 // ---------- Details modal ----------
 function DetailsModal({ integration, onClose, onRefresh }: { integration: SdkIntegration; onClose: () => void; onRefresh: () => Promise<void> }) {
@@ -204,69 +241,55 @@ function DetailsModal({ integration, onClose, onRefresh }: { integration: SdkInt
   const [newKey, setNewKey] = useState<string | null>(null);
   const act = async (fn: () => Promise<unknown>) => { setBusy(true); try { await fn(); await onRefresh(); } finally { setBusy(false); } };
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-xs px-4" onClick={onClose}>
-      {newKey && <KeyRevealModal sdkKey={newKey} name={integration.name} onClose={() => setNewKey(null)} />}
-      <div className="w-full max-w-lg rounded-md bg-white shadow-sm overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="bg-slate-900 px-6 py-4 flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-base font-semibold text-white">{integration.name}</h2>
-            <p className="text-xs text-slate-400 mt-0.5">{integration.domain}</p>
-          </div>
-          <button onClick={onClose} type="button" className="text-slate-400 hover:text-white mt-0.5">✕</button>
-        </div>
-        <div className="p-5 grid gap-4 max-h-[70vh] overflow-y-auto">
-          <div className="grid grid-cols-2 gap-2">
+    <>
+      <DialogShell title={integration.name} description={integration.domain} icon={<Plug size={17} />} onClose={onClose} onBackdrop={onClose}>
+        <div className="grid gap-4">
+          <dl className="m-0 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200">
             {[
-              { label: 'First Connected', value: fmtTime(integration.firstConnectedAt) },
-              { label: 'Last Runtime', value: fmtTime(integration.lastRuntimeRequestAt) },
-              { label: 'Last Event', value: fmtTime(integration.lastEventRequestAt) },
-              { label: 'Last Heartbeat', value: fmtTime(integration.lastHeartbeatAt) },
+              { label: 'First connected', value: fmtTime(integration.firstConnectedAt) },
+              { label: 'Last runtime', value: fmtTime(integration.lastRuntimeRequestAt) },
+              { label: 'Last event', value: fmtTime(integration.lastEventRequestAt) },
+              { label: 'Last heartbeat', value: fmtTime(integration.lastHeartbeatAt) },
               { label: 'Created', value: fmtDate(integration.createdAt) },
-              { label: 'Latest Origin', value: integration.latestOrigin ?? '—' },
+              { label: 'Latest origin', value: integration.latestOrigin ?? '—' },
             ].map(({ label, value }) => (
-              <div key={label} className="rounded bg-slate-50 p-3">
-                <p className="text-[11px] uppercase tracking-wide text-slate-400 mb-0.5">{label}</p>
-                <p className="text-xs text-slate-700 truncate">{value}</p>
+              <div key={label} className="min-w-0 bg-white px-3 py-2.5">
+                <dt className="text-xs text-slate-500">{label}</dt>
+                <dd className="m-0 mt-0.5 truncate text-[13px] font-medium text-slate-800">{value}</dd>
               </div>
             ))}
-          </div>
+          </dl>
           {integration.allowedOrigins?.length > 0 && (
-            <div className="rounded bg-slate-50 p-3">
-              <p className="text-[11px] uppercase tracking-wide text-slate-400 mb-0.5">Allowed Origins</p>
-              <p className="text-xs text-slate-700 break-all">{integration.allowedOrigins.join(', ')}</p>
+            <div className="rounded-lg border border-slate-200 px-3 py-2.5">
+              <p className="m-0 text-xs text-slate-500">Allowed origins</p>
+              <p className="m-0 mt-0.5 break-all text-[13px] text-slate-800">{integration.allowedOrigins.join(', ')}</p>
             </div>
           )}
           <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: 'Overview', icon: <Settings size={13} />, tab: 'overview' },
-              { label: 'Guides', icon: <BookOpen size={13} />, tab: 'guides' },
-              { label: 'Surveys', icon: <Target size={13} />, tab: 'surveys' },
-              { label: 'Events', icon: <Activity size={13} />, tab: 'events' },
-            ].map(lnk => (
-              <button key={lnk.label} onClick={() => { onClose(); navigate(`/sdk-integrations/${integration.id}/${lnk.tab}`); }} type="button"
-                className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 hover:bg-slate-100 rounded text-sm text-slate-700 transition-colors">
-                <span className="text-slate-400">{lnk.icon}</span>{lnk.label}
+            {SECTION_LINKS.map(({ label, icon: Icon, tab }) => (
+              <button key={label} onClick={() => { onClose(); navigate(`/sdk-integrations/${integration.id}/${tab}`); }} type="button"
+                className="flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50">
+                <Icon size={15} className="text-slate-400" />{label}
               </button>
             ))}
           </div>
           <InstallGuide integration={integration} />
-          <div className="flex items-center gap-2 pt-1">
-            <button onClick={() => act(async () => { const { sdkKey } = await regenerateKey(integration.id); setNewKey(sdkKey); })} disabled={busy} type="button"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-slate-100 text-xs text-slate-600 hover:bg-slate-200 disabled:opacity-50">
-              <RefreshCw size={12} />Regenerate Key
-            </button>
+          <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
+            <Button size="sm" icon={RefreshCw} onClick={() => act(async () => { const { sdkKey } = await regenerateKey(integration.id); setNewKey(sdkKey); })} disabled={busy}>
+              Regenerate Key
+            </Button>
             {integration.status === 'disabled'
-              ? <button onClick={() => act(() => enableIntegration(integration.id))} disabled={busy} type="button" className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-50 text-xs text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"><Zap size={12} />Enable</button>
-              : <button onClick={() => act(() => disableIntegration(integration.id))} disabled={busy || integration.status === 'revoked'} type="button" className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-amber-50 text-xs text-amber-700 hover:bg-amber-100 disabled:opacity-50"><WifiOff size={12} />Disable</button>
+              ? <Button size="sm" icon={Zap} onClick={() => act(() => enableIntegration(integration.id))} disabled={busy}>Enable</Button>
+              : <Button size="sm" icon={WifiOff} onClick={() => act(() => disableIntegration(integration.id))} disabled={busy || integration.status === 'revoked'}>Disable</Button>
             }
-            <button onClick={() => { if (window.confirm(`Delete "${integration.name}"?`)) void act(() => deleteIntegration(integration.id)); }} disabled={busy} type="button"
-              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded bg-red-50 text-xs text-red-600 hover:bg-red-100 disabled:opacity-50">
-              <Trash2 size={12} />Delete
-            </button>
+            <Button size="sm" variant="danger" icon={Trash2} className="ml-auto" onClick={() => { if (window.confirm(`Delete "${integration.name}"?`)) void act(() => deleteIntegration(integration.id)); }} disabled={busy}>
+              Delete
+            </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogShell>
+      {newKey && <KeyRevealModal sdkKey={newKey} name={integration.name} onClose={() => setNewKey(null)} />}
+    </>
   );
 }
 
@@ -276,75 +299,95 @@ function IntegrationCard({ integration, onRefresh }: { integration: SdkIntegrati
   const [showDetails, setShowDetails] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const sm = STATUS_META[integration.status];
+  const inactive = integration.status === 'disabled' || integration.status === 'revoked';
 
   return (
     <>
       {showDetails && <DetailsModal integration={integration} onClose={() => setShowDetails(false)} onRefresh={onRefresh} />}
       <div
-        className={`rounded-md bg-white shadow-sm hover:shadow-sm transition-all duration-200 flex flex-col overflow-hidden cursor-pointer group border-t-[3px] ${ENV_BORDER[integration.environment]} ${integration.status === 'disabled' || integration.status === 'revoked' ? 'opacity-70' : ''}`}
+        className="group flex cursor-pointer flex-col rounded-xl border border-slate-200 bg-white shadow-sm transition-colors hover:border-slate-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/10"
         onClick={() => navigate(`/sdk-integrations/${integration.id}/overview`)}
         role="button"
         tabIndex={0}
         onKeyDown={e => e.key === 'Enter' && navigate(`/sdk-integrations/${integration.id}/overview`)}
       >
-        <div className="p-5 flex-1 flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-2">
-            <Badge cls={ENV_COLORS[integration.environment]}>{ENV_LABELS[integration.environment]}</Badge>
-            <Badge cls={sm.cls}>{sm.icon}{sm.label}</Badge>
+        <div className="flex flex-1 flex-col gap-3 p-4">
+          <div className="flex items-start gap-3">
+            <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50', inactive ? 'text-slate-400' : 'text-slate-600')}>
+              <Globe size={16} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="m-0 truncate text-sm font-semibold text-slate-900" title={integration.name}>{integration.name}</h3>
+              <p className="m-0 mt-0.5 truncate text-[13px] text-slate-500">{integration.domain}</p>
+            </div>
+            <Badge tone={sm.tone} dot>{sm.label}</Badge>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-slate-800 truncate group-hover:text-slate-900 transition-colors" title={integration.name}>{integration.name}</h3>
-            <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5 truncate"><Globe size={11} className="shrink-0" />{integration.domain}</p>
+          {integration.description && <p className="m-0 line-clamp-2 text-[13px] leading-relaxed text-slate-500">{integration.description}</p>}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge tone={integration.environment === 'production' ? 'dark' : 'neutral'}>{ENV_LABELS[integration.environment]}</Badge>
           </div>
-          {integration.description && <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{integration.description}</p>}
 
-          <div className="flex items-center gap-2 mt-auto pt-1" onClick={e => e.stopPropagation()}>
+          <dl className="m-0 grid grid-cols-3 gap-2 rounded-lg bg-slate-50 px-3 py-2">
+            {[
+              { label: 'Connections', value: integration.connectionCount },
+              { label: 'Last active', value: integration.lastConnectedAt ? fmtDate(integration.lastConnectedAt) : 'Never' },
+              { label: 'SDK version', value: integration.sdkVersion ?? '—' },
+            ].map(({ label, value }) => (
+              <div key={label} className="min-w-0">
+                <dt className="truncate text-[11px] text-slate-500">{label}</dt>
+                <dd className="m-0 truncate text-xs font-medium text-slate-800">{value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="mt-auto flex items-center gap-2" onClick={e => e.stopPropagation()}>
             <div className="relative">
-              <button onClick={() => setShowDropdown(!showDropdown)} type="button"
-                className="flex items-center gap-1 px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-xs text-slate-600 transition-colors">
-                Configure <ChevronDown size={12} className={`transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
-              </button>
+              <Button size="sm" onClick={() => setShowDropdown(!showDropdown)}>
+                Configure <ChevronDown size={14} className={`transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+              </Button>
               {showDropdown && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowDropdown(false)} />
-                  <div className="absolute left-0 mt-1 w-36 rounded bg-white shadow-sm py-1 z-20">
-                    {[{label:'Overview',icon:<Settings size={12}/>,tab:'overview'},{label:'Guides',icon:<BookOpen size={12}/>,tab:'guides'},{label:'Surveys',icon:<Target size={12}/>,tab:'surveys'},{label:'Events',icon:<Activity size={12}/>,tab:'events'}].map(item => (
-                      <button key={item.label} onClick={() => { setShowDropdown(false); navigate(`/sdk-integrations/${integration.id}/${item.tab}`); }} type="button"
-                        className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs text-slate-600 hover:bg-slate-50 hover:text-slate-900">
-                        <span className="text-slate-400">{item.icon}</span>{item.label}
+                  <div className="absolute left-0 z-20 mt-1 w-40 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                    {SECTION_LINKS.map(({ label, icon: Icon, tab }) => (
+                      <button key={label} onClick={() => { setShowDropdown(false); navigate(`/sdk-integrations/${integration.id}/${tab}`); }} type="button"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] text-slate-700 hover:bg-slate-50 hover:text-slate-900">
+                        <Icon size={14} className="text-slate-400" />{label}
                       </button>
                     ))}
                   </div>
                 </>
               )}
             </div>
-            <button onClick={() => setShowDetails(true)} type="button"
-              className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-50 transition-colors ml-auto">
-              Details <ChevronRight size={12} />
-            </button>
+            <Button size="sm" variant="ghost" className="ml-auto" onClick={() => setShowDetails(true)}>
+              Details <ChevronRight size={14} />
+            </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 border-t border-slate-100 py-2.5">
-          {[
-            { label: 'Connections', value: integration.connectionCount },
-            { label: 'Last Active', value: integration.lastConnectedAt ? fmtDate(integration.lastConnectedAt) : 'Never' },
-            { label: 'SDK Version', value: integration.sdkVersion ?? '—' },
-          ].map(({ label, value }) => (
-            <div key={label} className="px-2 text-center">
-              <p className="text-[11px] uppercase tracking-wide text-slate-400">{label}</p>
-              <p className="text-[11px] text-slate-600 mt-0.5 truncate">{value}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2 px-4 py-2 border-t border-slate-100" onClick={e => e.stopPropagation()}>
-          <KeyRound size={11} className="text-slate-300 shrink-0" />
-          <code className="text-[11px] font-mono text-slate-400 flex-1 truncate">{integration.sdkKeyMasked}</code>
+        <div className="flex items-center gap-2 border-t border-slate-100 py-1 pl-4 pr-2" onClick={e => e.stopPropagation()}>
+          <KeyRound size={13} className="shrink-0 text-slate-400" />
+          <code className="min-w-0 flex-1 truncate font-mono text-xs text-slate-500">{integration.sdkKeyMasked}</code>
           <CopyBtn text={integration.sdkKeyMasked} />
         </div>
       </div>
     </>
+  );
+}
+
+function CardSkeleton() {
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center gap-3">
+        <div className="h-9 w-9 animate-pulse rounded-lg bg-slate-100" />
+        <div className="grid flex-1 gap-1.5">
+          <div className="h-3.5 w-2/3 animate-pulse rounded bg-slate-100" />
+          <div className="h-3 w-1/2 animate-pulse rounded bg-slate-100" />
+        </div>
+      </div>
+      <div className="h-12 animate-pulse rounded-lg bg-slate-50" />
+      <div className="h-8 w-28 animate-pulse rounded-lg bg-slate-100" />
+    </div>
   );
 }
 
@@ -394,97 +437,79 @@ export default function SdkIntegrationsPage() {
       )}
       {newKey && <KeyRevealModal sdkKey={newKey.key} name={newKey.name} onClose={() => setNewKey(null)} />}
 
-      {/* Header */}
-      <div className="bg-white px-4 sm:px-8 py-5 sm:py-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center">
-                <Shield className="text-white" size={17} />
-              </div>
-              <div>
-                <h2 className="m-0 text-xl font-semibold text-slate-800">SDK Integrations</h2>
-                <p className="m-0 text-sm text-slate-500">Connect your apps, manage SDK keys and allowed origins.</p>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowCreate(true)} type="button"
-            className="flex items-center gap-2 rounded-lg bg-slate-900 h-9 px-3.5 text-sm font-semibold text-white hover:bg-slate-800 shadow-sm transition-colors whitespace-nowrap"
-          >
-            <Plus size={16} />New integration
-          </button>
-        </div>
+      <PageHeader
+        title="SDK Integrations"
+        description="Connect your apps, manage SDK keys and allowed origins."
+        icon={Plug}
+        actions={<Button variant="primary" icon={Plus} onClick={() => setShowCreate(true)}>New integration</Button>}
+      />
 
+      <div className="grid gap-5 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
         {/* Stats */}
-        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
-            { label: 'Total', value: stats.total, icon: <Globe size={14} />, iconCls: 'text-slate-500', bg: 'bg-slate-50', txt: 'text-slate-900' },
-            { label: 'Connected', value: stats.connected, icon: <CheckCircle2 size={14} />, iconCls: 'text-emerald-500', bg: 'bg-emerald-50', txt: 'text-slate-900' },
-            { label: 'Pending', value: stats.pending, icon: <Clock size={14} />, iconCls: 'text-amber-500', bg: 'bg-amber-50', txt: 'text-slate-900' },
-            { label: 'Inactive', value: stats.disabled, icon: <WifiOff size={14} />, iconCls: 'text-rose-400', bg: 'bg-rose-50', txt: 'text-slate-900' },
-          ].map(({ label, value, icon, iconCls, bg, txt }) => (
-            <div key={label} className="rounded-lg border border-slate-200 bg-white px-4 py-3.5 flex items-center gap-3">
-              <span className={`flex h-8 w-8 items-center justify-center rounded-md ${bg} ${iconCls}`}>{icon}</span>
-              <div>
-                <p className="m-0 text-xs text-slate-500">{label}</p>
-                <p className={`m-0 text-xl font-semibold ${txt} leading-tight mt-0.5`}>{value}</p>
+            { label: 'Total', value: stats.total, icon: Globe },
+            { label: 'Connected', value: stats.connected, icon: CheckCircle2 },
+            { label: 'Pending', value: stats.pending, icon: Clock },
+            { label: 'Inactive', value: stats.disabled, icon: WifiOff },
+          ].map(({ label, value, icon: Icon }) => (
+            <div key={label} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="flex items-center justify-between gap-2">
+                <p className="m-0 text-[13px] text-slate-500">{label}</p>
+                <Icon size={15} className="text-slate-400" />
               </div>
+              <p className="m-0 mt-1.5 text-2xl font-semibold tracking-tight text-slate-900">{loading ? '–' : value}</p>
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 px-4 sm:px-8 py-4 border-y border-slate-200 bg-white">
-        <input
-          className="rounded-lg border border-slate-300 bg-white h-9 px-3 text-sm text-slate-700 shadow-sm focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 w-full sm:w-64 placeholder:text-slate-400"
-          placeholder="Search integrations…" value={search} onChange={e => setSearch(e.target.value)}
-        />
-        <select className="rounded-lg border border-slate-300 bg-white h-9 px-3 text-sm text-slate-700 shadow-sm focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10" value={filterEnv} onChange={e => setFilterEnv(e.target.value as typeof filterEnv)}>
-          <option value="all">All environments</option>
-          <option value="production">Production</option>
-          <option value="staging">Staging</option>
-          <option value="development">Development</option>
-        </select>
-        <select className="rounded-lg border border-slate-300 bg-white h-9 px-3 text-sm text-slate-700 shadow-sm focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10" value={filterStatus} onChange={e => setFilterStatus(e.target.value as typeof filterStatus)}>
-          <option value="all">All statuses</option>
-          <option value="pending">Pending</option>
-          <option value="connected">Connected</option>
-          <option value="disabled">Disabled</option>
-          <option value="revoked">Revoked</option>
-        </select>
-        <span className="text-xs text-slate-400 font-semibold ml-auto">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
-      </div>
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative w-full sm:w-64">
+            <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              className={cn(inputClass, 'pl-9')}
+              placeholder="Search integrations…" value={search} onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="min-w-0 flex-1 sm:w-48 sm:flex-none">
+          <select aria-label="Environment" className={selectClass} value={filterEnv} onChange={e => setFilterEnv(e.target.value as typeof filterEnv)}>
+            <option value="all">All environments</option>
+            <option value="production">Production</option>
+            <option value="staging">Staging</option>
+            <option value="development">Development</option>
+          </select>
+          </div>
+          <div className="min-w-0 flex-1 sm:w-44 sm:flex-none">
+          <select aria-label="Status" className={selectClass} value={filterStatus} onChange={e => setFilterStatus(e.target.value as typeof filterStatus)}>
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="connected">Connected</option>
+            <option value="disabled">Disabled</option>
+            <option value="revoked">Revoked</option>
+          </select>
+          </div>
+          <span className="ml-auto hidden text-[13px] text-slate-500 sm:inline">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
+        </div>
 
-      {/* Content */}
-      <div className="p-4 sm:p-8">
+        {/* Content */}
         {loading ? (
-          <div className="flex items-center justify-center py-20 text-slate-400 font-semibold">
-            <Loader2 className="animate-spin mr-2" size={20} />Loading integrations…
+          <div aria-busy="true" aria-label="Loading integrations…" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            <CardSkeleton /><CardSkeleton /><CardSkeleton />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="rounded-md bg-white p-10 max-w-sm shadow-sm">
-              <Server size={40} className="text-slate-300 mx-auto mb-4" />
-              <h3 className="text-base font-semibold text-slate-700 mb-2">
-                {integrations.length === 0 ? 'No integrations yet' : 'No results'}
-              </h3>
-              <p className="text-sm text-slate-455 mb-5 leading-relaxed">
-                {integrations.length === 0
-                  ? 'Create your first SDK integration to connect an external website to the Engagement Platform.'
-                  : 'Try adjusting your search or filters.'}
-              </p>
-              {integrations.length === 0 && (
-                <button onClick={() => setShowCreate(true)} type="button"
-                  className="flex items-center gap-2 mx-auto rounded bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 shadow-sm">
-                  <Plus size={15} />Create Integration
-                </button>
-              )}
-            </div>
-          </div>
+          <EmptyState
+            icon={Server}
+            title={integrations.length === 0 ? 'No integrations yet' : 'No results'}
+            description={integrations.length === 0
+              ? 'Create your first SDK integration to connect an external website to the Engagement Platform.'
+              : 'Try adjusting your search or filters.'}
+            action={integrations.length === 0 ? (
+              <Button variant="primary" icon={Plus} onClick={() => setShowCreate(true)}>Create Integration</Button>
+            ) : undefined}
+          />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             {filtered.map(i => (
               <IntegrationCard key={i.id} integration={i} onRefresh={load} />
             ))}
