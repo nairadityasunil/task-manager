@@ -44,7 +44,7 @@ function RegisterPage(): JSX.Element {
 
   const startGoogleSignIn = (): void => {
     const params = new URLSearchParams();
-    params.set('redirect', '/');
+    params.set('redirect', '/dashboard');
     window.location.assign(`${apiBase}/auth/google?${params.toString()}`);
   };
 

@@ -87,6 +87,8 @@ const consumeUrlAuthTokens = (): UrlAuthTokens | null => {
   if (!token) return null;
 
   const url = new URL(window.location.href);
+  // A sign-in that returns to the public landing page should open the app.
+  if (url.pathname === '/') url.pathname = '/dashboard';
   if (hashToken) {
     url.hash = '';
   } else {

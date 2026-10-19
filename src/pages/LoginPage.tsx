@@ -88,7 +88,7 @@ function LoginPage(): JSX.Element {
 
   const nextPath = tokenParam
     ? `/accept-invitation?token=${tokenParam}`
-    : ((location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/');
+    : ((location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/dashboard');
 
   // Automatic companion device login when scanning URL with companion query parameters
   useEffect(() => {
