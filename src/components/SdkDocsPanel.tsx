@@ -37,7 +37,7 @@ function SdkDocsPanel(): JSX.Element {
             description="Production-ready guide for installation, initialization, public API, and validation utilities."
             actions={
               <a
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-olive-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-olive-800  "
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white transition-colors hover:bg-slate-800  "
                 href="https://www.npmjs.com/package/@jamesbond007db05/events-sdk"
                 rel="noreferrer"
                 target="_blank"
@@ -52,29 +52,29 @@ function SdkDocsPanel(): JSX.Element {
 
       <SectionCard className="grid grid-cols-1 gap-6" id="getting-started">
         <div>
-          <p className="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-olive-600 ">Getting Started</p>
-          <h2 className="m-0 text-2xl font-bold text-olive-950 ">Install, initialize, ship events</h2>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600 ">Getting Started</p>
+          <h2 className="m-0 text-2xl font-semibold text-slate-950 ">Install, initialize, ship events</h2>
         </div>
         <div className="w-full flex flex-col">
           <div className="space-y-4">
-            <div className="rounded-2xl border border-olive-200 bg-olive-50 p-4  ">
-              <h3 className="m-0 text-base font-bold text-olive-950 ">1. Install package</h3>
-              <p className="mb-0 mt-2 text-sm leading-6 text-olive-600  pb-3">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4  ">
+              <h3 className="m-0 text-base font-semibold text-slate-950 ">1. Install package</h3>
+              <p className="mb-0 mt-2 text-sm leading-6 text-slate-600  pb-3">
                 Use npm in your frontend app. SDK ships browser-focused tracking APIs.
               </p>
               <CodePanel copiedId={copiedId} id="install" onCopy={handleCopy} title="Installation">
                 {INSTALL_SNIPPET}
               </CodePanel>
             </div>
-            <div className="rounded-2xl border border-olive-200 bg-olive-50 p-4  ">
-              <h3 className="m-0 text-base font-bold text-olive-950 ">2. Create API key</h3>
-              <p className="mb-0 mt-2 text-sm leading-6 text-olive-600 ">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4  ">
+              <h3 className="m-0 text-base font-semibold text-slate-950 ">2. Create API key</h3>
+              <p className="mb-0 mt-2 text-sm leading-6 text-slate-600 ">
                 Open Event Tracking in app, provision a node, copy secret key once, then store it in your app config.
               </p>
             </div>
-            <div className="rounded-2xl border border-olive-200 bg-olive-50 p-4  ">
-              <h3 className="m-0 text-base font-bold text-olive-950 ">3. Initialize once</h3>
-              <p className="mb-0 mt-2 text-sm leading-6 text-olive-600 ">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4  ">
+              <h3 className="m-0 text-base font-semibold text-slate-950 ">3. Initialize once</h3>
+              <p className="mb-0 mt-2 text-sm leading-6 text-slate-600 ">
                 Call initTracker() or Engagement.init() once at app bootstrap.
               </p>
             </div>
@@ -84,8 +84,8 @@ function SdkDocsPanel(): JSX.Element {
 
       <SectionCard className="grid grid-cols-1 gap-6" id="quick-start">
         <div className="grid gap-2">
-          <h2 className="m-0 text-xl font-bold text-olive-950 ">Quick Start</h2>
-          <p className="m-0 text-sm leading-6 text-olive-600 ">
+          <h2 className="m-0 text-xl font-semibold text-slate-950 ">Quick Start</h2>
+          <p className="m-0 text-sm leading-6 text-slate-600 ">
             Copy-paste setup for most browser apps.
           </p>
         </div>
@@ -96,8 +96,8 @@ function SdkDocsPanel(): JSX.Element {
 
       <SectionCard className="grid grid-cols-1 gap-6" id="engagement-runtime">
         <div className="grid gap-2">
-          <h2 className="m-0 text-xl font-bold text-olive-950 ">In-App Engagement Engine</h2>
-          <p className="m-0 text-sm leading-6 text-olive-600 ">
+          <h2 className="m-0 text-xl font-semibold text-slate-950 ">In-App Engagement Engine</h2>
+          <p className="m-0 text-sm leading-6 text-slate-600 ">
             Automatically deliver Modals, Banners, NPS Surveys, Checklist onboarding widgets and Tours directly to targeted users.
           </p>
         </div>
@@ -108,8 +108,8 @@ function SdkDocsPanel(): JSX.Element {
 
       <div className="space-y-5" id="functions">
         <div className="grid gap-2">
-          <h2 className="m-0 text-2xl font-bold text-olive-950 ">Function Reference</h2>
-          <p className="m-0 text-sm leading-6 text-olive-600 ">
+          <h2 className="m-0 text-2xl font-semibold text-slate-950 ">Function Reference</h2>
+          <p className="m-0 text-sm leading-6 text-slate-600 ">
             Full public API coverage.
           </p>
         </div>
@@ -117,8 +117,8 @@ function SdkDocsPanel(): JSX.Element {
 
       <SectionCard className="grid grid-cols-1 gap-6" id="examples">
         <div className="grid gap-2">
-          <h2 className="m-0 text-xl font-bold text-olive-950 ">Real-World Examples</h2>
-          <p className="m-0 text-sm leading-6 text-olive-600 ">
+          <h2 className="m-0 text-xl font-semibold text-slate-950 ">Real-World Examples</h2>
+          <p className="m-0 text-sm leading-6 text-slate-600 ">
             Practical patterns you can drop into app code.
           </p>
         </div>
@@ -134,8 +134,8 @@ function SdkDocsPanel(): JSX.Element {
 
       <SectionCard className="grid grid-cols-1 gap-6" id="errors">
         <div className="grid gap-2">
-          <h2 className="m-0 text-xl font-bold text-olive-950 ">Common Errors and Solutions</h2>
-          <p className="m-0 text-sm leading-6 text-olive-600 ">
+          <h2 className="m-0 text-xl font-semibold text-slate-950 ">Common Errors and Solutions</h2>
+          <p className="m-0 text-sm leading-6 text-slate-600 ">
             Use normalized errors in UI and logs.
           </p>
         </div>
@@ -152,11 +152,11 @@ function SdkDocsPanel(): JSX.Element {
               ['Tracker not initialized', 'Call initTracker() before getTracker().'],
             ].map(([code, fix]) => (
               <div
-                className="rounded-2xl border border-olive-200 bg-olive-50 p-4  "
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-4  "
                 key={code}
               >
-                <strong className="font-mono text-sm text-olive-950 ">{code}</strong>
-                <p className="mb-0 mt-2 text-sm leading-6 text-olive-600 ">{fix}</p>
+                <strong className="font-mono text-sm text-slate-950 ">{code}</strong>
+                <p className="mb-0 mt-2 text-sm leading-6 text-slate-600 ">{fix}</p>
               </div>
             ))}
           </div>
@@ -180,11 +180,11 @@ function CodePanel({
   onCopy: (text: string, id: string) => Promise<void>;
 }): JSX.Element {
   return (
-    <div className="overflow-hidden rounded-2xl border border-olive-200 ">
-      <div className="flex items-center justify-between gap-3 border-b border-olive-200 bg-olive-50 px-4 py-3  ">
-        <strong className="text-sm text-olive-950 ">{title}</strong>
+    <div className="overflow-hidden rounded-2xl border border-slate-200 ">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3  ">
+        <strong className="text-sm text-slate-950 ">{title}</strong>
         <button
-          className="inline-flex items-center gap-2 rounded-lg border border-olive-200 bg-white px-3 py-1.5 text-xs font-semibold text-olive-600 transition-colors hover:bg-olive-50    "
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50    "
           onClick={() => void onCopy(children, id)}
           type="button"
         >
@@ -192,7 +192,7 @@ function CodePanel({
           {copiedId === id ? 'Copied' : 'Copy'}
         </button>
       </div>
-      <pre className="overflow-x-auto bg-slate-800 p-4 text-[0.82rem] leading-7 text-white">
+      <pre className="overflow-x-auto bg-slate-800 p-4 text-[13px] leading-7 text-white">
         <code>{children}</code>
       </pre>
     </div>

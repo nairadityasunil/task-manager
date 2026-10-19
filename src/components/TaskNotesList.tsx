@@ -94,18 +94,18 @@ function TaskNotesList({
       {entries.map((entry) => (
         <article
           key={entry.id}
-          className="bg-white/88  border border-olive-200/80  rounded-lg"
+          className="bg-white/88  border border-slate-200/80  rounded-lg"
         >
           <button
             className="w-full flex flex-col gap-1.5 px-4 py-3.5 text-left hover:bg-teal-600/6  rounded-lg transition-colors"
             onClick={entry.onOpen}
             type="button"
           >
-            <strong className="text-olive-950  text-[0.98rem]">{entry.label}</strong>
-            <span className="inline-block text-[0.72rem] font-semibold px-2 py-0.5 rounded bg-olive-50 text-olive-600  ">
+            <strong className="text-slate-950  text-base">{entry.label}</strong>
+            <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded bg-slate-50 text-slate-600  ">
               {entry.kind === 'task' ? 'Task note' : 'Subtask note'}
             </span>
-            <span className="text-olive-400  text-sm truncate">
+            <span className="text-slate-400  text-sm truncate">
               {entry.note.replace(/<[^>]+>/g, ' ').trim() || 'Open note'}
             </span>
           </button>

@@ -62,17 +62,17 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
   const currentSelectedModel = models.find((m) => m.modelId === tempParams.modelName);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-xs p-4">
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <div className="flex items-center gap-2">
-            <Settings className="w-4 h-4 text-gray-700" />
-            <h3 className="text-sm font-bold text-gray-900">Model & Execution Parameters</h3>
+            <Settings className="w-4 h-4 text-slate-700" />
+            <h3 className="text-sm font-semibold text-slate-900">Model & Execution Parameters</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-700 p-1 rounded-md"
+            className="text-slate-400 hover:text-slate-700 p-1 rounded-md"
           >
             <X className="w-4 h-4" />
           </button>
@@ -80,18 +80,18 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
 
         <div className="p-5 space-y-4 text-xs max-h-[80vh] overflow-y-auto">
           {isLoadingCatalog ? (
-            <div className="py-6 text-center text-gray-400 font-medium">Loading LLM Provider Catalog...</div>
+            <div className="py-6 text-center text-slate-400 font-medium">Loading LLM Provider Catalog...</div>
           ) : (
             <>
               {/* Provider Selection */}
               <div className="space-y-1">
-                <label className="block font-semibold text-gray-700 flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-gray-500" /> AI Provider
+                <label className="block font-semibold text-slate-700 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-slate-500" /> AI Provider
                 </label>
                 <select
                   value={tempParams.provider}
                   onChange={(e) => handleProviderChange(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs font-medium focus:outline-none focus:border-olive-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-medium focus:outline-none focus:border-slate-500"
                 >
                   {providers.length > 0 ? (
                     providers.map((p) => (
@@ -112,13 +112,13 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
 
               {/* Model Selection */}
               <div className="space-y-1">
-                <label className="block font-semibold text-gray-700 flex items-center gap-1.5">
-                  <Cpu className="w-3.5 h-3.5 text-gray-500" /> Model Name
+                <label className="block font-semibold text-slate-700 flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-slate-500" /> Model Name
                 </label>
                 <select
                   value={tempParams.modelName}
                   onChange={(e) => setTempParams((prev) => ({ ...prev, modelName: e.target.value }))}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs font-medium focus:outline-none focus:border-olive-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-medium focus:outline-none focus:border-slate-500"
                 >
                   {models.length > 0 ? (
                     models.map((m) => (
@@ -131,19 +131,19 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                   )}
                 </select>
                 {currentSelectedModel && (
-                  <div className="text-[10px] text-gray-500 font-mono flex items-center justify-between pt-1">
+                  <div className="text-[11px] text-slate-500 font-mono flex items-center justify-between pt-1">
                     <span>Context: {currentSelectedModel.contextWindow?.toLocaleString() || 128000} tokens</span>
                     <span>Output: ${currentSelectedModel.outputPricePerMToken}/1M</span>
                   </div>
                 )}
               </div>
 
-              <div className="border-t border-gray-100 pt-3 space-y-4">
+              <div className="border-t border-slate-100 pt-3 space-y-4">
                 {/* Temperature */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <label className="font-semibold text-gray-700">Temperature</label>
-                    <span className="font-mono text-gray-500 font-semibold">{tempParams.temperature}</span>
+                    <label className="font-semibold text-slate-700">Temperature</label>
+                    <span className="font-mono text-slate-500 font-semibold">{tempParams.temperature}</span>
                   </div>
                   <input
                     type="range"
@@ -154,29 +154,29 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                     onChange={(e) =>
                       setTempParams((prev) => ({ ...prev, temperature: parseFloat(e.target.value) }))
                     }
-                    className="w-full accent-olive-700 cursor-pointer"
+                    className="w-full accent-slate-700 cursor-pointer"
                   />
-                  <p className="text-[10px] text-gray-400">Controls randomness: 0 is strict & deterministic, 1+ is creative.</p>
+                  <p className="text-[11px] text-slate-400">Controls randomness: 0 is strict & deterministic, 1+ is creative.</p>
                 </div>
 
                 {/* Max Tokens */}
                 <div className="space-y-1">
-                  <label className="block font-semibold text-gray-700">Max Tokens</label>
+                  <label className="block font-semibold text-slate-700">Max Tokens</label>
                   <input
                     type="number"
                     value={tempParams.maxTokens}
                     onChange={(e) =>
                       setTempParams((prev) => ({ ...prev, maxTokens: parseInt(e.target.value) || 2048 }))
                     }
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs font-mono focus:outline-none focus:border-olive-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-mono focus:outline-none focus:border-slate-500"
                   />
                 </div>
 
                 {/* Top P */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <label className="font-semibold text-gray-700">Top P</label>
-                    <span className="font-mono text-gray-500 font-semibold">{tempParams.topP}</span>
+                    <label className="font-semibold text-slate-700">Top P</label>
+                    <span className="font-mono text-slate-500 font-semibold">{tempParams.topP}</span>
                   </div>
                   <input
                     type="range"
@@ -187,19 +187,19 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                     onChange={(e) =>
                       setTempParams((prev) => ({ ...prev, topP: parseFloat(e.target.value) }))
                     }
-                    className="w-full accent-olive-700 cursor-pointer"
+                    className="w-full accent-slate-700 cursor-pointer"
                   />
                 </div>
 
                 {/* Response Format */}
                 <div className="space-y-1">
-                  <label className="block font-semibold text-gray-700">Response Format</label>
+                  <label className="block font-semibold text-slate-700">Response Format</label>
                   <select
                     value={tempParams.responseFormat}
                     onChange={(e) =>
                       setTempParams((prev) => ({ ...prev, responseFormat: e.target.value as "text" | "json" }))
                     }
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-xs font-medium focus:outline-none focus:border-olive-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-medium focus:outline-none focus:border-slate-500"
                   >
                     <option value="text">Plain Text</option>
                     <option value="json">Structured JSON Object</option>
@@ -210,18 +210,18 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
           )}
         </div>
 
-        <div className="px-5 py-3 border-t border-gray-200 flex items-center justify-end gap-2 bg-gray-50/50">
+        <div className="px-5 py-3 border-t border-slate-200 flex items-center justify-end gap-2 bg-slate-50/50">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg border border-gray-200 text-gray-600 font-semibold text-xs hover:bg-gray-100 transition cursor-pointer"
+            className="px-4 py-1.5 rounded-lg border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-100 transition cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={onSave}
-            className="px-4 py-1.5 rounded-lg bg-olive-700 hover:bg-olive-800 text-white font-bold text-xs transition cursor-pointer shadow-2xs"
+            className="px-4 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-800 text-white font-semibold text-xs transition cursor-pointer shadow-2xs"
           >
             Save Parameters
           </button>

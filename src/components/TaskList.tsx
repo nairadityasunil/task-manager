@@ -53,7 +53,7 @@ function TaskList({
     return (
       <div className="grid gap-4">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={`skeleton-${i}`} className="bg-white  border border-olive-100  rounded-2xl p-5 flex flex-col gap-4">
+          <div key={`skeleton-${i}`} className="bg-white  border border-slate-100  rounded-2xl p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4 flex-1">
                 <Skeleton variant="rectangle" className="w-6 h-6 rounded-lg" />
@@ -64,7 +64,7 @@ function TaskList({
               </div>
               <Skeleton variant="rectangle" className="w-24 h-8 rounded-lg" />
             </div>
-            <div className="flex items-center gap-3 pt-3 border-t border-olive-50 ">
+            <div className="flex items-center gap-3 pt-3 border-t border-slate-50 ">
               <Skeleton variant="circle" className="w-6 h-6" />
               <Skeleton variant="text" className="w-20 h-3" />
               <div className="flex-1" />

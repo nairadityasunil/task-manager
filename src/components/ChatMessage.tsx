@@ -50,13 +50,13 @@ const getInitials = (user: MessageSender | null): string => {
 
 // Get avatar color based on user ID
 const getAvatarColor = (userId: string | null): string => {
-  if (!userId) return 'bg-gray-400';
+  if (!userId) return 'bg-slate-400';
   const colors = [
-    'bg-olive-500',
+    'bg-slate-500',
     'bg-green-500',
     'bg-purple-500',
     'bg-pink-500',
-    'bg-olive-500',
+    'bg-slate-500',
     'bg-teal-500',
     'bg-orange-500',
     'bg-cyan-500'
@@ -178,11 +178,11 @@ function ChatMessageComponent({
   if (isSystemMessage) {
     return (
       <div className="flex items-center justify-center py-2 my-1">
-        <div className="flex items-center gap-2 px-4 py-1.5 bg-olive-100/50  rounded-full border border-olive-200/50 ">
-          <span className="text-[11px] font-medium text-olive-500 ">
+        <div className="flex items-center gap-2 px-4 py-1.5 bg-slate-100/50  rounded-full border border-slate-200/50 ">
+          <span className="text-[11px] font-medium text-slate-500 ">
             {message.content}
           </span>
-          <span className="text-[10px] text-olive-400 ">
+          <span className="text-[11px] text-slate-400 ">
             {formatTime(message.createdAt)}
           </span>
         </div>
@@ -194,7 +194,7 @@ function ChatMessageComponent({
   if (isDeleted) {
     return (
       <div className="flex items-center justify-center py-2 my-1 opacity-50">
-        <span className="text-[11px] text-olive-400  italic px-4 py-1 bg-olive-50  rounded-lg">
+        <span className="text-[11px] text-slate-400  italic px-4 py-1 bg-slate-50  rounded-lg">
           Message deleted
         </span>
       </div>
@@ -205,7 +205,7 @@ function ChatMessageComponent({
     <div
       id={`message-${message.id}`}
       className={[
-        'group flex gap-4 px-6 py-2 transition-all duration-300 relative w-full hover:bg-olive-50/80',
+        'group flex gap-4 px-6 py-2 transition-all duration-300 relative w-full hover:bg-slate-50/80',
         isOwnMessage ? 'flex-row-reverse' : 'flex-row'
       ].join(' ')}
     >
@@ -213,7 +213,7 @@ function ChatMessageComponent({
       <div
         className={[
           'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-md transform transition-transform group-hover:scale-105',
-          'text-white text-sm font-bold select-none ring-2 ring-white',
+          'text-white text-sm font-semibold select-none ring-2 ring-white',
           getAvatarColor(message.senderId),
         ].join(' ')}
       >
@@ -226,15 +226,15 @@ function ChatMessageComponent({
         {/* The Card Bubble */}
         <div className="relative group/bubble w-full min-w-[200px]">
           {isEditing ? (
-            <div className="flex flex-col gap-3 min-w-[300px] w-full bg-white  p-4 rounded-2xl border-2 border-olive-500 shadow-2xl">
+            <div className="flex flex-col gap-3 min-w-[300px] w-full bg-white  p-4 rounded-2xl border-2 border-slate-500 shadow-xl">
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 className={[
                   'w-full px-4 py-3 text-sm rounded-xl resize-none outline-none',
-                  'bg-olive-50  border border-olive-200',
-                  'text-olive-950',
-                  'focus:ring-2 focus:ring-olive-500/20'
+                  'bg-slate-50  border border-slate-200',
+                  'text-slate-950',
+                  'focus:ring-2 focus:ring-slate-500/20'
                 ].join(' ')}
                 rows={3}
                 autoFocus
@@ -251,14 +251,14 @@ function ChatMessageComponent({
               <div className="flex items-center gap-2 justify-end">
                 <button
                   onClick={handleEditCancel}
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-olive-500 hover:text-olive-700   transition-colors"
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700   transition-colors"
                 >
                   <X className="w-3.5 h-3.5" />
                   Cancel
                 </button>
                 <button
                   onClick={handleEditSubmit}
-                  className="flex items-center gap-1.5 px-6 py-2 text-xs font-bold bg-olive-600 text-white rounded-xl hover:bg-olive-700 shadow-lg shadow-olive-500/20 active:scale-95 transition-all"
+                  className="flex items-center gap-1.5 px-6 py-2 text-xs font-semibold bg-slate-600 text-white rounded-xl hover:bg-slate-700 shadow-lg shadow-slate-500/20 active:scale-95 transition-all"
                 >
                   <Check className="w-3.5 h-3.5" />
                   Save
@@ -270,13 +270,13 @@ function ChatMessageComponent({
               className={[
                 'flex flex-col shadow-sm transition-all duration-300 overflow-hidden',
                 isOwnMessage
-                  ? 'bg-olive-600  text-white rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-2xl'
-                  : 'bg-white  border border-olive-200/60  text-olive-900  rounded-tl-md rounded-tr-2xl rounded-br-2xl rounded-bl-2xl'
+                  ? 'bg-slate-600  text-white rounded-tl-2xl rounded-tr-md rounded-br-2xl rounded-bl-2xl'
+                  : 'bg-white  border border-slate-200/60  text-slate-900  rounded-tl-md rounded-tr-2xl rounded-br-2xl rounded-bl-2xl'
               ].join(' ')}
             >
               {/* Card Header (Owner Name) */}
-              <div className={['px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.15em] border-b', 
-                isOwnMessage ? 'border-white/10 text-white/90' : 'border-olive-100  text-olive-600'
+              <div className={['px-4 py-2 text-xs font-semibold uppercase tracking-wide border-b', 
+                isOwnMessage ? 'border-white/10 text-white/90' : 'border-slate-100  text-slate-600'
               ].join(' ')}>
                 {((name) => name.length > 10 ? name.slice(0, 10) + '…' : name)(message.sender?.name || 'Unknown')}
               </div>
@@ -288,9 +288,9 @@ function ChatMessageComponent({
                   <div
                     className={[
                       'mb-3 p-2 rounded-lg text-xs flex items-center gap-3 transition-colors',
-                      isOwnMessage ? 'bg-black/10 hover:bg-black/20 text-white/80' : 'bg-olive-50  hover:bg-olive-100 text-olive-500',
+                      isOwnMessage ? 'bg-black/10 hover:bg-black/20 text-white/80' : 'bg-slate-50  hover:bg-slate-100 text-slate-500',
                       'cursor-pointer border-l-2',
-                      isOwnMessage ? 'border-white/30' : 'border-olive-500'
+                      isOwnMessage ? 'border-white/30' : 'border-slate-500'
                     ].join(' ')}
                     onClick={() => onLoadThread?.(message.replyTo!.id)}
                   >
@@ -299,12 +299,12 @@ function ChatMessageComponent({
                   </div>
                 )}
 
-                <div className="leading-relaxed text-[0.92rem] whitespace-pre-wrap" style={{ wordBreak: 'break-word' }}>
+                <div className="leading-relaxed text-[15px] whitespace-pre-wrap" style={{ wordBreak: 'break-word' }}>
                   {message.content}
                 </div>
 
                 {/* Footer Info */}
-                <div className={['mt-3 flex items-center justify-between gap-4 text-[10px] uppercase font-bold tracking-wider opacity-60'].join(' ')}>
+                <div className={['mt-3 flex items-center justify-between gap-4 text-[11px] uppercase font-semibold tracking-wide opacity-60'].join(' ')}>
                   <span>{formatTime(message.createdAt)}</span>
                   {message.isEdited && <span>(edited)</span>}
                 </div>
@@ -323,12 +323,12 @@ function ChatMessageComponent({
                   key={emoji}
                   onClick={() => handleReactionClick(emoji)}
                   className={[
-                    'flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-xs transition-all active:scale-90',
+                    'flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-semibold shadow-xs transition-all active:scale-90',
                     'border',
                     hasReacted
-                      ? 'bg-olive-50 border-olive-200 text-olive-700'
-                      : 'bg-white border-olive-200 text-olive-600',
-                    'hover:border-olive-400'
+                      ? 'bg-slate-50 border-slate-200 text-slate-700'
+                      : 'bg-white border-slate-200 text-slate-600',
+                    'hover:border-slate-400'
                   ].join(' ')}
                   title={`Reacted by ${users.length} user${users.length > 1 ? 's' : ''}`}
                 >
@@ -345,7 +345,7 @@ function ChatMessageComponent({
           <button
             onClick={() => onLoadThread?.(message.id)}
             className={[
-              'mt-2 text-[0.72rem] font-bold uppercase tracking-widest text-olive-600 hover:text-olive-700   transition-colors',
+              'mt-2 text-xs font-semibold uppercase tracking-wide text-slate-600 hover:text-slate-700   transition-colors',
               'flex items-center gap-1.5',
               isOwnMessage ? 'justify-end' : ''
             ].join(' ')}
@@ -364,7 +364,7 @@ function ChatMessageComponent({
             isOwnMessage ? 'mr-2' : 'ml-2'
           ].join(' ')}
         >
-          <div className="flex bg-white  rounded-xl shadow-xl border border-olive-200/50  p-1">
+          <div className="flex bg-white  rounded-xl shadow-xl border border-slate-200/50  p-1">
             {/* Emoji toggle icon */}
             <div className="relative">
               <button
@@ -379,7 +379,7 @@ function ChatMessageComponent({
                   }
                   setShowEmojiPicker(!showEmojiPicker);
                 }}
-                className="p-2 text-olive-500 hover:text-olive-600   rounded-lg hover:bg-olive-50  transition-colors"
+                className="p-2 text-slate-500 hover:text-slate-600   rounded-lg hover:bg-slate-50  transition-colors"
                 title="Add reaction"
               >
                 <Smile size={16} />
@@ -389,7 +389,7 @@ function ChatMessageComponent({
                 <>
                   <div className="fixed inset-0 z-[6000]" onClick={() => setShowEmojiPicker(false)} />
                   <div
-                    className="fixed p-2.5 bg-white  rounded-2xl shadow-2xl border border-olive-200  z-[6001]"
+                    className="fixed p-2.5 bg-white  rounded-2xl shadow-xl border border-slate-200  z-[6001]"
                     style={{
                       top: `${emojiPickerPos.top}px`,
                       left: `${emojiPickerPos.left}px`,
@@ -401,7 +401,7 @@ function ChatMessageComponent({
                         <button
                           key={emoji}
                           onClick={() => handleReactionClick(emoji)}
-                          className="w-10 h-10 flex items-center justify-center text-xl rounded-xl hover:bg-olive-100  transition-all hover:scale-110 active:scale-90"
+                          className="w-10 h-10 flex items-center justify-center text-xl rounded-xl hover:bg-slate-100  transition-all hover:scale-110 active:scale-90"
                         >
                           {emoji}
                         </button>
@@ -414,7 +414,7 @@ function ChatMessageComponent({
 
             <button
               onClick={() => onReply(message)}
-              className="p-2 text-olive-500 hover:text-olive-600   rounded-lg hover:bg-olive-50  transition-colors"
+              className="p-2 text-slate-500 hover:text-slate-600   rounded-lg hover:bg-slate-50  transition-colors"
               title="Reply"
             >
               <CornerDownRight size={16} />
@@ -424,7 +424,7 @@ function ChatMessageComponent({
             <div className="relative">
               <button
                 onClick={() => setShowActions(!showActions)}
-                className="p-2 text-olive-500 hover:text-olive-600   rounded-lg hover:bg-olive-50  transition-colors"
+                className="p-2 text-slate-500 hover:text-slate-600   rounded-lg hover:bg-slate-50  transition-colors"
               >
                 <MoreHorizontal size={16} />
               </button>
@@ -432,11 +432,11 @@ function ChatMessageComponent({
               {showActions && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowActions(false)} />
-                  <div className="absolute right-0 top-full mt-2 py-1.5 bg-white  rounded-xl shadow-2xl border border-olive-200  z-50 min-w-[140px] overflow-hidden">
+                  <div className="absolute right-0 top-full mt-2 py-1.5 bg-white  rounded-xl shadow-xl border border-slate-200  z-50 min-w-[140px] overflow-hidden">
                     {canEdit && (
                       <button
                         onClick={handleStartEdit}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-[0.82rem] font-bold text-olive-700  hover:bg-olive-50  transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] font-semibold text-slate-700  hover:bg-slate-50  transition-colors"
                       >
                         <Edit2 size={14} />
                         Edit Message
@@ -448,7 +448,7 @@ function ChatMessageComponent({
                           handleDelete();
                           setShowActions(false);
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-[0.82rem] font-bold text-red-600  hover:bg-red-50  transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-2 text-[13px] font-semibold text-red-600  hover:bg-red-50  transition-colors"
                       >
                         <Trash2 size={14} />
                         Delete
@@ -464,7 +464,7 @@ function ChatMessageComponent({
 
       {/* Render replies recursively */}
       {sortedReplies.length > 0 && depth < 5 && (
-        <div className="mt-2 ml-4 flex flex-col gap-2 border-l-2 border-olive-100  pl-4">
+        <div className="mt-2 ml-4 flex flex-col gap-2 border-l-2 border-slate-100  pl-4">
           {sortedReplies.map((reply) => (
             <ChatMessageComponent
               key={reply.id}

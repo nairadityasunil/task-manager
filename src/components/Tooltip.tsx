@@ -67,10 +67,10 @@ export default function Tooltip({
   };
 
   const arrowClasses = {
-    top: 'top-full left-1/2 -translate-x-1/2 border-t-olive-900',
-    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-b-olive-900',
-    left: 'left-full top-1/2 -translate-y-1/2 border-l-olive-900',
-    right: 'right-full top-1/2 -translate-y-1/2 border-r-olive-900'
+    top: 'top-full left-1/2 -translate-x-1/2 border-t-slate-900',
+    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-b-slate-900',
+    left: 'left-full top-1/2 -translate-y-1/2 border-l-slate-900',
+    right: 'right-full top-1/2 -translate-y-1/2 border-r-slate-900'
   };
 
   return (
@@ -85,7 +85,7 @@ export default function Tooltip({
       </div>
       {isVisible && createPortal(
         <div 
-          className={`fixed z-[999999] px-2.5 py-1.5 text-xs font-semibold text-white bg-olive-900  rounded-lg shadow-xl whitespace-nowrap animate-fadeIn pointer-events-none ${positionClasses[position]}`}
+          className={`fixed z-[999999] px-2.5 py-1.5 text-xs font-semibold text-white bg-slate-900  rounded-lg shadow-xl whitespace-nowrap animate-fadeIn pointer-events-none ${positionClasses[position]}`}
           style={{ top: coords.top, left: coords.left }}
         >
           {content}

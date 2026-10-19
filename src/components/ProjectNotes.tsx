@@ -43,16 +43,16 @@ function ProjectNotes({
   onOpenNote
 }: ProjectNotesProps): JSX.Element {
   return (
-    <section className="bg-olive-50/90  border border-olive-200/80  rounded-xl grid gap-4 p-[18px]">
+    <section className="bg-slate-50/90  border border-slate-200/80  rounded-xl grid gap-4 p-[18px]">
       {/* Header */}
       <div className="flex items-start gap-3 justify-between">
         <div>
-          <span className="text-olive-600  text-[0.72rem] tracking-[0.12em] uppercase font-semibold">Notes</span>
-          <h3 className="mt-1 mb-0 text-olive-950 ">{heading}</h3>
+          <span className="text-slate-600  text-xs tracking-wide uppercase font-semibold">Notes</span>
+          <h3 className="mt-1 mb-0 text-slate-950 ">{heading}</h3>
         </div>
         {onCreateNote ? (
           <button
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-olive-900  text-white rounded text-sm font-medium hover:bg-olive-800  transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900  text-white rounded text-sm font-medium hover:bg-slate-800  transition-colors shrink-0"
             onClick={onCreateNote}
             type="button"
           >
@@ -61,7 +61,7 @@ function ProjectNotes({
         ) : null}
       </div>
 
-      {loading ? <p className="text-olive-400  m-0 text-sm">Loading notes...</p> : null}
+      {loading ? <p className="text-slate-400  m-0 text-sm">Loading notes...</p> : null}
 
       {!loading && notes.length === 0 ? (
         <EmptyState compact description={emptyDescription} icon={ScrollText} title={emptyTitle} />
@@ -72,15 +72,15 @@ function ProjectNotes({
           {notes.map((note) => (
             <article
               key={note.id}
-              className="flex items-stretch bg-white/88  border border-olive-200/80  rounded-lg gap-3 justify-between p-2.5"
+              className="flex items-stretch bg-white/88  border border-slate-200/80  rounded-lg gap-3 justify-between p-2.5"
             >
               <button
                 className="flex flex-col items-start flex-1 gap-1.5 bg-transparent hover:bg-teal-600/6  rounded-xl px-3 py-2.5 text-left transition-colors"
                 onClick={() => onOpenNote(note)}
                 type="button"
               >
-                <strong className="text-olive-950  text-[0.98rem]">{note.title}</strong>
-                <span className="text-olive-500  text-[0.86rem]">Updated {formatTimestamp(note.updatedAt)}</span>
+                <strong className="text-slate-950  text-base">{note.title}</strong>
+                <span className="text-slate-500  text-sm">Updated {formatTimestamp(note.updatedAt)}</span>
               </button>
               {onDeleteNote ? (
                 <button

@@ -49,13 +49,13 @@ const Topbar: React.FC<TopbarProps> = ({
             <Menu className="w-5 h-5" />
           </button>
         )}
-        <h1 className="md:hidden text-[0.9rem] font-semibold text-slate-900 truncate">{title}</h1>
+        <h1 className="md:hidden text-sm font-semibold text-slate-900 truncate">{title}</h1>
         {breadcrumbs ? (
-          <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-1.5 text-[0.8rem] text-slate-400 min-w-0">
+          <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-1.5 text-[13px] text-slate-400 min-w-0">
             {breadcrumbs}
           </nav>
         ) : (
-          <h1 className="hidden md:block text-[0.875rem] font-semibold text-slate-900 truncate">{title}</h1>
+          <h1 className="hidden md:block text-sm font-semibold text-slate-900 truncate">{title}</h1>
         )}
       </div>
 
@@ -74,7 +74,7 @@ const Topbar: React.FC<TopbarProps> = ({
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-red-500 text-[11px] font-semibold text-white">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -94,8 +94,8 @@ const Topbar: React.FC<TopbarProps> = ({
         <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200">
           <UserAvatar name={user.name} email={user.email} size="sm" showTooltip={false} />
           <div className="hidden lg:flex flex-col leading-tight">
-            <span className="text-[0.75rem] font-medium text-slate-800">{user.name || 'User'}</span>
-            <span className="text-[0.65rem] text-slate-400">{user.email}</span>
+            <span className="text-xs font-medium text-slate-800">{user.name || 'User'}</span>
+            <span className="text-[11px] text-slate-400">{user.email}</span>
           </div>
         </div>
       </div>

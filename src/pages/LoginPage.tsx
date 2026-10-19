@@ -224,9 +224,9 @@ function LoginPage(): JSX.Element {
   return (
     <main className="min-h-screen flex bg-white font-sans overflow-hidden">
       {/* Left Side (65% width) */}
-      <div className="hidden lg:flex lg:w-[65%] bg-gradient-to-br from-olive-950 via-neutral-900 to-olive-900 relative p-16 flex-col justify-between overflow-hidden select-none">
+      <div className="hidden lg:flex lg:w-[65%] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 relative p-16 flex-col justify-between overflow-hidden select-none">
         {/* Glowing abstract backgrounds */}
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-olive-700/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-slate-700/10 rounded-full blur-[140px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
@@ -244,11 +244,11 @@ function LoginPage(): JSX.Element {
           <div className="flex flex-col gap-6 max-w-[500px]">
             <h2 className="text-5xl font-semibold leading-[1.15] text-white tracking-tight">
               Elevate your workflow with{' '}
-              <span className="bg-gradient-to-r from-emerald-400 to-olive-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-400 to-slate-300 bg-clip-text text-transparent">
                 effortless organization
               </span>
             </h2>
-            <p className="text-olive-300 text-lg leading-relaxed font-light">
+            <p className="text-slate-300 text-lg leading-relaxed font-light">
               A premium, secure environment designed for high-performing teams to coordinate, automate, and synchronize
               development epics.
             </p>
@@ -256,12 +256,12 @@ function LoginPage(): JSX.Element {
 
           {/* Large Premium Showcase containing the Logo */}
           <div className="flex justify-center lg:justify-end">
-            <div className="w-full max-w-[420px] aspect-square bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/10 rounded-3xl flex items-center justify-center relative overflow-hidden group transition-all duration-300 p-10 shadow-2xl backdrop-blur-sm">
+            <div className="w-full max-w-[420px] aspect-square bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/10 rounded-2xl flex items-center justify-center relative overflow-hidden group transition-all duration-300 p-10 shadow-xl backdrop-blur-sm">
               {/* Inner ambient emerald glow hover effect */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               {/* Logo container inside the showcase */}
-              <div className="w-36 h-36 bg-white rounded-2xl flex items-center justify-center p-6 shadow-2xl relative z-10 transition-all duration-500 group-hover:scale-105 group-hover:shadow-emerald-500/10">
+              <div className="w-36 h-36 bg-white rounded-2xl flex items-center justify-center p-6 shadow-xl relative z-10 transition-all duration-500 group-hover:scale-105 group-hover:shadow-emerald-500/10">
                 <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(16,185,129,0.15)]" />
               </div>
             </div>
@@ -269,7 +269,7 @@ function LoginPage(): JSX.Element {
         </div>
 
         {/* Footer branding */}
-        <div className="relative z-10 flex items-center justify-between text-xs text-olive-400">
+        <div className="relative z-10 flex items-center justify-between text-xs text-slate-400">
           <span>© {new Date().getFullYear()} Pristine</span>
         </div>
       </div>
@@ -279,30 +279,30 @@ function LoginPage(): JSX.Element {
         <div className="w-full max-w-[380px] grid gap-6">
           {/* Brand Logo Header */}
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-white border border-zinc-200/50 rounded-lg flex items-center justify-center p-2 shadow-md">
+            <div className="w-10 h-10 bg-white border border-slate-200/50 rounded-lg flex items-center justify-center p-2 shadow-md">
               <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain" />
             </div>
-            <span className="font-semibold tracking-tight text-lg text-olive-950">Pristine</span>
+            <span className="font-semibold tracking-tight text-lg text-slate-950">Pristine</span>
           </div>
 
           {/* 2FA view */}
           {require2fa ? (
             <form className="grid gap-6" onSubmit={(event) => void handleVerify2fa(event)}>
               <div className="text-center">
-                <div className="w-12 h-12 bg-olive-900 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
+                <div className="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
                   <Shield size={22} />
                 </div>
-                <h1 className="text-2xl font-semibold text-olive-950 m-0">Two-Factor Authentication</h1>
-                <p className="text-olive-500 text-sm mt-2">
+                <h1 className="text-2xl font-semibold text-slate-950 m-0">Two-Factor Authentication</h1>
+                <p className="text-slate-500 text-sm mt-2">
                   We've sent a 6-digit verification code to{' '}
-                  <strong className="text-olive-700">{tempEmail2fa || email}</strong>.
+                  <strong className="text-slate-700">{tempEmail2fa || email}</strong>.
                 </p>
               </div>
 
               <label className={labelCls}>
                 <span>Verification Code</span>
                 <input
-                  className={`${inputCls} text-center tracking-[0.2em] font-mono text-lg`}
+                  className={`${inputCls} text-center tracking-wide font-mono text-lg`}
                   maxLength={6}
                   onChange={(event) => setVerificationCode(event.target.value)}
                   placeholder="000000"
@@ -315,7 +315,7 @@ function LoginPage(): JSX.Element {
               {error ? <p className="text-red-600 m-0 text-sm font-medium text-center">{error}</p> : null}
 
               <button
-                className="w-full bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+                className="w-full bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
                 disabled={loading}
                 type="submit"
               >
@@ -323,7 +323,7 @@ function LoginPage(): JSX.Element {
               </button>
 
               <button
-                className="flex items-center justify-center gap-2 text-olive-600 hover:text-olive-900 text-sm font-semibold transition-colors mt-2"
+                className="flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-semibold transition-colors mt-2"
                 onClick={() => {
                   clearError();
                   window.location.reload();
@@ -337,8 +337,8 @@ function LoginPage(): JSX.Element {
             /* Forgot Password Request Form */
             <form className="grid gap-5" onSubmit={(event) => void handleRequestOtp(event)}>
               <div>
-                <h1 className="text-2xl font-semibold text-olive-950 m-0">Reset Password</h1>
-                <p className="text-olive-500 text-sm mt-1">
+                <h1 className="text-2xl font-semibold text-slate-950 m-0">Reset Password</h1>
+                <p className="text-slate-500 text-sm mt-1">
                   Enter your account email to receive a password reset OTP code.
                 </p>
               </div>
@@ -361,7 +361,7 @@ function LoginPage(): JSX.Element {
               ) : null}
 
               <button
-                className="bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+                className="bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
                 disabled={resetLoading}
                 type="submit"
               >
@@ -369,7 +369,7 @@ function LoginPage(): JSX.Element {
               </button>
 
               <button
-                className="flex items-center justify-center gap-2 text-olive-600 hover:text-olive-900 text-sm font-semibold transition-colors mt-2"
+                className="flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-semibold transition-colors mt-2"
                 onClick={() => {
                   setForgotPasswordStep('none');
                   setResetErrorMessage(null);
@@ -383,8 +383,8 @@ function LoginPage(): JSX.Element {
             /* Forgot Password Reset Form */
             <form className="grid gap-5" onSubmit={(event) => void handleResetPassword(event)}>
               <div>
-                <h1 className="text-2xl font-semibold text-olive-950 m-0">Enter Reset OTP</h1>
-                <p className="text-olive-500 text-sm mt-1">
+                <h1 className="text-2xl font-semibold text-slate-950 m-0">Enter Reset OTP</h1>
+                <p className="text-slate-500 text-sm mt-1">
                   Check your inbox for the OTP code and enter your new password below.
                 </p>
               </div>
@@ -420,7 +420,7 @@ function LoginPage(): JSX.Element {
                     value={resetPassword}
                   />
                   <button
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-olive-400 hover:text-olive-600 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                     onClick={() => setShowResetPassword(!showResetPassword)}
                     type="button"
                   >
@@ -434,7 +434,7 @@ function LoginPage(): JSX.Element {
               ) : null}
 
               <button
-                className="bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+                className="bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
                 disabled={resetLoading}
                 type="submit"
               >
@@ -442,7 +442,7 @@ function LoginPage(): JSX.Element {
               </button>
 
               <button
-                className="flex items-center justify-center gap-2 text-olive-600 hover:text-olive-900 text-sm font-semibold transition-colors mt-2"
+                className="flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-semibold transition-colors mt-2"
                 onClick={() => {
                   setForgotPasswordStep('none');
                   setResetErrorMessage(null);
@@ -457,8 +457,8 @@ function LoginPage(): JSX.Element {
             /* Main Login Form */
             <>
               <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-olive-950 m-0">Sign In</h1>
-                <p className="text-olive-500 text-sm mt-1.5">
+                <h1 className="text-2xl font-semibold tracking-tight text-slate-950 m-0">Sign In</h1>
+                <p className="text-slate-500 text-sm mt-1.5">
                   Welcome back. Enter your credentials to manage your workflow.
                 </p>
               </div>
@@ -491,15 +491,15 @@ function LoginPage(): JSX.Element {
               </button>
 
               <div className="flex items-center gap-3 my-1">
-                <hr className="flex-1 border-olive-200/60" />
+                <hr className="flex-1 border-slate-200/60" />
                 <span className="text-slate-400 text-xs">or</span>
-                <hr className="flex-1 border-olive-200/60" />
+                <hr className="flex-1 border-slate-200/60" />
               </div>
 
               {/* Mode switch */}
               <div
                 aria-label="Login method"
-                className="flex p-1 bg-olive-100/50 border border-olive-200/30 rounded-lg gap-1"
+                className="flex p-1 bg-slate-100/50 border border-slate-200/30 rounded-lg gap-1"
                 role="tablist"
               >
                 {(
@@ -512,10 +512,10 @@ function LoginPage(): JSX.Element {
                     key={key}
                     aria-selected={loginMode === key}
                     className={[
-                      'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all duration-200',
+                      'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200',
                       loginMode === key
-                        ? 'bg-white text-olive-950 shadow-sm border border-olive-100'
-                        : 'text-olive-500 hover:text-olive-700'
+                        ? 'bg-white text-slate-950 shadow-sm border border-slate-100'
+                        : 'text-slate-500 hover:text-slate-700'
                     ].join(' ')}
                     onClick={() => {
                       setLoginMode(key);
@@ -572,7 +572,7 @@ function LoginPage(): JSX.Element {
                         value={password}
                       />
                       <button
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-olive-400 hover:text-olive-600 transition-colors"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                         onClick={() => setShowPassword(!showPassword)}
                         type="button"
                       >
@@ -585,7 +585,7 @@ function LoginPage(): JSX.Element {
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         checked={rememberMe}
-                        className="w-4 h-4 rounded border-olive-300 text-olive-800 focus:ring-olive-500/20"
+                        className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20"
                         onChange={(event) => setRememberMe(event.target.checked)}
                         type="checkbox"
                       />
@@ -596,7 +596,7 @@ function LoginPage(): JSX.Element {
                   </div>
 
                   {user != null ? (
-                    <p className="text-olive-500 text-xs m-0 text-center">
+                    <p className="text-slate-500 text-xs m-0 text-center">
                       You already have an active session. Redirecting...
                     </p>
                   ) : null}
@@ -604,7 +604,7 @@ function LoginPage(): JSX.Element {
                   {error ? <p className="text-red-600 m-0 text-xs font-medium text-center">{error}</p> : null}
 
                   <button
-                    className="bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+                    className="bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
                     disabled={loading}
                     type="submit"
                   >
@@ -613,14 +613,14 @@ function LoginPage(): JSX.Element {
                 </form>
               ) : (
                 <div className="grid gap-5">
-                  <div className="flex p-1 bg-olive-100/50 border border-olive-200/30 rounded-lg gap-1">
+                  <div className="flex p-1 bg-slate-100/50 border border-slate-200/30 rounded-lg gap-1">
                     <button
                       type="button"
                       className={[
-                        'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all',
+                        'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all',
                         companionMethod === 'key'
-                          ? 'bg-white text-olive-950 shadow-sm border border-olive-100'
-                          : 'text-olive-500 hover:text-olive-700'
+                          ? 'bg-white text-slate-950 shadow-sm border border-slate-100'
+                          : 'text-slate-500 hover:text-slate-700'
                       ].join(' ')}
                       onClick={() => setCompanionMethod('key')}
                     >
@@ -629,10 +629,10 @@ function LoginPage(): JSX.Element {
                     <button
                       type="button"
                       className={[
-                        'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all',
+                        'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all',
                         companionMethod === 'qr'
-                          ? 'bg-white text-olive-950 shadow-sm border border-olive-100'
-                          : 'text-olive-500 hover:text-olive-700'
+                          ? 'bg-white text-slate-950 shadow-sm border border-slate-100'
+                          : 'text-slate-500 hover:text-slate-700'
                       ].join(' ')}
                       onClick={() => setCompanionMethod('qr')}
                     >
@@ -654,12 +654,12 @@ function LoginPage(): JSX.Element {
                           value={companionKey}
                         />
                       </label>
-                      <p className="text-olive-500 m-0 text-xs leading-relaxed">
+                      <p className="text-slate-500 m-0 text-xs leading-relaxed">
                         Enter the one-time pairing key generated on your primary device in Settings.
                       </p>
                       {error ? <p className="text-red-600 m-0 text-xs font-medium text-center">{error}</p> : null}
                       <button
-                        className="bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+                        className="bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
                         disabled={loading || !companionKey.trim()}
                         type="submit"
                       >
@@ -679,10 +679,10 @@ function LoginPage(): JSX.Element {
                 </div>
               )}
 
-              <p className="text-olive-500 m-0 text-xs text-center">
+              <p className="text-slate-500 m-0 text-xs text-center">
                 New to Pristine?{' '}
                 <Link
-                  className="text-olive-800 font-bold hover:underline"
+                  className="text-slate-800 font-semibold hover:underline"
                   to={
                     tokenParam
                       ? `/register?token=${tokenParam}&email=${encodeURIComponent(emailParam)}`

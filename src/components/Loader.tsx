@@ -33,7 +33,7 @@ const Loader: React.FC<LoaderProps> = ({ size = 'md', className = '', center = f
         className={`
           absolute
           ${ringSizeClasses[size]}
-          border-neutral-200/60
+          border-slate-200
           border-t-emerald-600
           rounded-full
           animate-spin
@@ -43,7 +43,7 @@ const Loader: React.FC<LoaderProps> = ({ size = 'md', className = '', center = f
       <img
         src={logoImg}
         alt="Pristine Logo"
-        className={`absolute ${logoSizeClasses[size]} object-contain animate-pulse`}
+        className={`absolute ${logoSizeClasses[size]} object-contain`}
       />
     </div>
   );

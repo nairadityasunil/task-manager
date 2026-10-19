@@ -65,7 +65,7 @@ export function WorkspaceMemberRow({
     <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-800 bg-slate-800/30 hover:bg-slate-800/50 transition group">
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
-          <span className="text-xs font-bold text-slate-300">
+          <span className="text-xs font-semibold text-slate-300">
             {(member.name || member.email).charAt(0).toUpperCase()}
           </span>
         </div>
@@ -75,7 +75,7 @@ export function WorkspaceMemberRow({
               {member.name || 'Unknown'}
             </span>
             {isSelf && (
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-700 text-slate-400 border border-slate-600">
+              <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-slate-700 text-slate-400 border border-slate-600">
                 You
               </span>
             )}
@@ -102,7 +102,7 @@ export function WorkspaceMemberRow({
             ))}
           </select>
         ) : (
-          <span className={`text-[10px] font-bold px-2 py-1 rounded border ${ROLE_COLORS[member.role]}`}>
+          <span className={`text-[11px] font-semibold px-2 py-1 rounded border ${ROLE_COLORS[member.role]}`}>
             {member.role}
           </span>
         )}

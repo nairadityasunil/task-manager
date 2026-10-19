@@ -49,7 +49,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onTaskClick }
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center space-x-3">
           <CalendarIcon className="w-5 h-5 text-blue-400" />
-          <h3 className="text-lg font-bold text-slate-100">
+          <h3 className="text-lg font-semibold text-slate-100">
             {monthNames[month]} {year}
           </h3>
         </div>
@@ -70,7 +70,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onTaskClick }
       </div>
 
       {/* Weekdays */}
-      <div className="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
+      <div className="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-semibold text-slate-400 uppercase tracking-wide">
         <div>Sun</div>
         <div>Mon</div>
         <div>Tue</div>
@@ -96,7 +96,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onTaskClick }
               key={`day-${day}`}
               className="h-28 bg-slate-950/80 border border-slate-800/80 rounded-xl p-2 flex flex-col justify-between hover:border-slate-700 transition"
             >
-              <div className="text-xs font-bold text-slate-400">{day}</div>
+              <div className="text-xs font-semibold text-slate-400">{day}</div>
               <div className="space-y-1 overflow-y-auto max-h-20">
                 {dayTasks.map((t) => (
                   <div

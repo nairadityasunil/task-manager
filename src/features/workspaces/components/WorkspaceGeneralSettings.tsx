@@ -57,7 +57,7 @@ export function WorkspaceGeneralSettings({ workspace }: WorkspaceGeneralSettings
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
             Workspace Name
           </label>
           <input
@@ -69,7 +69,7 @@ export function WorkspaceGeneralSettings({ workspace }: WorkspaceGeneralSettings
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
             Slug
           </label>
           <input
@@ -83,7 +83,7 @@ export function WorkspaceGeneralSettings({ workspace }: WorkspaceGeneralSettings
       </div>
 
       <div>
-        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
           Default Project Role for New Members
         </label>
         <select

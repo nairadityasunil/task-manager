@@ -88,25 +88,25 @@ function AcceptInvitationPage(): JSX.Element {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-olive-950 via-neutral-900 to-olive-900 relative p-6 select-none font-sans overflow-hidden">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 relative p-6 select-none font-sans overflow-hidden">
       {/* Glowing abstract backgrounds */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-olive-700/10 rounded-full blur-[140px] pointer-events-none animate-pulse duration-[8000ms]" />
+      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-slate-700/10 rounded-full blur-[140px] pointer-events-none animate-pulse duration-[8000ms]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[6000ms]" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
-      <div className="w-full max-w-[500px] bg-white/10 border border-white/10 rounded-3xl p-8 shadow-2xl backdrop-blur-md relative z-10 text-white flex flex-col items-center">
+      <div className="w-full max-w-[500px] bg-white/10 border border-white/10 rounded-2xl p-8 shadow-xl backdrop-blur-md relative z-10 text-white flex flex-col items-center">
         {/* Brand Logo Header */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-2 shadow-md">
             <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="font-black tracking-[0.25em] text-lg">PRISTINE</span>
+          <span className="font-semibold tracking-wide text-lg">PRISTINE</span>
         </div>
 
         {loading ? (
           <div className="flex flex-col items-center py-12 gap-4">
             <Loader2 className="w-10 h-10 text-emerald-400 animate-spin" />
-            <p className="text-olive-200 text-sm font-semibold tracking-wider uppercase">
+            <p className="text-slate-200 text-sm font-semibold tracking-wide uppercase">
               Verifying your invitation...
             </p>
           </div>
@@ -115,11 +115,11 @@ function AcceptInvitationPage(): JSX.Element {
             <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center text-red-400 mb-2">
               <AlertTriangle size={32} />
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-white">Verification Failed</h2>
-            <p className="text-olive-300 text-sm leading-relaxed max-w-[340px]">{error}</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-white">Verification Failed</h2>
+            <p className="text-slate-300 text-sm leading-relaxed max-w-[340px]">{error}</p>
             <button
               onClick={() => navigate('/dashboard')}
-              className="mt-4 px-6 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white font-bold hover:bg-white/20 transition-all active:scale-[0.98]"
+              className="mt-4 px-6 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white font-semibold hover:bg-white/20 transition-all active:scale-[0.98]"
             >
               Go to Dashboard
             </button>
@@ -129,46 +129,46 @@ function AcceptInvitationPage(): JSX.Element {
             <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400 mb-2">
               <CheckCircle2 size={32} className="animate-bounce" />
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-white">Welcome Aboard!</h2>
-            <p className="text-olive-300 text-sm">
+            <h2 className="text-2xl font-semibold tracking-tight text-white">Welcome Aboard!</h2>
+            <p className="text-slate-300 text-sm">
               You are now a member of <strong>{details?.projectName}</strong>.
             </p>
-            <p className="text-emerald-400/80 text-xs font-semibold uppercase tracking-widest mt-2 animate-pulse">
+            <p className="text-emerald-400/80 text-xs font-semibold uppercase tracking-wide mt-2 animate-pulse">
               Redirecting you to dashboard...
             </p>
           </div>
         ) : (
           <div className="w-full flex flex-col items-center">
-            <h2 className="text-3xl font-black text-center tracking-tight text-white mb-2">
+            <h2 className="text-3xl font-semibold text-center tracking-tight text-white mb-2">
               Project Invitation
             </h2>
-            <p className="text-olive-200 text-sm text-center mb-6">
+            <p className="text-slate-200 text-sm text-center mb-6">
               You have been invited to join a collaborative space on Pristine.
             </p>
 
             <div className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 mb-8 text-center">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-olive-400">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                 Project Name
               </span>
-              <h3 className="text-xl font-bold text-white mt-1 mb-4">
+              <h3 className="text-xl font-semibold text-white mt-1 mb-4">
                 {details?.projectName}
               </h3>
 
-              <div className="flex justify-center gap-6 text-xs border-t border-white/5 pt-4 text-olive-300">
+              <div className="flex justify-center gap-6 text-xs border-t border-white/5 pt-4 text-slate-300">
                 <div>
-                  <span className="block text-[10px] font-extrabold uppercase tracking-widest text-olive-400 mb-0.5">
+                  <span className="block text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-0.5">
                     Invited Role
                   </span>
-                  <span className="font-bold text-white uppercase tracking-wider">
+                  <span className="font-semibold text-white uppercase tracking-wide">
                     {details?.role}
                   </span>
                 </div>
                 <div className="w-px bg-white/5" />
                 <div>
-                  <span className="block text-[10px] font-extrabold uppercase tracking-widest text-olive-400 mb-0.5">
+                  <span className="block text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-0.5">
                     Invited Email
                   </span>
-                  <span className="font-bold text-white">{details?.email}</span>
+                  <span className="font-semibold text-white">{details?.email}</span>
                 </div>
               </div>
             </div>
@@ -180,7 +180,7 @@ function AcceptInvitationPage(): JSX.Element {
                 <button
                   onClick={handleAccept}
                   disabled={accepting}
-                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-600/50 text-olive-950 font-black rounded-xl shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 flex items-center justify-center gap-2 text-sm uppercase tracking-wider active:scale-[0.98]"
+                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-600/50 text-slate-950 font-semibold rounded-xl shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 flex items-center justify-center gap-2 text-sm uppercase tracking-wide active:scale-[0.98]"
                 >
                   {accepting ? (
                     <>
@@ -204,7 +204,7 @@ function AcceptInvitationPage(): JSX.Element {
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="w-full py-3.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-sm active:scale-[0.98]"
+                    className="w-full py-3.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-sm active:scale-[0.98]"
                   >
                     <LogOut size={16} /> Logout & Switch Accounts
                   </button>
@@ -221,11 +221,11 @@ function AcceptInvitationPage(): JSX.Element {
                           `/login?token=${token}&email=${encodeURIComponent(details?.email || '')}`
                         )
                       }
-                      className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-olive-950 font-black rounded-xl shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 flex items-center justify-center gap-2 text-sm uppercase tracking-wider active:scale-[0.98]"
+                      className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-xl shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 flex items-center justify-center gap-2 text-sm uppercase tracking-wide active:scale-[0.98]"
                     >
                       Login to Accept <ArrowRight size={18} />
                     </button>
-                    <p className="text-center text-xs text-olive-400 mt-2">
+                    <p className="text-center text-xs text-slate-400 mt-2">
                       An account already exists for {details?.email}.
                     </p>
                   </>
@@ -237,11 +237,11 @@ function AcceptInvitationPage(): JSX.Element {
                           `/register?token=${token}&email=${encodeURIComponent(details?.email || '')}`
                         )
                       }
-                      className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-olive-950 font-black rounded-xl shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 flex items-center justify-center gap-2 text-sm uppercase tracking-wider active:scale-[0.98]"
+                      className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-xl shadow-lg hover:shadow-emerald-500/25 transition-all duration-200 flex items-center justify-center gap-2 text-sm uppercase tracking-wide active:scale-[0.98]"
                     >
                       Create Account to Join <ArrowRight size={18} />
                     </button>
-                    <p className="text-center text-xs text-olive-400 mt-2">
+                    <p className="text-center text-xs text-slate-400 mt-2">
                       You will be automatically added to the project after registration.
                     </p>
                   </>

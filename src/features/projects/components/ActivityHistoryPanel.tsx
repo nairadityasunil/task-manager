@@ -33,9 +33,9 @@ const ENTITY_LABELS: Record<string, string> = {
 };
 
 const ENTITY_COLORS: Record<string, string> = {
-  project: 'bg-olive-500',
+  project: 'bg-slate-500',
   epic: 'bg-purple-500',
-  task: 'bg-olive-600',
+  task: 'bg-slate-600',
   subtask: 'bg-teal-500',
   note: 'bg-amber-500'
 };
@@ -55,7 +55,7 @@ const ACTION_ICONS: Record<string, typeof Plus> = {
 
 const ACTION_COLORS: Record<string, string> = {
   created: 'text-green-600 bg-green-50',
-  updated: 'text-olive-600 bg-olive-50',
+  updated: 'text-slate-600 bg-slate-50',
   deleted: 'text-red-600 bg-red-50',
   assigned: 'text-purple-600 bg-purple-50',
   status_changed: 'text-amber-600 bg-amber-50',
@@ -196,16 +196,16 @@ export function ActivityHistoryPanel({
   return (
     <div className="flex flex-col h-full max-h-[75vh]">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-olive-200 ">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 ">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-olive-50  rounded-xl">
-            <History className="w-5 h-5 text-olive-600 " />
+          <div className="p-2.5 bg-slate-50  rounded-xl">
+            <History className="w-5 h-5 text-slate-600 " />
           </div>
           <div>
-            <h3 className="text-[0.95rem] font-bold text-olive-950 ">
+            <h3 className="text-[15px] font-semibold text-slate-950 ">
               Activity History
             </h3>
-            <p className="text-[0.7rem] text-olive-500  font-medium">
+            <p className="text-[11px] text-slate-500  font-medium">
               {projectName}
             </p>
           </div>
@@ -216,7 +216,7 @@ export function ActivityHistoryPanel({
           <button
             onClick={handleVerifyChain}
             disabled={verifying}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-olive-50 hover:bg-olive-100 text-olive-700 text-xs font-bold rounded-lg transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg transition-colors disabled:opacity-50"
           >
             {verifying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
             Verify Chain
@@ -224,24 +224,24 @@ export function ActivityHistoryPanel({
           
           <button
             onClick={openRetentionModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-olive-50 hover:bg-olive-100 text-olive-700 text-xs font-bold rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg transition-colors"
           >
             <Scale className="w-3.5 h-3.5" />
             Retention Policy
           </button>
 
-          <div className="w-px h-5 bg-olive-200 mx-1"></div>
+          <div className="w-px h-5 bg-slate-200 mx-1"></div>
 
           {/* Entity type filter */}
           <div className="flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-olive-400" />
+            <Filter className="w-3.5 h-3.5 text-slate-400" />
             <select
               value={entityFilter}
               onChange={(e) => {
                 setEntityFilter(e.target.value);
                 setPage(1);
               }}
-              className="text-xs font-semibold bg-olive-100  border border-olive-200  rounded-lg px-3 py-1.5 text-olive-700  focus:outline-none focus:ring-2 focus:ring-olive-500/30"
+              className="text-xs font-semibold bg-slate-100  border border-slate-200  rounded-lg px-3 py-1.5 text-slate-700  focus:outline-none focus:ring-2 focus:ring-slate-500/30"
             >
               {FILTER_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -257,10 +257,10 @@ export function ActivityHistoryPanel({
       <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 text-olive-400 animate-spin" />
+            <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
           </div>
         ) : activities.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-olive-400 ">
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400 ">
             <History className="w-12 h-12 mb-3 opacity-40" />
             <p className="text-sm font-medium">No activity yet</p>
             <p className="text-xs mt-1">Changes to this project will appear here</p>
@@ -271,11 +271,11 @@ export function ActivityHistoryPanel({
               <div key={group.label}>
                 {/* Date separator */}
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="flex-1 h-px bg-olive-200 " />
-                  <span className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-olive-400  select-none whitespace-nowrap">
+                  <div className="flex-1 h-px bg-slate-200 " />
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400  select-none whitespace-nowrap">
                     {group.label}
                   </span>
-                  <div className="flex-1 h-px bg-olive-200 " />
+                  <div className="flex-1 h-px bg-slate-200 " />
                 </div>
 
                 {/* Activity items */}
@@ -283,12 +283,12 @@ export function ActivityHistoryPanel({
                   {group.items.map((activity) => {
                     const IconComponent = ACTION_ICONS[activity.action] || Pencil;
                     const colorClass = ACTION_COLORS[activity.action] || ACTION_COLORS.updated;
-                    const entityColor = ENTITY_COLORS[activity.entityType] || 'bg-olive-500';
+                    const entityColor = ENTITY_COLORS[activity.entityType] || 'bg-slate-500';
 
                     return (
                       <div
                         key={activity.id}
-                        className="group flex items-start gap-3.5 px-4 py-3 rounded-xl hover:bg-olive-50  transition-all duration-200"
+                        className="group flex items-start gap-3.5 px-4 py-3 rounded-xl hover:bg-slate-50  transition-all duration-200"
                       >
                         {/* Icon */}
                         <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${colorClass} transition-transform group-hover:scale-105`}>
@@ -298,29 +298,29 @@ export function ActivityHistoryPanel({
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[0.82rem] font-bold text-olive-900 ">
+                            <span className="text-[13px] font-semibold text-slate-900 ">
                               {activity.userName}
                             </span>
-                            <span className="text-[0.78rem] text-olive-500 ">
+                            <span className="text-xs text-slate-500 ">
                               {activity.description}
                             </span>
                           </div>
 
                           {/* Entity badge + timestamp */}
                           <div className="flex items-center gap-2 mt-1.5">
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[0.62rem] font-bold uppercase tracking-wider text-white ${entityColor}`}>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide text-white ${entityColor}`}>
                               {ENTITY_LABELS[activity.entityType]}
                             </span>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[0.62rem] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-100">
                               <ShieldCheck size={10} />
                               #{activity.sequence}
                             </span>
                             {activity.entityName && (
-                              <span className="text-[0.72rem] text-olive-500  truncate max-w-[200px]">
+                              <span className="text-xs text-slate-500  truncate max-w-[200px]">
                                 {activity.entityName}
                               </span>
                             )}
-                            <span className="text-[0.62rem] text-olive-400  ml-auto whitespace-nowrap">
+                            <span className="text-[11px] text-slate-400  ml-auto whitespace-nowrap">
                               {formatTime(activity.createdAt)}
                             </span>
                           </div>
@@ -331,9 +331,9 @@ export function ActivityHistoryPanel({
                               {activity.changes.slice(0, 3).map((change, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex items-center gap-2 text-[0.7rem] text-olive-500  bg-olive-50  rounded-lg px-3 py-1.5"
+                                  className="flex items-center gap-2 text-[11px] text-slate-500  bg-slate-50  rounded-lg px-3 py-1.5"
                                 >
-                                  <span className="font-bold text-olive-600  capitalize">
+                                  <span className="font-semibold text-slate-600  capitalize">
                                     {change.field}:
                                   </span>
                                   {change.oldValue && (
@@ -342,7 +342,7 @@ export function ActivityHistoryPanel({
                                     </span>
                                   )}
                                   {change.oldValue && change.newValue && (
-                                    <span className="text-olive-300 ">→</span>
+                                    <span className="text-slate-300 ">→</span>
                                   )}
                                   {change.newValue && (
                                     <span className="text-green-600  truncate max-w-[120px]">
@@ -352,15 +352,15 @@ export function ActivityHistoryPanel({
                                 </div>
                               ))}
                               {activity.changes.length > 3 && (
-                                <span className="text-[0.65rem] text-olive-400 italic pl-3">
+                                <span className="text-[11px] text-slate-400 italic pl-3">
                                   +{activity.changes.length - 3} more changes
                                 </span>
                               )}
                             </div>
                           )}
-                          <div className="mt-2 flex flex-wrap items-center gap-2 text-[0.62rem] text-olive-400">
+                          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
                             <span className="font-mono">hash {(activity.immutableHash || 'pending-migration').slice(0, 16)}</span>
-                            {activity.legalHold && <span className="text-red-500 font-bold">legal hold</span>}
+                            {activity.legalHold && <span className="text-red-500 font-semibold">legal hold</span>}
                             {activity.retentionUntil && <span>retains until {new Date(activity.retentionUntil).toLocaleDateString()}</span>}
                           </div>
                         </div>
@@ -376,22 +376,22 @@ export function ActivityHistoryPanel({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-6 py-3 border-t border-olive-200  bg-olive-50/50 ">
+        <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200  bg-slate-50/50 ">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-olive-600  hover:bg-olive-100  rounded-lg disabled:opacity-40 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600  hover:bg-slate-100  rounded-lg disabled:opacity-40 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
             Previous
           </button>
-          <span className="text-[0.7rem] font-bold text-olive-500  uppercase tracking-wider">
+          <span className="text-[11px] font-semibold text-slate-500  uppercase tracking-wide">
             Page {page} of {totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-olive-600  hover:bg-olive-100  rounded-lg disabled:opacity-40 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600  hover:bg-slate-100  rounded-lg disabled:opacity-40 transition-colors"
           >
             Next
             <ChevronRight className="w-3.5 h-3.5" />
@@ -403,31 +403,31 @@ export function ActivityHistoryPanel({
       {retentionModalOpen && (
         <Modal onClose={() => setRetentionModalOpen(false)} title="Legal Retention Policy">
           <div className="grid gap-5">
-            <p className="text-sm text-olive-500 m-0">
+            <p className="text-sm text-slate-500 m-0">
               Configure how long activity logs are retained for compliance. Enabling legal hold prevents deletion regardless of retention days.
             </p>
             
             <div className="grid gap-2">
-              <label className="text-sm font-semibold text-olive-900">Retention Days</label>
+              <label className="text-sm font-semibold text-slate-900">Retention Days</label>
               <input
                 type="number"
                 min="0"
                 value={retentionDaysInput}
                 onChange={(e) => setRetentionDaysInput(e.target.value)}
                 placeholder="e.g. 2555 for 7 years (leave empty for infinite)"
-                className="w-full px-3 py-2 bg-white border border-olive-200 rounded-lg focus:outline-none focus:border-olive-500 text-sm"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-slate-500 text-sm"
               />
             </div>
             
-            <div className="flex items-center gap-3 p-3 bg-olive-50 border border-olive-200 rounded-lg">
+            <div className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
               <input
                 type="checkbox"
                 id="legalHold"
                 checked={legalHoldInput}
                 onChange={(e) => setLegalHoldInput(e.target.checked)}
-                className="w-4 h-4 text-olive-600 bg-white border-olive-300 rounded focus:ring-olive-500"
+                className="w-4 h-4 text-slate-600 bg-white border-slate-300 rounded focus:ring-slate-500"
               />
-              <label htmlFor="legalHold" className="text-sm font-bold text-red-600 cursor-pointer">
+              <label htmlFor="legalHold" className="text-sm font-semibold text-red-600 cursor-pointer">
                 Enable Legal Hold
               </label>
             </div>
@@ -435,14 +435,14 @@ export function ActivityHistoryPanel({
             <div className="flex gap-3 justify-end pt-2">
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-medium text-olive-600 hover:bg-olive-50 border border-olive-200 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors"
                 onClick={() => setRetentionModalOpen(false)}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="px-4 py-2 text-sm font-bold text-white bg-olive-900 hover:bg-olive-800 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
                 onClick={saveRetentionPolicy}
                 disabled={savingRetention}
               >

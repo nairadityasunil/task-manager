@@ -37,7 +37,7 @@ export const GUIDE_TYPE_INFO: Record<
 export function GuideTypePicker({ value, onChange }: { value: GuideType; onChange: (type: GuideType) => void }): JSX.Element {
   return (
     <div>
-      <p className="m-0 mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Format</p>
+      <p className="m-0 mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Format</p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5" role="radiogroup" aria-label="Guide format">
         {(Object.keys(GUIDE_TYPE_INFO) as Array<keyof typeof GUIDE_TYPE_INFO>).map((type) => {
           const info = GUIDE_TYPE_INFO[type];
@@ -311,7 +311,7 @@ export function ContentEditor({ kind, guideType, steps, onChange }: ContentEdito
   return (
     <section>
       <div className="mb-2 flex items-center justify-between">
-        <p className="m-0 text-xs font-bold uppercase tracking-widest text-slate-500">{heading}</p>
+        <p className="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500">{heading}</p>
         {!singleStep && (
           <button className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50" onClick={add} type="button">
             <Plus size={13} /> Add {noun.toLowerCase()}

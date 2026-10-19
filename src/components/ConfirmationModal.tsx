@@ -32,20 +32,20 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             "w-12 h-12 flex items-center justify-center rounded-lg shrink-0",
             isDanger 
               ? "bg-red-50  text-red-600 " 
-              : "bg-olive-50  text-olive-600 "
+              : "bg-slate-50  text-slate-600 "
           ].join(' ')}>
             {isDanger ? <AlertCircle size={24} /> : <HelpCircle size={24} />}
           </div>
           <div className="flex-1 pt-1">
-            <p className="text-olive-600  leading-relaxed m-0 text-[0.95rem]">
+            <p className="text-slate-600  leading-relaxed m-0 text-[15px]">
               {message}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-olive-100 ">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 ">
           <button
-            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-olive-600  hover:bg-olive-100  transition-all active:scale-95 disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-600  hover:bg-slate-100  transition-all active:scale-95 disabled:opacity-50"
             disabled={isLoading}
             onClick={onCancel}
             type="button"
@@ -54,10 +54,10 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           </button>
           <button
             className={[
-              "px-6 py-2.5 rounded-xl text-sm font-bold text-white shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2",
+              "px-6 py-2.5 rounded-xl text-sm font-semibold text-white shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2",
               isDanger 
                 ? "bg-red-600 hover:bg-red-700 shadow-red-500/20" 
-                : "bg-olive-600 hover:bg-olive-700 shadow-olive-500/20"
+                : "bg-slate-600 hover:bg-slate-700 shadow-slate-500/20"
             ].join(' ')}
             disabled={isLoading}
             onClick={onConfirm}

@@ -129,7 +129,7 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
 
   return (
     <Modal onClose={onClose} title="Project AI Configuration" maxWidth="max-w-[550px]">
-      <div className="flex flex-col gap-4 text-olive-950">
+      <div className="flex flex-col gap-4 text-slate-950">
         {!isAdmin && (
           <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
             <ShieldAlert className="flex-shrink-0 mt-0.5" size={18} />
@@ -155,17 +155,17 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
         )}
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center p-12 text-olive-500 italic text-sm gap-2">
-            <Loader2 className="animate-spin text-olive-600" size={24} />
+          <div className="flex flex-col items-center justify-center p-12 text-slate-500 italic text-sm gap-2">
+            <Loader2 className="animate-spin text-slate-600" size={24} />
             <span>Loading AI Settings...</span>
           </div>
         ) : (
           <div className="flex flex-col gap-4">
             {/* Enable AI Toggle */}
-            <div className="flex items-center justify-between p-3 rounded-xl border border-olive-200 bg-olive-50/50">
+            <div className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-slate-50/50">
               <div>
                 <span className="font-semibold text-sm">Enable Custom AI Planner</span>
-                <p className="text-xs text-olive-500 m-0">Route planning requests to this model instead of static fallbacks.</p>
+                <p className="text-xs text-slate-500 m-0">Route planning requests to this model instead of static fallbacks.</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -175,16 +175,16 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                   disabled={!isAdmin}
                   onChange={(e) => updateField('enabled', e.target.checked)}
                 />
-                <div className="w-11 h-6 bg-olive-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-olive-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-600"></div>
               </label>
             </div>
 
             <div className={`flex flex-col gap-4 transition-opacity ${config.enabled ? 'opacity-100' : 'opacity-60 pointer-events-none select-none'}`}>
               {/* Provider Selection */}
               <div className="flex flex-col gap-1">
-                <label className="text-[0.7rem] font-bold text-olive-500 uppercase tracking-widest pl-1">AI Model Provider</label>
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide pl-1">AI Model Provider</label>
                 <select
-                  className="bg-white border border-olive-200 rounded-lg px-3 py-2 text-sm text-olive-950 focus:outline-none focus:ring-1 focus:ring-olive-500 disabled:bg-olive-50"
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
                   value={config.provider}
                   disabled={!isAdmin || !config.enabled}
                   onChange={(e) => updateField('provider', e.target.value)}
@@ -197,9 +197,9 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
 
               {/* Model Selection Preset Dropdown */}
               <div className="flex flex-col gap-1">
-                <label className="text-[0.7rem] font-bold text-olive-500 uppercase tracking-widest pl-1">Model Name</label>
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide pl-1">Model Name</label>
                 <select
-                  className="bg-white border border-olive-200 rounded-lg px-3 py-2 text-sm text-olive-950 focus:outline-none focus:ring-1 focus:ring-olive-500 disabled:bg-olive-50"
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
                   value={config.modelName}
                   disabled={!isAdmin || !config.enabled}
                   onChange={(e) => updateField('modelName', e.target.value)}
@@ -212,13 +212,13 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
 
               {/* API Key Input */}
               <div className="flex flex-col gap-1">
-                <label className="text-[0.7rem] font-bold text-olive-500 uppercase tracking-widest pl-1">API Key</label>
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide pl-1">API Key</label>
                 {config.apiKey === '••••••••' && !isReplacingKey ? (
                   <div className="flex gap-2 items-center">
                     <div className="relative flex-1">
                       <input
                         type="password"
-                        className="w-full bg-olive-50 border border-olive-200 rounded-lg pl-3 pr-10 py-2 text-sm text-olive-950/60 select-none cursor-not-allowed"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-sm text-slate-950/60 select-none cursor-not-allowed"
                         value="••••••••"
                         disabled
                         readOnly
@@ -227,7 +227,7 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                     {isAdmin && config.enabled && (
                       <button
                         type="button"
-                        className="px-3.5 py-2 bg-olive-700 hover:bg-olive-800 text-white rounded-lg text-xs font-semibold whitespace-nowrap transition-colors"
+                        className="px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold whitespace-nowrap transition-colors"
                         onClick={() => {
                           setIsReplacingKey(true);
                           updateField('apiKey', '');
@@ -242,7 +242,7 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                     <div className="relative flex-1">
                       <input
                         type={showKey ? 'text' : 'password'}
-                        className="w-full bg-white border border-olive-200 rounded-lg pl-3 pr-10 py-2 text-sm text-olive-950 focus:outline-none focus:ring-1 focus:ring-olive-500 disabled:bg-olive-50"
+                        className="w-full bg-white border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-sm text-slate-950 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
                         placeholder="Enter API credential key"
                         value={config.apiKey}
                         disabled={!isAdmin || !config.enabled}
@@ -251,7 +251,7 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                       />
                       <button
                         type="button"
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-olive-400 hover:text-olive-600 disabled:opacity-50"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 disabled:opacity-50"
                         disabled={!isAdmin || !config.enabled}
                         onClick={() => setShowKey(!showKey)}
                       >
@@ -261,7 +261,7 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                     {isReplacingKey && (
                       <button
                         type="button"
-                        className="px-3.5 py-2 border border-olive-200 hover:bg-olive-50 text-olive-700 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors"
+                        className="px-3.5 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors"
                         onClick={() => {
                           setIsReplacingKey(false);
                           updateField('apiKey', '••••••••');
@@ -276,18 +276,18 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
 
               {/* Custom Endpoint Base URL Override */}
               <div className="flex flex-col gap-1">
-                <label className="text-[0.7rem] font-bold text-olive-500 uppercase tracking-widest pl-1">
-                  API Base URL Override <span className="text-[0.65rem] font-normal text-olive-400 italic">(Optional)</span>
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide pl-1">
+                  API Base URL Override <span className="text-[11px] font-normal text-slate-400 italic">(Optional)</span>
                 </label>
                 <input
                   type="text"
-                  className="bg-white border border-olive-200 rounded-lg px-3 py-2 text-sm text-olive-950 focus:outline-none focus:ring-1 focus:ring-olive-500 disabled:bg-olive-50"
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
                   placeholder={currentPreset?.defaultBaseUrl}
                   value={config.baseUrl}
                   disabled={!isAdmin || !config.enabled}
                   onChange={(e) => updateField('baseUrl', e.target.value)}
                 />
-                <span className="text-[0.65rem] text-olive-400 italic pl-1">
+                <span className="text-[11px] text-slate-400 italic pl-1">
                   Defaults to {currentPreset?.defaultBaseUrl}
                 </span>
               </div>
@@ -313,29 +313,29 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
             )}
 
             {/* Action Bar */}
-            <div className="flex items-center justify-between pt-4 border-t border-olive-100">
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
               <div className="flex gap-2">
                 <button
                   type="button"
-                  className="px-4 py-2 border border-olive-200 text-olive-700 bg-white hover:bg-olive-50 disabled:opacity-50 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2 border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5"
                   disabled={!isAdmin || testing || saving || !config.enabled}
                   onClick={() => void handleTest()}
                 >
-                  {testing && <Loader2 size={16} className="animate-spin text-olive-600" />}
+                  {testing && <Loader2 size={16} className="animate-spin text-slate-600" />}
                   {testing ? 'Testing...' : 'Test Connection'}
                 </button>
               </div>
               <div className="flex gap-2">
                 <button
                   type="button"
-                  className="px-4 py-2 border border-olive-200 text-olive-700 hover:bg-olive-50 rounded-lg text-sm font-semibold transition-colors"
+                  className="px-4 py-2 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg text-sm font-semibold transition-colors"
                   onClick={onClose}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  className="px-4 py-2 bg-olive-600 hover:bg-olive-700 text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 disabled:opacity-50"
+                  className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5 disabled:opacity-50"
                   disabled={!isAdmin || saving || testing}
                   onClick={() => void handleSave()}
                 >

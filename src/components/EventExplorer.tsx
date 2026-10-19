@@ -74,8 +74,8 @@ const EventExplorer: React.FC<EventExplorerProps> = ({ selectedKeyId }) => {
       header: 'Timestamp',
       size: 180,
       cell: info => (
-        <div className="flex items-center gap-2 text-[0.75rem] font-medium text-olive-500 ">
-          <Clock size={12} className="text-olive-400" />
+        <div className="flex items-center gap-2 text-xs font-medium text-slate-500 ">
+          <Clock size={12} className="text-slate-400" />
           {formatDate(info.getValue())}
         </div>
       ),
@@ -86,9 +86,9 @@ const EventExplorer: React.FC<EventExplorerProps> = ({ selectedKeyId }) => {
       cell: info => {
         const name = info.getValue();
         return (
-          <span className={`text-[0.7rem] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${name.startsWith('page') ? 'bg-olive-500/10 text-olive-600' :
+          <span className={`text-[11px] px-2 py-0.5 rounded-md font-semibold uppercase tracking-wide ${name.startsWith('page') ? 'bg-slate-500/10 text-slate-600' :
             name.startsWith('identify') ? 'bg-emerald-500/10 text-emerald-600' :
-              'bg-olive-500/10 text-olive-700'
+              'bg-slate-500/10 text-slate-700'
             }`}>
             {name.replace(/_/g, ' ')}
           </span>
@@ -101,14 +101,14 @@ const EventExplorer: React.FC<EventExplorerProps> = ({ selectedKeyId }) => {
       size: 200,
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-olive-500 " title={row.original.context?.device?.os}>
+          <div className="flex items-center gap-1.5 text-slate-500 " title={row.original.context?.device?.os}>
             {getDeviceIcon(row.original.context?.device?.os)}
-            <span className="text-[0.68rem] font-bold">{row.original.context?.device?.browser || 'SDK'}</span>
+            <span className="text-[11px] font-semibold">{row.original.context?.device?.browser || 'SDK'}</span>
           </div>
-          <div className="text-olive-300">|</div>
-          <div className="flex items-center gap-1.5 text-olive-500 ">
-            <User size={12} className="text-olive-400" />
-            <span className="text-[0.68rem] font-bold max-w-[80px] truncate">{row.original.userId || 'anon'}</span>
+          <div className="text-slate-300">|</div>
+          <div className="flex items-center gap-1.5 text-slate-500 ">
+            <User size={12} className="text-slate-400" />
+            <span className="text-[11px] font-semibold max-w-[80px] truncate">{row.original.userId || 'anon'}</span>
           </div>
         </div>
       ),
@@ -117,7 +117,7 @@ const EventExplorer: React.FC<EventExplorerProps> = ({ selectedKeyId }) => {
       header: 'Session',
       size: 150,
       cell: info => (
-        <code className="text-[0.63rem] font-mono text-olive-400 bg-olive-100  px-1.5 py-0.5 rounded">
+        <code className="text-[11px] font-mono text-slate-400 bg-slate-100  px-1.5 py-0.5 rounded">
           {info.getValue().substring(0, 8)}...
         </code>
       ),
@@ -128,7 +128,7 @@ const EventExplorer: React.FC<EventExplorerProps> = ({ selectedKeyId }) => {
       size: 100,
       cell: ({ row }) => (
         <div className="text-right">
-          <div className="text-olive-300  group-hover:text-olive-500 transition-colors inline-block p-1">
+          <div className="text-slate-300  group-hover:text-slate-500 transition-colors inline-block p-1">
             {row.getIsExpanded() ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </div>
         </div>
@@ -168,22 +168,22 @@ const EventExplorer: React.FC<EventExplorerProps> = ({ selectedKeyId }) => {
   };
 
   return (
-    <div className="bg-white  rounded-xl border border-olive-200/80  shadow-sm overflow-hidden flex flex-col h-full">
-      <div className="p-6 border-b border-olive-100  flex flex-col md:flex-row md:items-center justify-between gap-4 bg-olive-50/30 ">
+    <div className="bg-white  rounded-xl border border-slate-200/80  shadow-sm overflow-hidden flex flex-col h-full">
+      <div className="p-6 border-b border-slate-100  flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/30 ">
         <div>
-          <span className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-olive-600 ">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-600 ">
             Observation Log
           </span>
-          <h3 className="font-sans font-bold text-[1.1rem] text-olive-950  mt-1">Event Explorer</h3>
+          <h3 className="font-sans font-semibold text-[1.1rem] text-slate-950  mt-1">Event Explorer</h3>
         </div>
 
         <div className="relative group flex-1 md:max-w-xs">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-olive-400 group-focus-within:text-olive-500 transition-colors">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-slate-500 transition-colors">
             <Search size={16} />
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-2 bg-white  border border-olive-200  rounded-lg text-sm font-medium focus:ring-2 focus:ring-olive-500/10 focus:border-olive-500 outline-none transition-all placeholder:text-olive-400"
+            className="block w-full pl-10 pr-3 py-2 bg-white  border border-slate-200  rounded-lg text-sm font-medium focus:ring-2 focus:ring-slate-500/10 focus:border-slate-500 outline-none transition-all placeholder:text-slate-400"
             placeholder="Search event types..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -199,37 +199,37 @@ const EventExplorer: React.FC<EventExplorerProps> = ({ selectedKeyId }) => {
           <div className="px-8 py-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <p className="text-[0.63rem] font-bold uppercase tracking-[0.2em] text-olive-400 mb-3 flex items-center gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-3 flex items-center gap-2">
                   <Code size={12} />
                   Payload Properties
                 </p>
-                <div className="bg-olive-900 rounded-lg p-5 border border-olive-800 overflow-x-auto shadow-inner">
-                  <pre className="text-[0.8rem] text-olive-200/90 font-mono leading-relaxed">
+                <div className="bg-slate-900 rounded-lg p-5 border border-slate-800 overflow-x-auto shadow-inner">
+                  <pre className="text-[13px] text-slate-200/90 font-mono leading-relaxed">
                     <code>{JSON.stringify(event.properties, null, 2)}</code>
                   </pre>
                 </div>
               </div>
               <div>
-                <p className="text-[0.63rem] font-bold uppercase tracking-[0.2em] text-olive-400 mb-3 flex items-center gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 mb-3 flex items-center gap-2">
                   <Globe size={12} />
                   Environment Details
                 </p>
-                <div className="bg-white  rounded-lg p-5 border border-olive-200  font-medium space-y-3 shadow-sm">
-                  <div className="flex justify-between border-b border-olive-100  pb-2">
-                    <span className="text-[0.65rem] text-olive-500 uppercase tracking-wider">Library</span>
-                    <span className="text-[0.75rem] font-bold text-olive-950 ">{event.context?.library?.name} v{event.context?.library?.version}</span>
+                <div className="bg-white  rounded-lg p-5 border border-slate-200  font-medium space-y-3 shadow-sm">
+                  <div className="flex justify-between border-b border-slate-100  pb-2">
+                    <span className="text-[11px] text-slate-500 uppercase tracking-wide">Library</span>
+                    <span className="text-xs font-semibold text-slate-950 ">{event.context?.library?.name} v{event.context?.library?.version}</span>
                   </div>
-                  <div className="flex justify-between border-b border-olive-100  pb-2">
-                    <span className="text-[0.65rem] text-olive-500 uppercase tracking-wider">Screen</span>
-                    <span className="text-[0.75rem] font-bold text-olive-950 ">{event.context?.device?.screen || 'N/A'}</span>
+                  <div className="flex justify-between border-b border-slate-100  pb-2">
+                    <span className="text-[11px] text-slate-500 uppercase tracking-wide">Screen</span>
+                    <span className="text-xs font-semibold text-slate-950 ">{event.context?.device?.screen || 'N/A'}</span>
                   </div>
-                  <div className="flex justify-between border-b border-olive-100  pb-2">
-                    <span className="text-[0.65rem] text-olive-500 uppercase tracking-wider">Language</span>
-                    <span className="text-[0.75rem] font-bold text-olive-950 ">{event.context?.device?.language || 'N/A'}</span>
+                  <div className="flex justify-between border-b border-slate-100  pb-2">
+                    <span className="text-[11px] text-slate-500 uppercase tracking-wide">Language</span>
+                    <span className="text-xs font-semibold text-slate-950 ">{event.context?.device?.language || 'N/A'}</span>
                   </div>
                   <div className="pt-2">
-                    <span className="text-[0.65rem] text-olive-500 uppercase tracking-wider block mb-1">Page URL</span>
-                    <span className="text-[0.72rem] font-bold text-olive-600  break-all">{event.context?.page?.url || 'N/A'}</span>
+                    <span className="text-[11px] text-slate-500 uppercase tracking-wide block mb-1">Page URL</span>
+                    <span className="text-xs font-semibold text-slate-600  break-all">{event.context?.page?.url || 'N/A'}</span>
                   </div>
                 </div>
               </div>

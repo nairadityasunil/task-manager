@@ -14,14 +14,14 @@ interface EpicManagerProps {
 }
 
 const statusPillClasses: Record<string, string> = {
-  planned:   'bg-olive-50 text-olive-700 border border-olive-200',
+  planned:   'bg-slate-50 text-slate-700 border border-slate-200',
   active:    'bg-amber-50 text-amber-700 border border-amber-200',
   completed: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  archived:  'bg-olive-100 text-olive-600 border border-olive-200'
+  archived:  'bg-slate-100 text-slate-600 border border-slate-200'
 };
 
-const ghostBtn = 'inline-flex items-center gap-1.5 px-3 py-2 text-[0.8rem] font-medium bg-white  border border-olive-200  rounded text-olive-600  hover:bg-olive-50  disabled:opacity-50 transition-colors';
-const dangerBtn = 'inline-flex items-center gap-1.5 px-3 py-2 text-[0.8rem] font-medium bg-white  border border-red-200  rounded text-red-600  hover:bg-red-50  disabled:opacity-50 transition-colors';
+const ghostBtn = 'inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium bg-white  border border-slate-200  rounded text-slate-600  hover:bg-slate-50  disabled:opacity-50 transition-colors';
+const dangerBtn = 'inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium bg-white  border border-red-200  rounded text-red-600  hover:bg-red-50  disabled:opacity-50 transition-colors';
 
 function EpicManager({
   actionEpicId,
@@ -37,12 +37,12 @@ function EpicManager({
       {/* Intro */}
       <div className="flex items-flex-start justify-between gap-4">
         <div>
-          <span className="text-olive-600  font-['Space_Grotesk'] text-[0.72rem] tracking-[0.12em] uppercase">Epic layer</span>
-          <h3 className="my-1 text-olive-950 ">{projectName} epics</h3>
-          <p className="text-olive-500  m-0 text-sm">Create, reorder, rename, or remove epics without affecting the underlying tasks.</p>
+          <span className="text-slate-600  font-['Space_Grotesk'] text-xs tracking-wide uppercase">Epic layer</span>
+          <h3 className="my-1 text-slate-950 ">{projectName} epics</h3>
+          <p className="text-slate-500  m-0 text-sm">Create, reorder, rename, or remove epics without affecting the underlying tasks.</p>
         </div>
         <button
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-olive-900  text-white rounded text-sm font-medium hover:bg-olive-800  transition-colors shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900  text-white rounded text-sm font-medium hover:bg-slate-800  transition-colors shrink-0"
           onClick={onCreateEpic}
           type="button"
         >
@@ -61,18 +61,18 @@ function EpicManager({
           {epics.map((epic, index) => (
             <div
               key={epic.id}
-              className="flex items-stretch bg-gradient-to-b from-white/98 to-olive-50/98   border border-olive-200/60  rounded-lg grid gap-3 grid-cols-[1fr_auto] p-[18px]"
+              className="flex items-stretch bg-gradient-to-b from-white/98 to-slate-50/98   border border-slate-200/60  rounded-lg grid gap-3 grid-cols-[1fr_auto] p-[18px]"
             >
               {/* Copy */}
               <div className="grid gap-1.5">
-                <span className="text-olive-600  font-['Space_Grotesk'] text-[0.72rem] tracking-[0.12em] uppercase">
+                <span className="text-slate-600  font-['Space_Grotesk'] text-xs tracking-wide uppercase">
                   Epic #{index + 1}
                 </span>
-                <strong className="text-olive-950  text-[1.05rem]">{epic.name}</strong>
-                <span className="text-olive-500  text-sm">
+                <strong className="text-slate-950  text-[1.05rem]">{epic.name}</strong>
+                <span className="text-slate-500  text-sm">
                   {epic.description?.trim() ? epic.description : 'No description provided.'}
                 </span>
-                <span className={`inline-block self-start rounded text-[0.72rem] font-semibold px-2 py-0.5 mt-0.5 ${statusPillClasses[epic.status] ?? statusPillClasses.planned}`}>
+                <span className={`inline-block self-start rounded text-xs font-semibold px-2 py-0.5 mt-0.5 ${statusPillClasses[epic.status] ?? statusPillClasses.planned}`}>
                   {epic.status}
                 </span>
               </div>

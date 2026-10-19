@@ -89,7 +89,7 @@ export default function DataTable<TData>({
                   return (
                     <th
                       key={header.id}
-                      className={`px-5 py-3 text-[0.7rem] font-semibold uppercase tracking-wide text-slate-500 first:rounded-l-lg last:rounded-r-lg border-b border-slate-200 ${header.column.columnDef.meta?.className ?? ''}`}
+                      className={`px-5 py-3 text-[11px] font-semibold uppercase tracking-wide text-slate-500 first:rounded-l-lg last:rounded-r-lg border-b border-slate-200 ${header.column.columnDef.meta?.className ?? ''}`}
                       style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
                     >
                       {header.isPlaceholder ? null : (
@@ -103,7 +103,7 @@ export default function DataTable<TData>({
                         >
                           {flexRender(header.column.columnDef.header, header.getContext())}
                           {isSortable && (
-                            <div className="text-olive-300  group-hover:text-olive-500 transition-colors">
+                            <div className="text-slate-300  group-hover:text-slate-500 transition-colors">
                               {sortingState === 'asc' ? (
                                 <ArrowUp size={14} />
                               ) : sortingState === 'desc' ? (
@@ -121,10 +121,10 @@ export default function DataTable<TData>({
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-olive-50 ">
+          <tbody className="divide-y divide-slate-50 ">
             {loading ? (
               Array.from({ length: skeletonRows }).map((_, i) => (
-                <tr key={`skeleton-${i}`} className="bg-white  shadow-sm border border-olive-50 ">
+                <tr key={`skeleton-${i}`} className="bg-white  shadow-sm border border-slate-50 ">
                   {Array.from({ length: columnsCount }).map((_, j) => (
                     <td key={`skeleton-cell-${j}`} className="px-6 py-4 border-y border-transparent first:rounded-l-xl last:rounded-r-xl">
                       <Skeleton variant="text" className="w-full" />
@@ -134,7 +134,7 @@ export default function DataTable<TData>({
               ))
             ) : table.getRowModel().rows.length === 0 ? (
               <tr>
-                <td colSpan={columnsCount} className="py-20 text-center text-olive-400 ">
+                <td colSpan={columnsCount} className="py-20 text-center text-slate-400 ">
                   {emptyMessage}
                 </td>
               </tr>
@@ -144,7 +144,7 @@ export default function DataTable<TData>({
                   <tr
                     className={`group transition-colors relative bg-white border-b border-slate-100 last:border-b-0 hover:bg-slate-50 ${onRowClick ? 'cursor-pointer' : ''
                       } ${row.getIsExpanded()
-                        ? 'ring-1 ring-inset ring-olive-500/10  bg-olive-50/80  border-l-[6px] border-l-olive-600'
+                        ? 'ring-1 ring-inset ring-slate-500/10  bg-slate-50/80  border-l-[6px] border-l-slate-600'
                         : ''
                       }`}
                     onClick={() => onRowClick?.(row.original)}
@@ -164,7 +164,7 @@ export default function DataTable<TData>({
                   {renderExpandedRow && (
                     <tr
                       className={`transition-all duration-500 ease-in-out ${row.getIsExpanded()
-                        ? 'bg-olive-50/80  border-x border-b border-olive-100  opacity-100'
+                        ? 'bg-slate-50/80  border-x border-b border-slate-100  opacity-100'
                         : 'opacity-0 invisible pointer-events-none'
                         }`}
                     >
@@ -188,20 +188,20 @@ export default function DataTable<TData>({
       </div>
 
       {totalPages > 1 ? (
-        <div className="flex items-center justify-between gap-4 border-t border-olive-200 bg-white/50  backdrop-blur-md px-6 py-4  shadow-[0_-1px_3px_0_rgba(0,0,0,0.05)]">
+        <div className="flex items-center justify-between gap-4 border-t border-slate-200 bg-white/50  backdrop-blur-md px-6 py-4  shadow-[0_-1px_3px_0_rgba(0,0,0,0.05)]">
           <div className="flex items-center gap-2">
-            <span className="text-[0.68rem] font-bold uppercase tracking-widest text-olive-400 ">Page</span>
-            <div className="flex items-center px-3 py-1 rounded-full bg-olive-100  border border-olive-200  shadow-inner">
-              <span className="text-[0.75rem] font-bold text-olive-900 ">{currentPage}</span>
-              <span className="mx-1.5 text-[0.65rem] text-olive-400  font-bold">/</span>
-              <span className="text-[0.75rem] font-bold text-olive-500 ">{totalPages}</span>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400 ">Page</span>
+            <div className="flex items-center px-3 py-1 rounded-full bg-slate-100  border border-slate-200  shadow-inner">
+              <span className="text-xs font-semibold text-slate-900 ">{currentPage}</span>
+              <span className="mx-1.5 text-[11px] text-slate-400  font-semibold">/</span>
+              <span className="text-xs font-semibold text-slate-500 ">{totalPages}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="flex items-center p-1 rounded-xl bg-olive-100/50  border border-olive-200/50 ">
+            <div className="flex items-center p-1 rounded-xl bg-slate-100/50  border border-slate-200/50 ">
               <button
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-olive-400 transition-all hover:bg-white  hover:text-olive-600  disabled:opacity-20 disabled:hover:bg-transparent"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-white  hover:text-slate-600  disabled:opacity-20 disabled:hover:bg-transparent"
                 disabled={currentPage <= 1}
                 onClick={() => changePage(1)}
                 title="First Page"
@@ -210,7 +210,7 @@ export default function DataTable<TData>({
                 <ChevronsLeft size={18} strokeWidth={2.5} />
               </button>
               <button
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-olive-400 transition-all hover:bg-white  hover:text-olive-600  disabled:opacity-20 disabled:hover:bg-transparent"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-white  hover:text-slate-600  disabled:opacity-20 disabled:hover:bg-transparent"
                 disabled={currentPage <= 1}
                 onClick={() => changePage(currentPage - 1)}
                 title="Previous Page"
@@ -228,12 +228,12 @@ export default function DataTable<TData>({
                 return (
                   <React.Fragment key={page}>
                     {showGap ? (
-                      <span className="w-6 text-center text-xs font-bold text-olive-300  tracking-widest">...</span>
+                      <span className="w-6 text-center text-xs font-semibold text-slate-300  tracking-wide">...</span>
                     ) : null}
                     <button
-                      className={`flex h-9 min-w-[36px] items-center justify-center rounded-lg px-2 text-[0.72rem] font-bold transition-all duration-200 ${page === currentPage
+                      className={`flex h-9 min-w-[36px] items-center justify-center rounded-lg px-2 text-xs font-semibold transition-all duration-200 ${page === currentPage
                         ? 'bg-slate-900 text-white'
-                        : 'text-olive-500 hover:bg-white  hover:text-olive-900'
+                        : 'text-slate-500 hover:bg-white  hover:text-slate-900'
                         }`}
                       onClick={() => changePage(page)}
                       type="button"
@@ -245,9 +245,9 @@ export default function DataTable<TData>({
               })}
             </div>
 
-            <div className="flex items-center p-1 rounded-xl bg-olive-100/50  border border-olive-200/50 ">
+            <div className="flex items-center p-1 rounded-xl bg-slate-100/50  border border-slate-200/50 ">
               <button
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-olive-400 transition-all hover:bg-white  hover:text-olive-600  disabled:opacity-20 disabled:hover:bg-transparent"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-white  hover:text-slate-600  disabled:opacity-20 disabled:hover:bg-transparent"
                 disabled={currentPage >= totalPages}
                 onClick={() => changePage(currentPage + 1)}
                 title="Next Page"
@@ -256,7 +256,7 @@ export default function DataTable<TData>({
                 <ChevronRight size={18} strokeWidth={2.5} />
               </button>
               <button
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-olive-400 transition-all hover:bg-white  hover:text-olive-600  disabled:opacity-20 disabled:hover:bg-transparent"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-all hover:bg-white  hover:text-slate-600  disabled:opacity-20 disabled:hover:bg-transparent"
                 disabled={currentPage >= totalPages}
                 onClick={() => changePage(totalPages)}
                 title="Last Page"

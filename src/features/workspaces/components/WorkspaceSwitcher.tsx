@@ -51,7 +51,7 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
 
         {isOpen && (
           <div className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1.5rem)] bg-white border border-slate-200/90 rounded-xl shadow-xl shadow-slate-200/60 z-50 p-2 text-sm animate-in fade-in slide-in-from-top-2 duration-150">
-            <div className="px-2.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider select-none">
+            <div className="px-2.5 py-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide select-none">
               Workspaces
             </div>
 
@@ -75,7 +75,7 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div
-                        className={`w-7 h-7 rounded-md font-bold text-xs flex items-center justify-center flex-shrink-0 ${
+                        className={`w-7 h-7 rounded-md font-semibold text-xs flex items-center justify-center flex-shrink-0 ${
                           isActive
                             ? 'bg-blue-100 text-blue-700 border border-blue-200/80'
                             : 'bg-slate-100 text-slate-600 border border-slate-200/60'
@@ -87,7 +87,7 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
                         <div className={`truncate text-xs font-semibold ${isActive ? 'text-blue-950' : 'text-slate-800'}`}>
                           {ws.name}
                         </div>
-                        <div className={`text-[10px] truncate ${isActive ? 'text-blue-600/80' : 'text-slate-400'}`}>
+                        <div className={`text-[11px] truncate ${isActive ? 'text-blue-600/80' : 'text-slate-400'}`}>
                           {ws.memberCount} member{ws.memberCount !== 1 ? 's' : ''} · {ws.role}
                         </div>
                       </div>

@@ -147,7 +147,7 @@ function ProjectPanel({
         return (
           <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
             <button
-              className={`${rowActionCls} hover:bg-olive-100  hover:text-olive-600  disabled:opacity-40`}
+              className={`${rowActionCls} hover:bg-slate-100  hover:text-slate-600  disabled:opacity-40`}
               disabled={project.currentUserRole !== 'ADMIN'}
               onClick={() => onOpenEpicManager(project)}
               title="Open epics"
@@ -156,7 +156,7 @@ function ProjectPanel({
               <Layers3 size={16} />
             </button>
             <button
-              className={`${rowActionCls} hover:bg-olive-100  hover:text-olive-900  disabled:opacity-40`}
+              className={`${rowActionCls} hover:bg-slate-100  hover:text-slate-900  disabled:opacity-40`}
               disabled={project.currentUserRole !== 'ADMIN'}
               onClick={() => onOpenUpdateProject(project)}
               title="Edit project"
@@ -301,11 +301,11 @@ function ProjectPanel({
                 />
               </div>
 
-              <h3 className="text-xl font-bold text-olive-950  mb-2 tracking-tight">
+              <h3 className="text-xl font-semibold text-slate-950  mb-2 tracking-tight">
                 {searchTerm ? "No matching projects" : "No projects yet"}
               </h3>
 
-              <p className="text-olive-500  text-sm mb-8 leading-relaxed px-4">
+              <p className="text-slate-500  text-sm mb-8 leading-relaxed px-4">
                 {searchTerm
                   ? "No projects match your search. Try a different term."
                   : "Create your first project to start planning epics and tasks with your team."}
@@ -313,7 +313,7 @@ function ProjectPanel({
 
               <button
                 onClick={searchTerm ? () => onSearch('') : onOpenCreateProject}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-olive-900  text-white rounded-lg text-sm font-bold shadow-lg shadow-olive-950/20 hover:bg-olive-800  transform transition-all active:scale-95 duration-200"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900  text-white rounded-lg text-sm font-semibold shadow-lg shadow-slate-950/20 hover:bg-slate-800  transform transition-all active:scale-95 duration-200"
                 type="button"
               >
                 {searchTerm ? (

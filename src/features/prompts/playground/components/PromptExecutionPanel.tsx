@@ -71,18 +71,18 @@ export const PromptExecutionPanel: React.FC<PromptExecutionPanelProps> = ({
   };
 
   return (
-    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-2xs space-y-4">
+    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+        <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wide">
           Playground Execution Output
         </h3>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onOpenParametersModal}
-            className="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold text-xs transition flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center gap-1.5 cursor-pointer"
           >
-            <Settings className="w-3.5 h-3.5 text-gray-500" />
+            <Settings className="w-3.5 h-3.5 text-slate-500" />
             Config ({parameters.modelName})
           </button>
 
@@ -90,7 +90,7 @@ export const PromptExecutionPanel: React.FC<PromptExecutionPanelProps> = ({
             type="button"
             onClick={handleRunPlayground}
             disabled={isExecuting}
-            className="px-4 py-1.5 rounded-lg bg-olive-700 hover:bg-olive-800 text-white font-bold text-xs transition shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="px-4 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-800 text-white font-semibold text-xs transition shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             {isExecuting ? (
               <>
@@ -113,7 +113,7 @@ export const PromptExecutionPanel: React.FC<PromptExecutionPanelProps> = ({
 
       {runResult ? (
         <div className="space-y-3">
-          <div className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg border border-gray-200 text-[11px] text-gray-600 font-mono">
+          <div className="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 text-[11px] text-slate-600 font-mono">
             <div className="flex items-center gap-3">
               <span>Model: <strong>{runResult.metadata?.modelName || parameters.modelName}</strong></span>
               <span>Tokens: <strong>{runResult.metadata?.totalTokens || 0}</strong></span>
@@ -122,7 +122,7 @@ export const PromptExecutionPanel: React.FC<PromptExecutionPanelProps> = ({
             <button
               type="button"
               onClick={handleCopyOutput}
-              className="flex items-center gap-1 text-gray-500 hover:text-gray-900 transition cursor-pointer"
+              className="flex items-center gap-1 text-slate-500 hover:text-slate-900 transition cursor-pointer"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? "Copied" : "Copy Output"}
@@ -134,8 +134,8 @@ export const PromptExecutionPanel: React.FC<PromptExecutionPanelProps> = ({
           </div>
         </div>
       ) : (
-        <div className="p-8 border border-dashed border-gray-200 rounded-xl text-center text-xs text-gray-400 space-y-1">
-          <p className="font-semibold text-gray-600">No Execution Run Output</p>
+        <div className="p-8 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400 space-y-1">
+          <p className="font-semibold text-slate-600">No Execution Run Output</p>
           <p>Click &quot;Run Test Prompt&quot; above to execute your prompt template against selected model AI providers.</p>
         </div>
       )}

@@ -145,14 +145,14 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
   return (
     <div className="flex flex-col h-full bg-white relative font-sans">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-olive-200/80 bg-white flex items-center justify-between shadow-xs z-10 shrink-0">
+      <div className="px-5 py-4 border-b border-slate-200/80 bg-white flex items-center justify-between shadow-xs z-10 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-olive-50 border border-olive-100 flex items-center justify-center text-olive-700 font-bold shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700 font-semibold shrink-0">
             <MessageSquare size={18} />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-olive-950 truncate tracking-tight m-0">
+              <h3 className="text-sm font-semibold text-slate-950 truncate tracking-tight m-0">
                 {project.name}
               </h3>
               <span
@@ -162,7 +162,7 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
                 title={isConnected ? 'Connected' : 'Reconnecting...'}
               />
             </div>
-            <p className="text-[11px] text-olive-500 font-medium truncate m-0">
+            <p className="text-[11px] text-slate-500 font-medium truncate m-0">
               {members.length} member{members.length === 1 ? '' : 's'}
             </p>
           </div>
@@ -173,8 +173,8 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
             onClick={() => setShowSearch(!showSearch)}
             className={`p-2 rounded-lg transition-colors ${
               showSearch
-                ? 'bg-olive-100 text-olive-700'
-                : 'text-olive-500 hover:bg-olive-50 hover:text-olive-800'
+                ? 'bg-slate-100 text-slate-700'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
             }`}
             title="Search channel history"
             type="button"
@@ -185,8 +185,8 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
             onClick={() => setNotificationsEnabled(!notificationsEnabled)}
             className={`p-2 rounded-lg transition-colors ${
               notificationsEnabled
-                ? 'text-olive-700 hover:bg-olive-50'
-                : 'text-olive-400 hover:bg-olive-50'
+                ? 'text-slate-700 hover:bg-slate-50'
+                : 'text-slate-400 hover:bg-slate-50'
             }`}
             title={notificationsEnabled ? 'Mute notifications' : 'Enable notifications'}
             type="button"
@@ -198,15 +198,15 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
 
       {/* Search Input Banner */}
       {showSearch && (
-        <div className="p-3 bg-olive-50/80 border-b border-olive-200 animate-in slide-in-from-top-2 duration-200 shrink-0">
+        <div className="p-3 bg-slate-50/80 border-b border-slate-200 animate-in slide-in-from-top-2 duration-200 shrink-0">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 text-olive-400" size={14} />
+            <Search className="absolute left-3 top-2.5 text-slate-400" size={14} />
             <input
               type="text"
               placeholder="Search in message history..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-white border border-olive-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-olive-500/20"
+              className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-slate-500/20"
             />
           </div>
         </div>
@@ -220,21 +220,21 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
       >
         {isLoading && hasMore && (
           <div className="flex justify-center py-2">
-            <Loader2 className="animate-spin text-olive-500" size={18} />
+            <Loader2 className="animate-spin text-slate-500" size={18} />
           </div>
         )}
 
         {showSearch && searchQuery.trim() ? (
           <div>
-            <div className="text-[11px] font-bold text-olive-400 uppercase tracking-widest mb-3">
+            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-3">
               Search Results ({searchResults.length})
             </div>
             {isSearching ? (
               <div className="flex justify-center py-6">
-                <Loader2 className="animate-spin text-olive-500" size={18} />
+                <Loader2 className="animate-spin text-slate-500" size={18} />
               </div>
             ) : searchResults.length === 0 ? (
-              <div className="text-center py-8 text-xs text-olive-400">
+              <div className="text-center py-8 text-xs text-slate-400">
                 No matching messages found
               </div>
             ) : (
@@ -256,7 +256,7 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
         ) : (
           <>
             {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center text-olive-400 py-12">
+              <div className="flex flex-col items-center justify-center h-full text-center text-slate-400 py-12">
                 <Users size={32} className="opacity-30 mb-2" />
                 <p className="text-xs font-semibold m-0">No chat messages yet</p>
                 <p className="text-[11px] mt-1 m-0">Start the conversation with your team!</p>
@@ -283,8 +283,8 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
 
       {/* Typing Indicator Bar */}
       {activeTypingUsers.length > 0 && (
-        <div className="px-5 py-1 text-[11px] font-medium text-olive-500 italic bg-white border-t border-olive-100 flex items-center gap-1.5 shrink-0">
-          <span className="w-1.5 h-1.5 bg-olive-500 rounded-full animate-ping" />
+        <div className="px-5 py-1 text-[11px] font-medium text-slate-500 italic bg-white border-t border-slate-100 flex items-center gap-1.5 shrink-0">
+          <span className="w-1.5 h-1.5 bg-slate-500 rounded-full animate-ping" />
           <span>
             {activeTypingUsers.map(u => u.userName).join(', ')} {activeTypingUsers.length === 1 ? 'is' : 'are'} typing...
           </span>
@@ -292,7 +292,7 @@ export function ChatPanel({ project, members, isOpen }: ChatPanelProps) {
       )}
 
       {/* Chat Input Container */}
-      <div className="p-3 bg-white border-t border-olive-200/80 shrink-0">
+      <div className="p-3 bg-white border-t border-slate-200/80 shrink-0">
         <ChatInput
           onSendMessage={(content) => {
             sendMessage(content, replyingTo?.id);

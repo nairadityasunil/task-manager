@@ -25,8 +25,8 @@ interface AddTaskFormProps {
   projects: Project[];
 }
 
-const inputCls = 'w-full bg-white/82  border border-olive-200  rounded-md text-olive-950  px-4 py-3.5 transition-all duration-200 focus:outline-none focus:border-olive-500  focus:ring-2 focus:ring-olive-500/10';
-const labelCls = 'grid gap-2 font-medium text-[0.95rem] text-olive-950';
+const inputCls = 'w-full bg-white/82  border border-slate-200  rounded-md text-slate-950  px-4 py-3.5 transition-all duration-200 focus:outline-none focus:border-slate-500  focus:ring-2 focus:ring-slate-500/10';
+const labelCls = 'grid gap-2 font-medium text-[15px] text-slate-950';
 
 function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onCreateTask, projects }: AddTaskFormProps): JSX.Element {
   const { user } = useAuth();
@@ -129,7 +129,7 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
       </label>
 
       <label className={labelCls}>
-        <span>Description <span className="text-olive-400  font-normal text-[0.82rem]">(optional)</span></span>
+        <span>Description <span className="text-slate-400  font-normal text-[13px]">(optional)</span></span>
         <textarea
           className={`${inputCls} min-h-[80px] resize-y`}
           onChange={(event) => setDescription(event.target.value)}
@@ -215,7 +215,7 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
       )}
 
       <button
-        className="bg-olive-900  text-white rounded-md px-4 py-3 text-[0.95rem] font-bold hover:bg-olive-800  disabled:opacity-50 transition-colors shadow-lg shadow-olive-500/20"
+        className="bg-slate-900  text-white rounded-md px-4 py-3 text-[15px] font-semibold hover:bg-slate-800  disabled:opacity-50 transition-colors shadow-lg shadow-slate-500/20"
         disabled={submitting}
         type="submit"
       >
@@ -225,7 +225,7 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
       {errorMessage ? (
         <div className="flex items-center gap-2 p-3 bg-red-50  border border-red-100  rounded-lg">
           <AlertTriangle size={14} className="text-red-500" />
-          <p className="text-red-600  m-0 text-[0.85rem] font-medium">{errorMessage}</p>
+          <p className="text-red-600  m-0 text-sm font-medium">{errorMessage}</p>
         </div>
       ) : null}
     </form>

@@ -293,12 +293,12 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[1000] p-4 overflow-y-auto">
-      <div className="bg-slate-950/95 border border-slate-800/90 rounded-2xl w-full max-w-5xl h-[90vh] flex shadow-2xl shadow-black/80 overflow-hidden text-slate-100 backdrop-blur-xl animate-modalIn">
+      <div className="bg-slate-950/95 border border-slate-800/90 rounded-2xl w-full max-w-5xl h-[90vh] flex shadow-xl shadow-black/80 overflow-hidden text-slate-100 backdrop-blur-xl animate-modalIn">
         {/* Left History Sidebar */}
         <div className="w-64 border-r border-slate-800/80 bg-slate-950/80 p-4 flex flex-col justify-between shrink-0">
           <div className="space-y-4 flex-1 overflow-y-auto pr-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
+              <span className="text-xs font-semibold text-slate-300 uppercase tracking-wide flex items-center space-x-1.5">
                 <History className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Conversation History</span>
               </span>
@@ -327,7 +327,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                 >
                   <div className="flex-1 min-w-0 pr-2">
                     <div className="truncate font-medium text-slate-200">{sess.title}</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">{sess.createdAt}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">{sess.createdAt}</div>
                   </div>
                   <button
                     type="button"
@@ -357,7 +357,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">AI Project Architect & Master Planner</h3>
+                <h3 className="text-base font-semibold text-white">AI Project Architect & Master Planner</h3>
                 <p className="text-xs text-slate-400">Transform high-level system ideas into reviewable blueprints & PRDs</p>
               </div>
             </div>
@@ -374,7 +374,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                     setSelectedProvider(p as "gemini" | "openai" | "anthropic");
                     setSelectedModel(m);
                   }}
-                  className="bg-transparent text-slate-100 font-bold text-xs focus:outline-none cursor-pointer pr-1"
+                  className="bg-transparent text-slate-100 font-semibold text-xs focus:outline-none cursor-pointer pr-1"
                 >
                   <option value="gemini:gemini-3.6-flash" className="bg-slate-900 text-slate-100">✨ Google Gemini 3.6 Flash (Default)</option>
                   <option value="gemini:gemini-2.5-pro" className="bg-slate-900 text-slate-100">🧠 Google Gemini 2.5 Pro</option>
@@ -421,7 +421,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
             <div className="flex-1 p-6 overflow-y-auto space-y-6">
               {error && (
                 <div className="p-3.5 bg-rose-950/40 border border-rose-800/80 text-rose-200 rounded-xl text-xs space-y-1.5 shadow-sm">
-                  <div className="flex items-center space-x-2 font-bold text-rose-300">
+                  <div className="flex items-center space-x-2 font-semibold text-rose-300">
                     <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
                     <span>{error}</span>
                   </div>
@@ -437,12 +437,12 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                 /* System Prompt Input */
                 <form onSubmit={handleGenerate} className="space-y-5 max-w-2xl mx-auto pt-6">
                   <div className="text-center space-y-2 mb-6">
-                    <h4 className="text-xl font-bold text-white tracking-tight">Describe Your System or Product Idea</h4>
+                    <h4 className="text-xl font-semibold text-white tracking-tight">Describe Your System or Product Idea</h4>
                     <p className="text-xs text-slate-400 leading-relaxed max-w-lg mx-auto">Describe the basic workflow in simple language. The AI will decompose actors, system modules, feature specs, effort, and risks without writing source code.</p>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wide mb-2">
                       High-Level System Requirement
                     </label>
                     <textarea
@@ -456,7 +456,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wide mb-2">
                       Technical Stack / Constraints (Optional)
                     </label>
                     <textarea
@@ -470,7 +470,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
                   {loading && (
                     <div className="p-4 bg-slate-950/90 border border-slate-800 rounded-2xl space-y-3 shadow-inner">
-                      <div className="flex items-center space-x-3 text-white font-bold text-xs">
+                      <div className="flex items-center space-x-3 text-white font-semibold text-xs">
                         <Sparkles className="w-4 h-4 text-emerald-400 animate-spin shrink-0" />
                         <span>AI Architect is synthesizing your technical blueprint...</span>
                       </div>
@@ -488,7 +488,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                           <span>Estimating engineering effort, risk mitigations & milestone roadmap</span>
                         </div>
                       </div>
-                      <div className="text-[10px] text-slate-400 italic">
+                      <div className="text-[11px] text-slate-400 italic">
                         Detailed production engineering blueprints take ~30–60 seconds to synthesize.
                       </div>
                     </div>
@@ -498,7 +498,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold text-xs shadow-xl shadow-emerald-950/60 transition disabled:opacity-50 flex items-center justify-center space-x-2"
+                      className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-semibold text-xs shadow-xl shadow-emerald-950/60 transition disabled:opacity-50 flex items-center justify-center space-x-2"
                     >
                       <Sparkles className="w-4 h-4" />
                       <span>{loading ? "Synthesizing Architecture..." : "Synthesize Technical Plan & PRD"}</span>
@@ -512,8 +512,8 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   <div className="p-4 bg-slate-950/90 border border-emerald-500/40 rounded-2xl flex items-center justify-between shadow-xl">
                     <div className="space-y-1">
                       <div className="flex items-center space-x-2">
-                        <h4 className="text-base font-bold text-white">{generatedPlan.name}</h4>
-                        <span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded text-[10px] font-bold">
+                        <h4 className="text-base font-semibold text-white">{generatedPlan.name}</h4>
+                        <span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-800 rounded text-[11px] font-semibold">
                           BLUEPRINT SYNTHESIZED
                         </span>
                       </div>
@@ -523,7 +523,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                     <div className="flex items-center space-x-3 shrink-0">
                       <button
                         onClick={() => setShowApprovalDialog(true)}
-                        className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-950/60 transition flex items-center space-x-2"
+                        className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-950/60 transition flex items-center space-x-2"
                       >
                         <FolderPlus className="w-4 h-4" />
                         <span>Materialize Project Structure</span>
@@ -534,7 +534,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   {/* Delta Notification Callout */}
                   {lastDelta && (
                     <div className="p-3.5 bg-emerald-950/40 border border-emerald-800/80 text-emerald-200 rounded-xl text-xs space-y-1">
-                      <div className="font-bold text-emerald-300 flex items-center space-x-1.5">
+                      <div className="font-semibold text-emerald-300 flex items-center space-x-1.5">
                         <Check className="w-4 h-4 text-emerald-400" />
                         <span>Modification Applied cleanly:</span>
                       </div>
@@ -549,7 +549,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                         <button
                           key={tab}
                           onClick={() => setActiveBlueprintSubTab(tab)}
-                          className={`px-3.5 py-1.5 rounded-lg text-xs font-bold capitalize transition ${
+                          className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold capitalize transition ${
                             activeBlueprintSubTab === tab
                               ? "bg-slate-800 text-emerald-300 border border-slate-700"
                               : "text-slate-400 hover:text-white hover:bg-slate-800/50"
@@ -569,24 +569,24 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   {activeBlueprintSubTab === "blueprint" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                       <div className="p-4 bg-slate-950/80 border border-slate-800/80 rounded-xl space-y-2">
-                        <h5 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] text-emerald-400">System Goal</h5>
+                        <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">System Goal</h5>
                         <p className="text-slate-300 leading-relaxed">{generatedPlan.systemGoal || generatedPlan.description}</p>
                       </div>
 
                       <div className="p-4 bg-slate-950/80 border border-slate-800/80 rounded-xl space-y-2">
-                        <h5 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] text-emerald-400">Target Tech Stack</h5>
+                        <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">Target Tech Stack</h5>
                         <p className="text-slate-300 leading-relaxed font-mono">{generatedPlan.recommendedStack || "React, Node.js, TypeScript, PostgreSQL"}</p>
                       </div>
 
                       <div className="p-4 bg-slate-950/80 border border-slate-800/80 rounded-xl space-y-2 md:col-span-2">
-                        <h5 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] text-emerald-400">System Modules & Epic Specs</h5>
+                        <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">System Modules & Epic Specs</h5>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                           {generatedPlan.modules?.map((m, idx) => (
                             <div key={idx} className="p-3 bg-slate-900/90 border border-slate-800 rounded-lg space-y-1">
                               <div className="font-semibold text-white">{m.name}</div>
                               <div className="text-[11px] text-slate-400">{m.description}</div>
                               {m.features && (
-                                <div className="text-[10px] text-slate-500 font-mono pt-1">
+                                <div className="text-[11px] text-slate-500 font-mono pt-1">
                                   Features: {m.features.join(", ")}
                                 </div>
                               )}
@@ -599,7 +599,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
                   {activeBlueprintSubTab === "features" && (
                     <div className="space-y-3 text-xs">
-                      <h5 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] text-emerald-400">Synthesized User Tasks & Work Breakdown</h5>
+                      <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">Synthesized User Tasks & Work Breakdown</h5>
                       <div className="space-y-2">
                         {generatedPlan.tasks?.map((t, idx) => (
                           <div key={idx} className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between">
@@ -607,7 +607,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                               <span className="font-semibold text-white">{t.title}</span>
                               <p className="text-[11px] text-slate-400">{t.description}</p>
                             </div>
-                            <span className="px-2 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px] font-mono border border-slate-700">
+                            <span className="px-2 py-0.5 bg-slate-800 text-slate-300 rounded text-[11px] font-mono border border-slate-700">
                               {t.estimatedHours || 4}h
                             </span>
                           </div>
@@ -618,13 +618,13 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
                   {activeBlueprintSubTab === "risks" && (
                     <div className="space-y-3 text-xs">
-                      <h5 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] text-emerald-400">Engineering Risk Assessment</h5>
+                      <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">Engineering Risk Assessment</h5>
                       <div className="grid grid-cols-1 gap-2">
                         {generatedPlan.risks?.map((r, idx) => (
                           <div key={idx} className="p-3.5 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1">
                             <div className="flex items-center justify-between">
-                              <span className="font-bold text-rose-300">{r.title}</span>
-                              <span className="px-2 py-0.5 bg-rose-950 text-rose-300 border border-rose-800 rounded text-[10px] font-mono uppercase font-bold">
+                              <span className="font-semibold text-rose-300">{r.title}</span>
+                              <span className="px-2 py-0.5 bg-rose-950 text-rose-300 border border-rose-800 rounded text-[11px] font-mono uppercase font-semibold">
                                 {r.severity || "MEDIUM"}
                               </span>
                             </div>
@@ -637,9 +637,9 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
                   {activeBlueprintSubTab === "timeline" && (
                     <div className="p-4 bg-slate-950/80 border border-slate-800 rounded-xl text-xs space-y-2">
-                      <h5 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] text-emerald-400">Execution Timeline & Milestones</h5>
+                      <h5 className="font-semibold text-slate-200 uppercase tracking-wide text-[11px] text-emerald-400">Execution Timeline & Milestones</h5>
                       <div className="text-slate-300 space-y-2 pt-1">
-                        <div>Estimated Engineering Duration: <span className="font-bold text-white">{generatedPlan.timeline?.estimatedCalendarWeeks || 4} Weeks</span></div>
+                        <div>Estimated Engineering Duration: <span className="font-semibold text-white">{generatedPlan.timeline?.estimatedCalendarWeeks || 4} Weeks</span></div>
                         <div className="space-y-1 pt-2">
                           {generatedPlan.timeline?.milestones?.map((m, idx) => (
                             <div key={idx} className="p-2 bg-slate-900 border border-slate-800 rounded flex justify-between">
@@ -655,11 +655,11 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   {/* Refinement Change Request Input */}
                   <form onSubmit={handleApplyChangeRequest} className="p-4 bg-slate-950/90 border border-slate-800 rounded-2xl space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center space-x-1.5">
+                      <label className="text-xs font-semibold text-slate-200 uppercase tracking-wide flex items-center space-x-1.5">
                         <Edit3 className="w-3.5 h-3.5 text-emerald-400" />
                         <span>Refine / Modify Blueprint</span>
                       </label>
-                      <span className="text-[10px] text-slate-500">Ask the AI to add modules, tweak tech stack, adjust effort</span>
+                      <span className="text-[11px] text-slate-500">Ask the AI to add modules, tweak tech stack, adjust effort</span>
                     </div>
 
                     <div className="flex space-x-2">
@@ -673,7 +673,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                       <button
                         type="submit"
                         disabled={modifying || !changeRequest.trim()}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50 shrink-0"
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl shadow-md transition disabled:opacity-50 shrink-0"
                       >
                         {modifying ? "Updating..." : "Apply Edit"}
                       </button>
@@ -691,7 +691,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                     <button
                       key={type}
                       onClick={() => setSelectedArtifactType(type)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide transition ${
                         selectedArtifactType === type
                           ? "bg-emerald-600 text-white shadow"
                           : "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
@@ -795,13 +795,13 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
       {/* Explicit Approval Safety Confirmation Modal */}
       {showApprovalDialog && generatedPlan && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[1100] p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl text-slate-100">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl text-slate-100">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 shrink-0">
                 <FolderPlus className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-white text-base">Approve & Create Project</h4>
+                <h4 className="font-semibold text-white text-base">Approve & Create Project</h4>
                 <p className="text-xs text-slate-400">Confirm project materialization from approved plan</p>
               </div>
             </div>
@@ -809,19 +809,19 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
             <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-xs space-y-2">
               <div className="flex justify-between text-slate-300">
                 <span>Project Name:</span>
-                <span className="font-bold text-white">{generatedPlan.name}</span>
+                <span className="font-semibold text-white">{generatedPlan.name}</span>
               </div>
               <div className="flex justify-between text-slate-300">
                 <span>Modules & Epics:</span>
-                <span className="font-bold text-white">{generatedPlan.modules?.length || 0} Modules</span>
+                <span className="font-semibold text-white">{generatedPlan.modules?.length || 0} Modules</span>
               </div>
               <div className="flex justify-between text-slate-300">
                 <span>Tasks & Subtasks:</span>
-                <span className="font-bold text-white">{generatedPlan.tasks?.length || 0} Tasks</span>
+                <span className="font-semibold text-white">{generatedPlan.tasks?.length || 0} Tasks</span>
               </div>
               <div className="flex justify-between text-slate-300">
                 <span>Estimated Duration:</span>
-                <span className="font-bold text-white">~{generatedPlan.timeline?.estimatedCalendarWeeks || 4} Weeks</span>
+                <span className="font-semibold text-white">~{generatedPlan.timeline?.estimatedCalendarWeeks || 4} Weeks</span>
               </div>
             </div>
 
@@ -839,7 +839,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
               <button
                 onClick={handleConfirmPlanExecution}
                 disabled={confirming}
-                className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-950/50 transition disabled:opacity-50 flex items-center space-x-1.5"
+                className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-950/50 transition disabled:opacity-50 flex items-center space-x-1.5"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>{confirming ? "Creating Project..." : "Confirm & Create"}</span>

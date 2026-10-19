@@ -89,7 +89,7 @@ export function EngagementFab(): JSX.Element {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="absolute bottom-16 right-0 w-80 bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden z-[9999]"
+              className="absolute bottom-16 right-0 w-80 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden z-[9999]"
             >
               <div className="p-4 bg-gradient-to-r from-slate-800 to-slate-900 text-white flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -98,7 +98,7 @@ export function EngagementFab(): JSX.Element {
                   </div>
                   <div>
                     <h3 className="font-semibold text-sm leading-none">Pristine Guide</h3>
-                    <p className="text-[10px] text-slate-200/80 mt-1">Manual triggers & tours</p>
+                    <p className="text-[11px] text-slate-200/80 mt-1">Manual triggers & tours</p>
                   </div>
                 </div>
                 <button
@@ -109,7 +109,7 @@ export function EngagementFab(): JSX.Element {
                 </button>
               </div>
               <div className="p-2 max-h-[350px] overflow-y-auto">
-                <div className="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <div className="px-3 py-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                   Page Tours
                 </div>
                 <div className="space-y-1">
@@ -129,14 +129,14 @@ export function EngagementFab(): JSX.Element {
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                           )}
                         </div>
-                        <p className="text-[10px] text-slate-500 truncate mt-0.5">{tour.description}</p>
+                        <p className="text-[11px] text-slate-500 truncate mt-0.5">{tour.description}</p>
                       </div>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform shrink-0 self-center" />
                     </button>
                   ))}
                 </div>
                 <div className="h-px bg-slate-100 my-2" />
-                <div className="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                <div className="px-3 py-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                   User Surveys
                 </div>
                 <button
@@ -150,7 +150,7 @@ export function EngagementFab(): JSX.Element {
                     <div className="font-semibold text-xs text-slate-800 group-hover:text-slate-800">
                       NPS Pulse Survey
                     </div>
-                    <p className="text-[10px] text-slate-500 truncate mt-0.5">Share your feedback about the portal</p>
+                    <p className="text-[11px] text-slate-500 truncate mt-0.5">Share your feedback about the portal</p>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform shrink-0 self-center" />
                 </button>

@@ -60,13 +60,13 @@ function ExperienceAnalyticsModal({ experience, sdkIntegrationId, onClose }: Exp
       <aside
         aria-label={`${experience.title} analytics`}
         aria-modal="true"
-        className="flex h-full w-full max-w-2xl flex-col bg-slate-50 shadow-2xl"
+        className="flex h-full w-full max-w-2xl flex-col bg-slate-50 shadow-xl"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
       >
         <header className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-6 py-5">
           <div className="min-w-0">
-            <p className="m-0 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <p className="m-0 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
               <BarChart3 size={13} /> {isSurvey ? 'Survey' : 'Guide'} analytics
             </p>
             <h2 className="m-0 mt-1 truncate text-lg font-semibold text-slate-900">{experience.title}</h2>

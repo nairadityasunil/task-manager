@@ -20,7 +20,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ tasks, onTaskClick }
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
       <div className="flex items-center space-x-3 mb-6">
         <GitCommitHorizontal className="w-5 h-5 text-blue-400" />
-        <h3 className="text-lg font-bold text-slate-100">Project Timeline & Milestones</h3>
+        <h3 className="text-lg font-semibold text-slate-100">Project Timeline & Milestones</h3>
       </div>
 
       {tasks.length === 0 ? (
@@ -40,7 +40,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({ tasks, onTaskClick }
 
               <div className="bg-slate-950/80 border border-slate-800/80 hover:border-slate-700 p-4 rounded-xl transition flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
-                  <div className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-0.5">
+                  <div className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-0.5">
                     {task.epicName || "Milestone Task"}
                   </div>
                   <h4 className="text-sm font-semibold text-slate-200 group-hover:text-blue-300 transition">

@@ -292,20 +292,20 @@ function GuideOverlay({
 
   if (guide.type === 'BANNER') {
     return (
-      <div className="fixed left-0 right-0 top-0 z-[10000] border-b border-olive-200 bg-white shadow-lg">
+      <div className="fixed left-0 right-0 top-0 z-[10000] border-b border-slate-200 bg-white shadow-lg">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
           <div className="flex items-center gap-3 min-w-0">
-            <Megaphone size={18} className="shrink-0 text-olive-700" />
+            <Megaphone size={18} className="shrink-0 text-slate-700" />
             <div className="min-w-0">
-              <p className="m-0 text-sm font-bold text-olive-950">{guide.title}</p>
-              {guide.description && <p className="m-0 text-xs text-olive-500">{guide.description}</p>}
+              <p className="m-0 text-sm font-semibold text-slate-950">{guide.title}</p>
+              {guide.description && <p className="m-0 text-xs text-slate-500">{guide.description}</p>}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="rounded-md bg-olive-700 px-3 py-1.5 text-xs font-bold text-white cursor-pointer hover:bg-olive-800 transition" onClick={() => { onTrack('banner_clicked'); onComplete(); }} type="button">
+            <button className="rounded-md bg-slate-700 px-3 py-1.5 text-xs font-semibold text-white cursor-pointer hover:bg-slate-800 transition" onClick={() => { onTrack('banner_clicked'); onComplete(); }} type="button">
               Open
             </button>
-            <button className="rounded-md p-1.5 text-olive-500 hover:bg-olive-100 cursor-pointer" onClick={onDismiss} title="Dismiss" type="button">
+            <button className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 cursor-pointer" onClick={onDismiss} title="Dismiss" type="button">
               <X size={16} />
             </button>
           </div>
@@ -339,7 +339,7 @@ function GuideOverlay({
     return (
       <>
         {anchor && <Spotlight rect={anchor} />}
-        <div className="fixed z-[10000] w-[320px] rounded-lg border border-olive-200 bg-white p-4 shadow-2xl" style={style}>
+        <div className="fixed z-[10000] w-[320px] rounded-lg border border-slate-200 bg-white p-4 shadow-xl" style={style}>
           <GuideCard
             guide={guide}
             step={step}
@@ -356,35 +356,35 @@ function GuideOverlay({
 
   if (guide.type === 'CHECKLIST') {
     return (
-      <div className="fixed bottom-5 right-5 z-[10000] w-[360px] rounded-lg border border-olive-200 bg-white p-4 shadow-2xl">
+      <div className="fixed bottom-5 right-5 z-[10000] w-[360px] rounded-lg border border-slate-200 bg-white p-4 shadow-xl">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
-            <p className="m-0 text-sm font-bold text-olive-950">{guide.title}</p>
-            {guide.description && <p className="m-0 mt-1 text-xs text-olive-500">{guide.description}</p>}
+            <p className="m-0 text-sm font-semibold text-slate-950">{guide.title}</p>
+            {guide.description && <p className="m-0 mt-1 text-xs text-slate-500">{guide.description}</p>}
           </div>
-          <button className="rounded-md p-1 text-olive-400 hover:bg-olive-100 cursor-pointer" onClick={onDismiss} type="button">
+          <button className="rounded-md p-1 text-slate-400 hover:bg-slate-100 cursor-pointer" onClick={onDismiss} type="button">
             <X size={16} />
           </button>
         </div>
         <div className="grid gap-2">
           {guide.steps.map((item) => (
             <button
-              className="flex items-center gap-3 rounded-md border border-olive-100 px-3 py-2 text-left text-sm hover:bg-olive-50 cursor-pointer"
+              className="flex items-center gap-3 rounded-md border border-slate-100 px-3 py-2 text-left text-sm hover:bg-slate-50 cursor-pointer"
               key={item.id}
               onClick={() => onTrack('step_completed', item, { checklistItemId: item.id })}
               type="button"
             >
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-olive-300">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300">
                 <Check size={13} />
               </span>
               <span>
-                <span className="block font-semibold text-olive-900">{item.title}</span>
-                {item.description && <span className="block text-xs text-olive-500">{item.description}</span>}
+                <span className="block font-semibold text-slate-900">{item.title}</span>
+                {item.description && <span className="block text-xs text-slate-500">{item.description}</span>}
               </span>
             </button>
           ))}
         </div>
-        <button className="mt-4 w-full rounded-md bg-olive-700 px-3 py-2 text-sm font-bold text-white cursor-pointer hover:bg-olive-800 transition" onClick={onComplete} type="button">
+        <button className="mt-4 w-full rounded-md bg-slate-700 px-3 py-2 text-sm font-semibold text-white cursor-pointer hover:bg-slate-800 transition" onClick={onComplete} type="button">
           Done
         </button>
       </div>
@@ -479,29 +479,29 @@ function GuideOverlay({
 
     const shellClasses =
       format === 'BOTTOM_POPUP'
-        ? 'fixed bottom-5 right-5 z-[10000] w-[420px] rounded-xl border border-olive-200 shadow-2xl p-6 transition-all duration-300'
+        ? 'fixed bottom-5 right-5 z-[10000] w-[420px] rounded-xl border border-slate-200 shadow-xl p-6 transition-all duration-300'
         : format === 'SLIDE_OUT'
-          ? 'fixed right-0 top-0 bottom-0 z-[10000] w-[460px] border-l border-olive-200 shadow-2xl p-6 transition-all duration-300 overflow-y-auto'
+          ? 'fixed right-0 top-0 bottom-0 z-[10000] w-[460px] border-l border-slate-200 shadow-xl p-6 transition-all duration-300 overflow-y-auto'
           : format === 'BANNER'
-            ? 'fixed top-0 left-0 right-0 z-[10000] border-b border-olive-200 shadow-lg p-5 transition-all duration-300'
+            ? 'fixed top-0 left-0 right-0 z-[10000] border-b border-slate-200 shadow-lg p-5 transition-all duration-300'
             : format === 'FLOATING_CARD'
-              ? 'fixed bottom-5 left-5 z-[10000] w-[380px] rounded-xl border border-olive-200 shadow-xl p-6 transition-all duration-300'
-              : 'w-full max-w-lg rounded-xl border border-olive-200 shadow-2xl p-6 relative'; // MODAL default
+              ? 'fixed bottom-5 left-5 z-[10000] w-[380px] rounded-xl border border-slate-200 shadow-xl p-6 transition-all duration-300'
+              : 'w-full max-w-lg rounded-xl border border-slate-200 shadow-xl p-6 relative'; // MODAL default
 
     const surveyContent = (
       <div style={outerStyle} className={shellClasses}>
         {format === 'MODAL' && (
-          <button className="absolute right-4 top-4 rounded-md p-1.5 text-olive-400 hover:bg-olive-100 cursor-pointer" onClick={onDismiss} title="Dismiss" type="button">
+          <button className="absolute right-4 top-4 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 cursor-pointer" onClick={onDismiss} title="Dismiss" type="button">
             <X size={16} />
           </button>
         )}
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="m-0 text-lg font-bold text-olive-950" style={{ color: textColor }}>{guide.title}</p>
-            {guide.description && <p className="m-0 mt-1 text-sm text-olive-500">{guide.description}</p>}
+            <p className="m-0 text-lg font-semibold text-slate-950" style={{ color: textColor }}>{guide.title}</p>
+            {guide.description && <p className="m-0 mt-1 text-sm text-slate-500">{guide.description}</p>}
           </div>
           {format !== 'MODAL' && (
-            <button className="rounded-md p-1.5 text-olive-400 hover:bg-olive-100 cursor-pointer" onClick={onDismiss} title="Dismiss" type="button">
+            <button className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 cursor-pointer" onClick={onDismiss} title="Dismiss" type="button">
               <X size={16} />
             </button>
           )}
@@ -509,11 +509,11 @@ function GuideOverlay({
 
         {/* Progress indicator */}
         <div className="mb-5">
-          <div className="flex justify-between items-center text-xs text-olive-500 mb-1.5 font-semibold">
+          <div className="flex justify-between items-center text-xs text-slate-500 mb-1.5 font-semibold">
             <span>Question {history.length}</span>
             <span>Progress {Math.round((history.length / guide.steps.length) * 100)}%</span>
           </div>
-          <div className="h-1.5 w-full rounded-full bg-olive-100 overflow-hidden">
+          <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${(history.length / guide.steps.length) * 100}%` }}
@@ -552,9 +552,9 @@ function GuideOverlay({
         )}
 
         {/* Navigation buttons */}
-        <div className="mt-6 flex items-center justify-between gap-3 border-t border-olive-100 pt-4">
+        <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
           <button
-            className="rounded-md border border-olive-200 px-4 py-2 text-sm font-semibold text-olive-700 disabled:opacity-30 flex items-center gap-1 cursor-pointer"
+            className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 disabled:opacity-30 flex items-center gap-1 cursor-pointer"
             disabled={history.length === 1}
             onClick={handleSurveyBack}
             type="button"
@@ -562,7 +562,7 @@ function GuideOverlay({
             <ChevronLeft size={16} /> Back
           </button>
           <button
-            className="rounded-md px-5 py-2 text-sm font-bold text-white flex items-center gap-1 cursor-pointer hover:opacity-90 transition"
+            className="rounded-md px-5 py-2 text-sm font-semibold text-white flex items-center gap-1 cursor-pointer hover:opacity-90 transition"
             style={{ backgroundColor: primaryColor }}
             onClick={handleSurveyNext}
             type="button"
@@ -623,33 +623,33 @@ function GuideCard({
     <div>
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <span className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-olive-700 text-white">
+          <span className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-slate-700 text-white">
             <MousePointerClick size={16} />
           </span>
           <div>
-            <p className="m-0 text-base font-bold text-olive-950">{step?.title ?? guide.title}</p>
+            <p className="m-0 text-base font-semibold text-slate-950">{step?.title ?? guide.title}</p>
             {(step?.description || guide.description) && (
-              <p className="m-0 mt-1 text-sm text-olive-500">{step?.description ?? guide.description}</p>
+              <p className="m-0 mt-1 text-sm text-slate-500">{step?.description ?? guide.description}</p>
             )}
           </div>
         </div>
-        <button className="rounded-md p-1 text-olive-400 hover:bg-olive-100 cursor-pointer" onClick={onDismiss} title="Dismiss" type="button">
+        <button className="rounded-md p-1 text-slate-400 hover:bg-slate-100 cursor-pointer" onClick={onDismiss} title="Dismiss" type="button">
           <X size={16} />
         </button>
       </div>
       {hasSteps && (
-        <div className="mb-4 h-1.5 rounded-full bg-olive-100">
-          <div className="h-1.5 rounded-full bg-olive-700" style={{ width: `${((stepIndex + 1) / guide.steps.length) * 100}%` }} />
+        <div className="mb-4 h-1.5 rounded-full bg-slate-100">
+          <div className="h-1.5 rounded-full bg-slate-700" style={{ width: `${((stepIndex + 1) / guide.steps.length) * 100}%` }} />
         </div>
       )}
       <div className="flex items-center justify-between gap-2">
-        <button className="rounded-md border border-olive-200 p-2 text-olive-600 disabled:opacity-30 cursor-pointer" disabled={stepIndex === 0} onClick={onPrevious} title="Previous" type="button">
+        <button className="rounded-md border border-slate-200 p-2 text-slate-600 disabled:opacity-30 cursor-pointer" disabled={stepIndex === 0} onClick={onPrevious} title="Previous" type="button">
           <ChevronLeft size={16} />
         </button>
-        <button className="rounded-md bg-olive-700 px-4 py-2 text-sm font-bold text-white cursor-pointer hover:bg-olive-800 transition" onClick={isLast ? onComplete : onNext} type="button">
+        <button className="rounded-md bg-slate-700 px-4 py-2 text-sm font-semibold text-white cursor-pointer hover:bg-slate-800 transition" onClick={isLast ? onComplete : onNext} type="button">
           {isLast ? 'Complete' : 'Next'}
         </button>
-        <button className="rounded-md border border-olive-200 p-2 text-olive-600 disabled:opacity-30 cursor-pointer" disabled={isLast} onClick={onNext} title="Next" type="button">
+        <button className="rounded-md border border-slate-200 p-2 text-slate-600 disabled:opacity-30 cursor-pointer" disabled={isLast} onClick={onNext} title="Next" type="button">
           <ChevronRight size={16} />
         </button>
       </div>
@@ -672,7 +672,7 @@ function SurveyQuestionField({
   const [fileName, setFileName] = useState<string | null>(null);
 
   const inputClass =
-    'w-full rounded-lg border border-olive-200 bg-white px-3 py-2.5 text-sm text-olive-900 focus:border-olive-500 focus:outline-none transition shadow-xs';
+    'w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-slate-500 focus:outline-none transition shadow-xs';
 
   const triggerChange = (val: unknown) => {
     onChange(val);
@@ -683,8 +683,8 @@ function SurveyQuestionField({
     const activeVal = typeof value === 'number' ? value : null;
     return (
       <div className="grid gap-3">
-        <span className="text-sm font-semibold text-olive-950">{question.title}</span>
-        {question.description && <p className="text-xs text-olive-500 m-0">{question.description}</p>}
+        <span className="text-sm font-semibold text-slate-950">{question.title}</span>
+        {question.description && <p className="text-xs text-slate-500 m-0">{question.description}</p>}
         <div className="flex flex-wrap justify-between gap-1 mt-2">
           {Array.from({ length: 11 }).map((_, i) => {
             const isSelected = activeVal === i;
@@ -692,10 +692,10 @@ function SurveyQuestionField({
               <button
                 key={i}
                 type="button"
-                className={`h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold transition cursor-pointer border ${
+                className={`h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold transition cursor-pointer border ${
                   isSelected
                     ? 'text-white border-transparent'
-                    : 'border-olive-200 text-olive-700 bg-white hover:bg-olive-50'
+                    : 'border-slate-200 text-slate-700 bg-white hover:bg-slate-50'
                 }`}
                 style={isSelected ? { backgroundColor: primaryColor ?? '#0f172a' } : {}}
                 onClick={() => triggerChange(i)}
@@ -705,7 +705,7 @@ function SurveyQuestionField({
             );
           })}
         </div>
-        <div className="flex justify-between text-[10px] text-olive-400 font-bold px-1">
+        <div className="flex justify-between text-[11px] text-slate-400 font-semibold px-1">
           <span>Not likely at all</span>
           <span>Extremely likely</span>
         </div>
@@ -719,8 +719,8 @@ function SurveyQuestionField({
     const activeVal = typeof value === 'number' ? value : null;
     return (
       <div className="grid gap-3">
-        <span className="text-sm font-semibold text-olive-950">{question.title}</span>
-        {question.description && <p className="text-xs text-olive-500 m-0">{question.description}</p>}
+        <span className="text-sm font-semibold text-slate-950">{question.title}</span>
+        {question.description && <p className="text-xs text-slate-500 m-0">{question.description}</p>}
         <div className="flex items-center gap-2 mt-2 justify-center">
           {Array.from({ length: maxVal }).map((_, i) => {
             const starVal = i + 1;
@@ -737,7 +737,7 @@ function SurveyQuestionField({
                   className={`transition-colors duration-150 ${
                     isFilled
                       ? 'fill-amber-400 stroke-amber-500'
-                      : 'stroke-olive-300 fill-transparent hover:stroke-amber-400'
+                      : 'stroke-slate-300 fill-transparent hover:stroke-amber-400'
                   }`}
                 />
               </button>
@@ -745,7 +745,7 @@ function SurveyQuestionField({
           })}
         </div>
         {question.type === 'CSAT' && (
-          <div className="flex justify-between text-[10px] text-olive-400 font-bold px-4">
+          <div className="flex justify-between text-[11px] text-slate-400 font-semibold px-4">
             <span>Very Unsatisfied</span>
             <span>Very Satisfied</span>
           </div>
@@ -760,8 +760,8 @@ function SurveyQuestionField({
     const activeVal = typeof value === 'number' ? value : null;
     return (
       <div className="grid gap-3">
-        <span className="text-sm font-semibold text-olive-950">{question.title}</span>
-        {question.description && <p className="text-xs text-olive-500 m-0">{question.description}</p>}
+        <span className="text-sm font-semibold text-slate-950">{question.title}</span>
+        {question.description && <p className="text-xs text-slate-500 m-0">{question.description}</p>}
         <div className="flex items-center justify-around gap-2 mt-3">
           {emojis.map((emoji, i) => {
             const index = i + 1;
@@ -770,8 +770,8 @@ function SurveyQuestionField({
               <button
                 key={i}
                 type="button"
-                className={`text-3xl p-2 rounded-xl transition cursor-pointer hover:scale-125 hover:bg-olive-50 ${
-                  isSelected ? 'bg-olive-100 ring-2 ring-olive-400' : ''
+                className={`text-3xl p-2 rounded-xl transition cursor-pointer hover:scale-125 hover:bg-slate-50 ${
+                  isSelected ? 'bg-slate-100 ring-2 ring-slate-400' : ''
                 }`}
                 onClick={() => triggerChange(index)}
               >
@@ -790,8 +790,8 @@ function SurveyQuestionField({
     const activeVal = typeof value === 'number' ? value : null;
     return (
       <div className="grid gap-3">
-        <span className="text-sm font-semibold text-olive-950">{question.title}</span>
-        {question.description && <p className="text-xs text-olive-500 m-0">{question.description}</p>}
+        <span className="text-sm font-semibold text-slate-950">{question.title}</span>
+        {question.description && <p className="text-xs text-slate-500 m-0">{question.description}</p>}
         <div className="flex justify-between gap-1.5 mt-2">
           {Array.from({ length: maxVal }).map((_, i) => {
             const num = i + 1;
@@ -800,10 +800,10 @@ function SurveyQuestionField({
               <button
                 key={i}
                 type="button"
-                className={`flex-1 py-2.5 rounded-lg border text-sm font-bold transition cursor-pointer ${
+                className={`flex-1 py-2.5 rounded-lg border text-sm font-semibold transition cursor-pointer ${
                   isSelected
                     ? 'text-white border-transparent'
-                    : 'border-olive-200 text-olive-700 bg-white hover:bg-olive-50'
+                    : 'border-slate-200 text-slate-700 bg-white hover:bg-slate-50'
                 }`}
                 style={isSelected ? { backgroundColor: primaryColor ?? '#0f172a' } : {}}
                 onClick={() => triggerChange(num)}
@@ -814,7 +814,7 @@ function SurveyQuestionField({
           })}
         </div>
         {question.type === 'CES' && (
-          <div className="flex justify-between text-[10px] text-olive-400 font-bold px-1">
+          <div className="flex justify-between text-[11px] text-slate-400 font-semibold px-1">
             <span>Very Difficult</span>
             <span>Very Easy</span>
           </div>
@@ -828,8 +828,8 @@ function SurveyQuestionField({
     const activeVal = value;
     return (
       <div className="grid gap-3">
-        <span className="text-sm font-semibold text-olive-950">{question.title}</span>
-        {question.description && <p className="text-xs text-olive-500 m-0">{question.description}</p>}
+        <span className="text-sm font-semibold text-slate-950">{question.title}</span>
+        {question.description && <p className="text-xs text-slate-500 m-0">{question.description}</p>}
         <div className="flex gap-4 mt-2">
           {['Yes', 'No'].map((option) => {
             const isSelected = activeVal === option;
@@ -837,10 +837,10 @@ function SurveyQuestionField({
               <button
                 key={option}
                 type="button"
-                className={`flex-1 py-3 border rounded-xl font-bold text-sm cursor-pointer transition ${
+                className={`flex-1 py-3 border rounded-xl font-semibold text-sm cursor-pointer transition ${
                   isSelected
                     ? 'text-white border-transparent'
-                    : 'border-olive-200 text-olive-700 bg-white hover:bg-olive-50'
+                    : 'border-slate-200 text-slate-700 bg-white hover:bg-slate-50'
                 }`}
                 style={isSelected ? { backgroundColor: primaryColor ?? '#0f172a' } : {}}
                 onClick={() => triggerChange(option)}
@@ -859,8 +859,8 @@ function SurveyQuestionField({
     const activeVal = value as { consented: string; email?: string } | undefined;
     return (
       <div className="grid gap-3">
-        <span className="text-sm font-semibold text-olive-950">{question.title}</span>
-        {question.description && <p className="text-xs text-olive-500 m-0">{question.description}</p>}
+        <span className="text-sm font-semibold text-slate-950">{question.title}</span>
+        {question.description && <p className="text-xs text-slate-500 m-0">{question.description}</p>}
         <div className="flex gap-4 mt-2">
           {['Yes', 'No'].map((option) => {
             const isSelected = activeVal?.consented === option;
@@ -868,10 +868,10 @@ function SurveyQuestionField({
               <button
                 key={option}
                 type="button"
-                className={`flex-1 py-2.5 border rounded-lg font-bold text-sm cursor-pointer transition ${
+                className={`flex-1 py-2.5 border rounded-lg font-semibold text-sm cursor-pointer transition ${
                   isSelected
                     ? 'text-white border-transparent'
-                    : 'border-olive-200 text-olive-700 bg-white hover:bg-olive-50'
+                    : 'border-slate-200 text-slate-700 bg-white hover:bg-slate-50'
                 }`}
                 style={isSelected ? { backgroundColor: primaryColor ?? '#0f172a' } : {}}
                 onClick={() => triggerChange({ consented: option, email: activeVal?.email || '' })}
@@ -887,7 +887,7 @@ function SurveyQuestionField({
             animate={{ opacity: 1, height: 'auto' }}
             className="mt-3"
           >
-            <label className="text-xs text-olive-700 font-semibold mb-1 block">Your Email</label>
+            <label className="text-xs text-slate-700 font-semibold mb-1 block">Your Email</label>
             <input
               type="email"
               className={inputClass}
@@ -923,33 +923,33 @@ function SurveyQuestionField({
 
     return (
       <div className="grid gap-3">
-        <span className="text-sm font-semibold text-olive-950">{question.title}</span>
-        {question.description && <p className="text-xs text-olive-500 m-0">{question.description}</p>}
-        <div className="mt-2 border-2 border-dashed border-olive-200 rounded-xl p-6 bg-olive-50/50 flex flex-col items-center justify-center transition hover:border-olive-400 relative">
+        <span className="text-sm font-semibold text-slate-950">{question.title}</span>
+        {question.description && <p className="text-xs text-slate-500 m-0">{question.description}</p>}
+        <div className="mt-2 border-2 border-dashed border-slate-200 rounded-xl p-6 bg-slate-50/50 flex flex-col items-center justify-center transition hover:border-slate-400 relative">
           <input
             type="file"
             className="absolute inset-0 opacity-0 cursor-pointer"
             onChange={handleFileChange}
           />
-          <CloudUpload size={40} className="text-olive-400 mb-2" />
-          <p className="text-xs font-semibold text-olive-700 m-0">Click or drag file here to upload</p>
-          <span className="text-[10px] text-olive-400">PDF, PNG, JPG up to 10MB</span>
+          <CloudUpload size={40} className="text-slate-400 mb-2" />
+          <p className="text-xs font-semibold text-slate-700 m-0">Click or drag file here to upload</p>
+          <span className="text-[11px] text-slate-400">PDF, PNG, JPG up to 10MB</span>
         </div>
 
         {fileProgress !== null && (
-          <div className="mt-3 p-3 rounded-lg border border-olive-100 bg-white">
+          <div className="mt-3 p-3 rounded-lg border border-slate-100 bg-white">
             <div className="flex justify-between items-center text-xs mb-1">
-              <span className="font-semibold text-olive-700 truncate max-w-[200px]">{fileName}</span>
-              <span className="text-olive-500 font-bold">{fileProgress}%</span>
+              <span className="font-semibold text-slate-700 truncate max-w-[200px]">{fileName}</span>
+              <span className="text-slate-500 font-semibold">{fileProgress}%</span>
             </div>
-            <div className="h-1.5 w-full bg-olive-100 rounded-full overflow-hidden">
+            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
               <div
                 className="h-full transition-all duration-150"
                 style={{ width: `${fileProgress}%`, backgroundColor: primaryColor ?? '#0f172a' }}
               />
             </div>
             {fileProgress === 100 && (
-              <span className="text-[10px] text-emerald-600 font-bold mt-1.5 block">✓ Upload complete</span>
+              <span className="text-[11px] text-emerald-600 font-semibold mt-1.5 block">✓ Upload complete</span>
             )}
           </div>
         )}
@@ -961,9 +961,9 @@ function SurveyQuestionField({
   if (question.type === 'SINGLE_CHOICE' || question.type === 'DROPDOWN') {
     const activeVal = String(value ?? '');
     return (
-      <div className="grid gap-2 text-sm font-semibold text-olive-900">
-        <span className="text-sm font-semibold text-olive-950">{question.title}</span>
-        {question.description && <p className="text-xs text-olive-500 m-0 font-normal">{question.description}</p>}
+      <div className="grid gap-2 text-sm font-semibold text-slate-900">
+        <span className="text-sm font-semibold text-slate-950">{question.title}</span>
+        {question.description && <p className="text-xs text-slate-500 m-0 font-normal">{question.description}</p>}
         
         {question.type === 'DROPDOWN' ? (
           <select
@@ -986,8 +986,8 @@ function SurveyQuestionField({
                   type="button"
                   className={`w-full py-3 px-4 border rounded-xl text-left text-sm transition cursor-pointer ${
                     isSelected
-                      ? 'border-transparent font-bold text-white shadow-md'
-                      : 'border-olive-200 text-olive-800 bg-white hover:bg-olive-50'
+                      ? 'border-transparent font-semibold text-white shadow-md'
+                      : 'border-slate-200 text-slate-800 bg-white hover:bg-slate-50'
                   }`}
                   style={isSelected ? { backgroundColor: primaryColor ?? '#0f172a' } : {}}
                   onClick={() => triggerChange(option)}
@@ -1007,8 +1007,8 @@ function SurveyQuestionField({
     const currentList = Array.isArray(value) ? value : [];
     return (
       <div className="grid gap-2">
-        <span className="text-sm font-semibold text-olive-950">{question.title}</span>
-        {question.description && <p className="text-xs text-olive-500 m-0">{question.description}</p>}
+        <span className="text-sm font-semibold text-slate-950">{question.title}</span>
+        {question.description && <p className="text-xs text-slate-500 m-0">{question.description}</p>}
         <div className="grid gap-2 mt-2">
           {(question.options ?? []).map((option) => {
             const isSelected = currentList.includes(option);
@@ -1018,8 +1018,8 @@ function SurveyQuestionField({
                 type="button"
                 className={`w-full py-3 px-4 border rounded-xl text-left text-sm transition cursor-pointer flex justify-between items-center ${
                   isSelected
-                    ? 'border-transparent font-bold text-white shadow-md'
-                    : 'border-olive-200 text-olive-800 bg-white hover:bg-olive-50'
+                    ? 'border-transparent font-semibold text-white shadow-md'
+                    : 'border-slate-200 text-slate-800 bg-white hover:bg-slate-50'
                 }`}
                 style={isSelected ? { backgroundColor: primaryColor ?? '#0f172a' } : {}}
                 onClick={() => {
@@ -1044,8 +1044,8 @@ function SurveyQuestionField({
   if (question.type === 'TEXTAREA') {
     return (
       <div className="grid gap-2">
-        <span className="text-sm font-semibold text-olive-950">{question.title}</span>
-        {question.description && <p className="text-xs text-olive-500 m-0">{question.description}</p>}
+        <span className="text-sm font-semibold text-slate-950">{question.title}</span>
+        {question.description && <p className="text-xs text-slate-500 m-0">{question.description}</p>}
         <textarea
           className={`${inputClass} min-h-[90px] resize-none mt-1`}
           placeholder="Type your response here..."
@@ -1059,8 +1059,8 @@ function SurveyQuestionField({
   // Short Text (Default)
   return (
     <div className="grid gap-2">
-      <span className="text-sm font-semibold text-olive-950">{question.title}</span>
-      {question.description && <p className="text-xs text-olive-500 m-0">{question.description}</p>}
+      <span className="text-sm font-semibold text-slate-950">{question.title}</span>
+      {question.description && <p className="text-xs text-slate-500 m-0">{question.description}</p>}
       <input
         type="text"
         className={`${inputClass} mt-1`}
@@ -1075,8 +1075,8 @@ function SurveyQuestionField({
 function ModalShell({ children, onDismiss }: { children: ReactNode; onDismiss: () => void }): JSX.Element {
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/35 px-4 backdrop-blur-xs">
-      <div className="w-full max-w-lg rounded-xl border border-olive-200 bg-white p-6 shadow-2xl relative">
-        <button className="absolute right-4 top-4 rounded-md p-1.5 text-olive-400 hover:bg-olive-100 cursor-pointer" onClick={onDismiss} title="Dismiss" type="button">
+      <div className="w-full max-w-lg rounded-xl border border-slate-200 bg-white p-6 shadow-xl relative">
+        <button className="absolute right-4 top-4 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 cursor-pointer" onClick={onDismiss} title="Dismiss" type="button">
           <X size={16} />
         </button>
         {children}

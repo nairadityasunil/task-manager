@@ -37,14 +37,14 @@ export function InviteMemberDialog({
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 animate-in fade-in duration-150">
-      <div className="bg-white border border-slate-200/90 rounded-2xl w-full max-w-md p-6 shadow-2xl shadow-slate-400/20">
+      <div className="bg-white border border-slate-200/90 rounded-2xl w-full max-w-md p-6 shadow-xl shadow-slate-400/20">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
               <UserPlus className="w-4.5 h-4.5 text-emerald-600" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">Invite Member</h3>
+              <h3 className="text-base font-semibold text-slate-900">Invite Member</h3>
               <p className="text-xs text-slate-400">{workspaceName}</p>
             </div>
           </div>
@@ -65,7 +65,7 @@ export function InviteMemberDialog({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
               Email Address
             </label>
             <input
@@ -80,7 +80,7 @@ export function InviteMemberDialog({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
               Role
             </label>
             <select

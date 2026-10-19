@@ -60,13 +60,13 @@ function KanbanBoard({
             const label = TASK_WORKFLOW_STATUS_OPTIONS.find(opt => opt.value === status)?.label || status;
 
             return (
-              <div key={status} className="flex-shrink-0 w-80 flex flex-col bg-olive-50/50  rounded-xl border border-olive-200 ">
+              <div key={status} className="flex-shrink-0 w-80 flex flex-col bg-slate-50/50  rounded-xl border border-slate-200 ">
                 <div className="p-3 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-olive-700  uppercase tracking-wider">
+                    <h3 className="text-sm font-semibold text-slate-700  uppercase tracking-wide">
                       {label}
                     </h3>
-                    <span className="px-2 py-0.5 rounded-full bg-olive-200  text-olive-500  text-[0.7rem] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-slate-200  text-slate-500  text-[11px] font-semibold">
                       {columnTasks.length}
                     </span>
                   </div>
@@ -77,11 +77,11 @@ function KanbanBoard({
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className={`flex-1 p-2 space-y-3 overflow-y-auto transition-colors duration-200 ${snapshot.isDraggingOver ? 'bg-olive-50/30' : ''}`}
+                      className={`flex-1 p-2 space-y-3 overflow-y-auto transition-colors duration-200 ${snapshot.isDraggingOver ? 'bg-slate-50/30' : ''}`}
                     >
                   {loading ? (
                     Array.from({ length: 3 }).map((_, i) => (
-                      <div key={`skeleton-${status}-${i}`} className="p-4 bg-white  rounded-xl border border-olive-100  space-y-3">
+                      <div key={`skeleton-${status}-${i}`} className="p-4 bg-white  rounded-xl border border-slate-100  space-y-3">
                         <div className="flex justify-between items-center">
                           <Skeleton variant="text" className="w-1/2 h-4" />
                           <Skeleton variant="rectangle" className="w-4 h-4 rounded" />
@@ -105,7 +105,7 @@ function KanbanBoard({
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={`${snapshot.isDragging ? 'shadow-2xl scale-[1.02] z-[9999]' : ''}`}
+                              className={`${snapshot.isDragging ? 'shadow-xl scale-[1.02] z-[9999]' : ''}`}
                               style={{
                                 ...provided.draggableProps.style,
                                 // Avoid potential position jumps during portal creation

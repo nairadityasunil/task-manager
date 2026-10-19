@@ -32,11 +32,11 @@ export const AiDailyPlannerModal: React.FC<AiDailyPlannerModalProps> = ({ isOpen
 
   return (
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-xl p-6 shadow-2xl space-y-5">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl p-6 shadow-xl space-y-5">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center space-x-2.5">
             <Calendar className="w-5 h-5 text-blue-400" />
-            <h3 className="font-bold text-slate-100 text-base">✨ AI Daily & Sprint Planner</h3>
+            <h3 className="font-semibold text-slate-100 text-base">✨ AI Daily & Sprint Planner</h3>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
             <X className="w-4 h-4" />
@@ -48,7 +48,7 @@ export const AiDailyPlannerModal: React.FC<AiDailyPlannerModalProps> = ({ isOpen
         {!schedule ? (
           <form onSubmit={handlePlanDay} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
                 Workload Constraints or Focus for Today (Optional)
               </label>
               <textarea
@@ -74,7 +74,7 @@ export const AiDailyPlannerModal: React.FC<AiDailyPlannerModalProps> = ({ isOpen
         ) : (
           <div className="space-y-4">
             <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-              <h4 className="text-sm font-bold text-slate-100 mb-1">Today's Focus Summary</h4>
+              <h4 className="text-sm font-semibold text-slate-100 mb-1">Today's Focus Summary</h4>
               <p className="text-xs text-slate-400 leading-relaxed">{schedule.summary}</p>
             </div>
 
@@ -85,7 +85,7 @@ export const AiDailyPlannerModal: React.FC<AiDailyPlannerModalProps> = ({ isOpen
                   className="bg-slate-950/80 border border-slate-800 p-3 rounded-xl flex items-center justify-between text-xs"
                 >
                   <div className="flex items-center space-x-3">
-                    <span className="font-bold text-blue-400 px-2 py-1 bg-blue-950/60 rounded border border-blue-800/40 text-[11px]">
+                    <span className="font-semibold text-blue-400 px-2 py-1 bg-blue-950/60 rounded border border-blue-800/40 text-[11px]">
                       {tb.time}
                     </span>
                     <div>

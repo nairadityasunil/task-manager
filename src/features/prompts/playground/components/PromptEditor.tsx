@@ -36,19 +36,19 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
   };
 
   return (
-    <div className="space-y-4 bg-white p-5 rounded-xl border border-gray-200 shadow-2xs">
+    <div className="space-y-4 bg-white p-5 rounded-xl border border-slate-200 shadow-2xs">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+        <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wide">
           Prompt Content Editor
         </h3>
-        <div className="flex items-center gap-1 bg-gray-100 p-0.5 rounded-lg text-[11px]">
+        <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[11px]">
           <button
             type="button"
             onClick={() => setEditorMode("blocks")}
             className={`px-2.5 py-1 rounded-md transition flex items-center gap-1.5 font-medium ${
               editorMode === "blocks"
-                ? "bg-white text-gray-900 shadow-2xs font-bold"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white text-slate-900 shadow-2xs font-semibold"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             <AlignLeft className="w-3.5 h-3.5" /> Structured Messages
@@ -58,8 +58,8 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
             onClick={() => setEditorMode("raw")}
             className={`px-2.5 py-1 rounded-md transition flex items-center gap-1.5 font-medium ${
               editorMode === "raw"
-                ? "bg-white text-gray-900 shadow-2xs font-bold"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white text-slate-900 shadow-2xs font-semibold"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             <Code className="w-3.5 h-3.5" /> Raw Text Body
@@ -70,12 +70,12 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
       {editorMode === "blocks" ? (
         <div className="space-y-3">
           {messages.map((msg, index) => (
-            <div key={index} className="p-3 rounded-xl border border-gray-200 bg-gray-50/40 space-y-2">
+            <div key={index} className="p-3 rounded-xl border border-slate-200 bg-slate-50/40 space-y-2">
               <div className="flex items-center justify-between">
                 <select
                   value={msg.role}
                   onChange={(e) => handleMessageChange(index, "role", e.target.value as "system" | "user" | "assistant")}
-                  className="bg-white border border-gray-200 rounded-lg px-2 py-1 text-xs font-bold text-gray-800"
+                  className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-800"
                   disabled={!isEditingPromptContent}
                 >
                   <option value="system">SYSTEM</option>
@@ -86,7 +86,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
                   <button
                     type="button"
                     onClick={() => handleRemoveMessage(index)}
-                    className="p-1 text-gray-400 hover:text-rose-600 cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -97,7 +97,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
                 onChange={(e) => handleMessageChange(index, "content", e.target.value)}
                 placeholder={`Enter ${msg.role} template message content...`}
                 rows={3}
-                className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-xs text-gray-950 focus:outline-none focus:border-olive-500 font-mono"
+                className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-950 focus:outline-none focus:border-slate-500 font-mono"
               />
             </div>
           ))}
@@ -105,7 +105,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
             <button
               type="button"
               onClick={handleAddMessage}
-              className="px-3 py-1.5 rounded-lg border border-dashed border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1.5 rounded-lg border border-dashed border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" /> Add Message Block
             </button>
@@ -117,7 +117,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
           onChange={(e) => setBody(e.target.value)}
           placeholder="Enter complete raw prompt template text here..."
           rows={8}
-          className="w-full bg-white border border-gray-200 rounded-xl p-3 text-xs text-gray-950 focus:outline-none focus:border-olive-500 font-mono leading-relaxed"
+          className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-950 focus:outline-none focus:border-slate-500 font-mono leading-relaxed"
         />
       )}
     </div>

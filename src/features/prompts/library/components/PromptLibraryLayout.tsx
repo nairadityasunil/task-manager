@@ -133,20 +133,20 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-full bg-olive-50 text-olive-950 p-6 space-y-6 font-sans">
-      <div className="bg-white border border-olive-200 rounded-2xl p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="min-h-full bg-slate-50 text-slate-950 p-6 space-y-6 font-sans">
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-2xl bg-olive-900 text-white shadow-md shadow-olive-900/10">
+          <div className="p-3 rounded-2xl bg-slate-900 text-white shadow-md shadow-slate-900/10">
             <Sparkles className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-olive-950 flex items-center gap-2.5">
+            <h1 className="text-xl font-semibold text-slate-950 flex items-center gap-2.5">
               Prompt Library
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-olive-100 text-olive-800 border border-olive-200 font-mono">
+              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border border-slate-200 font-mono">
                 PromptOps v1.0
               </span>
             </h1>
-            <p className="text-xs text-olive-600 mt-0.5">
+            <p className="text-xs text-slate-600 mt-0.5">
               Browse reusable prompt templates, organization folders, and versions.
             </p>
           </div>
@@ -158,15 +158,15 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
               setActiveView("folders");
               setIsCreatingFolder(true);
             }}
-            className="px-3.5 py-2 rounded-xl bg-white hover:bg-olive-50 border border-olive-200 text-olive-700 hover:text-olive-950 text-xs font-semibold flex items-center gap-2 transition shadow-2xs cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-950 text-xs font-semibold flex items-center gap-2 transition shadow-2xs cursor-pointer"
           >
-            <FolderPlus className="w-4 h-4 text-olive-600" /> New Folder
+            <FolderPlus className="w-4 h-4 text-slate-600" /> New Folder
           </button>
 
           <button
             onClick={() => onNewPrompt(onOpenPlayground)}
             disabled={isCreatingPrompt}
-            className="px-4 py-2 rounded-xl bg-olive-900 hover:bg-black text-white text-xs font-semibold shadow-md shadow-olive-900/20 flex items-center gap-2 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-semibold shadow-md shadow-slate-900/20 flex items-center gap-2 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCreatingPrompt ? (
               <>
@@ -187,7 +187,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{errorMessage}</span>
           </div>
-          <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800 font-bold">
+          <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800 font-semibold">
             ×
           </button>
         </div>
@@ -199,7 +199,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
             <Check className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>{successMessage}</span>
           </div>
-          <button onClick={() => setSuccessMessage(null)} className="text-emerald-500 hover:text-emerald-900 font-bold">
+          <button onClick={() => setSuccessMessage(null)} className="text-emerald-500 hover:text-emerald-900 font-semibold">
             ×
           </button>
         </div>
@@ -257,41 +257,41 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
         />
       ) : (
         <div className="space-y-5">
-          <div className="bg-white border border-olive-200 rounded-2xl p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             {selectedFolderId !== null ? (
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSelectedFolderId(null)}
-                  className="px-3 py-1.5 rounded-xl bg-olive-100 hover:bg-olive-200 text-olive-800 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer border border-olive-200"
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer border border-slate-200"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Back to Folders
                 </button>
-                <div className="h-5 w-px bg-olive-200" />
+                <div className="h-5 w-px bg-slate-200" />
                 <div className="flex items-center gap-2">
-                  <FolderIcon className="w-5 h-5 text-olive-800" />
-                  <h2 className="text-base font-bold text-olive-950">
+                  <FolderIcon className="w-5 h-5 text-slate-800" />
+                  <h2 className="text-base font-semibold text-slate-950">
                     {currentFolder?.name || "Folder"}
                   </h2>
-                  <span className="text-xs text-olive-500 font-mono px-2 py-0.5 rounded-full bg-olive-100 border border-olive-200">
+                  <span className="text-xs text-slate-500 font-mono px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200">
                     {displayedPrompts.length} prompts
                   </span>
                 </div>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <FolderIcon className="w-5 h-5 text-olive-800" />
-                <h2 className="text-base font-bold text-olive-950">All Folders ({folders.length})</h2>
+                <FolderIcon className="w-5 h-5 text-slate-800" />
+                <h2 className="text-base font-semibold text-slate-950">All Folders ({folders.length})</h2>
               </div>
             )}
 
             {isCreatingFolder ? (
-              <div className="flex items-center gap-2 bg-olive-50 border border-olive-200 p-1.5 rounded-xl">
+              <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 p-1.5 rounded-xl">
                 <input
                   type="text"
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
                   placeholder="New folder name..."
-                  className="bg-white border border-olive-200 rounded-lg px-2.5 py-1 text-xs text-olive-950 focus:outline-none focus:border-olive-400"
+                  className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-950 focus:outline-none focus:border-slate-400"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter") onCreateFolder();
@@ -300,13 +300,13 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
                 />
                 <button
                   onClick={onCreateFolder}
-                  className="px-2.5 py-1 text-xs bg-olive-900 text-white rounded-lg font-semibold cursor-pointer"
+                  className="px-2.5 py-1 text-xs bg-slate-900 text-white rounded-lg font-semibold cursor-pointer"
                 >
                   Save
                 </button>
                 <button
                   onClick={() => setIsCreatingFolder(false)}
-                  className="p-1 text-olive-500 hover:text-olive-900 cursor-pointer"
+                  className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -314,7 +314,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
             ) : (
               <button
                 onClick={() => setIsCreatingFolder(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-olive-100 hover:bg-olive-200 text-olive-900 text-xs font-bold flex items-center gap-2 transition cursor-pointer border border-olive-300"
+                className="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs font-semibold flex items-center gap-2 transition cursor-pointer border border-slate-300"
               >
                 <FolderPlus className="w-4 h-4" /> Add Folder
               </button>
@@ -398,21 +398,21 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
       )}
 
       {deleteModalPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="p-5 space-y-3">
-              <h3 className="text-base font-bold text-gray-900">Delete prompt?</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Are you sure you want to delete <span className="font-bold text-gray-900">"{deleteModalPrompt.name}"</span>? This action cannot be undone.
+              <h3 className="text-base font-semibold text-slate-900">Delete prompt?</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Are you sure you want to delete <span className="font-semibold text-slate-900">"{deleteModalPrompt.name}"</span>? This action cannot be undone.
               </p>
             </div>
 
-            <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-end gap-2 bg-gray-50/50">
+            <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-end gap-2 bg-slate-50/50">
               <button
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setDeleteModalPrompt(null)}
-                className="px-4 py-1.5 rounded-xl border border-gray-200 text-gray-600 font-semibold text-xs hover:bg-gray-100 transition cursor-pointer disabled:opacity-50"
+                className="px-4 py-1.5 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-100 transition cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -420,7 +420,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
                 type="button"
                 disabled={isDeleting}
                 onClick={onConfirmDelete}
-                className="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition shadow-2xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                className="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition shadow-2xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isDeleting ? (
                   <>

@@ -144,7 +144,7 @@ export function TaskInspector({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-neutral-950/20 backdrop-blur-[2px] z-[5000]"
+            className="fixed inset-0 bg-slate-950/20 backdrop-blur-[2px] z-[5000]"
           />
 
           {/* Drawer container */}
@@ -154,7 +154,7 @@ export function TaskInspector({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            className="fixed top-0 right-0 w-full sm:w-[480px] h-full bg-white/95 shadow-2xl backdrop-blur-xl z-[5001] flex flex-col"
+            className="fixed top-0 right-0 w-full sm:w-[480px] h-full bg-white/95 shadow-xl backdrop-blur-xl z-[5001] flex flex-col"
             role="dialog"
             aria-modal="true"
           >
@@ -164,12 +164,12 @@ export function TaskInspector({
                 <div className="w-2.5 h-2.5 rounded-full bg-slate-500 animate-pulse mt-1.5 shrink-0" />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="text-[0.62rem] uppercase tracking-[0.25em] font-bold text-slate-500">
+                    <span className="text-[11px] uppercase tracking-wide font-semibold text-slate-500">
                       TASK INSPECTOR
                     </span>
                     {task.dynamicPriority && priorityBadge[task.dynamicPriority] && (
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.58rem] font-bold uppercase tracking-wider ${
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide ${
                           priorityBadge[task.dynamicPriority].color
                         }`}
                       >
@@ -178,7 +178,7 @@ export function TaskInspector({
                       </span>
                     )}
                   </div>
-                  <h3 className="text-base font-bold font-sans text-slate-900 m-0 tracking-tight line-clamp-2 max-w-[300px]">
+                  <h3 className="text-base font-semibold font-sans text-slate-900 m-0 tracking-tight line-clamp-2 max-w-[300px]">
                     {task.title}
                   </h3>
                 </div>
@@ -196,7 +196,7 @@ export function TaskInspector({
             <div className="flex gap-6 px-6 shadow-xs bg-white">
               <button
                 onClick={() => setSidePanelTab('subtasks')}
-                className={`pb-3 pt-3 text-xs font-bold uppercase tracking-widest transition-all relative ${
+                className={`pb-3 pt-3 text-xs font-semibold uppercase tracking-wide transition-all relative ${
                   sidePanelTab === 'subtasks' ? 'text-slate-700' : 'text-slate-400 hover:text-slate-700'
                 }`}
               >
@@ -207,7 +207,7 @@ export function TaskInspector({
               </button>
               <button
                 onClick={() => setSidePanelTab('comments')}
-                className={`pb-3 pt-3 text-xs font-bold uppercase tracking-widest transition-all relative ${
+                className={`pb-3 pt-3 text-xs font-semibold uppercase tracking-wide transition-all relative ${
                   sidePanelTab === 'comments' ? 'text-slate-700' : 'text-slate-400 hover:text-slate-700'
                 }`}
               >
@@ -225,7 +225,7 @@ export function TaskInspector({
                   {/* Action / Assignee / Priority quick properties grid */}
                   <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50/50">
                     <div>
-                      <span className="text-[0.62rem] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">
+                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">
                         Assignee
                       </span>
                       <AssigneeSelector
@@ -238,7 +238,7 @@ export function TaskInspector({
                       />
                     </div>
                     <div>
-                      <span className="text-[0.62rem] font-bold text-slate-400 uppercase tracking-widest block mb-1.5">
+                      <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide block mb-1.5">
                         Priority
                       </span>
                       <div className="relative">
@@ -263,7 +263,7 @@ export function TaskInspector({
                   {/* Subtask list */}
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">
+                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                         Checklist Subtasks ({completedSubtasks}/{task.subtasks.length})
                       </span>
                       <button
@@ -332,7 +332,7 @@ export function TaskInspector({
                                       </p>
                                     )}
                                     {!isEditingThisSubtask && subtask.note && (
-                                      <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-1 bg-slate-50 rounded-lg text-slate-500 text-[0.7rem] font-medium italic shadow-xs">
+                                      <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-1 bg-slate-50 rounded-lg text-slate-500 text-[11px] font-medium italic shadow-xs">
                                         <MessageSquare
                                           size={12}
                                           className="shrink-0 text-slate-400"
@@ -398,7 +398,7 @@ export function TaskInspector({
                   {/* SLA timers and details */}
                   <div className="shadow-sm rounded-xl p-5 bg-white relative overflow-hidden">
                     <div className="absolute -top-12 -right-12 w-24 h-24 bg-slate-500/5 rounded-full blur-2xl" />
-                    <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 m-0 mb-4 flex items-center gap-2">
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-800 m-0 mb-4 flex items-center gap-2">
                       <Clock size={14} className="text-slate-650" /> Dual-Timers
                     </h4>
                     {task.description && (
@@ -408,7 +408,7 @@ export function TaskInspector({
                     )}
                     <div className="flex flex-wrap items-center gap-2.5 mb-4">
                       <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-[0.62rem] font-bold uppercase tracking-wider ${
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-semibold uppercase tracking-wide ${
                           statusPillCls[task.status] ?? 'bg-slate-50 text-slate-600 shadow-xs'
                         }`}
                       >
@@ -419,7 +419,7 @@ export function TaskInspector({
                       <button
                         type="button"
                         onClick={() => handleToggleBlocked(task)}
-                        className={`flex items-center gap-1 px-3 py-1 rounded-lg text-[0.62rem] font-bold uppercase tracking-wider transition-all shadow-sm ${
+                        className={`flex items-center gap-1 px-3 py-1 rounded-lg text-[11px] font-semibold uppercase tracking-wide transition-all shadow-sm ${
                           task.isBlocked
                             ? 'bg-red-500 text-white'
                             : 'bg-white text-red-500 hover:bg-red-50'
@@ -450,7 +450,7 @@ export function TaskInspector({
                         <span className="font-semibold text-slate-500">First Response registered:</span>
                         <span
                           className={`font-mono text-[11px] ${
-                            task.firstResponseAt ? 'text-emerald-700' : 'text-neutral-400'
+                            task.firstResponseAt ? 'text-emerald-700' : 'text-slate-400'
                           }`}
                         >
                           {task.firstResponseAt
@@ -462,7 +462,7 @@ export function TaskInspector({
                         <span className="font-semibold text-slate-500">Completed at:</span>
                         <span
                           className={`font-mono text-[11px] ${
-                            task.completedAt ? 'text-emerald-700' : 'text-neutral-400'
+                            task.completedAt ? 'text-emerald-700' : 'text-slate-400'
                           }`}
                         >
                           {task.completedAt
@@ -480,7 +480,7 @@ export function TaskInspector({
                       </div>
                       <div className="flex items-center justify-between pb-1.5">
                         <span className="font-semibold text-slate-500">Vector priority factor:</span>
-                        <span className="font-bold font-mono text-emerald-800">
+                        <span className="font-semibold font-mono text-emerald-800">
                           {task.dynamicPriority} (Score: {task.dynamicPriorityScore})
                         </span>
                       </div>
@@ -492,7 +492,7 @@ export function TaskInspector({
                       </div>
                       {task.priorityEscalationReason && (
                         <div className="mt-2 p-3 bg-red-50/40 rounded-lg">
-                          <span className="font-bold text-red-700 block mb-1">
+                          <span className="font-semibold text-red-700 block mb-1">
                             Escalation Trigger:
                           </span>
                           <p className="m-0 text-red-650 leading-relaxed text-xs">
@@ -507,7 +507,7 @@ export function TaskInspector({
                         type="button"
                         onClick={() => void handleEvaluatePriority(task.id)}
                         disabled={isEvaluatingPriority}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100/80 shadow-md text-slate-700 rounded-xl text-xs font-bold transition-all disabled:opacity-50"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100/80 shadow-md text-slate-700 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
                       >
                         <Zap size={13} className="text-amber-500" />
                         {isEvaluatingPriority
@@ -519,7 +519,7 @@ export function TaskInspector({
 
                   {/* Work Notes */}
                   <button
-                    className="w-full group/btn relative flex items-center justify-center gap-2.5 px-5 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-sm shadow-md transition-all overflow-hidden"
+                    className="w-full group/btn relative flex items-center justify-center gap-2.5 px-5 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold text-sm shadow-md transition-all overflow-hidden"
                     onClick={() => handleOpenTaskNote(task)}
                     type="button"
                   >

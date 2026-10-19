@@ -60,7 +60,7 @@ const STATUS_META: Record<GuideStatus, { label: string; pill: string; dot: strin
   LIVE: { label: 'Live', pill: 'bg-emerald-50 text-emerald-700 ring-emerald-200', dot: 'bg-emerald-500' },
   DRAFT: { label: 'Draft', pill: 'bg-slate-50 text-slate-600 ring-slate-200', dot: 'bg-slate-400' },
   PAUSED: { label: 'Paused', pill: 'bg-amber-50 text-amber-700 ring-amber-200', dot: 'bg-amber-500' },
-  ARCHIVED: { label: 'Archived', pill: 'bg-zinc-100 text-zinc-500 ring-zinc-200', dot: 'bg-zinc-400' }
+  ARCHIVED: { label: 'Archived', pill: 'bg-slate-100 text-slate-500 ring-slate-200', dot: 'bg-slate-400' }
 };
 
 const PRIORITY_STYLE: Record<string, string> = {
@@ -180,7 +180,7 @@ function ExperienceLibrary({
               type="button"
             >
               {entry === 'ALL' ? 'All' : STATUS_META[entry].label}
-              <span className={`rounded px-1 text-[10px] ${filter === entry ? 'bg-slate-100 text-slate-600' : 'text-slate-400'}`}>{counts[entry]}</span>
+              <span className={`rounded px-1 text-[11px] ${filter === entry ? 'bg-slate-100 text-slate-600' : 'text-slate-400'}`}>{counts[entry]}</span>
             </button>
           ))}
         </div>

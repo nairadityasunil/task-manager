@@ -11,7 +11,7 @@ const stateClass: Record<TaskSlaState, string> = {
   HEALTHY: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   NEAR_BREACH: 'bg-amber-50 text-amber-700 border-amber-200',
   BREACHED: 'bg-red-50 text-red-700 border-red-200',
-  PAUSED: 'bg-olive-100 text-olive-600 border-olive-200',
+  PAUSED: 'bg-slate-100 text-slate-600 border-slate-200',
   COMPLETED: 'bg-emerald-50 text-emerald-700 border-emerald-200'
 };
 
@@ -43,13 +43,13 @@ function SlaIndicator({ compact = false, task }: SlaIndicatorProps): JSX.Element
 
   return (
     <div className="grid gap-1.5 min-w-0">
-      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[0.65rem] font-black uppercase tracking-wider ${stateClass[state]}`}>
+      <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[11px] font-semibold uppercase tracking-wide ${stateClass[state]}`}>
         {state === 'PAUSED' ? <PauseCircle size={12} /> : breached ? <ShieldAlert size={12} /> : <Clock3 size={12} />}
         <span>{state.replace('_', ' ')}</span>
         {!compact && <span className="opacity-70">Resolution {remaining}</span>}
       </div>
       {!compact && (
-        <div className="h-1.5 bg-olive-100 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
           <div
             className={[
               'h-full rounded-full transition-all',

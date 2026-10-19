@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
 interface EmptyStateProps {
@@ -5,32 +6,31 @@ interface EmptyStateProps {
   description: string;
   icon: LucideIcon;
   title: string;
+  action?: ReactNode;
 }
 
-function EmptyState({ compact = false, description, icon: Icon, title }: EmptyStateProps): JSX.Element {
+function EmptyState({ compact = false, description, icon: Icon, title, action }: EmptyStateProps): JSX.Element {
   return (
     <div
       className={[
-        'flex flex-col items-center justify-center text-center',
-        'bg-olive-50  border border-dashed border-olive-200',
-        'rounded-xl text-olive-500',
-        compact ? 'gap-2.5 p-[18px_16px]' : 'gap-4 p-10'
+        'flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-center',
+        compact ? 'gap-2.5 px-4 py-6' : 'gap-4 px-6 py-12'
       ].join(' ')}
     >
       <div
         aria-hidden="true"
         className={[
-          'inline-flex items-center justify-center bg-white',
-          'border border-olive-200  rounded-md text-olive-600',
-          compact ? 'w-9 h-9' : 'w-11 h-11'
+          'inline-flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500',
+          compact ? 'h-9 w-9' : 'h-11 w-11'
         ].join(' ')}
       >
-        <Icon size={compact ? 18 : 22} />
+        <Icon size={compact ? 17 : 20} />
       </div>
-      <div className="grid gap-1.5 max-w-[520px]">
-        <strong className="text-olive-900  text-[0.98rem] tracking-tight">{title}</strong>
-        <p className="m-0 text-sm">{description}</p>
+      <div className="grid max-w-md gap-1">
+        <strong className="text-[15px] font-semibold text-slate-900">{title}</strong>
+        <p className="m-0 text-sm text-slate-500">{description}</p>
       </div>
+      {action}
     </div>
   );
 }

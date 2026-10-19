@@ -38,7 +38,7 @@ export function WorkspaceDangerZone({ workspace }: WorkspaceDangerZoneProps): JS
     <div className="border border-red-900/40 rounded-xl p-5 bg-red-950/10 space-y-4">
       <div className="flex items-center gap-2.5">
         <AlertTriangle className="w-4.5 h-4.5 text-red-500 flex-shrink-0" />
-        <h4 className="text-sm font-bold text-red-400">Danger Zone</h4>
+        <h4 className="text-sm font-semibold text-red-400">Danger Zone</h4>
       </div>
 
       {!showConfirm ? (
@@ -60,7 +60,7 @@ export function WorkspaceDangerZone({ workspace }: WorkspaceDangerZoneProps): JS
       ) : (
         <div className="space-y-3">
           <p className="text-sm text-slate-300">
-            Type <span className="font-bold text-red-400">{workspace.name}</span> to confirm deletion:
+            Type <span className="font-semibold text-red-400">{workspace.name}</span> to confirm deletion:
           </p>
           <input
             type="text"

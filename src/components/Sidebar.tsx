@@ -77,7 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <button
         type="button"
         onClick={onClick}
-        className={`group relative flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-[0.8rem] transition-all duration-200 justify-start overflow-hidden outline-none ${
+        className={`group relative flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-[13px] transition-all duration-200 justify-start overflow-hidden outline-none ${
           isActive
             ? 'font-medium text-[#ffffff]'
             : 'text-white/70 hover:text-white'
@@ -111,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     )}
     <aside
       className={`fixed inset-y-0 left-0 z-[61] flex flex-col w-[260px] h-full select-none transition-transform duration-200 lg:static lg:z-auto lg:w-[230px] lg:shrink-0 lg:translate-x-0 ${
-        mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+        mobileOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'
       }`}
       // Choosing any item closes the drawer on small screens.
       onClickCapture={(event) => {
@@ -148,18 +148,18 @@ const Sidebar: React.FC<SidebarProps> = ({
               }}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[0.6rem] font-semibold uppercase tracking-wider" style={{ color: TEXT_DIM }}>
+                <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: TEXT_DIM }}>
                   Integration
                 </span>
 
               </div>
-              <span className="text-[0.8rem] font-medium flex items-center gap-2 truncate text-white/90">
+              <span className="text-[13px] font-medium flex items-center gap-2 truncate text-white/90">
                 <Plug size={13} className="text-[#34d399] shrink-0" />
                 {activeIntegrationName || 'Loading…'}
               </span>
             </div>
 
-            <span className="text-[0.58rem] font-semibold uppercase tracking-widest px-2 pb-1 block" style={{ color: TEXT_DIM }}>
+            <span className="text-[11px] font-semibold uppercase tracking-wide px-2 pb-1 block" style={{ color: TEXT_DIM }}>
               Workspace
             </span>
             <NavBtn isActive={activeTab === 'overview'} onClick={() => onViewChange('sdk-integration-detail', 'overview')}>
@@ -183,7 +183,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             <button
               type="button"
-              className="group relative flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-[0.8rem] transition-all duration-200 text-white/70 hover:text-[#d47070] overflow-hidden"
+              className="group relative flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-[13px] transition-all duration-200 text-white/70 hover:text-[#d47070] overflow-hidden"
               onClick={() => onViewChange('sdk-integrations')}
             >
               <div className="absolute inset-0 bg-transparent group-hover:bg-[rgba(220,80,80,0.04)] transition-all duration-200" />
@@ -193,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </>
         ) : (
           <>
-            <span className="text-[0.58rem] font-semibold uppercase tracking-widest px-2 pb-1 block" style={{ color: TEXT_DIM }}>
+            <span className="text-[11px] font-semibold uppercase tracking-wide px-2 pb-1 block" style={{ color: TEXT_DIM }}>
               Navigate
             </span>
             <NavBtn isActive={selectedProjectView === allProjectsValue && activeView === 'dashboard'} onClick={() => onProjectSelect(allProjectsValue)}>
@@ -221,7 +221,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
             <button
               type="button"
-              className="group relative flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-[0.8rem] transition-all duration-200 text-white/70 hover:text-white overflow-hidden"
+              className="group relative flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-[13px] transition-all duration-200 text-white/70 hover:text-white overflow-hidden"
               onClick={onNewProject}
             >
               <div className="absolute inset-0 bg-transparent group-hover:bg-white/[0.05] transition-all duration-200" />
@@ -244,7 +244,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </NavBtn>
         <button
           type="button"
-          className="group relative flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-[0.8rem] transition-all duration-200 mt-1 text-white/50 hover:text-[#e57373] overflow-hidden"
+          className="group relative flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-[13px] transition-all duration-200 mt-1 text-white/50 hover:text-[#e57373] overflow-hidden"
           onClick={onLogout}
         >
           <div className="absolute inset-0 bg-transparent group-hover:bg-[rgba(229,115,115,0.06)] transition-all duration-200" />

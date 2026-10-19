@@ -22,7 +22,7 @@ const Skeleton: React.FC<SkeletonProps> = ({
   return (
     <div
       className={`
-        relative overflow-hidden bg-olive-100 
+        relative overflow-hidden bg-slate-100 
         ${variantClasses[variant]}
         ${className}
       `}

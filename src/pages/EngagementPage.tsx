@@ -213,7 +213,7 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="m-0 text-2xl font-bold text-slate-900 ">Engagement</h2>
+                <h2 className="m-0 text-2xl font-semibold text-slate-900 ">Engagement</h2>
                 {integrations.length > 0 && !propSdkIntegrationId && (
                   <select
                     value={activeIntegrationId}
@@ -401,17 +401,17 @@ function ValidationSummary({ errors }: { errors: string[] }): JSX.Element | null
 
 function Preview({ guide }: { guide: Guide }): JSX.Element {
   return (
-    <aside className="sticky top-6 h-fit rounded-lg border border-olive-200 bg-white p-5 shadow-sm">
+    <aside className="sticky top-6 h-fit rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <SectionTitle icon={Bell} title="Preview" />
-      <div className="mt-4 rounded-lg border border-olive-200 bg-olive-50 p-4">
-        <p className="m-0 text-xs font-bold uppercase tracking-widest text-olive-500">{guide.type}</p>
-        <h3 className="m-0 mt-2 text-lg font-bold text-olive-950">{guide.title}</h3>
-        <p className="m-0 mt-2 text-sm text-olive-600">{guide.description}</p>
+      <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <p className="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500">{guide.type}</p>
+        <h3 className="m-0 mt-2 text-lg font-semibold text-slate-950">{guide.title}</h3>
+        <p className="m-0 mt-2 text-sm text-slate-600">{guide.description}</p>
         <div className="mt-4 grid gap-2">
           {guide.steps.map((step, index) => (
             <div className="rounded-md bg-white px-3 py-2 text-sm" key={step.id}>
-              <span className="font-bold text-olive-900">{index + 1}. {step.title}</span>
-              {step.description && <p className="m-0 mt-1 text-xs text-olive-500">{step.description}</p>}
+              <span className="font-semibold text-slate-900">{index + 1}. {step.title}</span>
+              {step.description && <p className="m-0 mt-1 text-xs text-slate-500">{step.description}</p>}
             </div>
           ))}
         </div>
@@ -422,7 +422,7 @@ function Preview({ guide }: { guide: Guide }): JSX.Element {
 
 function AnalyticsDashboard({ analytics }: { analytics: GuideAnalyticsSummary | null }): JSX.Element {
   if (!analytics) {
-    return <div className="rounded-lg border border-olive-200 bg-white p-6 text-sm text-olive-500">No analytics yet.</div>;
+    return <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-500">No analytics yet.</div>;
   }
 
   return (
@@ -433,13 +433,13 @@ function AnalyticsDashboard({ analytics }: { analytics: GuideAnalyticsSummary | 
         <MetricCard label="Dismissals" value={analytics.guides.dismissals} />
         <MetricCard label="NPS" value={Math.round(analytics.surveys.nps)} />
       </div>
-      <div className="rounded-lg border border-olive-200 bg-white p-6">
+      <div className="rounded-lg border border-slate-200 bg-white p-6">
         <SectionTitle icon={BarChart3} title="Engagement Events" />
         <div className="mt-4 grid gap-2">
           {analytics.events.map((event) => (
             <div className="grid grid-cols-[1fr_80px] rounded-md bg-slate-50  px-3 py-2 text-sm" key={event.eventName}>
               <span className="font-semibold text-slate-900 ">{event.eventName}</span>
-              <span className="text-right font-bold text-slate-700 ">{event.count}</span>
+              <span className="text-right font-semibold text-slate-700 ">{event.count}</span>
             </div>
           ))}
         </div>
@@ -465,8 +465,8 @@ function Metric({ label, value }: { label: string; value: number }): JSX.Element
 function MetricCard({ label, value }: { label: string; value: number }): JSX.Element {
   return (
     <div className="rounded-lg bg-white  p-5 shadow-md">
-      <p className="m-0 text-xs font-bold uppercase tracking-widest text-slate-500 ">{label}</p>
-      <p className="m-0 mt-2 text-3xl font-black text-slate-900 ">{value}</p>
+      <p className="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500 ">{label}</p>
+      <p className="m-0 mt-2 text-3xl font-semibold text-slate-900 ">{value}</p>
     </div>
   );
 }
@@ -492,14 +492,14 @@ function SectionTitle({ icon: Icon, title }: { icon: LucideIcon; title: string }
   return (
     <div className="flex items-center gap-2">
       <Icon size={17} className="text-slate-700 " />
-      <h3 className="m-0 text-sm font-black uppercase tracking-widest text-slate-900 ">{title}</h3>
+      <h3 className="m-0 text-sm font-semibold uppercase tracking-wide text-slate-900 ">{title}</h3>
     </div>
   );
 }
 
 function TextInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }): JSX.Element {
   return (
-    <label className="grid gap-1 text-xs font-bold uppercase tracking-widest text-slate-500 min-w-0">
+    <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500 min-w-0">
       {label}
       <input className="w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 focus:border-slate-500 focus:outline-none" onChange={(event) => onChange(event.target.value)} value={value} />
     </label>
@@ -508,7 +508,7 @@ function TextInput({ label, value, onChange }: { label: string; value: string; o
 
 function SelectInput({ label, value, values, onChange }: { label: string; value: string; values: string[]; onChange: (value: string) => void }): JSX.Element {
   return (
-    <label className="grid gap-1 text-xs font-bold uppercase tracking-widest text-slate-500 min-w-0">
+    <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500 min-w-0">
       {label}
       <select className="w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 focus:border-slate-500 focus:outline-none" onChange={(event) => onChange(event.target.value)} value={value}>
         {values.map((entry) => <option key={entry} value={entry}>{entry}</option>)}
@@ -547,16 +547,16 @@ function SurveyResponsesModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-      <div className="flex h-[85vh] w-full max-w-5xl flex-col rounded-xl border border-olive-200 bg-white shadow-2xl transition-all duration-300">
+      <div className="flex h-[85vh] w-full max-w-5xl flex-col rounded-xl border border-slate-200 bg-white shadow-xl transition-all duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-olive-100 bg-olive-50/50 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
           <div>
-            <h3 className="text-lg font-bold text-olive-950">Responses: {survey.title}</h3>
-            <p className="mt-0.5 text-xs text-olive-500">Showing all collected response payloads, including dynamic custom fields.</p>
+            <h3 className="text-lg font-semibold text-slate-950">Responses: {survey.title}</h3>
+            <p className="mt-0.5 text-xs text-slate-500">Showing all collected response payloads, including dynamic custom fields.</p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-1.5 text-olive-400 hover:bg-olive-100 hover:text-olive-700 transition-colors"
+            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
           >
             <X size={18} />
           </button>
@@ -566,35 +566,35 @@ function SurveyResponsesModal({
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex h-full items-center justify-center">
-              <p className="text-sm font-medium text-olive-600 animate-pulse">Loading responses...</p>
+              <p className="text-sm font-medium text-slate-600 animate-pulse">Loading responses...</p>
             </div>
           ) : responses.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center p-8">
-              <Radio className="h-10 w-10 text-olive-300 animate-bounce" />
-              <h4 className="mt-4 text-base font-semibold text-olive-900">No responses recorded yet</h4>
-              <p className="mt-1 text-sm text-olive-500 max-w-xs">Once users submit responses through the SDK, they will appear here in real-time.</p>
+              <Radio className="h-10 w-10 text-slate-300 animate-bounce" />
+              <h4 className="mt-4 text-base font-semibold text-slate-900">No responses recorded yet</h4>
+              <p className="mt-1 text-sm text-slate-500 max-w-xs">Once users submit responses through the SDK, they will appear here in real-time.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {responses.map((response) => (
-                <div key={response._id} className="rounded-lg border border-olive-100 bg-olive-50/20 p-4 hover:border-olive-200 transition-colors shadow-sm">
+                <div key={response._id} className="rounded-lg border border-slate-100 bg-slate-50/20 p-4 hover:border-slate-200 transition-colors shadow-sm">
                   {/* Respondent Info */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-olive-100/50 pb-2 mb-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100/50 pb-2 mb-3">
                     <div className="flex items-center gap-4 text-xs">
                       <div>
-                        <span className="font-semibold text-olive-500">User:</span>{' '}
-                        <span className="font-mono text-olive-900 bg-olive-100/50 px-1.5 py-0.5 rounded">{response.userId || 'Anonymous'}</span>
+                        <span className="font-semibold text-slate-500">User:</span>{' '}
+                        <span className="font-mono text-slate-900 bg-slate-100/50 px-1.5 py-0.5 rounded">{response.userId || 'Anonymous'}</span>
                       </div>
                       {response.sessionId && (
                         <div>
-                          <span className="font-semibold text-olive-500">Session:</span>{' '}
-                          <span className="font-mono text-olive-900">{response.sessionId}</span>
+                          <span className="font-semibold text-slate-500">Session:</span>{' '}
+                          <span className="font-mono text-slate-900">{response.sessionId}</span>
                         </div>
                       )}
                       {response.category && response.category !== 'NONE' && (
                         <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-olive-500">NPS Class:</span>
-                          <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wider ${
+                          <span className="font-semibold text-slate-500">NPS Class:</span>
+                          <span className={`px-2 py-0.5 rounded-full font-semibold text-[11px] uppercase tracking-wide ${
                             response.category === 'PROMOTER'
                               ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                               : response.category === 'PASSIVE'
@@ -607,12 +607,12 @@ function SurveyResponsesModal({
                       )}
                       {response.npsScore !== null && (
                         <div>
-                          <span className="font-semibold text-olive-500">NPS Score:</span>{' '}
-                          <span className="font-bold text-olive-900 bg-olive-100 px-1.5 py-0.5 rounded">{response.npsScore}/10</span>
+                          <span className="font-semibold text-slate-500">NPS Score:</span>{' '}
+                          <span className="font-semibold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">{response.npsScore}/10</span>
                         </div>
                       )}
                     </div>
-                    <span className="text-xs text-olive-400">
+                    <span className="text-xs text-slate-400">
                       {new Date(response.submittedAt).toLocaleString()}
                     </span>
                   </div>
@@ -620,17 +620,17 @@ function SurveyResponsesModal({
                   {/* Answers */}
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-olive-800">Answers Payload</h4>
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-800">Answers Payload</h4>
                       <div className="space-y-1.5">
                         {response.answers.map((answer) => (
-                          <div key={answer.questionId} className="text-sm rounded border border-olive-100/65 bg-white p-2">
-                            <div className="flex items-center justify-between text-xs text-olive-500">
+                          <div key={answer.questionId} className="text-sm rounded border border-slate-100/65 bg-white p-2">
+                            <div className="flex items-center justify-between text-xs text-slate-500">
                               <span className="font-medium truncate max-w-[200px]" title={answer.questionTitle}>
                                 {answer.questionTitle}
                               </span>
-                              <span className="bg-olive-50 px-1 rounded text-[10px] font-mono">{answer.questionType}</span>
+                              <span className="bg-slate-50 px-1 rounded text-[11px] font-mono">{answer.questionType}</span>
                             </div>
-                            <div className="mt-1 font-semibold text-olive-900">
+                            <div className="mt-1 font-semibold text-slate-900">
                               {typeof answer.value === 'object' && answer.value !== null
                                 ? JSON.stringify(answer.value, null, 2)
                                 : String(answer.value)}
@@ -642,19 +642,19 @@ function SurveyResponsesModal({
 
                     {/* Metadata & Raw Details */}
                     <div className="space-y-2">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-olive-800">Telemetry & Context</h4>
-                      <div className="rounded border border-olive-100/65 bg-olive-50/40 p-2.5 space-y-1.5 text-xs text-olive-700">
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-slate-800">Telemetry & Context</h4>
+                      <div className="rounded border border-slate-100/65 bg-slate-50/40 p-2.5 space-y-1.5 text-xs text-slate-700">
                         {response.metadata && Object.keys(response.metadata).length > 0 ? (
                           Object.entries(response.metadata).map(([key, val]) => (
-                            <div key={key} className="flex justify-between gap-4 py-0.5 border-b border-olive-100 last:border-0">
-                              <span className="font-mono text-olive-500 shrink-0">{key}:</span>
-                              <span className="font-medium text-olive-900 text-right break-all truncate max-w-[240px]" title={String(val)}>
+                            <div key={key} className="flex justify-between gap-4 py-0.5 border-b border-slate-100 last:border-0">
+                              <span className="font-mono text-slate-500 shrink-0">{key}:</span>
+                              <span className="font-medium text-slate-900 text-right break-all truncate max-w-[240px]" title={String(val)}>
                                 {typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val)}
                               </span>
                             </div>
                           ))
                         ) : (
-                          <p className="text-olive-400 italic">No additional telemetry sent.</p>
+                          <p className="text-slate-400 italic">No additional telemetry sent.</p>
                         )}
                       </div>
                     </div>
@@ -666,10 +666,10 @@ function SurveyResponsesModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end border-t border-olive-100 bg-olive-50/50 px-6 py-3.5">
+        <div className="flex items-center justify-end border-t border-slate-100 bg-slate-50/50 px-6 py-3.5">
           <button
             onClick={onClose}
-            className="rounded-md bg-olive-700 hover:bg-olive-800 text-white px-4 py-2 text-sm font-bold shadow transition-colors"
+            className="rounded-md bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 text-sm font-semibold shadow transition-colors"
           >
             Close
           </button>
@@ -725,10 +725,10 @@ function EditExperienceModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm">
-      <div className="my-8 w-full max-w-6xl rounded border border-olive-200 bg-white shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between border-b border-olive-100 px-6 py-4">
-          <h3 className="text-base font-bold text-olive-950">Edit {experience.type === 'SURVEY' ? 'Survey' : experience.type === 'CHECKLIST' ? 'Checklist' : 'Guide'}</h3>
-          <button onClick={onClose} className="rounded-full p-1 text-olive-400 hover:bg-olive-100" type="button"><X size={18} /></button>
+      <div className="my-8 w-full max-w-6xl rounded border border-slate-200 bg-white shadow-xl flex flex-col">
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <h3 className="text-base font-semibold text-slate-950">Edit {experience.type === 'SURVEY' ? 'Survey' : experience.type === 'CHECKLIST' ? 'Checklist' : 'Guide'}</h3>
+          <button onClick={onClose} className="rounded-full p-1 text-slate-400 hover:bg-slate-100" type="button"><X size={18} /></button>
         </div>
         <div className="flex-grow overflow-y-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
@@ -753,13 +753,13 @@ function EditExperienceModal({
             </div>
           </div>
         </div>
-        <div className="flex justify-end gap-3 border-t border-olive-100 px-6 py-4">
+        <div className="flex justify-end gap-3 border-t border-slate-100 px-6 py-4">
           <ValidationSummary errors={showErrors ? errors : []} />
-          <button onClick={onClose} className="rounded border border-olive-200 px-4 py-2 text-sm font-semibold text-olive-700 hover:bg-olive-50" type="button">Cancel</button>
+          <button onClick={onClose} className="rounded border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button">Cancel</button>
           <button
             onClick={() => void handleSave()}
             disabled={saving}
-            className="flex items-center gap-2 rounded bg-slate-900 hover:bg-slate-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+            className="flex items-center gap-2 rounded bg-slate-900 hover:bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             type="button"
           >
             <Save size={14} />
@@ -866,10 +866,10 @@ function CreateExperienceModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm">
-      <div className="my-8 w-full max-w-6xl rounded border border-olive-200 bg-white shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between border-b border-olive-100 px-6 py-4">
-          <h3 className="text-base font-bold text-olive-950">Create {type === 'guide' ? 'Guide' : type === 'survey' ? 'Survey' : 'Checklist'}</h3>
-          <button onClick={onClose} className="rounded-full p-1 text-olive-400 hover:bg-olive-100" type="button"><X size={18} /></button>
+      <div className="my-8 w-full max-w-6xl rounded border border-slate-200 bg-white shadow-xl flex flex-col">
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <h3 className="text-base font-semibold text-slate-950">Create {type === 'guide' ? 'Guide' : type === 'survey' ? 'Survey' : 'Checklist'}</h3>
+          <button onClick={onClose} className="rounded-full p-1 text-slate-400 hover:bg-slate-100" type="button"><X size={18} /></button>
         </div>
         <div className="flex-grow overflow-y-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
@@ -895,13 +895,13 @@ function CreateExperienceModal({
             </div>
           </div>
         </div>
-        <div className="flex justify-end gap-3 border-t border-olive-100 px-6 py-4">
+        <div className="flex justify-end gap-3 border-t border-slate-100 px-6 py-4">
           <ValidationSummary errors={showErrors ? errors : []} />
-          <button onClick={onClose} className="rounded border border-olive-200 px-4 py-2 text-sm font-semibold text-olive-700 hover:bg-olive-50" type="button">Cancel</button>
+          <button onClick={onClose} className="rounded border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button">Cancel</button>
           <button
             onClick={() => void handleSave()}
             disabled={saving}
-            className="flex items-center gap-2 rounded bg-slate-900 hover:bg-slate-800 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+            className="flex items-center gap-2 rounded bg-slate-900 hover:bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
             type="button"
           >
             <Save size={14} />
@@ -927,8 +927,8 @@ function PublishConfirmModal({
   if (!isOpen || !experience) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded bg-white p-6 shadow-2xl border border-slate-200">
-        <h3 className="text-lg font-bold text-slate-900 mb-2">Publish Experience?</h3>
+      <div className="w-full max-w-md rounded bg-white p-6 shadow-xl border border-slate-200">
+        <h3 className="text-lg font-semibold text-slate-900 mb-2">Publish Experience?</h3>
         <p className="text-sm text-slate-500 mb-6">
           Are you sure you want to publish <span className="font-semibold text-slate-800">"{experience.title}"</span>? 
           This will make it live and visible to matching users immediately.
@@ -942,7 +942,7 @@ function PublishConfirmModal({
           </button>
           <button
             onClick={onConfirm}
-            className="rounded bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700 transition-colors shadow"
+            className="rounded bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors shadow"
           >
             Publish Live
           </button>

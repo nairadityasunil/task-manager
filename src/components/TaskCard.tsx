@@ -38,20 +38,20 @@ interface TaskCardProps {
 }
 
 const statusPillClasses: Record<string, string> = {
-  BACKLOG: 'bg-olive-100  text-olive-600  border-olive-200',
-  TODO: 'bg-olive-50  text-olive-700  border-olive-100',
+  BACKLOG: 'bg-slate-100  text-slate-600  border-slate-200',
+  TODO: 'bg-slate-50  text-slate-700  border-slate-100',
   IN_PROGRESS: 'bg-amber-50  text-amber-700  border-amber-100',
   IN_REVIEW: 'bg-purple-50  text-purple-700  border-purple-100',
   BLOCKED: 'bg-red-50  text-red-700  border-red-100',
   DONE: 'bg-emerald-50  text-emerald-700  border-emerald-100',
-  rolled_over: 'bg-olive-50  text-olive-500  border-olive-100'
+  rolled_over: 'bg-slate-50  text-slate-500  border-slate-100'
 };
 
 const priorityIcons: Record<TaskPriority, JSX.Element> = {
   CRITICAL: <Siren size={12} className="text-red-600" />,
   HIGH: <ArrowUpCircle size={12} className="text-red-500" />,
   MEDIUM: <MinusCircle size={12} className="text-amber-500" />,
-  LOW: <ArrowDownCircle size={12} className="text-olive-400" />,
+  LOW: <ArrowDownCircle size={12} className="text-slate-400" />,
 };
 
 function TaskCard({
@@ -80,8 +80,8 @@ function TaskCard({
         'border rounded-xl font-["Inter"] shadow-sm',
         task.responseBreached || task.resolutionBreached ? 'ring-1 ring-red-300 bg-red-50/30' : '',
         isSelected
-          ? 'border-olive-400/70  shadow-sm bg-olive-50/60'
-          : 'border-olive-200/80  hover:border-olive-300  hover:-translate-y-[2px]',
+          ? 'border-slate-400/70  shadow-sm bg-slate-50/60'
+          : 'border-slate-200/80  hover:border-slate-300  hover:-translate-y-[2px]',
         isUpdating ? 'opacity-60 grayscale-[0.5] cursor-wait' : 'cursor-pointer'
       ].join(' ')}
       onClick={() => !isUpdating && onSelect?.(task)}
@@ -89,13 +89,13 @@ function TaskCard({
       {isUpdating && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/10  backdrop-blur-[1px] rounded-xl overflow-hidden">
           <div className="flex gap-1.5">
-             <div className="w-1.5 h-1.5 rounded-full bg-olive-500 animate-bounce [animation-delay:-0.3s]" />
-             <div className="w-1.5 h-1.5 rounded-full bg-olive-500 animate-bounce [animation-delay:-0.15s]" />
-             <div className="w-1.5 h-1.5 rounded-full bg-olive-500 animate-bounce" />
+             <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce [animation-delay:-0.3s]" />
+             <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce [animation-delay:-0.15s]" />
+             <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-bounce" />
           </div>
         </div>
       )}
-      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-olive-300/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-slate-300/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
       <div className="flex justify-between items-start gap-3">
         <div className="flex-1 min-w-0">
@@ -109,16 +109,16 @@ function TaskCard({
                     e.stopPropagation();
                     onToggleSelection(task.id);
                   }}
-                  className="w-4 h-4 rounded border-olive-300 text-olive-600 focus:ring-olive-500 cursor-pointer"
+                  className="w-4 h-4 rounded border-slate-300 text-slate-600 focus:ring-slate-500 cursor-pointer"
                 />
               )}
-              <div className={`px-2 py-0.5 rounded-full text-[0.6rem] font-bold uppercase tracking-wider border shadow-sm ${statusCls}`}>
+              <div className={`px-2 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide border shadow-sm ${statusCls}`}>
                 {task.status.replace('_', ' ')}
               </div>
               {task.priority && (
-                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-olive-100  border border-olive-200 ">
+                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100  border border-slate-200 ">
                   {priorityIcons[task.priority]}
-                  <span className="text-[0.6rem] font-bold text-olive-500 ">{task.priority}</span>
+                  <span className="text-[11px] font-semibold text-slate-500 ">{task.priority}</span>
                 </div>
               )}
             </div>
@@ -130,11 +130,11 @@ function TaskCard({
             )}
           </div>
 
-          <h3 className="text-[0.95rem] font-bold tracking-tight text-olive-950  m-0 leading-snug line-clamp-2">
+          <h3 className="text-[15px] font-semibold tracking-tight text-slate-950  m-0 leading-snug line-clamp-2">
             {task.title}
           </h3>
 
-          <p className="mt-1.5 text-olive-500  text-[0.75rem] leading-relaxed line-clamp-2 font-medium">
+          <p className="mt-1.5 text-slate-500  text-xs leading-relaxed line-clamp-2 font-medium">
             {task.description || 'No description provided.'}
           </p>
 
@@ -143,33 +143,33 @@ function TaskCard({
           </div>
 
           {task.dynamicPriorityScore > 0 && (
-            <div className="mt-2 flex items-center gap-2 text-[0.66rem] font-bold text-olive-500">
+            <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-slate-500">
               <span>Dynamic score {task.dynamicPriorityScore}</span>
-              <span className="h-1 w-1 rounded-full bg-olive-300" />
+              <span className="h-1 w-1 rounded-full bg-slate-300" />
               <span>{task.dependencyWeight} downstream</span>
             </div>
           )}
 
           {(projectName || epicName || task.subtasks.length > 0) && (
-            <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-olive-100/90  text-olive-400 ">
+            <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-slate-100/90  text-slate-400 ">
               {task.subtasks.length > 0 && (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-olive-100/80 ">
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100/80 ">
                   <Rows3 size={10} />
-                  <span className="text-[0.65rem] font-bold">
+                  <span className="text-[11px] font-semibold">
                     {completedSubtasksCount}<span className="opacity-40">/</span>{task.subtasks.length}
                   </span>
                 </div>
               )}
               {projectName && (
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-olive-100/80 ">
-                  <div className="w-1 h-1 rounded-full bg-olive-500/50" />
-                  <span className="text-[0.6rem] font-bold uppercase tracking-wider truncate max-w-[100px]">{projectName}</span>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100/80 ">
+                  <div className="w-1 h-1 rounded-full bg-slate-500/50" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wide truncate max-w-[100px]">{projectName}</span>
                 </div>
               )}
               {epicName && (
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-olive-100/80 ">
-                  <div className="w-1 h-1 rounded-full bg-olive-500/50" />
-                  <span className="text-[0.6rem] font-bold uppercase tracking-wider truncate max-w-[100px]">{epicName}</span>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100/80 ">
+                  <div className="w-1 h-1 rounded-full bg-slate-500/50" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wide truncate max-w-[100px]">{epicName}</span>
                 </div>
               )}
             </div>
@@ -186,7 +186,7 @@ function TaskCard({
           <div className="flex flex-col gap-1">
             {onEditTask && (
               <button
-                className="p-2 rounded-lg bg-white/90  border border-olive-200/80  text-olive-400 hover:text-olive-600  transition-colors disabled:opacity-40 shadow-sm"
+                className="p-2 rounded-lg bg-white/90  border border-slate-200/80  text-slate-400 hover:text-slate-600  transition-colors disabled:opacity-40 shadow-sm"
                 disabled={!task.permissions.canEdit}
                 onClick={(e) => { e.stopPropagation(); onEditTask(task); }}
                 title="Edit Task"
@@ -200,7 +200,7 @@ function TaskCard({
                   'p-2 rounded-lg border transition-all shadow-sm',
                   task.isBlocked 
                     ? 'bg-red-500 border-red-600 text-white hover:bg-red-600' 
-                    : 'bg-white/90  border-olive-200/80  text-olive-400 hover:text-red-500'
+                    : 'bg-white/90  border-slate-200/80  text-slate-400 hover:text-red-500'
                 ].join(' ')}
                 disabled={!task.permissions.canEdit}
                 onClick={(e) => { e.stopPropagation(); onToggleBlocked(task); }}
@@ -210,14 +210,14 @@ function TaskCard({
               </button>
             )}
             <button
-              className="p-2 rounded-lg bg-white/90  border border-olive-200/80  text-olive-400 hover:text-olive-600  transition-colors shadow-sm"
+              className="p-2 rounded-lg bg-white/90  border border-slate-200/80  text-slate-400 hover:text-slate-600  transition-colors shadow-sm"
               onClick={(e) => { e.stopPropagation(); onComment?.(task); }}
               title="Add Comment"
             >
               <MessageSquare size={13} />
             </button>
             <button
-              className="p-2 rounded-lg bg-white/90  border border-olive-200/80  text-olive-400 hover:text-red-500 transition-colors disabled:opacity-40 shadow-sm"
+              className="p-2 rounded-lg bg-white/90  border border-slate-200/80  text-slate-400 hover:text-red-500 transition-colors disabled:opacity-40 shadow-sm"
               disabled={!task.permissions.canDelete}
               onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
               title="Delete Task"

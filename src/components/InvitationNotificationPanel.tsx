@@ -170,7 +170,7 @@ function InvitationNotificationPanel() {
       >
         <Inbox size={16} />
         {hasNotifications ? (
-          <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-red-500 text-white text-[11px] font-semibold rounded-full flex items-center justify-center">
             {totalCount > 9 ? '9+' : totalCount}
           </span>
         ) : null}
@@ -178,15 +178,15 @@ function InvitationNotificationPanel() {
 
       {/* Dropdown panel */}
       {open ? (
-        <div className="absolute right-0 top-full mt-2 w-[380px] max-h-[520px] bg-white rounded-2xl shadow-2xl border border-olive-200/80 z-50 flex flex-col overflow-hidden animate-in slide-in-from-top-1 duration-150">
+        <div className="absolute right-0 top-full mt-2 w-[380px] max-h-[520px] bg-white rounded-2xl shadow-xl border border-slate-200/80 z-50 flex flex-col overflow-hidden animate-in slide-in-from-top-1 duration-150">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-olive-100 shrink-0">
-            <h3 className="text-sm font-bold text-olive-950 flex items-center gap-2">
-              <Inbox size={15} className="text-olive-700" />
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 shrink-0">
+            <h3 className="text-sm font-semibold text-slate-950 flex items-center gap-2">
+              <Inbox size={15} className="text-slate-700" />
               Invitations &amp; updates
             </h3>
             <button
-              className="p-1.5 rounded-lg text-olive-400 hover:text-olive-700 hover:bg-olive-50 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors"
               onClick={() => setOpen(false)}
               type="button"
             >
@@ -199,32 +199,32 @@ function InvitationNotificationPanel() {
             {myInvitations.length > 0 ? (
               <div>
                 <div className="px-4 pt-3 pb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-olive-500">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                     Project Invitations
                   </span>
                 </div>
                 {myInvitations.map((inv) => (
                   <div
                     key={inv.id}
-                    className="mx-3 mb-2 rounded-xl border border-olive-200/60 bg-olive-50/40 p-3.5"
+                    className="mx-3 mb-2 rounded-xl border border-slate-200/60 bg-slate-50/40 p-3.5"
                   >
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-olive-100 to-olive-200/60 flex items-center justify-center shrink-0">
-                        <Users size={14} className="text-olive-700" />
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200/60 flex items-center justify-center shrink-0">
+                        <Users size={14} className="text-slate-700" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[0.84rem] font-bold text-olive-950 leading-tight">
+                        <p className="text-[13px] font-semibold text-slate-950 leading-tight">
                           {inv.inviterName}{' '}
-                          <span className="font-normal text-olive-600">invited you to</span>
+                          <span className="font-normal text-slate-600">invited you to</span>
                         </p>
-                        <p className="text-[0.92rem] font-extrabold text-olive-900 mt-0.5">
+                        <p className="text-[15px] font-semibold text-slate-900 mt-0.5">
                           {inv.projectName}
                         </p>
                         <div className="flex items-center gap-1.5 mt-1">
-                          <span className="text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-olive-100 text-olive-700">
+                          <span className="text-[11px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
                             {inv.role}
                           </span>
-                          <span className="text-[0.72rem] text-olive-400 flex items-center gap-1">
+                          <span className="text-xs text-slate-400 flex items-center gap-1">
                             <Clock size={10} />
                             {formatRelative(inv.createdAt)}
                           </span>
@@ -233,7 +233,7 @@ function InvitationNotificationPanel() {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-olive-900 text-white text-[0.78rem] font-bold disabled:opacity-50 transition-all hover:bg-olive-800 active:scale-95"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold disabled:opacity-50 transition-all hover:bg-slate-800 active:scale-95"
                         disabled={actioning === inv.id}
                         onClick={() => void handleAccept(inv)}
                         type="button"
@@ -242,7 +242,7 @@ function InvitationNotificationPanel() {
                         {actioning === inv.id ? 'Accepting…' : 'Accept'}
                       </button>
                       <button
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-red-200 bg-white text-red-600 text-[0.78rem] font-bold disabled:opacity-50 transition-all hover:bg-red-50 active:scale-95"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-red-200 bg-white text-red-600 text-xs font-semibold disabled:opacity-50 transition-all hover:bg-red-50 active:scale-95"
                         disabled={actioning === inv.id}
                         onClick={() => void handleReject(inv)}
                         type="button"
@@ -260,7 +260,7 @@ function InvitationNotificationPanel() {
             {adminNotifications.length > 0 ? (
               <div>
                 <div className="px-4 pt-3 pb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-olive-500">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                     Invitation Updates
                   </span>
                 </div>
@@ -285,20 +285,20 @@ function InvitationNotificationPanel() {
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[0.84rem] font-bold text-olive-950 leading-tight">
+                      <p className="text-[13px] font-semibold text-slate-950 leading-tight">
                         {n.personName}
                       </p>
-                      <p className="text-[0.78rem] text-olive-600 mt-0.5">
+                      <p className="text-xs text-slate-600 mt-0.5">
                         {n.kind === 'accepted' ? 'accepted' : 'declined'} invitation to{' '}
                         <strong>{n.projectName}</strong>
                       </p>
-                      <p className="text-[0.70rem] text-olive-400 flex items-center gap-1 mt-1">
+                      <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-1">
                         <Clock size={10} />
                         {formatRelative(n.timestamp)}
                       </p>
                     </div>
                     <button
-                      className="p-1 rounded text-olive-300 hover:text-olive-600 transition-colors shrink-0"
+                      className="p-1 rounded text-slate-300 hover:text-slate-600 transition-colors shrink-0"
                       onClick={() => clearAdminNotification(n.id)}
                       type="button"
                     >
@@ -312,11 +312,11 @@ function InvitationNotificationPanel() {
             {/* Empty state */}
             {totalCount === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center px-6">
-                <div className="w-12 h-12 rounded-2xl bg-olive-50 flex items-center justify-center mb-3 border border-olive-100">
-                  <Inbox size={20} className="text-olive-300" />
+                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mb-3 border border-slate-100">
+                  <Inbox size={20} className="text-slate-300" />
                 </div>
-                <p className="text-[0.84rem] font-semibold text-olive-700">All caught up</p>
-                <p className="text-[0.76rem] text-olive-400 mt-1">
+                <p className="text-[13px] font-semibold text-slate-700">All caught up</p>
+                <p className="text-xs text-slate-400 mt-1">
                   No pending invitations or updates
                 </p>
               </div>
@@ -325,9 +325,9 @@ function InvitationNotificationPanel() {
 
           {/* Footer */}
           {totalCount > 0 ? (
-            <div className="border-t border-olive-100 px-4 py-2.5 shrink-0">
+            <div className="border-t border-slate-100 px-4 py-2.5 shrink-0">
               <button
-                className="text-[0.75rem] text-olive-500 hover:text-olive-800 flex items-center gap-1 transition-colors"
+                className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 transition-colors"
                 onClick={() => {
                   setAdminNotifications([]);
                   setMyInvitations([]);

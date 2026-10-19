@@ -45,7 +45,7 @@ function Modal({ backdropClassName, bodyClassName, children, onClose, panelClass
         className={[
           'relative w-full max-h-[90vh] overflow-y-auto',
           maxWidth,
-          'bg-white border border-olive-200',
+          'bg-white border border-slate-200',
           'rounded-lg shadow-xl',
           'animate-modalIn',
           panelClassName ?? ''

@@ -27,7 +27,7 @@ function SlaDashboard(): JSX.Element | null {
   const items = [
     { label: 'Breached', value: summary.totalBreached, icon: AlertTriangle, tone: 'text-red-600 bg-red-50 border-red-100' },
     { label: 'Response', value: `${summary.responseCompliancePercent}%`, icon: CheckCircle2, tone: 'text-emerald-700 bg-emerald-50 border-emerald-100' },
-    { label: 'Resolution', value: `${summary.resolutionCompliancePercent}%`, icon: BarChart3, tone: 'text-olive-700 bg-olive-50 border-olive-200' },
+    { label: 'Resolution', value: `${summary.resolutionCompliancePercent}%`, icon: BarChart3, tone: 'text-slate-700 bg-slate-50 border-slate-200' },
     { label: 'Avg resolve', value: `${summary.averageResolutionTimeHours}h`, icon: TimerReset, tone: 'text-amber-700 bg-amber-50 border-amber-100' }
   ];
 
@@ -36,10 +36,10 @@ function SlaDashboard(): JSX.Element | null {
       {items.map((item) => (
         <div key={item.label} className={`rounded-xl border p-3 ${item.tone}`}>
           <div className="flex items-center justify-between">
-            <span className="text-[0.65rem] uppercase tracking-widest font-black opacity-70">{item.label}</span>
+            <span className="text-[11px] uppercase tracking-wide font-semibold opacity-70">{item.label}</span>
             <item.icon size={15} />
           </div>
-          <strong className="block mt-1 text-lg font-black">{item.value}</strong>
+          <strong className="block mt-1 text-lg font-semibold">{item.value}</strong>
         </div>
       ))}
     </div>

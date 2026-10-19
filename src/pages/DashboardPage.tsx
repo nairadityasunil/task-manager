@@ -349,8 +349,8 @@ export function DashboardPage(): JSX.Element {
           {dash.activeView === 'settings' ? (
             <div className="h-full overflow-y-auto">
               <div className="px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-200 bg-white">
-                <h3 className="text-xl font-semibold text-olive-950 m-0">Settings</h3>
-                <p className="text-olive-500 m-0 text-sm mt-0.5">Account &amp; Preferences</p>
+                <h3 className="text-xl font-semibold text-slate-950 m-0">Settings</h3>
+                <p className="text-slate-500 m-0 text-sm mt-0.5">Account &amp; Preferences</p>
               </div>
               <div className="p-4 sm:p-8">
                 <SettingsPanel
@@ -398,8 +398,8 @@ export function DashboardPage(): JSX.Element {
           ) : dash.activeView === 'sdk-docs' ? (
             <div className="h-full overflow-y-auto">
               <div className="px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-200 bg-white">
-                <h3 className="text-xl font-semibold text-olive-950 m-0">SDK Documentation</h3>
-                <p className="text-olive-500 m-0 text-sm mt-0.5">Integration Guide &amp; API Reference</p>
+                <h3 className="text-xl font-semibold text-slate-950 m-0">SDK Documentation</h3>
+                <p className="text-slate-500 m-0 text-sm mt-0.5">Integration Guide &amp; API Reference</p>
               </div>
               <div className="p-3">
                 <SdkDocsPanel />
@@ -511,14 +511,14 @@ export function DashboardPage(): JSX.Element {
                   <div className={`flex items-center justify-between px-4 py-3.5 border-b border-slate-100 ${dash.isSidebarCollapsed ? 'flex-col gap-4' : ''}`}>
                     {!dash.isSidebarCollapsed && (
                       <div className="animate-in fade-in duration-500">
-                        <h3 className="text-[0.95rem] font-semibold text-slate-900 m-0">Epics</h3>
+                        <h3 className="text-[15px] font-semibold text-slate-900 m-0">Epics</h3>
                         <p className="m-0 mt-0.5 text-xs text-slate-500">{dash.epics.length} in this project</p>
                       </div>
                     )}
                     <div className={`flex items-center gap-1.5 ${dash.isSidebarCollapsed ? 'flex-col' : ''}`}>
                       {!dash.isSidebarCollapsed && (
                         <button
-                          className="flex items-center justify-center w-9 h-9 bg-olive-900 hover:bg-olive-800 text-white rounded-lg shadow-sm transition-all active:scale-95 disabled:opacity-40"
+                          className="flex items-center justify-center w-9 h-9 bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm transition-all active:scale-95 disabled:opacity-40"
                           disabled={!dash.canManageActiveProject}
                           onClick={() => dash.setIsEpicCreateModalOpen(true)}
                           title="New Epic"
@@ -528,7 +528,7 @@ export function DashboardPage(): JSX.Element {
                         </button>
                       )}
                       <button
-                        className="flex items-center justify-center w-9 h-9 hover:bg-olive-100 text-olive-400 hover:text-olive-600 rounded-lg transition-all"
+                        className="flex items-center justify-center w-9 h-9 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-lg transition-all"
                         onClick={() => dash.setIsSidebarCollapsed(!dash.isSidebarCollapsed)}
                         title={dash.isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                       >
@@ -562,14 +562,14 @@ export function DashboardPage(): JSX.Element {
 
                             <div className="flex items-center gap-1">
                               <button
-                                className="p-1 rounded hover:bg-olive-100 text-olive-400 hover:text-olive-600 transition-colors"
+                                className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
                                 onClick={(e) => { e.stopPropagation(); dash.handleOpenEpicNotesPanel(epic); }}
                                 title="Notes"
                               >
                                 <FileText size={12} />
                               </button>
                               <button
-                                className="p-1 rounded hover:bg-olive-100 text-olive-400 hover:text-olive-600 transition-colors disabled:opacity-40"
+                                className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40"
                                 disabled={!dash.canManageActiveProject}
                                 onClick={(e) => { e.stopPropagation(); dash.setEditingEpic(epic); }}
                                 title="Edit"
@@ -578,7 +578,7 @@ export function DashboardPage(): JSX.Element {
                               </button>
                               <div className="flex-1" />
                               <button
-                                className="p-1 rounded hover:bg-red-50 text-olive-400 hover:text-red-500 transition-colors disabled:opacity-40"
+                                className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors disabled:opacity-40"
                                 disabled={dash.actionEpicId === epic.id || dash.activeProject?.currentUserRole !== 'ADMIN'}
                                 onClick={(e) => { e.stopPropagation(); void dash.handleDeleteEpic(epic.id); }}
                                 title="Delete"
@@ -604,36 +604,36 @@ export function DashboardPage(): JSX.Element {
                     <>
                       <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-3.5 border-b border-slate-100">
                         <div className="min-w-0">
-                          <h3 className="text-[0.95rem] font-semibold text-slate-900 m-0">{dash.tasksHeading}</h3>
+                          <h3 className="text-[15px] font-semibold text-slate-900 m-0">{dash.tasksHeading}</h3>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-olive-500 text-[0.78rem] truncate max-w-[200px]">
+                            <span className="text-slate-500 text-xs truncate max-w-[200px]">
                               {dash.epics.find(e => e.id === dash.selectedEpicId)?.name}
                             </span>
-                            <div className="w-1 h-1 rounded-full bg-olive-300" />
-                            <span className="text-[0.7rem] font-bold text-olive-600">
+                            <div className="w-1 h-1 rounded-full bg-slate-300" />
+                            <span className="text-[11px] font-semibold text-slate-600">
                               {dash.activeEpicTasks.length} {dash.activeEpicTasks.length === 1 ? 'Task' : 'Tasks'}
                             </span>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="flex bg-olive-100 p-1 rounded-lg border border-olive-200/50">
+                          <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200/50">
                             <button
                               onClick={() => dash.setViewMode('list')}
-                              className={`p-1.5 rounded-md transition-all ${dash.viewMode === 'list' ? 'bg-white shadow-sm text-olive-600' : 'text-olive-400 hover:text-olive-600'}`}
+                              className={`p-1.5 rounded-md transition-all ${dash.viewMode === 'list' ? 'bg-white shadow-sm text-slate-600' : 'text-slate-400 hover:text-slate-600'}`}
                               title="List View"
                             >
                               <List size={18} />
                             </button>
                             <button
                               onClick={() => dash.setViewMode('kanban')}
-                              className={`p-1.5 rounded-md transition-all ${dash.viewMode === 'kanban' ? 'bg-white shadow-sm text-olive-600' : 'text-olive-400 hover:text-olive-600'}`}
+                              className={`p-1.5 rounded-md transition-all ${dash.viewMode === 'kanban' ? 'bg-white shadow-sm text-slate-600' : 'text-slate-400 hover:text-slate-600'}`}
                               title="Kanban Board"
                             >
                               <Layout size={18} />
                             </button>
                           </div>
                           <button
-                            className="flex items-center justify-center w-10 h-10 bg-olive-900 hover:bg-olive-800 text-white rounded-lg shadow-sm transition-all duration-300 hover:scale-[1.03] active:scale-95 disabled:opacity-40"
+                            className="flex items-center justify-center w-10 h-10 bg-slate-900 hover:bg-slate-800 text-white rounded-lg shadow-sm transition-all duration-300 hover:scale-[1.03] active:scale-95 disabled:opacity-40"
                             disabled={!dash.canManageActiveProject}
                             onClick={() => {
                               const activeEpic = dash.epics.find(e => e.id === dash.selectedEpicId);
@@ -663,18 +663,18 @@ export function DashboardPage(): JSX.Element {
                       {dash.selectedTaskIds.length > 0 && (
                         <div className="mx-3 sm:mx-6 my-2 p-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-wrap items-center justify-between gap-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-olive-900">
+                            <span className="text-sm font-semibold text-slate-900">
                               {dash.selectedTaskIds.length} tasks selected
                             </span>
                             <button
                               onClick={() => dash.setSelectedTaskIds([])}
-                              className="text-xs text-olive-600 hover:text-red-500 font-medium transition-colors underline decoration-dotted"
+                              className="text-xs text-slate-600 hover:text-red-500 font-medium transition-colors underline decoration-dotted"
                             >
                               Deselect all
                             </button>
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="text-xs font-bold text-olive-500 uppercase tracking-widest">Assign to:</span>
+                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Assign to:</span>
                             <AssigneeSelector
                               projectId={dash.activeProject?.id ?? null}
                               selectedUserId=""
@@ -817,10 +817,10 @@ export function DashboardPage(): JSX.Element {
       {dash.isChatPanelOpen && dash.activeProject && (
         <>
           <div
-            className="fixed inset-0 bg-olive-900/20 backdrop-blur-[2px] z-[2000] animate-in fade-in duration-300"
+            className="fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-[2000] animate-in fade-in duration-300"
             onClick={() => dash.setIsChatPanelOpen(false)}
           />
-          <div className="fixed top-0 right-0 h-full w-full md:w-1/2 lg:max-w-1/2 bg-white z-[5001] shadow-2xl animate-in slide-in-from-right duration-500 overflow-hidden border-l border-olive-200 flex flex-col">
+          <div className="fixed top-0 right-0 h-full w-full md:w-1/2 lg:max-w-1/2 bg-white z-[5001] shadow-xl animate-in slide-in-from-right duration-500 overflow-hidden border-l border-slate-200 flex flex-col">
             <ChatPanel
               project={dash.activeProject}
               members={dash.activeProjectMembers}
@@ -1024,34 +1024,34 @@ export function DashboardPage(): JSX.Element {
         <Modal onClose={() => dash.setPriorityEvaluationModalOpen(false)} title="Priority Evaluation">
           <div className="grid gap-4">
             <div className="grid gap-2 text-sm">
-              <div className="flex justify-between items-center py-2 border-b border-olive-100">
-                <span className="font-bold text-olive-700">Base Priority</span>
-                <span className="text-olive-900 font-medium">{dash.priorityEvaluationResult.basePriority}</span>
+              <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                <span className="font-semibold text-slate-700">Base Priority</span>
+                <span className="text-slate-900 font-medium">{dash.priorityEvaluationResult.basePriority}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-olive-100">
-                <span className="font-bold text-olive-700">Dynamic Priority</span>
-                <span className="text-olive-900 font-bold px-2 py-0.5 bg-olive-100 rounded">{dash.priorityEvaluationResult.dynamicPriority}</span>
+              <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                <span className="font-semibold text-slate-700">Dynamic Priority</span>
+                <span className="text-slate-900 font-semibold px-2 py-0.5 bg-slate-100 rounded">{dash.priorityEvaluationResult.dynamicPriority}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-olive-100">
-                <span className="font-bold text-olive-700">Dynamic Score</span>
-                <span className="text-olive-900">{dash.priorityEvaluationResult.dynamicPriorityScore}</span>
+              <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                <span className="font-semibold text-slate-700">Dynamic Score</span>
+                <span className="text-slate-900">{dash.priorityEvaluationResult.dynamicPriorityScore}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-olive-100">
-                <span className="font-bold text-olive-700">Urgency / Impact</span>
-                <span className="text-olive-900">{dash.priorityEvaluationResult.urgencyScore} / {dash.priorityEvaluationResult.impactScore}</span>
+              <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                <span className="font-semibold text-slate-700">Urgency / Impact</span>
+                <span className="text-slate-900">{dash.priorityEvaluationResult.urgencyScore} / {dash.priorityEvaluationResult.impactScore}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-olive-100">
-                <span className="font-bold text-olive-700">Downstream Impact</span>
-                <span className="text-olive-900">{dash.priorityEvaluationResult.downstreamTaskCount} tasks ({dash.priorityEvaluationResult.dependencyWeight} weight)</span>
+              <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                <span className="font-semibold text-slate-700">Downstream Impact</span>
+                <span className="text-slate-900">{dash.priorityEvaluationResult.downstreamTaskCount} tasks ({dash.priorityEvaluationResult.dependencyWeight} weight)</span>
               </div>
             </div>
-            <div className="bg-olive-50 p-3 rounded-lg border border-olive-200">
-              <h4 className="text-xs font-bold text-olive-800 uppercase tracking-wider mb-1">Reasoning</h4>
-              <p className="text-sm text-olive-600 m-0">{dash.priorityEvaluationResult.reason}</p>
+            <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+              <h4 className="text-xs font-semibold text-slate-800 uppercase tracking-wide mb-1">Reasoning</h4>
+              <p className="text-sm text-slate-600 m-0">{dash.priorityEvaluationResult.reason}</p>
             </div>
             <div className="flex justify-end pt-2">
               <button
-                className="px-4 py-2 bg-olive-900 text-white rounded-lg text-sm font-bold hover:bg-olive-800"
+                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800"
                 onClick={() => dash.setPriorityEvaluationModalOpen(false)}
               >
                 Close

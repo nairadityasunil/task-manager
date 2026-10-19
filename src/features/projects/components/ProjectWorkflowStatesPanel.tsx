@@ -169,26 +169,26 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
 
   return (
     <div className="space-y-5 p-6">
-      <p className="m-0 text-sm text-olive-600">
+      <p className="m-0 text-sm text-slate-600">
         Workflow states describe the stages work moves through in this project. The AI planner uses them when it plans and reports on the project.
       </p>
 
-      {loading && <p className="m-0 text-sm text-olive-500">Loading workflow…</p>}
+      {loading && <p className="m-0 text-sm text-slate-500">Loading workflow…</p>}
 
       {!loading && loadError && (
         <div className="flex items-center justify-between rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           <span>{loadError}</span>
-          <button className="font-bold underline" onClick={() => void load()} type="button">Retry</button>
+          <button className="font-semibold underline" onClick={() => void load()} type="button">Retry</button>
         </div>
       )}
 
       {!loading && !loadError && states.length === 0 && (
-        <div className="rounded-lg border border-dashed border-olive-200 px-6 py-8 text-center">
-          <Workflow className="mx-auto text-olive-400" size={26} />
-          <p className="m-0 mt-3 text-sm font-semibold text-olive-800">No workflow states yet</p>
+        <div className="rounded-lg border border-dashed border-slate-200 px-6 py-8 text-center">
+          <Workflow className="mx-auto text-slate-400" size={26} />
+          <p className="m-0 mt-3 text-sm font-semibold text-slate-800">No workflow states yet</p>
           {canManage ? (
             <button
-              className="mt-4 rounded-md border border-olive-300 px-4 py-2 text-sm font-bold text-olive-700 hover:bg-olive-50 disabled:opacity-50"
+              className="mt-4 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
               disabled={busy}
               onClick={() => void handleAddDefaults()}
               type="button"
@@ -196,7 +196,7 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
               Add default workflow (Backlog → In Progress → Review → Done)
             </button>
           ) : (
-            <p className="m-0 mt-1 text-sm text-olive-500">A project admin can set up the workflow.</p>
+            <p className="m-0 mt-1 text-sm text-slate-500">A project admin can set up the workflow.</p>
           )}
         </div>
       )}
@@ -204,7 +204,7 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
       {!loading && !loadError && states.length > 0 && (
         <ol className="m-0 grid list-none gap-2 p-0">
           {states.map((state, index) => (
-            <li className="rounded-lg border border-olive-200 bg-white px-4 py-3" key={state._id}>
+            <li className="rounded-lg border border-slate-200 bg-white px-4 py-3" key={state._id}>
               {editingId === state._id ? (
                 <StateFields
                   draft={editDraft}
@@ -222,7 +222,7 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
                       </button>
                       <button
                         aria-label="Cancel editing"
-                        className="flex h-9 w-9 items-center justify-center rounded-md border border-olive-200 text-olive-600 hover:bg-olive-50"
+                        className="flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50"
                         onClick={() => setEditingId(null)}
                         type="button"
                       >
@@ -233,14 +233,14 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
                 />
               ) : (
                 <div className="flex items-center gap-3">
-                  <span className="w-5 text-right text-xs font-bold text-olive-400">{index + 1}</span>
+                  <span className="w-5 text-right text-xs font-semibold text-slate-400">{index + 1}</span>
                   <span aria-hidden className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: state.color }} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-bold text-olive-950">{state.name}</span>
-                      <span className="rounded-full bg-olive-100 px-2 py-0.5 text-[11px] font-bold text-olive-700">{categoryLabel(state.category)}</span>
+                      <span className="truncate text-sm font-semibold text-slate-950">{state.name}</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700">{categoryLabel(state.category)}</span>
                     </div>
-                    {state.description && <p className="m-0 mt-0.5 truncate text-xs text-olive-500">{state.description}</p>}
+                    {state.description && <p className="m-0 mt-0.5 truncate text-xs text-slate-500">{state.description}</p>}
                   </div>
                   {canManage && (
                     <div className="flex items-center gap-1">
@@ -258,14 +258,14 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
       )}
 
       {!loading && !loadError && canManage && (
-        <div className="rounded-lg border border-olive-200 bg-olive-50/60 p-4">
-          <p className="m-0 mb-3 text-xs font-bold uppercase tracking-widest text-olive-600">Add state</p>
+        <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+          <p className="m-0 mb-3 text-xs font-semibold uppercase tracking-wide text-slate-600">Add state</p>
           <StateFields
             draft={newDraft}
             onChange={setNewDraft}
             actions={(
               <button
-                className="flex h-9 items-center gap-1.5 rounded-md bg-slate-900 px-3 text-sm font-bold text-white hover:bg-slate-800 disabled:opacity-50"
+                className="flex h-9 items-center gap-1.5 rounded-md bg-slate-900 px-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
                 disabled={busy || !isNameValid(newDraft.name)}
                 onClick={() => void handleCreate()}
                 type="button"
@@ -278,7 +278,7 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
       )}
 
       {!loading && !loadError && !canManage && states.length > 0 && (
-        <p className="m-0 text-xs text-olive-500">Only project admins can change the workflow.</p>
+        <p className="m-0 text-xs text-slate-500">Only project admins can change the workflow.</p>
       )}
     </div>
   );
@@ -298,14 +298,14 @@ function StateFields({
       <div className="flex flex-wrap items-center gap-2">
         <input
           aria-label="State color"
-          className="h-9 w-10 shrink-0 cursor-pointer rounded-md border border-olive-200 bg-white p-1"
+          className="h-9 w-10 shrink-0 cursor-pointer rounded-md border border-slate-200 bg-white p-1"
           onChange={(event) => onChange({ ...draft, color: event.target.value.toUpperCase() })}
           type="color"
           value={draft.color}
         />
         <input
           aria-label="State name"
-          className="h-9 min-w-[160px] flex-1 rounded-md border border-olive-200 px-3 text-sm text-olive-900 focus:border-olive-500 focus:outline-none"
+          className="h-9 min-w-[160px] flex-1 rounded-md border border-slate-200 px-3 text-sm text-slate-900 focus:border-slate-500 focus:outline-none"
           maxLength={MAX_NAME_LENGTH}
           onChange={(event) => onChange({ ...draft, name: event.target.value })}
           placeholder="State name"
@@ -313,7 +313,7 @@ function StateFields({
         />
         <select
           aria-label="State category"
-          className="h-9 rounded-md border border-olive-200 px-2 text-sm text-olive-900"
+          className="h-9 rounded-md border border-slate-200 px-2 text-sm text-slate-900"
           onChange={(event) => onChange({ ...draft, category: event.target.value as StateCategory })}
           value={draft.category}
         >
@@ -325,7 +325,7 @@ function StateFields({
       </div>
       <input
         aria-label="State description"
-        className="h-9 rounded-md border border-olive-200 px-3 text-sm text-olive-900 focus:border-olive-500 focus:outline-none"
+        className="h-9 rounded-md border border-slate-200 px-3 text-sm text-slate-900 focus:border-slate-500 focus:outline-none"
         maxLength={200}
         onChange={(event) => onChange({ ...draft, description: event.target.value })}
         placeholder="Description (optional)"
@@ -351,7 +351,7 @@ function IconButton({
   return (
     <button
       aria-label={label}
-      className={`flex h-8 w-8 items-center justify-center rounded-md text-olive-500 disabled:opacity-30 ${danger ? 'hover:bg-red-50 hover:text-red-600' : 'hover:bg-olive-100 hover:text-olive-800'}`}
+      className={`flex h-8 w-8 items-center justify-center rounded-md text-slate-500 disabled:opacity-30 ${danger ? 'hover:bg-red-50 hover:text-red-600' : 'hover:bg-slate-100 hover:text-slate-800'}`}
       disabled={disabled}
       onClick={onClick}
       title={label}

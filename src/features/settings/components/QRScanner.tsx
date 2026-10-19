@@ -169,7 +169,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({
       {/* Hidden frame buffer canvas */}
       <canvas ref={canvasRef} className="hidden" />
 
-      <div className="w-full relative aspect-square max-w-[280px] bg-black rounded-2xl overflow-hidden border border-olive-300 shadow-md flex items-center justify-center">
+      <div className="w-full relative aspect-square max-w-[280px] bg-black rounded-2xl overflow-hidden border border-slate-300 shadow-md flex items-center justify-center">
         {/* Camera Video Stream */}
         <video
           ref={videoRef}
@@ -195,36 +195,36 @@ export const QRScanner: React.FC<QRScannerProps> = ({
 
         {/* Connecting / Authenticating Overlay (No Raw QR Payload displayed!) */}
         {isConnecting && (
-          <div className="absolute inset-0 bg-olive-950/95 backdrop-blur-xs flex flex-col items-center justify-center text-white p-6 space-y-3 text-center">
+          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-xs flex flex-col items-center justify-center text-white p-6 space-y-3 text-center">
             <RefreshCw className="w-8 h-8 animate-spin text-emerald-400" />
             <div>
-              <p className="text-sm font-bold text-white">Connecting companion device...</p>
-              <p className="text-xs text-olive-300 mt-1">Please wait while we securely link this device.</p>
+              <p className="text-sm font-semibold text-white">Connecting companion device...</p>
+              <p className="text-xs text-slate-300 mt-1">Please wait while we securely link this device.</p>
             </div>
           </div>
         )}
 
         {/* Camera Denied / Unavailable */}
         {(cameraState === "denied" || cameraState === "unavailable") && (
-          <div className="flex flex-col items-center space-y-2.5 text-amber-200 p-5 text-center bg-zinc-900/95 inset-0 absolute justify-center">
+          <div className="flex flex-col items-center space-y-2.5 text-amber-200 p-5 text-center bg-slate-900/95 inset-0 absolute justify-center">
             <AlertCircle className="w-8 h-8 text-amber-400" />
-            <p className="text-xs font-bold text-white">Camera Unavailable</p>
-            <p className="text-[11px] text-zinc-300 leading-tight">{errorMessage}</p>
+            <p className="text-xs font-semibold text-white">Camera Unavailable</p>
+            <p className="text-[11px] text-slate-300 leading-tight">{errorMessage}</p>
           </div>
         )}
 
         {/* Invalid QR Error */}
         {cameraState === "error" && (
-          <div className="flex flex-col items-center space-y-3 text-rose-200 p-5 text-center bg-zinc-900/95 inset-0 absolute justify-center">
+          <div className="flex flex-col items-center space-y-3 text-rose-200 p-5 text-center bg-slate-900/95 inset-0 absolute justify-center">
             <ShieldAlert className="w-8 h-8 text-rose-400" />
             <div>
-              <p className="text-xs font-bold text-white">Invalid QR Code</p>
-              <p className="text-[11px] text-zinc-300 mt-1 leading-tight">{errorMessage}</p>
+              <p className="text-xs font-semibold text-white">Invalid QR Code</p>
+              <p className="text-[11px] text-slate-300 mt-1 leading-tight">{errorMessage}</p>
             </div>
             <button
               type="button"
               onClick={handleScanAgain}
-              className="px-3.5 py-1.5 rounded-lg bg-olive-800 hover:bg-olive-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Scan Again
             </button>
@@ -233,11 +233,11 @@ export const QRScanner: React.FC<QRScannerProps> = ({
       </div>
 
       {/* Fallback button to Enter Key */}
-      <div className="pt-2 border-t border-olive-200 w-full text-center">
+      <div className="pt-2 border-t border-slate-200 w-full text-center">
         <button
           type="button"
           onClick={onFallbackToKey}
-          className="text-xs font-semibold text-olive-700 hover:text-olive-950 underline flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+          className="text-xs font-semibold text-slate-700 hover:text-slate-950 underline flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
         >
           <Key className="w-3.5 h-3.5" />
           Can't scan? Enter Pairing Key Instead

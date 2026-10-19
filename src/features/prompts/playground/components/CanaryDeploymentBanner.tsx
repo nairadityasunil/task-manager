@@ -74,7 +74,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
 
             {/* Status Pill */}
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium uppercase tracking-wider border ${
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium uppercase tracking-wide border ${
                 status === "active"
                   ? "bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse"
                   : isPaused
@@ -85,12 +85,12 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
               {status}
             </span>
 
-            <span className="text-xs font-mono font-medium bg-white/80 px-2 py-0.5 rounded border border-gray-200 text-gray-800">
+            <span className="text-xs font-mono font-medium bg-white/80 px-2 py-0.5 rounded border border-slate-200 text-slate-800">
               Phase {currentPhase}/4 ({trafficWeight?.canary ?? 5}% Traffic to v{candidateVersion})
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-medium flex-wrap text-gray-700">
+          <div className="flex items-center gap-4 text-xs font-medium flex-wrap text-slate-700">
             <span>
               Primary Prod: <strong className="font-mono">v{legacyVersion}</strong> ({trafficWeight?.legacy ?? 95}%)
             </span>
@@ -102,7 +102,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
             </span>
             <span
               className={`flex items-center gap-1 ${
-                isErrorHigh ? "text-rose-600 font-bold" : "text-emerald-700 font-semibold"
+                isErrorHigh ? "text-rose-600 font-semibold" : "text-emerald-700 font-semibold"
               }`}
             >
               {isErrorHigh && <AlertTriangle className="w-3.5 h-3.5" />}
@@ -112,7 +112,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-white/70 h-2 rounded-full overflow-hidden border border-gray-200/80">
+          <div className="w-full bg-white/70 h-2 rounded-full overflow-hidden border border-slate-200/80">
             <div
               className={`h-full transition-all duration-500 ${
                 isFailed
@@ -135,7 +135,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
                   type="button"
                   onClick={onResume}
                   disabled={isActionLoading}
-                  className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   <Play className="w-3.5 h-3.5" /> Resume Traffic
                 </button>
@@ -144,9 +144,9 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
                   type="button"
                   onClick={onPause}
                   disabled={isActionLoading}
-                  className="px-3 py-1.5 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <Pause className="w-3.5 h-3.5 text-gray-600" /> Pause Traffic
+                  <Pause className="w-3.5 h-3.5 text-slate-600" /> Pause Traffic
                 </button>
               )}
 
@@ -155,7 +155,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
                   type="button"
                   onClick={onAdvance}
                   disabled={isActionLoading || isPaused}
-                  className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
+                  className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
                 >
                   Advance Phase <ChevronRight className="w-3.5 h-3.5" />
                 </button>
@@ -164,7 +164,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
                   type="button"
                   onClick={onComplete}
                   disabled={isActionLoading}
-                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
+                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" /> Complete & Promote
                 </button>
@@ -174,7 +174,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
                 type="button"
                 onClick={onRollback}
                 disabled={isActionLoading}
-                className="px-3 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-3 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <RotateCcw className="w-3.5 h-3.5" /> Rollback
               </button>

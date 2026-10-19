@@ -54,26 +54,26 @@ export const DeployModal: React.FC<DeployModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-2xl max-w-lg w-full overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full overflow-hidden">
         {/* Modal Header */}
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 to-white">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100">
               <Rocket className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-gray-900">
+              <h3 className="text-base font-semibold text-slate-900">
                 Deploy Prompt Version v{targetVersionNum}
               </h3>
-              <p className="text-xs text-gray-500">
-                Current Production: <strong className="font-mono text-gray-800">v{prodVersionNum}</strong>
+              <p className="text-xs text-slate-500">
+                Current Production: <strong className="font-mono text-slate-800">v{prodVersionNum}</strong>
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -89,7 +89,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({
             <>
               {/* Option Selector */}
               <div className="space-y-3">
-                <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                <label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
                   Select Environment / Deployment Method
                 </label>
 
@@ -98,14 +98,14 @@ export const DeployModal: React.FC<DeployModalProps> = ({
                   onClick={() => setDeployType("development")}
                   className={`p-3.5 rounded-xl border transition cursor-pointer flex items-start gap-3 ${
                     deployType === "development"
-                      ? "bg-gray-100 border-gray-400 text-gray-950"
-                      : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                      ? "bg-slate-100 border-slate-400 text-slate-950"
+                      : "border-slate-200 hover:bg-slate-50 text-slate-700"
                   }`}
                 >
-                  <Code className="w-4 h-4 text-gray-600 mt-0.5 shrink-0" />
+                  <Code className="w-4 h-4 text-slate-600 mt-0.5 shrink-0" />
                   <div className="text-xs space-y-0.5">
-                    <div className="font-bold text-gray-900">Move to Development</div>
-                    <div className="text-gray-500">
+                    <div className="font-semibold text-slate-900">Move to Development</div>
+                    <div className="text-slate-500">
                       Returns v{targetVersionNum} to development environment for ongoing editing and experimentation.
                     </div>
                   </div>
@@ -117,13 +117,13 @@ export const DeployModal: React.FC<DeployModalProps> = ({
                   className={`p-3.5 rounded-xl border transition cursor-pointer flex items-start gap-3 ${
                     deployType === "staging"
                       ? "bg-amber-50/80 border-amber-400 text-amber-950"
-                      : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                      : "border-slate-200 hover:bg-slate-50 text-slate-700"
                   }`}
                 >
                   <GitBranch className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
                   <div className="text-xs space-y-0.5">
-                    <div className="font-bold text-gray-900">Move to Staging</div>
-                    <div className="text-gray-500">
+                    <div className="font-semibold text-slate-900">Move to Staging</div>
+                    <div className="text-slate-500">
                       Promotes v{targetVersionNum} to staging environment without receiving production traffic.
                     </div>
                   </div>
@@ -135,15 +135,15 @@ export const DeployModal: React.FC<DeployModalProps> = ({
                   className={`p-3.5 rounded-xl border transition cursor-pointer flex items-start gap-3 ${
                     deployType === "canary"
                       ? "bg-indigo-50/80 border-indigo-400 text-indigo-950"
-                      : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                      : "border-slate-200 hover:bg-slate-50 text-slate-700"
                   }`}
                 >
                   <Flame className="w-4 h-4 text-indigo-600 mt-0.5 shrink-0" />
                   <div className="text-xs space-y-0.5">
-                    <div className="font-bold text-gray-900 flex items-center gap-1.5">
-                      Canary Deployment <span className="text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded font-mono font-bold">Recommended</span>
+                    <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                      Canary Deployment <span className="text-[11px] bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded font-mono font-semibold">Recommended</span>
                     </div>
-                    <div className="text-gray-500">
+                    <div className="text-slate-500">
                       Gradually shift production traffic (5% → 25% → 50% → 100%) with automated error rate health monitoring and instant rollback.
                     </div>
                   </div>
@@ -155,13 +155,13 @@ export const DeployModal: React.FC<DeployModalProps> = ({
                   className={`p-3.5 rounded-xl border transition cursor-pointer flex items-start gap-3 ${
                     deployType === "direct"
                       ? "bg-emerald-50/80 border-emerald-400 text-emerald-950"
-                      : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                      : "border-slate-200 hover:bg-slate-50 text-slate-700"
                   }`}
                 >
                   <ShieldCheck className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                   <div className="text-xs space-y-0.5">
-                    <div className="font-bold text-gray-900">Direct Production Swap</div>
-                    <div className="text-gray-500">
+                    <div className="font-semibold text-slate-900">Direct Production Swap</div>
+                    <div className="text-slate-500">
                       Atomically promotes v{targetVersionNum} to production immediately. Existing production version (v{prodVersionNum}) becomes staging.
                     </div>
                   </div>
@@ -170,13 +170,13 @@ export const DeployModal: React.FC<DeployModalProps> = ({
 
               {/* Canary Parameters Config */}
               {deployType === "canary" && (
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-3">
-                  <h4 className="text-xs font-bold text-gray-800">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                  <h4 className="text-xs font-semibold text-slate-800">
                     Canary Health Parameters
                   </h4>
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div>
-                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
                         Min Requests Before Eval
                       </label>
                       <input
@@ -185,11 +185,11 @@ export const DeployModal: React.FC<DeployModalProps> = ({
                         max={100}
                         value={minRequests}
                         onChange={(e) => setMinRequests(Number(e.target.value))}
-                        className="w-full px-3 py-1.5 bg-white rounded-lg border border-gray-300 text-xs font-mono"
+                        className="w-full px-3 py-1.5 bg-white rounded-lg border border-slate-300 text-xs font-mono"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
                         Max Error Threshold (%)
                       </label>
                       <input
@@ -198,7 +198,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({
                         max={50}
                         value={errorThreshold}
                         onChange={(e) => setErrorThreshold(Number(e.target.value))}
-                        className="w-full px-3 py-1.5 bg-white rounded-lg border border-gray-300 text-xs font-mono"
+                        className="w-full px-3 py-1.5 bg-white rounded-lg border border-slate-300 text-xs font-mono"
                       />
                     </div>
                   </div>
@@ -208,11 +208,11 @@ export const DeployModal: React.FC<DeployModalProps> = ({
           )}
 
           {/* Modal Footer */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-bold transition cursor-pointer"
+              className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer"
             >
               Cancel
             </button>
@@ -220,7 +220,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
               >
                 {isLoading ? "Processing..." : "Confirm Action"} <ArrowRight className="w-3.5 h-3.5" />
               </button>

@@ -115,13 +115,13 @@ export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId })
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row h-[750px]">
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col md:flex-row h-[750px]">
       {/* Sidebar List */}
       <div className="w-full md:w-80 border-r border-slate-800 p-4 flex flex-col bg-slate-950/60">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
             <BookOpen className="w-4 h-4 text-blue-400" />
-            <h3 className="font-bold text-slate-200 text-sm">Documentation</h3>
+            <h3 className="font-semibold text-slate-200 text-sm">Documentation</h3>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
@@ -147,11 +147,11 @@ export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId })
               }`}
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold uppercase tracking-wider text-blue-400">
+                <span className="text-xs font-semibold uppercase tracking-wide text-blue-400">
                   {doc.type}
                 </span>
                 {doc.aiGenerated && (
-                  <span className="flex items-center space-x-0.5 text-[10px] text-purple-400 bg-purple-950/60 px-1.5 py-0.5 rounded border border-purple-800/40">
+                  <span className="flex items-center space-x-0.5 text-[11px] text-purple-400 bg-purple-950/60 px-1.5 py-0.5 rounded border border-purple-800/40">
                     <Sparkles className="w-2.5 h-2.5" />
                     <span>AI</span>
                   </span>
@@ -175,7 +175,7 @@ export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId })
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
                 <div className="flex items-center space-x-2 mb-1">
-                  <span className="px-2 py-0.5 bg-blue-950 text-blue-400 border border-blue-800/60 rounded text-[10px] font-bold">
+                  <span className="px-2 py-0.5 bg-blue-950 text-blue-400 border border-blue-800/60 rounded text-[11px] font-semibold">
                     {selectedDoc.type}
                   </span>
                   <span className="text-xs text-slate-500">v{selectedDoc.version || 1}</span>
@@ -185,10 +185,10 @@ export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId })
                     type="text"
                     value={selectedDoc.title}
                     onChange={(e) => setSelectedDoc({ ...selectedDoc, title: e.target.value })}
-                    className="text-xl font-bold bg-slate-950 border border-slate-800 rounded px-2.5 py-1 text-slate-100 focus:outline-none"
+                    className="text-xl font-semibold bg-slate-950 border border-slate-800 rounded px-2.5 py-1 text-slate-100 focus:outline-none"
                   />
                 ) : (
-                  <h2 className="text-xl font-bold text-slate-100">{selectedDoc.title}</h2>
+                  <h2 className="text-xl font-semibold text-slate-100">{selectedDoc.title}</h2>
                 )}
               </div>
 
@@ -243,9 +243,9 @@ export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId })
       {/* Create Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-100">Create New Document</h3>
+              <h3 className="text-base font-semibold text-slate-100">Create New Document</h3>
               <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-200">
                 <X className="w-4 h-4" />
               </button>
@@ -253,7 +253,7 @@ export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId })
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
                   Title
                 </label>
                 <input
@@ -266,7 +266,7 @@ export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId })
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
                   Document Type
                 </label>
                 <select
@@ -284,7 +284,7 @@ export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId })
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
                   Content (Markdown)
                 </label>
                 <textarea

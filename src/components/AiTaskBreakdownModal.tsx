@@ -45,11 +45,11 @@ export const AiTaskBreakdownModal: React.FC<AiTaskBreakdownModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-xl p-6 shadow-2xl space-y-5">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl p-6 shadow-xl space-y-5">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center space-x-2.5">
             <Sparkles className="w-5 h-5 text-purple-400" />
-            <h3 className="font-bold text-slate-100 text-base">Decompose Task with AI</h3>
+            <h3 className="font-semibold text-slate-100 text-base">Decompose Task with AI</h3>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
             <X className="w-4 h-4" />
@@ -61,7 +61,7 @@ export const AiTaskBreakdownModal: React.FC<AiTaskBreakdownModalProps> = ({
         {!breakdown ? (
           <form onSubmit={handleDecompose} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
                 Task Title
               </label>
               <input
@@ -75,7 +75,7 @@ export const AiTaskBreakdownModal: React.FC<AiTaskBreakdownModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
                 Description (Optional)
               </label>
               <textarea
@@ -102,7 +102,7 @@ export const AiTaskBreakdownModal: React.FC<AiTaskBreakdownModalProps> = ({
           <div className="space-y-4">
             <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
               <div className="flex items-center justify-between mb-1">
-                <span className="font-bold text-slate-100 text-sm">{breakdown.title}</span>
+                <span className="font-semibold text-slate-100 text-sm">{breakdown.title}</span>
                 <span className="text-xs font-semibold text-purple-400 flex items-center space-x-1">
                   <Clock className="w-3.5 h-3.5" />
                   <span>Est: {breakdown.estimatedHours} hours</span>
@@ -112,7 +112,7 @@ export const AiTaskBreakdownModal: React.FC<AiTaskBreakdownModalProps> = ({
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
+              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 flex items-center space-x-1.5">
                 <Layers className="w-3.5 h-3.5 text-purple-400" />
                 <span>Generated Subtasks ({breakdown.subtasks?.length || 0})</span>
               </h4>
@@ -128,7 +128,7 @@ export const AiTaskBreakdownModal: React.FC<AiTaskBreakdownModalProps> = ({
 
             {breakdown.rationale && (
               <div className="p-3 bg-purple-950/20 border border-purple-800/30 rounded-xl text-xs text-purple-300">
-                <span className="font-bold">Rationale: </span>
+                <span className="font-semibold">Rationale: </span>
                 {breakdown.rationale}
               </div>
             )}

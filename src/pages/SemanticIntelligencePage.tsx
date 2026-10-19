@@ -43,7 +43,7 @@ const ScoreRing = ({ score, size = 60, stroke = 5, color = 'var(--color-olive-70
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg className="rotate-[-90deg]" height={size} width={size}>
         <circle
-          className="text-olive-100"
+          className="text-slate-100"
           cx={size / 2}
           cy={size / 2}
           fill="transparent"
@@ -64,7 +64,7 @@ const ScoreRing = ({ score, size = 60, stroke = 5, color = 'var(--color-olive-70
           style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
         />
       </svg>
-      <span className="absolute text-[11px] font-semibold text-olive-800">
+      <span className="absolute text-[11px] font-semibold text-slate-800">
         {Math.round(score)}
       </span>
     </div>
@@ -90,14 +90,14 @@ const Sparkline = ({ data }: { data: number[] }) => {
   return (
     <svg className="overflow-visible" height={height} width={width}>
       <polyline
-        className="text-olive-700/30"
+        className="text-slate-700/30"
         fill="none"
         points={points}
         stroke="currentColor"
         strokeWidth="1.5"
       />
       <circle
-        className="text-olive-700"
+        className="text-slate-700"
         cx={width}
         cy={height - ((data[data.length - 1] - min) / range) * height}
         fill="currentColor"
@@ -109,11 +109,11 @@ const Sparkline = ({ data }: { data: number[] }) => {
 
 const FactorBar = ({ label, share, color = 'var(--color-olive-700)' }: { label: string, share: number, color?: string }) => (
   <div className="space-y-1.5">
-    <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wider">
-      <span className="text-olive-500">{label}</span>
-      <span className="text-olive-700">{share}%</span>
+    <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wide">
+      <span className="text-slate-500">{label}</span>
+      <span className="text-slate-700">{share}%</span>
     </div>
-    <div className="h-2 rounded-full bg-olive-100 overflow-hidden">
+    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
       <div
         className="h-full transition-all duration-1000 ease-out"
         style={{ width: `${share}%`, backgroundColor: color }}
@@ -144,22 +144,22 @@ export default function SemanticIntelligencePage({
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <div className="text-center">
-          <Loader2 className="mx-auto animate-spin text-olive-700" size={40} />
-          <p className="mt-4 text-sm font-semibold text-olive-500 uppercase tracking-widest">Hydrating Semantic Layer</p>
+          <Loader2 className="mx-auto animate-spin text-slate-700" size={40} />
+          <p className="mt-4 text-sm font-semibold text-slate-500 uppercase tracking-wide">Hydrating Semantic Layer</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-full bg-olive-50 font-sans">
+    <div className="min-h-full bg-slate-50 font-sans">
       {/* Header Panel */}
-      <div className="sticky top-0 z-20 px-4 sm:px-8 py-4 border-b border-olive-200/60 bg-white/80 backdrop-blur-xl shadow-[0_4px_24px_rgba(63,98,18,0.04)]">
+      <div className="sticky top-0 z-20 px-4 sm:px-8 py-4 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl shadow-[0_4px_24px_rgba(63,98,18,0.04)]">
         <div className="flex flex-wrap items-center justify-between gap-6 max-w-full mx-auto">
           <div className="flex flex-wrap items-center justify-between w-full gap-3">
             <div className="relative group">
               <select
-                className="h-10 pl-10 pr-10 rounded-xl border border-olive-200 bg-white text-xs font-medium text-olive-700 shadow-sm appearance-none focus:ring-4 focus:ring-olive-700/5 focus:border-olive-400 outline-none transition-all cursor-pointer hover:border-olive-300"
+                className="h-10 pl-10 pr-10 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 shadow-sm appearance-none focus:ring-4 focus:ring-slate-700/5 focus:border-slate-400 outline-none transition-all cursor-pointer hover:border-slate-300"
                 onChange={(event) => intel.setActiveProjectId(event.target.value)}
                 value={intel.activeProjectId}
               >
@@ -170,22 +170,22 @@ export default function SemanticIntelligencePage({
                   </option>
                 ))}
               </select>
-              <Workflow className="absolute left-3.5 top-3 text-olive-500 group-hover:text-olive-700 transition-colors" size={14} />
-              <div className="absolute right-3.5 top-3.5 pointer-events-none text-olive-400">
+              <Workflow className="absolute left-3.5 top-3 text-slate-500 group-hover:text-slate-700 transition-colors" size={14} />
+              <div className="absolute right-3.5 top-3.5 pointer-events-none text-slate-400">
                 <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
             </div>
 
-            <div className="flex max-w-full overflow-x-auto rounded-xl border border-olive-200 bg-olive-50/50 p-1 shadow-inner backdrop-blur-sm">
+            <div className="flex max-w-full overflow-x-auto rounded-xl border border-slate-200 bg-slate-50/50 p-1 shadow-inner backdrop-blur-sm">
               {timeRangeOptions.map((option) => (
                 <button
                   className={[
-                    'h-8 px-4 text-[10px] font-medium uppercase tracking-widest rounded-lg transition-all duration-300',
+                    'h-8 px-4 text-[11px] font-medium uppercase tracking-wide rounded-lg transition-all duration-300',
                     intel.timeRange === option.value
-                      ? 'bg-white text-olive-800 shadow-md ring-1 ring-olive-100'
-                      : 'text-olive-500 hover:text-olive-800 hover:bg-white/50'
+                      ? 'bg-white text-slate-800 shadow-md ring-1 ring-slate-100'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
                   ].join(' ')}
                   key={option.value}
                   onClick={() => intel.setTimeRange(option.value)}
@@ -200,15 +200,15 @@ export default function SemanticIntelligencePage({
               className={[
                 'flex h-10 items-center gap-2 rounded-xl px-5 text-xs font-medium transition-all duration-300 transform active:scale-95 group',
                 intel.loading
-                  ? 'bg-olive-100 text-olive-400 cursor-not-allowed border border-olive-200'
-                  : 'bg-olive-900 text-white shadow-lg shadow-olive-900/20 hover:bg-black hover:shadow-black/25'
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                  : 'bg-slate-900 text-white shadow-lg shadow-slate-900/20 hover:bg-black hover:shadow-black/25'
               ].join(' ')}
               disabled={intel.loading}
               onClick={() => void intel.loadIntelligence()}
               type="button"
             >
               {intel.loading ? <Loader2 className="animate-spin" size={14} /> : <RefreshCw size={14} className="group-hover:rotate-180 transition-transform duration-500" />}
-              <span className="tracking-widest uppercase">Sync</span>
+              <span className="tracking-wide uppercase">Sync</span>
             </button>
           </div>
         </div>
@@ -236,22 +236,22 @@ export default function SemanticIntelligencePage({
 
             return (
               <section
-                className="group relative rounded-2xl border border-olive-200 bg-white p-6 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1"
+                className="group relative rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1"
                 key={metric}
               >
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-olive-400">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
                       {result?.label ?? metric.replace(/_/g, ' ')}
                     </p>
-                    <h4 className="text-3xl font-semibold text-olive-800 tabular-nums">
+                    <h4 className="text-3xl font-semibold text-slate-800 tabular-nums">
                       {formatMetricValue(result)}
                     </h4>
                   </div>
                   {scoreValue !== null ? (
                     <ScoreRing color={color} score={scoreValue} />
                   ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-olive-50 text-olive-700">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-slate-700">
                       <Icon size={24} />
                     </div>
                   )}
@@ -259,14 +259,14 @@ export default function SemanticIntelligencePage({
 
                 <div className="mt-6 flex items-end justify-between">
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-olive-500 capitalize">{hint}</p>
+                    <p className="text-xs font-medium text-slate-500 capitalize">{hint}</p>
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 rounded-md bg-olive-100 px-1.5 py-0.5 text-[9px] font-medium uppercase text-olive-500">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium uppercase text-slate-500">
                         <ShieldCheck size={10} />
                         {result?.semantic?.stability ?? definition?.stability ?? 'STABLE'}
                       </span>
                       {definition?.AIVisibility === 'safe' && (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[9px] font-medium uppercase text-emerald-700">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-medium uppercase text-emerald-700">
                           AI-SAFE
                         </span>
                       )}
@@ -277,7 +277,7 @@ export default function SemanticIntelligencePage({
 
                 {definition?.drilldownSupport && (
                   <button
-                    className="mt-6 w-full flex h-9 items-center justify-center gap-2 rounded-lg border border-olive-100 bg-olive-50 text-[10px] font-medium uppercase tracking-widest text-olive-800 hover:bg-olive-50"
+                    className="mt-6 w-full flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-100 bg-slate-50 text-[11px] font-medium uppercase tracking-wide text-slate-800 hover:bg-slate-50"
                     disabled={intel.drilldownLoading === metric}
                     onClick={() => void intel.openDrilldown(metric)}
                     type="button"
@@ -293,20 +293,20 @@ export default function SemanticIntelligencePage({
 
         {/* Reasoning Panel */}
         {intel.reasoning && (
-          <section className="overflow-hidden rounded-3xl border border-olive-200 bg-white shadow-lg">
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
             <div className="flex flex-col xl:flex-row">
               <div className="flex-1 p-8 space-y-6">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-olive-100 text-olive-700">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
                       <Sparkles size={20} />
                     </div>
-                    <h4 className="text-xl font-semibold text-olive-800">
+                    <h4 className="text-xl font-semibold text-slate-800">
                       Operational Reasoning
                     </h4>
                   </div>
                   <div className={[
-                    'flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-widest ring-1 ring-inset',
+                    'flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-wide ring-1 ring-inset',
                     intel.reasoning.status === 'at_risk'
                       ? 'bg-red-50 text-red-700 ring-red-200'
                       : intel.reasoning.status === 'watch'
@@ -319,12 +319,12 @@ export default function SemanticIntelligencePage({
                 </div>
 
                 <div className="space-y-4">
-                  <p className="text-lg font-medium leading-relaxed text-olive-700">
+                  <p className="text-lg font-medium leading-relaxed text-slate-700">
                     {intel.reasoning.narrative}
                   </p>
                   {intel.reasoning.causalNarrative && (
-                    <div className="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-olive-200">
-                      <p className="text-sm italic text-olive-500">
+                    <div className="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-full before:bg-slate-200">
+                      <p className="text-sm italic text-slate-500">
                         {intel.reasoning.causalNarrative}
                       </p>
                     </div>
@@ -332,25 +332,25 @@ export default function SemanticIntelligencePage({
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2">
-                  <div className="rounded-2xl bg-olive-50/50 p-6 border border-olive-100">
-                    <p className="text-[10px] font-medium uppercase tracking-widest text-olive-400 mb-4">Semantic Context</p>
+                  <div className="rounded-2xl bg-slate-50/50 p-6 border border-slate-100">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 mb-4">Semantic Context</p>
                     <div className="flex flex-wrap gap-2">
                       {Object.entries(intel.reasoning.semanticInterpretation ?? {}).map(([key, value]) => (
-                        <span className="rounded-lg bg-white px-3 py-1.5 text-[11px] font-semibold text-olive-700 shadow-sm border border-olive-100" key={key}>
-                          <span className="text-olive-400 mr-1">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                        <span className="rounded-lg bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 shadow-sm border border-slate-100" key={key}>
+                          <span className="text-slate-400 mr-1">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
                           {value.replace(/_/g, ' ')}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-2xl bg-olive-50/50 p-6 border border-olive-100">
-                    <p className="text-[10px] font-medium uppercase tracking-widest text-olive-400 mb-4">Governance Recommendations</p>
+                  <div className="rounded-2xl bg-slate-50/50 p-6 border border-slate-100">
+                    <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 mb-4">Governance Recommendations</p>
                     <div className="space-y-3">
                       {(intel.reasoning.recommendations ?? []).slice(0, 3).map((rec, i) => (
                         <div key={i} className="flex items-start gap-3 group">
-                          <CheckCircle2 className="mt-0.5 text-olive-600 flex-shrink-0" size={14} />
+                          <CheckCircle2 className="mt-0.5 text-slate-600 flex-shrink-0" size={14} />
                           <div className="space-y-1">
-                            <p className="text-sm font-semibold text-olive-800 leading-tight">{rec}</p>
+                            <p className="text-sm font-semibold text-slate-800 leading-tight">{rec}</p>
                           </div>
                         </div>
                       ))}
@@ -359,8 +359,8 @@ export default function SemanticIntelligencePage({
                 </div>
               </div>
 
-              <div className="w-full xl:w-96 border-t xl:border-t-0 xl:border-l border-olive-200 bg-olive-50/30 p-8">
-                <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-olive-400 mb-8">Intelligence Vectors</p>
+              <div className="w-full xl:w-96 border-t xl:border-t-0 xl:border-l border-slate-200 bg-slate-50/30 p-8">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-slate-400 mb-8">Intelligence Vectors</p>
                 <div className="space-y-8">
                   {[
                     { label: 'Delivery Risk', value: intel.reasoning.scores.deliveryRisk, color: '#ef4444' },
@@ -370,17 +370,17 @@ export default function SemanticIntelligencePage({
                   ].map((item) => (
                     <div key={item.label} className="group flex items-center justify-between">
                       <div className="space-y-1">
-                        <p className="text-xs font-medium text-olive-600 group-hover:text-olive-800 transition-colors uppercase tracking-tight">
+                        <p className="text-xs font-medium text-slate-600 group-hover:text-slate-800 transition-colors uppercase tracking-tight">
                           {item.label}
                         </p>
-                        <div className="h-1.5 w-40 rounded-full bg-olive-100 overflow-hidden">
+                        <div className="h-1.5 w-40 rounded-full bg-slate-100 overflow-hidden">
                           <div
                             className="h-full rounded-full transition-all duration-1000 ease-out"
                             style={{ width: `${item.value}%`, backgroundColor: item.color }}
                           />
                         </div>
                       </div>
-                      <span className="text-2xl font-semibold text-olive-800 tabular-nums">
+                      <span className="text-2xl font-semibold text-slate-800 tabular-nums">
                         {item.value}
                       </span>
                     </div>
@@ -394,32 +394,32 @@ export default function SemanticIntelligencePage({
         {/* Intelligence Grid */}
         <div className="grid gap-8 xl:grid-cols-2">
           {/* Anomalies Panel */}
-          <section className="rounded-3xl border border-olive-200 bg-white p-8 shadow-sm">
+          <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600">
                   <AlertTriangle size={20} />
                 </div>
-                <h4 className="text-lg font-semibold text-olive-800">Operational Anomalies</h4>
+                <h4 className="text-lg font-semibold text-slate-800">Operational Anomalies</h4>
               </div>
-              <span className="text-[10px] font-medium uppercase tracking-widest text-olive-400">Threshold: 2.5σ</span>
+              <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Threshold: 2.5σ</span>
             </div>
 
             <div className="space-y-4">
               {intel.anomalies.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center bg-olive-50 rounded-2xl border border-dashed border-olive-200">
+                <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                   <ShieldCheck size={32} className="text-emerald-500 mb-3" />
-                  <p className="text-sm font-semibold text-olive-400">Operational state within expected semantic bounds.</p>
+                  <p className="text-sm font-semibold text-slate-400">Operational state within expected semantic bounds.</p>
                 </div>
               ) : (
                 intel.anomalies.slice(0, 4).map((anomaly) => (
-                  <div className="relative overflow-hidden group rounded-2xl border border-olive-100 bg-olive-50/50 p-6 transition-all hover:bg-white hover:shadow-md" key={anomaly.metric}>
+                  <div className="relative overflow-hidden group rounded-2xl border border-slate-100 bg-slate-50/50 p-6 transition-all hover:bg-white hover:shadow-md" key={anomaly.metric}>
                     <div className="flex items-start justify-between gap-4 mb-2">
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-olive-400">{anomaly.metric}</span>
-                      <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">{anomaly.deviation}x deviation</span>
+                      <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">{anomaly.metric}</span>
+                      <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">{anomaly.deviation}x deviation</span>
                     </div>
-                    <p className="text-sm font-semibold text-olive-800 mb-2">{anomaly.explanation}</p>
-                    <p className="text-xs text-olive-500">{anomaly.mitigationHints?.[0] || 'No immediate action required'}</p>
+                    <p className="text-sm font-semibold text-slate-800 mb-2">{anomaly.explanation}</p>
+                    <p className="text-xs text-slate-500">{anomaly.mitigationHints?.[0] || 'No immediate action required'}</p>
                   </div>
                 ))
               )}
@@ -427,28 +427,28 @@ export default function SemanticIntelligencePage({
           </section>
 
           {/* Operational Trends Panel */}
-          <section className="rounded-3xl border border-olive-200 bg-white p-8 shadow-sm">
+          <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-olive-100 text-olive-700">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
                   <TrendingUp size={20} />
                 </div>
-                <h4 className="text-lg font-semibold text-olive-800">Operational Trends</h4>
+                <h4 className="text-lg font-semibold text-slate-800">Operational Trends</h4>
               </div>
-              <span className="text-[10px] font-medium uppercase tracking-widest text-olive-400">Causal Vectors</span>
+              <span className="text-[11px] font-medium uppercase tracking-wide text-slate-400">Causal Vectors</span>
             </div>
 
             <div className="space-y-4">
               {intel.trends.slice(0, 4).map((trend) => (
-                <div className="p-6 rounded-2xl border border-olive-100 bg-olive-50/50 hover:bg-white transition-all shadow-xs" key={trend.metric}>
+                <div className="p-6 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-white transition-all shadow-xs" key={trend.metric}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-olive-800 uppercase tracking-wider">{trend.metric}</span>
-                    <span className={`text-xs font-bold ${trend.direction === 'up' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                    <span className="text-xs font-semibold text-slate-800 uppercase tracking-wide">{trend.metric}</span>
+                    <span className={`text-xs font-semibold ${trend.direction === 'up' ? 'text-emerald-600' : 'text-amber-600'}`}>
                       {trend.direction.toUpperCase()}
                     </span>
                   </div>
-                  <p className="text-sm text-olive-600 mb-3">{trend.interpretation}</p>
-                  <div className="flex items-center justify-between text-[11px] text-olive-400 font-mono">
+                  <p className="text-sm text-slate-600 mb-3">{trend.interpretation}</p>
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
                     <span>Confidence: {Math.round(trend.confidence * 100)}%</span>
                     <span>Delta: {trend.delta}</span>
                   </div>
@@ -460,18 +460,18 @@ export default function SemanticIntelligencePage({
 
         {/* Explainability & Causal Root Cause Section */}
         {intel.explanation && (
-          <section className="rounded-3xl border border-olive-200 bg-white p-8 shadow-sm space-y-6">
+          <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-olive-100 text-olive-700">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
                   <BarChart3 size={20} />
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-olive-800">Metric Explainability — Delivery Risk</h4>
-                  <p className="text-xs text-olive-500">Deconstructed semantic drivers and root cause attribution</p>
+                  <h4 className="text-lg font-semibold text-slate-800">Metric Explainability — Delivery Risk</h4>
+                  <p className="text-xs text-slate-500">Deconstructed semantic drivers and root cause attribution</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-olive-600 bg-olive-50 px-3 py-1.5 rounded-xl border border-olive-100">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
                 <ShieldCheck size={14} className="text-emerald-600" />
                 Lineage: {intel.lineage?.lineage?.sourceCollections?.join(', ') || 'N/A'}
               </div>
@@ -479,9 +479,9 @@ export default function SemanticIntelligencePage({
 
             <div className="grid gap-6 md:grid-cols-3">
               {intel.explanation.factors.map((factor) => (
-                <div key={factor.label} className="p-5 rounded-2xl bg-olive-50/50 border border-olive-100 space-y-3">
+                <div key={factor.label} className="p-5 rounded-2xl bg-slate-50/50 border border-slate-100 space-y-3">
                   <FactorBar label={factor.label} share={Math.round(factor.weight * 100)} />
-                  <p className="text-xs text-olive-600">{factor.explanation}</p>
+                  <p className="text-xs text-slate-600">{factor.explanation}</p>
                 </div>
               ))}
             </div>
@@ -489,15 +489,15 @@ export default function SemanticIntelligencePage({
         )}
 
         {/* Predictive Simulation & Counterfactual Interventions */}
-        <section className="rounded-3xl border border-olive-200 bg-white p-8 shadow-sm space-y-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
                 <Bot size={20} />
               </div>
               <div>
-                <h4 className="text-lg font-semibold text-olive-800">Predictive Simulation Engine</h4>
-                <p className="text-xs text-olive-500">Simulate counterfactual interventions to evaluate impact prior to execution</p>
+                <h4 className="text-lg font-semibold text-slate-800">Predictive Simulation Engine</h4>
+                <p className="text-xs text-slate-500">Simulate counterfactual interventions to evaluate impact prior to execution</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -505,7 +505,7 @@ export default function SemanticIntelligencePage({
                 type="button"
                 onClick={() => void intel.runSimulation('reduce_blockers')}
                 disabled={intel.simulating}
-                className="px-4 py-2 bg-olive-900 text-white rounded-xl text-xs font-semibold hover:bg-black transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-black transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {intel.simulating ? <Loader2 size={12} className="animate-spin" /> : <ArrowRight size={12} />}
                 Simulate Blockers Reduction
@@ -514,7 +514,7 @@ export default function SemanticIntelligencePage({
                 type="button"
                 onClick={() => void intel.runSimulation('resolve_overdue')}
                 disabled={intel.simulating}
-                className="px-4 py-2 bg-white border border-olive-200 text-olive-700 rounded-xl text-xs font-semibold hover:bg-olive-50 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-50 transition-colors disabled:opacity-50"
               >
                 Simulate Resolving Overdue
               </button>
@@ -524,8 +524,8 @@ export default function SemanticIntelligencePage({
           {intel.simulation && (
             <div className="p-6 rounded-2xl bg-emerald-50/50 border border-emerald-200/60 space-y-4 animate-fadeIn">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">Intervention Simulation Result</span>
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+                <span className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Intervention Simulation Result</span>
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
                   Expected Impact: {intel.simulation.impact > 0 ? `+${intel.simulation.impact}` : intel.simulation.impact} Risk Score
                 </span>
               </div>
@@ -535,35 +535,35 @@ export default function SemanticIntelligencePage({
         </section>
 
         {/* User Engagement Performance Grid */}
-        <section className="rounded-3xl border border-olive-200 bg-white p-8 shadow-sm space-y-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-olive-100 text-olive-700">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
                 <Database size={20} />
               </div>
-              <h4 className="text-lg font-semibold text-olive-800">Team Execution Breakdown</h4>
+              <h4 className="text-lg font-semibold text-slate-800">Team Execution Breakdown</h4>
             </div>
-            <span className="text-xs font-mono text-olive-400">{perUserRows.length} active contributors</span>
+            <span className="text-xs font-mono text-slate-400">{perUserRows.length} active contributors</span>
           </div>
 
           {perUserRows.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <img alt="No activity" className="w-32 opacity-40 mb-3" src={noDataImg} />
-              <p className="text-xs font-semibold text-olive-400">No contributor records found in this window.</p>
+              <p className="text-xs font-semibold text-slate-400">No contributor records found in this window.</p>
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {perUserRows.map((row) => (
-                <div key={row.userId} className="p-5 rounded-2xl bg-olive-50/50 border border-olive-100 space-y-3">
+                <div key={row.userId} className="p-5 rounded-2xl bg-slate-50/50 border border-slate-100 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-olive-800">{row.name || row.email || 'User'}</span>
-                    <span className="text-xs font-bold text-olive-700 bg-white px-2.5 py-1 rounded-lg shadow-xs border border-olive-100">
+                    <span className="text-sm font-semibold text-slate-800">{row.name || row.email || 'User'}</span>
+                    <span className="text-xs font-semibold text-slate-700 bg-white px-2.5 py-1 rounded-lg shadow-xs border border-slate-100">
                       {row.count} completed
                     </span>
                   </div>
-                  <div className="h-2 rounded-full bg-olive-100 overflow-hidden">
+                  <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                     <div
-                      className="h-full bg-olive-600 rounded-full transition-all duration-700"
+                      className="h-full bg-slate-600 rounded-full transition-all duration-700"
                       style={{ width: `${Math.min(100, (row.count / maxCompleted) * 100)}%` }}
                     />
                   </div>
@@ -576,16 +576,16 @@ export default function SemanticIntelligencePage({
         {/* Drilldown Modal */}
         {intel.drilldown && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white border border-olive-200 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-6">
-              <div className="flex items-center justify-between border-b border-olive-100 pb-4">
+            <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-xl space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
-                  <h4 className="text-lg font-bold text-olive-900 capitalize">{intel.drilldown.metric.replace(/_/g, ' ')} Lineage</h4>
-                  <p className="text-xs text-olive-500">Drilldown results: {intel.drilldown.pagination.total} records</p>
+                  <h4 className="text-lg font-semibold text-slate-900 capitalize">{intel.drilldown.metric.replace(/_/g, ' ')} Lineage</h4>
+                  <p className="text-xs text-slate-500">Drilldown results: {intel.drilldown.pagination.total} records</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => intel.setDrilldown(null)}
-                  className="p-2 rounded-xl text-olive-400 hover:text-olive-800 hover:bg-olive-50 transition-colors"
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-50 transition-colors"
                 >
                   Close
                 </button>
@@ -593,9 +593,9 @@ export default function SemanticIntelligencePage({
 
               <div className="max-h-96 overflow-y-auto space-y-3 custom-scrollbar">
                 {intel.drilldown.rows.map((row, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-olive-50/60 border border-olive-100 text-xs space-y-1">
-                    <div className="font-bold text-olive-800">{String(row.title || `Record #${idx + 1}`)}</div>
-                    <div className="text-olive-500 font-mono text-[11px]">{JSON.stringify(row)}</div>
+                  <div key={idx} className="p-4 rounded-xl bg-slate-50/60 border border-slate-100 text-xs space-y-1">
+                    <div className="font-semibold text-slate-800">{String(row.title || `Record #${idx + 1}`)}</div>
+                    <div className="text-slate-500 font-mono text-[11px]">{JSON.stringify(row)}</div>
                   </div>
                 ))}
               </div>

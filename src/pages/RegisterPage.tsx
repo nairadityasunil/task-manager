@@ -51,9 +51,9 @@ function RegisterPage(): JSX.Element {
   return (
     <main className="min-h-screen flex bg-white font-sans overflow-hidden">
       {/* Left Side (65% width) */}
-      <div className="hidden lg:flex lg:w-[65%] bg-gradient-to-br from-olive-950 via-neutral-900 to-olive-900 relative p-16 flex-col justify-between overflow-hidden select-none">
+      <div className="hidden lg:flex lg:w-[65%] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 relative p-16 flex-col justify-between overflow-hidden select-none">
         {/* Glowing abstract backgrounds */}
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-olive-700/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-slate-700/10 rounded-full blur-[140px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
@@ -71,11 +71,11 @@ function RegisterPage(): JSX.Element {
           <div className="flex flex-col gap-6 max-w-[500px]">
             <h2 className="text-5xl font-semibold leading-[1.15] text-white tracking-tight">
               Elevate your workflow with{' '}
-              <span className="bg-gradient-to-r from-emerald-400 to-olive-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-400 to-slate-300 bg-clip-text text-transparent">
                 effortless organization
               </span>
             </h2>
-            <p className="text-olive-300 text-lg leading-relaxed font-light">
+            <p className="text-slate-300 text-lg leading-relaxed font-light">
               A premium, secure environment designed for high-performing teams to coordinate, automate, and synchronize
               development epics.
             </p>
@@ -83,12 +83,12 @@ function RegisterPage(): JSX.Element {
 
           {/* Large Premium Showcase containing the Logo */}
           <div className="flex justify-center lg:justify-end">
-            <div className="w-full max-w-[420px] aspect-square bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/10 rounded-3xl flex items-center justify-center relative overflow-hidden group transition-all duration-300 p-10 shadow-2xl backdrop-blur-sm">
+            <div className="w-full max-w-[420px] aspect-square bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/10 rounded-2xl flex items-center justify-center relative overflow-hidden group transition-all duration-300 p-10 shadow-xl backdrop-blur-sm">
               {/* Inner ambient emerald glow hover effect */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               {/* Logo container inside the showcase */}
-              <div className="w-36 h-36 bg-white rounded-2xl flex items-center justify-center p-6 shadow-2xl relative z-10 transition-all duration-500 group-hover:scale-105 group-hover:shadow-emerald-500/10">
+              <div className="w-36 h-36 bg-white rounded-2xl flex items-center justify-center p-6 shadow-xl relative z-10 transition-all duration-500 group-hover:scale-105 group-hover:shadow-emerald-500/10">
                 <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(16,185,129,0.15)]" />
               </div>
             </div>
@@ -96,7 +96,7 @@ function RegisterPage(): JSX.Element {
         </div>
 
         {/* Footer branding */}
-        <div className="relative z-10 flex items-center justify-between text-xs text-olive-400">
+        <div className="relative z-10 flex items-center justify-between text-xs text-slate-400">
           <span>© {new Date().getFullYear()} Pristine</span>
         </div>
       </div>
@@ -106,15 +106,15 @@ function RegisterPage(): JSX.Element {
         <div className="w-full max-w-[380px] grid gap-6">
           {/* Brand Logo Header */}
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-white border border-zinc-200/50 rounded-lg flex items-center justify-center p-2 shadow-md">
+            <div className="w-10 h-10 bg-white border border-slate-200/50 rounded-lg flex items-center justify-center p-2 shadow-md">
               <img src={logoImg} alt="Pristine Logo" className="w-full h-full object-contain" />
             </div>
-            <span className="font-semibold tracking-tight text-lg text-olive-950">Pristine</span>
+            <span className="font-semibold tracking-tight text-lg text-slate-950">Pristine</span>
           </div>
 
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-olive-950 m-0">Create your account</h1>
-            <p className="text-olive-500 text-sm mt-1.5">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-950 m-0">Create your account</h1>
+            <p className="text-slate-500 text-sm mt-1.5">
               Get started with Pristine today. Experience seamless task sync.
             </p>
           </div>
@@ -131,9 +131,9 @@ function RegisterPage(): JSX.Element {
           </button>
 
           <div className="flex items-center gap-3 my-1">
-            <hr className="flex-1 border-olive-200/60" />
+            <hr className="flex-1 border-slate-200/60" />
             <span className="text-slate-400 text-xs">or</span>
-            <hr className="flex-1 border-olive-200/60" />
+            <hr className="flex-1 border-slate-200/60" />
           </div>
 
           {/* Registration Form */}
@@ -171,7 +171,7 @@ function RegisterPage(): JSX.Element {
               <span>Email</span>
               <input
                 autoComplete="email"
-                className={`${inputCls} ${emailParam ? 'bg-olive-50/50 cursor-not-allowed opacity-80' : ''}`}
+                className={`${inputCls} ${emailParam ? 'bg-slate-50/50 cursor-not-allowed opacity-80' : ''}`}
                 name="email"
                 onChange={(event) => setEmail(event.target.value)}
                 placeholder="you@example.com"
@@ -197,7 +197,7 @@ function RegisterPage(): JSX.Element {
                   value={password}
                 />
                 <button
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-olive-400 hover:text-olive-600 transition-colors"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                   type="button"
                 >
@@ -207,7 +207,7 @@ function RegisterPage(): JSX.Element {
             </label>
 
             {user != null ? (
-              <p className="text-olive-500 text-xs m-0 text-center">
+              <p className="text-slate-500 text-xs m-0 text-center">
                 You already have an active session. Redirecting...
               </p>
             ) : null}
@@ -215,7 +215,7 @@ function RegisterPage(): JSX.Element {
             {error ? <p className="text-red-600 m-0 text-xs font-medium text-center">{error}</p> : null}
 
             <button
-              className="bg-olive-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-olive-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+              className="bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
               disabled={loading}
               type="submit"
             >
@@ -223,10 +223,10 @@ function RegisterPage(): JSX.Element {
             </button>
           </form>
 
-          <p className="text-olive-500 m-0 text-xs text-center">
+          <p className="text-slate-500 m-0 text-xs text-center">
             Already registered?{' '}
             <Link
-              className="text-olive-800 font-bold hover:underline"
+              className="text-slate-800 font-semibold hover:underline"
               to={
                 tokenParam
                   ? `/login?token=${tokenParam}&email=${encodeURIComponent(emailParam)}`
