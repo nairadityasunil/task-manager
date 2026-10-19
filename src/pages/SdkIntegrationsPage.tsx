@@ -395,8 +395,8 @@ export default function SdkIntegrationsPage() {
       {newKey && <KeyRevealModal sdkKey={newKey.key} name={newKey.name} onClose={() => setNewKey(null)} />}
 
       {/* Header */}
-      <div className="bg-white px-8 py-6">
-        <div className="flex items-start justify-between gap-4">
+      <div className="bg-white px-4 sm:px-8 py-5 sm:py-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center">
@@ -436,9 +436,9 @@ export default function SdkIntegrationsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 px-8 py-4 border-y border-slate-200 bg-white">
+      <div className="flex flex-wrap items-center gap-3 px-4 sm:px-8 py-4 border-y border-slate-200 bg-white">
         <input
-          className="rounded-lg border border-slate-300 bg-white h-9 px-3 text-sm text-slate-700 shadow-sm focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 w-64 placeholder:text-slate-400"
+          className="rounded-lg border border-slate-300 bg-white h-9 px-3 text-sm text-slate-700 shadow-sm focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10 w-full sm:w-64 placeholder:text-slate-400"
           placeholder="Search integrations…" value={search} onChange={e => setSearch(e.target.value)}
         />
         <select className="rounded-lg border border-slate-300 bg-white h-9 px-3 text-sm text-slate-700 shadow-sm focus:outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10" value={filterEnv} onChange={e => setFilterEnv(e.target.value as typeof filterEnv)}>
@@ -458,7 +458,7 @@ export default function SdkIntegrationsPage() {
       </div>
 
       {/* Content */}
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         {loading ? (
           <div className="flex items-center justify-center py-20 text-slate-400 font-semibold">
             <Loader2 className="animate-spin mr-2" size={20} />Loading integrations…

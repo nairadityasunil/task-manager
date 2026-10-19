@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 import UserAvatar from './UserAvatar';
 import NotificationBox, { Notification } from './NotificationBox';
 
@@ -15,6 +15,8 @@ interface TopbarProps {
   onClearAll: () => void;
   onNotificationClick: (notification: Notification) => void;
   rightContent?: React.ReactNode;
+  /** Opens the navigation drawer on small screens. */
+  onMenuClick?: () => void;
 }
 
 const Topbar: React.FC<TopbarProps> = ({
@@ -28,20 +30,32 @@ const Topbar: React.FC<TopbarProps> = ({
   onMarkAsRead,
   onClearAll,
   onNotificationClick,
-  rightContent
+  rightContent,
+  onMenuClick
 }) => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <header className="relative z-50 flex items-center justify-between gap-4 px-6 h-[52px] shrink-0 bg-white border-b border-slate-200">
+    <header className="relative z-50 flex items-center justify-between gap-4 px-3 sm:px-6 h-[52px] shrink-0 bg-white border-b border-slate-200">
       {/* Left — title + breadcrumbs */}
       <div className="flex items-center gap-1.5 min-w-0">
+        {onMenuClick && (
+          <button
+            aria-label="Open navigation"
+            className="lg:hidden -ml-1 mr-1 flex items-center justify-center w-9 h-9 rounded-md text-slate-600 hover:bg-slate-100"
+            onClick={onMenuClick}
+            type="button"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+        <h1 className="md:hidden text-[0.9rem] font-semibold text-slate-900 truncate">{title}</h1>
         {breadcrumbs ? (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[0.8rem] text-slate-400 min-w-0">
+          <nav aria-label="Breadcrumb" className="hidden md:flex items-center gap-1.5 text-[0.8rem] text-slate-400 min-w-0">
             {breadcrumbs}
           </nav>
         ) : (
-          <h1 className="text-[0.875rem] font-semibold text-slate-900 truncate">{title}</h1>
+          <h1 className="hidden md:block text-[0.875rem] font-semibold text-slate-900 truncate">{title}</h1>
         )}
       </div>
 
@@ -77,9 +91,9 @@ const Topbar: React.FC<TopbarProps> = ({
         </div>
 
         {/* User */}
-        <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
+        <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-200">
           <UserAvatar name={user.name} email={user.email} size="sm" showTooltip={false} />
-          <div className="hidden sm:flex flex-col leading-tight">
+          <div className="hidden lg:flex flex-col leading-tight">
             <span className="text-[0.75rem] font-medium text-slate-800">{user.name || 'User'}</span>
             <span className="text-[0.65rem] text-slate-400">{user.email}</span>
           </div>

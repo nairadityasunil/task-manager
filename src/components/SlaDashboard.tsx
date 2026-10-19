@@ -32,7 +32,7 @@ function SlaDashboard(): JSX.Element | null {
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
       {items.map((item) => (
         <div key={item.label} className={`rounded-xl border p-3 ${item.tone}`}>
           <div className="flex items-center justify-between">

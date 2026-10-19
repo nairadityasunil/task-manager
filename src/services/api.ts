@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { showGlobalToast } from '@/context/ToastContext';
+import { startGlobalLoading, stopGlobalLoading } from '@/context/LoadingContext';
 import { normalizeApiError } from '@/utils/apiError';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
@@ -13,7 +14,29 @@ const api = axios.create({
   }
 });
 
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    /** Don't show the global progress bar for this request (e.g. background polling). */
+    silent?: boolean;
+  }
+}
+
+// Requests currently counted by the global progress bar.
+const trackedRequests = new WeakSet<object>();
+
+const finishTracking = (config: InternalAxiosRequestConfig | undefined) => {
+  if (config && trackedRequests.has(config)) {
+    trackedRequests.delete(config);
+    stopGlobalLoading();
+  }
+};
+
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  if (!config.silent && !trackedRequests.has(config)) {
+    trackedRequests.add(config);
+    startGlobalLoading();
+  }
+
   const token = localStorage.getItem(TOKEN_STORAGE_KEY) ?? sessionStorage.getItem(TOKEN_STORAGE_KEY);
 
   // Keep an explicit Authorization header, e.g. verifying a fresh sign-in
@@ -82,9 +105,11 @@ const clearAuthStorage = () => {
 
 api.interceptors.response.use(
   (response) => {
+    finishTracking(response.config);
     return response;
   },
   async (error: AxiosError) => {
+    finishTracking(error.config);
     const originalRequest = error.config as CustomRequestConfig | undefined;
     const normalizedError = normalizeApiError(error);
 

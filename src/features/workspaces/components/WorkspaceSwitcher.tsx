@@ -40,7 +40,7 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
                 <Building2 className="w-3.5 h-3.5 text-blue-600" />
               )}
             </div>
-            <span className="truncate max-w-[140px] text-slate-800 font-medium">
+            <span className="hidden sm:inline truncate max-w-[140px] text-slate-800 font-medium">
               {activeWorkspace ? activeWorkspace.name : 'Select Workspace'}
             </span>
           </div>
@@ -50,7 +50,7 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200/90 rounded-xl shadow-xl shadow-slate-200/60 z-50 p-2 text-sm animate-in fade-in slide-in-from-top-2 duration-150">
+          <div className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-1.5rem)] bg-white border border-slate-200/90 rounded-xl shadow-xl shadow-slate-200/60 z-50 p-2 text-sm animate-in fade-in slide-in-from-top-2 duration-150">
             <div className="px-2.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider select-none">
               Workspaces
             </div>

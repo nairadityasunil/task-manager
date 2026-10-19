@@ -209,10 +209,10 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
   return (
     <div className={hideHeader ? '' : 'min-h-full bg-slate-50/50'}>
       {!hideHeader && (
-        <div className="border-b border-slate-200 bg-white px-8 pt-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3">
+        <div className="border-b border-slate-200 bg-white px-4 sm:px-8 pt-5 sm:pt-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-3">
                 <h2 className="m-0 text-2xl font-bold text-slate-900 ">Engagement</h2>
                 {integrations.length > 0 && !propSdkIntegrationId && (
                   <select
@@ -230,7 +230,7 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
               </div>
               <p className="m-0 mt-1 text-sm text-slate-500 ">Guides, surveys, checklists, targeting, and behavior analytics</p>
             </div>
-            <div className="grid grid-cols-3 gap-3 text-right">
+            <div className="grid w-full grid-cols-3 gap-2 sm:w-auto sm:gap-3 sm:text-right">
               <Metric label="Live" value={totals.live} />
               <Metric label="Drafts" value={totals.drafts} />
               <Metric label="MTU" value={analytics?.mtu.users ?? 0} />
@@ -247,7 +247,7 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
       )}
 
 
-      <div className={hideHeader ? '' : 'p-8'}>
+      <div className={hideHeader ? '' : 'p-4 sm:p-8'}>
         {(tab === 'guides' || tab === 'surveys' || tab === 'checklists') && (
           <ExperienceLibrary
             kind={tab}
@@ -455,7 +455,7 @@ function AnalyticsDashboard({ analytics }: { analytics: GuideAnalyticsSummary | 
 
 function Metric({ label, value }: { label: string; value: number }): JSX.Element {
   return (
-    <div className="min-w-[88px] rounded-xl border border-slate-200 bg-white px-4 py-2.5">
+    <div className="min-w-0 rounded-xl border border-slate-200 bg-white px-3 sm:px-4 py-2.5">
       <p className="m-0 text-xs font-medium text-slate-500">{label}</p>
       <p className="m-0 mt-0.5 text-xl font-semibold tabular-nums text-slate-900">{new Intl.NumberFormat().format(value)}</p>
     </div>

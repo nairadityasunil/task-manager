@@ -62,6 +62,7 @@ function ProjectPanel({
     columnHelper.display({
       id: 'select',
       size: 48,
+      meta: { className: 'hidden sm:table-cell' },
       header: ({ table }) => (
         <div className="flex items-center justify-center">
           <input
@@ -110,6 +111,7 @@ function ProjectPanel({
     }),
     columnHelper.accessor('creator', {
       header: 'Creator',
+      meta: { className: 'hidden md:table-cell' },
       cell: info => {
         const creator = info.getValue();
         return (
@@ -129,6 +131,7 @@ function ProjectPanel({
     columnHelper.accessor('createdAt', {
       id: 'created',
       header: 'Created',
+      meta: { className: 'hidden sm:table-cell' },
       cell: info => (
         <span className="text-slate-600 whitespace-nowrap" title={formatDateTime(info.getValue())}>
           {formatDate(info.getValue())}
@@ -244,7 +247,7 @@ function ProjectPanel({
   return (
     <div className="flex flex-col h-full bg-white ">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-slate-200 bg-white">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-slate-200 bg-white">
         <div className="grid gap-0.5 mr-2">
           <h2 className="m-0 font-semibold text-slate-900 text-base">Projects</h2>
           <span className="text-slate-500 text-xs">All projects you can access in this workspace</span>
@@ -285,7 +288,7 @@ function ProjectPanel({
       </div>
 
       {/* Table Section */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 bg-slate-50">
+      <div className="flex-1 min-w-0 overflow-y-auto px-3 sm:px-6 py-4 bg-slate-50">
         {projects.length === 0 && !loading ? (
           <div className="py-20 border-y border-transparent">
             {/* Custom Empty State preserved for brand consistency */}

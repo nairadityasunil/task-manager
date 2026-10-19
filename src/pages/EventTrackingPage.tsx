@@ -488,7 +488,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
     <div className="flex flex-col h-full bg-white ">
       {/* Clean Toolbar (Matches ProjectPanel) */}
       {!hideHeader && (
-        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-olive-200  bg-olive-50  sticky top-0 z-30">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50 sticky top-0 z-30">
           <div className="grid gap-0.5">
             <h4 className="m-0 font-semibold text-olive-800  text-[0.95rem]">Event Tracking</h4>
             <span className="text-olive-400  text-[0.75rem]">Telemetry Stream Monitoring</span>
@@ -536,7 +536,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
             </div>
           )}
 
-          <div className="flex-1" />
+          <div className="hidden sm:block flex-1" />
 
           <button
             className="inline-flex items-center gap-2 h-9 px-4 bg-olive-900  rounded text-[0.85rem] font-medium text-white shadow-sm hover:bg-olive-800  transition-colors"

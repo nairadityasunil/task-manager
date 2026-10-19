@@ -39,6 +39,9 @@ interface SidebarProps {
   activeIntegrationId?: string;
   activeIntegrationName?: string;
   activeTab?: string;
+  /** Below the lg breakpoint the sidebar is a drawer; these control it. */
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -52,6 +55,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   activeIntegrationId,
   activeIntegrationName,
   activeTab,
+  mobileOpen = false,
+  onMobileClose,
 }) => {
   // Dark slate palette tokens
   const BG_GRADIENT = '#0f172a';
@@ -100,8 +105,18 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
+    <>
+    {mobileOpen && (
+      <div aria-hidden className="fixed inset-0 z-[60] bg-slate-950/50 lg:hidden" onClick={onMobileClose} />
+    )}
     <aside
-      className="flex flex-col w-[230px] shrink-0 h-full select-none"
+      className={`fixed inset-y-0 left-0 z-[61] flex flex-col w-[260px] h-full select-none transition-transform duration-200 lg:static lg:z-auto lg:w-[230px] lg:shrink-0 lg:translate-x-0 ${
+        mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+      }`}
+      // Choosing any item closes the drawer on small screens.
+      onClickCapture={(event) => {
+        if ((event.target as HTMLElement).closest('button')) onMobileClose?.();
+      }}
       style={{ background: BG_GRADIENT, borderRight: `1px solid ${BORDER}` }}
     >
       {/* Brand logo header */}
@@ -133,17 +148,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               }}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[0.55rem] font-bold uppercase tracking-widest text-[#34d399]">
-                  Active Integration
+                <span className="text-[0.6rem] font-semibold uppercase tracking-wider" style={{ color: TEXT_DIM }}>
+                  Integration
                 </span>
-                {/* Active pulsating beacon status indicator */}
-                <div className="flex items-center gap-1.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34d399] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34d399]"></span>
-                  </span>
-                  <span className="text-[0.6rem] font-semibold text-[#34d399]/80 uppercase">Live</span>
-                </div>
+
               </div>
               <span className="text-[0.8rem] font-medium flex items-center gap-2 truncate text-white/90">
                 <Plug size={13} className="text-[#34d399] shrink-0" />
@@ -245,6 +253,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </button>
       </div>
     </aside>
+    </>
   );
 };
 

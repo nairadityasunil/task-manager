@@ -5,9 +5,18 @@ import {
   HeaderGroup,
   Row,
   Cell,
+  type RowData,
 } from '@tanstack/react-table';
 import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import Skeleton from './Skeleton';
+
+declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /** Extra classes for this column's header and cells, e.g. 'hidden md:table-cell'. */
+    className?: string;
+  }
+}
 
 interface ExternalPagination {
   page: number;
@@ -67,8 +76,8 @@ export default function DataTable<TData>({
   };
 
   return (
-    <div className={`flex min-h-0 flex-1 flex-col ${className}`}>
-      <div className="overflow-x-auto flex-1 custom-scrollbar">
+    <div className={`flex min-h-0 min-w-0 w-full flex-1 flex-col ${className}`}>
+      <div className="overflow-x-auto flex-1 min-w-0 custom-scrollbar">
         <table className={`w-full text-left ${tableClassName || 'border-separate border-spacing-y-2'}`}>
           <thead className={stickyHeader ? 'sticky top-0 z-20 shadow-sm' : ''}>
             {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>) => (
@@ -80,7 +89,7 @@ export default function DataTable<TData>({
                   return (
                     <th
                       key={header.id}
-                      className="px-5 py-3 text-[0.7rem] font-semibold uppercase tracking-wide text-slate-500 first:rounded-l-lg last:rounded-r-lg border-b border-slate-200"
+                      className={`px-5 py-3 text-[0.7rem] font-semibold uppercase tracking-wide text-slate-500 first:rounded-l-lg last:rounded-r-lg border-b border-slate-200 ${header.column.columnDef.meta?.className ?? ''}`}
                       style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
                     >
                       {header.isPlaceholder ? null : (
@@ -143,7 +152,7 @@ export default function DataTable<TData>({
                     {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
                       <td
                         key={cell.id}
-                        className={`px-5 py-3.5 align-middle text-sm ${!tableClassName.includes('border-spacing-y-0') && !tableClassName.includes('border-collapse')
+                        className={`px-5 py-3.5 align-middle text-sm ${cell.column.columnDef.meta?.className ?? ''} ${!tableClassName.includes('border-spacing-y-0') && !tableClassName.includes('border-collapse')
                           ? 'first:rounded-l-xl last:rounded-r-xl'
                           : ''
                           }`}

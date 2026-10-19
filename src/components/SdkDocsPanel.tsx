@@ -29,7 +29,7 @@ function SdkDocsPanel(): JSX.Element {
   };
 
   return (
-    <div className="grid gap-6 p-2">
+    <div className="grid grid-cols-1 gap-6 p-2">
       <SectionCard className="overflow-hidden p-0">
         <div className="bg-white/80 px-6 py-5 backdrop-blur  ">
           <PageHeader
@@ -50,7 +50,7 @@ function SdkDocsPanel(): JSX.Element {
         </div>
       </SectionCard>
 
-      <SectionCard className="grid gap-6" id="getting-started">
+      <SectionCard className="grid grid-cols-1 gap-6" id="getting-started">
         <div>
           <p className="mb-2 text-[0.72rem] font-bold uppercase tracking-[0.16em] text-olive-600 ">Getting Started</p>
           <h2 className="m-0 text-2xl font-bold text-olive-950 ">Install, initialize, ship events</h2>
@@ -82,7 +82,7 @@ function SdkDocsPanel(): JSX.Element {
         </div>
       </SectionCard>
 
-      <SectionCard className="grid gap-6" id="quick-start">
+      <SectionCard className="grid grid-cols-1 gap-6" id="quick-start">
         <div className="grid gap-2">
           <h2 className="m-0 text-xl font-bold text-olive-950 ">Quick Start</h2>
           <p className="m-0 text-sm leading-6 text-olive-600 ">
@@ -94,7 +94,7 @@ function SdkDocsPanel(): JSX.Element {
         </CodePanel>
       </SectionCard>
 
-      <SectionCard className="grid gap-6" id="engagement-runtime">
+      <SectionCard className="grid grid-cols-1 gap-6" id="engagement-runtime">
         <div className="grid gap-2">
           <h2 className="m-0 text-xl font-bold text-olive-950 ">In-App Engagement Engine</h2>
           <p className="m-0 text-sm leading-6 text-olive-600 ">
@@ -115,7 +115,7 @@ function SdkDocsPanel(): JSX.Element {
         </div>
       </div>
 
-      <SectionCard className="grid gap-6" id="examples">
+      <SectionCard className="grid grid-cols-1 gap-6" id="examples">
         <div className="grid gap-2">
           <h2 className="m-0 text-xl font-bold text-olive-950 ">Real-World Examples</h2>
           <p className="m-0 text-sm leading-6 text-olive-600 ">
@@ -132,7 +132,7 @@ function SdkDocsPanel(): JSX.Element {
         </div>
       </SectionCard>
 
-      <SectionCard className="grid gap-6" id="errors">
+      <SectionCard className="grid grid-cols-1 gap-6" id="errors">
         <div className="grid gap-2">
           <h2 className="m-0 text-xl font-bold text-olive-950 ">Common Errors and Solutions</h2>
           <p className="m-0 text-sm leading-6 text-olive-600 ">

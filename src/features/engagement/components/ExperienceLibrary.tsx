@@ -240,12 +240,12 @@ function ExperienceLibrary({
             const busy = pendingId === experience.id;
 
             return (
-              <li className={`group flex flex-wrap items-center gap-4 px-5 py-4 transition-colors hover:bg-slate-50/70 ${busy ? 'opacity-60' : ''}`} key={experience.id}>
+              <li className={`group flex flex-wrap items-center gap-x-4 gap-y-2 px-4 sm:px-5 py-4 transition-colors hover:bg-slate-50/70 ${busy ? 'opacity-60' : ''}`} key={experience.id}>
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ring-1 ${typeMeta.tint}`}>
                   <TypeIcon size={18} />
                 </div>
 
-                <button className="min-w-0 flex-1 text-left" onClick={() => onEdit(experience)} type="button">
+                <button className="min-w-0 flex-1 basis-56 text-left" onClick={() => onEdit(experience)} type="button">
                   <div className="flex items-center gap-2">
                     <span className="truncate text-sm font-semibold text-slate-900 group-hover:text-slate-700">{experience.title}</span>
                     <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ${statusMeta.pill}`}>
@@ -273,7 +273,7 @@ function ExperienceLibrary({
                   {experience.description && <p className="m-0 mt-1 truncate text-xs text-slate-400">{experience.description}</p>}
                 </button>
 
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="ml-auto flex shrink-0 items-center gap-1">
                   {status === 'DRAFT' && (
                     <PrimaryAction disabled={busy} icon={Rocket} label="Publish" onClick={() => void run(experience, () => onStatusChange(experience, 'LIVE'))} tone="emerald" />
                   )}

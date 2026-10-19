@@ -35,7 +35,7 @@ function Modal({ backdropClassName, bodyClassName, children, onClose, panelClass
       aria-modal="true"
       className={[
         'fixed inset-0 z-[1000] flex items-center justify-center',
-        'bg-olive-900/40 backdrop-blur-sm p-5',
+        'bg-slate-950/40 backdrop-blur-sm p-3 sm:p-5',
         backdropClassName ?? ''
       ].join(' ')}
       onClick={onClose}
@@ -53,19 +53,19 @@ function Modal({ backdropClassName, bodyClassName, children, onClose, panelClass
         onClick={(event) => event.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-olive-200 bg-olive-50 rounded-t-lg">
-          <h2 className="text-[1.1rem] font-semibold m-0 text-olive-950">{title}</h2>
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-slate-200 bg-white rounded-t-lg">
+          <h2 className="text-base font-semibold m-0 text-slate-900">{title}</h2>
           <button
             aria-label="Close modal"
-            className="h-8 px-3 text-[0.8rem] bg-white border border-olive-200 rounded text-olive-700 hover:bg-olive-50 transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
             onClick={onClose}
             type="button"
           >
-            <MdClose size={20} />
+            <MdClose size={18} />
           </button>
         </div>
         {/* Body */}
-        <div className={['p-6 grid gap-5', bodyClassName ?? ''].join(' ')}>{children}</div>
+        <div className={['p-4 sm:p-6 grid gap-5', bodyClassName ?? ''].join(' ')}>{children}</div>
       </div>
     </div>,
     portalTarget

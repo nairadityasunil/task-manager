@@ -219,7 +219,7 @@ const SdkIntegrationDetailPage: React.FC = () => {
   };
 
   const envGradient: Record<string, string> = {
-    production: 'from-indigo-600 to-violet-600',
+    production: 'from-slate-700 to-slate-900',
     staging: 'from-amber-500 to-orange-500',
     development: 'from-emerald-500 to-teal-600',
   };
@@ -229,12 +229,12 @@ const SdkIntegrationDetailPage: React.FC = () => {
       {/* Detail Header */}
       <div className="relative overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-br ${envGradient[integration.environment] ?? 'from-slate-100 to-slate-200'} opacity-[0.05]`} />
-        <div className="relative bg-white px-8 py-6 shadow-sm">
+        <div className="relative bg-white px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-200">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 flex-wrap">
                 <span className={`w-2.5 h-2.5 rounded-full bg-gradient-to-br ${envGradient[integration.environment] ?? 'from-slate-400 to-slate-600'} shrink-0`} />
-                <h2 className="m-0 text-xl font-semibold text-slate-900">{integration.name}</h2>
+                <h2 className="m-0 text-lg sm:text-xl font-semibold text-slate-900">{integration.name}</h2>
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium uppercase tracking-wide ${statusColors[integration.status]}`}>
                   {integration.status}
                 </span>
@@ -248,16 +248,16 @@ const SdkIntegrationDetailPage: React.FC = () => {
             </div>
             <button
               onClick={() => navigate('/sdk-integrations')}
-              className="rounded bg-slate-100 px-4 py-2 text-sm text-slate-600 hover:bg-slate-200 transition-colors shrink-0"
+              className="self-start md:self-auto rounded-lg border border-slate-200 bg-white px-3.5 h-9 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
             >
-              ← Back to Integrations
+              ← All integrations
             </button>
           </div>
         </div>
       </div>
 
       {/* Tab Panels */}
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         {activeTab === 'overview' && (
           <div className="mb-6">
             <SdkSetupGuide
@@ -273,10 +273,10 @@ const SdkIntegrationDetailPage: React.FC = () => {
             {/* Left 2 Columns: Config & Keys */}
             <div className="lg:col-span-2 space-y-8">
               {/* SDK Key Panel */}
-              <div className="rounded-md bg-white p-4 shadow-sm border-l-4 border-indigo-500">
+              <div className="rounded-md bg-white p-4 shadow-sm border-l-4 border-slate-800">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded bg-indigo-50 flex items-center justify-center">
-                    <Code className="h-4 w-4 text-indigo-600" />
+                  <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center">
+                    <Code className="h-4 w-4 text-slate-700" />
                   </div>
                   <h3 className="m-0 text-base font-semibold text-slate-800">Integration SDK Key</h3>
                 </div>
@@ -334,11 +334,11 @@ const SdkIntegrationDetailPage: React.FC = () => {
               </div>
 
               {/* Edit Details Form */}
-              <div className="rounded bg-white p-5 shadow-sm border-l-4 border-violet-500">
+              <div className="rounded bg-white p-5 shadow-sm border-l-4 border-slate-800">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded bg-violet-50 flex items-center justify-center">
-                      <Settings className="h-4 w-4 text-violet-600" />
+                    <div className="w-8 h-8 rounded bg-slate-100 flex items-center justify-center">
+                      <Settings className="h-4 w-4 text-slate-700" />
                     </div>
                     <h3 className="m-0 text-base font-semibold text-slate-800">Configuration Details</h3>
                   </div>
@@ -498,9 +498,9 @@ const SdkIntegrationDetailPage: React.FC = () => {
 
                 <div className="space-y-0 divide-y divide-slate-100">
                   {[
-                    { label: 'SDK Client Version', value: integration.sdkVersion || 'Not connected', accent: 'text-indigo-600' },
+                    { label: 'SDK Client Version', value: integration.sdkVersion || 'Not connected', accent: 'text-slate-900' },
                     { label: 'Latest Active Origin', value: integration.latestOrigin || '—', mono: true },
-                    { label: 'First Registered', value: integration.firstConnectedAt ? new Date(integration.firstConnectedAt).toLocaleString() : 'Never', accent: 'text-violet-600' },
+                    { label: 'First Registered', value: integration.firstConnectedAt ? new Date(integration.firstConnectedAt).toLocaleString() : 'Never', accent: 'text-slate-900' },
                     { label: 'Last Live Connect', value: integration.lastConnectedAt ? new Date(integration.lastConnectedAt).toLocaleString() : 'Never' },
                     { label: 'Last Heartbeat', value: integration.lastHeartbeatAt ? new Date(integration.lastHeartbeatAt).toLocaleString() : 'Never' },
                     { label: 'Last Setup Fetch', value: integration.lastRuntimeRequestAt ? new Date(integration.lastRuntimeRequestAt).toLocaleString() : 'Never' },

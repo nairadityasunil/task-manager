@@ -175,7 +175,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   }, [versionsList, selectedVersionNum]);
 
   return (
-    <div className="flex h-full min-h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden">
+    <div className="flex flex-col md:flex-row h-full min-h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden">
       <PlaygroundSidebar
         folders={folders}
         promptsByFolder={promptsByFolder}
@@ -192,9 +192,9 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
         onNewPrompt={onNewPromptImmediate}
       />
 
-      <main className="flex-1 min-w-0 w-full flex flex-col h-full overflow-y-auto custom-scrollbar p-6 space-y-6 bg-white">
+      <main className="flex-1 min-w-0 w-full flex flex-col h-full overflow-y-auto custom-scrollbar p-4 sm:p-6 space-y-6 bg-white">
         {!selectedPromptId ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-3 max-w-sm mx-auto">
+          <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 text-center space-y-3 max-w-sm mx-auto">
             <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
               <FileText className="w-5 h-5" />
             </div>

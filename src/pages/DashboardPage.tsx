@@ -133,6 +133,7 @@ export function DashboardPage(): JSX.Element {
   const { tab } = useParams();
   const dash = useDashboard();
   const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const statusPillCls: Record<string, string> = {
     planned: 'bg-slate-50 text-slate-600 border-slate-200',
@@ -201,6 +202,8 @@ export function DashboardPage(): JSX.Element {
 
       {/* Sidebar */}
       <Sidebar
+        mobileOpen={isMobileNavOpen}
+        onMobileClose={() => setIsMobileNavOpen(false)}
         activeView={dash.activeView}
         selectedProjectView={dash.selectedProjectView}
         allProjectsValue={ALL_PROJECTS_VALUE}
@@ -231,6 +234,7 @@ export function DashboardPage(): JSX.Element {
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Top bar */}
         <Topbar
+          onMenuClick={() => setIsMobileNavOpen(true)}
           title={
             dash.activeView === 'settings'
               ? 'Settings'
@@ -246,6 +250,8 @@ export function DashboardPage(): JSX.Element {
               ? 'Prompt Playground'
               : dash.activeView === 'sdk-integrations'
               ? 'SDK Integrations'
+              : dash.activeView === 'sdk-integration-detail'
+              ? dash.activeIntegrationName || 'Integration'
               : dash.activeView === 'semantic-intelligence'
               ? 'Semantic Intelligence'
               : dash.activeProject
@@ -342,11 +348,11 @@ export function DashboardPage(): JSX.Element {
         <main className="flex-1 overflow-hidden">
           {dash.activeView === 'settings' ? (
             <div className="h-full overflow-y-auto">
-              <div className="px-8 py-6 border-b border-olive-200 bg-white/60">
+              <div className="px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-200 bg-white">
                 <h3 className="text-xl font-semibold text-olive-950 m-0">Settings</h3>
                 <p className="text-olive-500 m-0 text-sm mt-0.5">Account &amp; Preferences</p>
               </div>
-              <div className="p-8">
+              <div className="p-4 sm:p-8">
                 <SettingsPanel
                   projects={dash.projects}
                   activeProject={dash.activeProject}
@@ -391,7 +397,7 @@ export function DashboardPage(): JSX.Element {
             </div>
           ) : dash.activeView === 'sdk-docs' ? (
             <div className="h-full overflow-y-auto">
-              <div className="px-8 py-6 border-b border-olive-200 bg-white/60">
+              <div className="px-4 sm:px-8 py-5 sm:py-6 border-b border-slate-200 bg-white">
                 <h3 className="text-xl font-semibold text-olive-950 m-0">SDK Documentation</h3>
                 <p className="text-olive-500 m-0 text-sm mt-0.5">Integration Guide &amp; API Reference</p>
               </div>
@@ -427,7 +433,7 @@ export function DashboardPage(): JSX.Element {
           ) : (
             /* 3-column workspace */
             <div className="flex flex-col h-full overflow-hidden bg-white">
-              <div className="shrink-0 px-6 py-3.5 border-b border-slate-200 bg-white">
+              <div className="shrink-0 px-3 sm:px-6 py-3 sm:py-3.5 border-b border-slate-200 bg-white">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-slate-900 text-white shrink-0">
@@ -455,7 +461,7 @@ export function DashboardPage(): JSX.Element {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       className={headerButtonCls}
                       onClick={() => dash.setIsProjectTeamModalOpen(true)}
@@ -499,9 +505,9 @@ export function DashboardPage(): JSX.Element {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-1 min-h-0 overflow-hidden gap-4 p-4 bg-slate-50">
+              <div className="flex flex-1 min-h-0 flex-col lg:flex-row overflow-y-auto lg:overflow-hidden gap-3 sm:gap-4 p-3 sm:p-4 bg-slate-50">
                 {/* Column 1 — Epics (Sidebar) */}
-                <div className={`flex flex-col shrink-0 h-full rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden transition-all duration-500 ease-in-out ${dash.isSidebarCollapsed ? 'w-14' : 'w-[300px]'}`}>
+                <div className={`flex flex-col shrink-0 w-full max-h-[45vh] lg:max-h-none lg:h-full rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden transition-all duration-500 ease-in-out ${dash.isSidebarCollapsed ? 'lg:w-14' : 'lg:w-[300px]'}`}>
                   <div className={`flex items-center justify-between px-4 py-3.5 border-b border-slate-100 ${dash.isSidebarCollapsed ? 'flex-col gap-4' : ''}`}>
                     {!dash.isSidebarCollapsed && (
                       <div className="animate-in fade-in duration-500">
@@ -593,11 +599,11 @@ export function DashboardPage(): JSX.Element {
                 </div>
 
                 {/* Column 2 — Main Workspace (Tasks) */}
-                <div className={`flex flex-col flex-1 min-w-0 h-full rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden`}>
+                <div className="flex flex-col flex-1 min-w-0 min-h-[60vh] lg:min-h-0 lg:h-full rounded-lg border border-slate-200 bg-white shadow-sm overflow-hidden">
                   {dash.selectedEpicId ? (
                     <>
-                      <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
-                        <div>
+                      <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-3.5 border-b border-slate-100">
+                        <div className="min-w-0">
                           <h3 className="text-[0.95rem] font-semibold text-slate-900 m-0">{dash.tasksHeading}</h3>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-olive-500 text-[0.78rem] truncate max-w-[200px]">
@@ -642,7 +648,7 @@ export function DashboardPage(): JSX.Element {
                         </div>
                       </div>
 
-                      <div className="px-6 py-2 border-b border-olive-50">
+                      <div className="px-3 sm:px-6 py-2 border-b border-slate-100">
                         <div className="mb-3">
                           <SlaDashboard />
                         </div>
@@ -655,7 +661,7 @@ export function DashboardPage(): JSX.Element {
                       </div>
 
                       {dash.selectedTaskIds.length > 0 && (
-                        <div className="mx-6 my-2 p-3 bg-olive-50/50 border border-olive-100 rounded-xl flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="mx-3 sm:mx-6 my-2 p-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-wrap items-center justify-between gap-3">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-olive-900">
                               {dash.selectedTaskIds.length} tasks selected

@@ -45,7 +45,7 @@ export const PromptLibraryToolbar: React.FC<PromptLibraryToolbarProps> = ({
         )}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <div className="bg-olive-100/80 p-1 rounded-xl border border-olive-200 flex items-center gap-1 select-none">
           <button
             onClick={() => {

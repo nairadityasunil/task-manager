@@ -127,7 +127,7 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
     // Polling fallback
     const interval = setInterval(async () => {
       try {
-        const res = await api.get<{ status: string; isUsed: boolean }>(`/companion/qr-session/${qrSessionId}`);
+        const res = await api.get<{ status: string; isUsed: boolean }>(`/companion/qr-session/${qrSessionId}`, { silent: true });
         if (res.data.isUsed || res.data.status === "paired") {
           setIsQrPaired(true);
           onRefreshDevices();

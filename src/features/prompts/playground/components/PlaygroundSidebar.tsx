@@ -35,7 +35,7 @@ export const PlaygroundSidebar: React.FC<PlaygroundSidebarProps> = ({
   onNewPrompt,
 }) => {
   return (
-    <aside className="w-72 bg-white border-r border-gray-200 flex flex-col h-full shrink-0 select-none">
+    <aside className="w-full md:w-72 max-h-[40vh] md:max-h-none bg-white border-b md:border-b-0 md:border-r border-gray-200 flex flex-col md:h-full shrink-0 select-none">
       <div className="p-3 border-b border-gray-200 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">

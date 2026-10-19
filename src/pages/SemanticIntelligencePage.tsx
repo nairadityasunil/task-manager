@@ -154,9 +154,9 @@ export default function SemanticIntelligencePage({
   return (
     <div className="min-h-full bg-olive-50 font-sans">
       {/* Header Panel */}
-      <div className="sticky top-0 z-20 px-8 py-4 border-b border-olive-200/60 bg-white/80 backdrop-blur-xl shadow-[0_4px_24px_rgba(63,98,18,0.04)]">
+      <div className="sticky top-0 z-20 px-4 sm:px-8 py-4 border-b border-olive-200/60 bg-white/80 backdrop-blur-xl shadow-[0_4px_24px_rgba(63,98,18,0.04)]">
         <div className="flex flex-wrap items-center justify-between gap-6 max-w-full mx-auto">
-          <div className="flex items-center justify-between w-full gap-3">
+          <div className="flex flex-wrap items-center justify-between w-full gap-3">
             <div className="relative group">
               <select
                 className="h-10 pl-10 pr-10 rounded-xl border border-olive-200 bg-white text-xs font-medium text-olive-700 shadow-sm appearance-none focus:ring-4 focus:ring-olive-700/5 focus:border-olive-400 outline-none transition-all cursor-pointer hover:border-olive-300"
@@ -178,7 +178,7 @@ export default function SemanticIntelligencePage({
               </div>
             </div>
 
-            <div className="flex rounded-xl border border-olive-200 bg-olive-50/50 p-1 shadow-inner backdrop-blur-sm">
+            <div className="flex max-w-full overflow-x-auto rounded-xl border border-olive-200 bg-olive-50/50 p-1 shadow-inner backdrop-blur-sm">
               {timeRangeOptions.map((option) => (
                 <button
                   className={[
