@@ -111,7 +111,7 @@ export function UrlTargeting({ rules, onChange }: { rules: TargetingRuleGroup; o
           <div className="flex items-center gap-2" key={condition.id}>
             <select
               aria-label="URL match"
-              className={cn(selectClass, 'shrink-0 basis-[112px]')}
+              className={cn(selectClass, 'shrink-0 basis-[128px]')}
               value={condition.type}
               onChange={(e) => updateMatchType(condition.id, e.target.value as TargetingConditionType)}
             >
@@ -160,7 +160,7 @@ export function RuleBuilder({ rules, onChange }: { rules: TargetingRuleGroup; on
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
         <SectionTitle icon={Target} title="Audience Rules" />
         <div className="flex items-center gap-2">
-          <select aria-label="Match" className={cn(selectClass, 'basis-[124px]')} onChange={(event) => onChange({ ...rules, operator: event.target.value as 'AND' | 'OR' })} value={rules.operator}>
+          <select aria-label="Match" className={cn(selectClass, 'shrink-0 basis-[136px]')} onChange={(event) => onChange({ ...rules, operator: event.target.value as 'AND' | 'OR' })} value={rules.operator}>
             <option value="AND">Match ALL</option>
             <option value="OR">Match ANY</option>
           </select>
