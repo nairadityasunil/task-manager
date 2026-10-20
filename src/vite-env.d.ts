@@ -8,3 +8,8 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** Short commit SHA of this build (see vite.config.ts). */
+declare const __APP_COMMIT__: string;
+/** ISO timestamp of this build. */
+declare const __APP_BUILT_AT__: string;

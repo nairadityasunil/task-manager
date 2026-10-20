@@ -222,6 +222,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             <span className={user ? 'sr-only' : ''}>Sign out</span>
           </button>
         </div>
+        <div className="px-4 pb-3 text-[11px] text-slate-600" title={`Built ${__APP_BUILT_AT__}`}>
+          Version {__APP_COMMIT__}
+        </div>
       </aside>
     </>
   );
