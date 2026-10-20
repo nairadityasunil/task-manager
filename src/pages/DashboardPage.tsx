@@ -386,7 +386,7 @@ export function DashboardPage(): JSX.Element {
               <SdkIntegrationDetailPage />
             </div>
           ) : dash.activeView === 'prompts' ? (
-            <div className="h-full overflow-y-auto bg-slate-950">
+            <div className="h-full overflow-y-auto bg-slate-50">
               <PromptLibraryPage workspaceId={dash.activeWorkspaceId} />
             </div>
           ) : dash.activeView === 'playground' ? (

@@ -210,6 +210,9 @@ function ProjectPanel({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getRowId: row => row.id,
+    // Paging is done by the server; letting the table reset its page index
+    // schedules a state update before the component mounts.
+    autoResetPageIndex: false,
   });
 
   const selectedProjects = useMemo(() => {
