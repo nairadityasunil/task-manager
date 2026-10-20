@@ -157,7 +157,7 @@ function ManageDevicesModal({ onClose, onDevicesChanged }: ManageDevicesModalPro
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-slate-950 text-xs">
+                          <span className="font-semibold text-slate-900 text-xs">
                             {device.deviceName}
                           </span>
                           {device.status === 'pending' && (
@@ -181,17 +181,17 @@ function ManageDevicesModal({ onClose, onDevicesChanged }: ManageDevicesModalPro
 
                   <div className="grid grid-cols-2 gap-2.5">
                     <div className="flex flex-col gap-1">
-                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide pl-0.5">Name</label>
+                      <label className="text-sm font-medium text-slate-700 pl-0.5">Name</label>
                       <input
-                        className="bg-white border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-950 focus:outline-none focus:border-slate-500"
+                        className="bg-white border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-slate-500"
                         value={draft.deviceName}
                         onChange={e => handleDraftChange(device.id, 'deviceName', e.target.value)}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide pl-0.5">Category</label>
+                      <label className="text-sm font-medium text-slate-700 pl-0.5">Category</label>
                       <select
-                        className="bg-white border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-950 focus:outline-none focus:border-slate-500"
+                        className="bg-white border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-slate-500"
                         value={draft.deviceType}
                         onChange={e => handleDraftChange(device.id, 'deviceType', e.target.value)}
                       >

@@ -2,6 +2,8 @@ import React from "react";
 import { Play, Copy, Check, Settings, Loader2 } from "lucide-react";
 import { PlaygroundRunResult, promptService, IPromptMessage } from "@/services/prompts";
 import { PromptParameters } from "../hooks/usePlayground";
+import EmptyState from "@/components/EmptyState";
+import { buttonClass } from "@/components/ui";
 
 interface PromptExecutionPanelProps {
   workspaceId: string;
@@ -71,26 +73,26 @@ export const PromptExecutionPanel: React.FC<PromptExecutionPanelProps> = ({
   };
 
   return (
-    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wide">
-          Playground Execution Output
+    <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="m-0 text-[15px] font-semibold text-slate-900">
+          Playground execution output
         </h3>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={onOpenParametersModal}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition flex items-center gap-1.5 cursor-pointer"
+            className={buttonClass("secondary", "sm", "max-w-full")}
           >
             <Settings className="w-3.5 h-3.5 text-slate-500" />
-            Config ({parameters.modelName})
+            <span className="truncate">Config ({parameters.modelName})</span>
           </button>
 
           <button
             type="button"
             onClick={handleRunPlayground}
             disabled={isExecuting}
-            className="px-4 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-800 text-white font-semibold text-xs transition shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className={buttonClass("primary", "sm")}
           >
             {isExecuting ? (
               <>
@@ -106,38 +108,40 @@ export const PromptExecutionPanel: React.FC<PromptExecutionPanelProps> = ({
       </div>
 
       {executionError && (
-        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-[13px] text-red-700">
           {executionError}
         </div>
       )}
 
       {runResult ? (
         <div className="space-y-3">
-          <div className="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 text-[11px] text-slate-600 font-mono">
-            <div className="flex items-center gap-3">
-              <span>Model: <strong>{runResult.metadata?.modelName || parameters.modelName}</strong></span>
-              <span>Tokens: <strong>{runResult.metadata?.totalTokens || 0}</strong></span>
-              <span>Latency: <strong>{runResult.metadata?.latencyMs || 0}ms</strong></span>
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span>Model: <strong className="font-medium text-slate-900">{runResult.metadata?.modelName || parameters.modelName}</strong></span>
+              <span>Tokens: <strong className="font-medium text-slate-900">{runResult.metadata?.totalTokens || 0}</strong></span>
+              <span>Latency: <strong className="font-medium text-slate-900">{runResult.metadata?.latencyMs || 0}ms</strong></span>
             </div>
             <button
               type="button"
               onClick={handleCopyOutput}
-              className="flex items-center gap-1 text-slate-500 hover:text-slate-900 transition cursor-pointer"
+              className="flex h-7 cursor-pointer items-center gap-1 rounded-md px-1.5 font-medium text-slate-600 transition hover:bg-white hover:text-slate-900"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               {copied ? "Copied" : "Copy Output"}
             </button>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-950 text-emerald-300 font-mono text-xs overflow-x-auto min-h-[160px] whitespace-pre-wrap leading-relaxed border border-slate-800 shadow-inner">
+          <div className="min-h-[160px] overflow-x-auto whitespace-pre-wrap break-words rounded-lg border border-slate-800 bg-slate-900 p-4 font-mono text-[13px] leading-relaxed text-slate-100">
             {runResult.output || "No output returned from playground model execution."}
           </div>
         </div>
       ) : (
-        <div className="p-8 border border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400 space-y-1">
-          <p className="font-semibold text-slate-600">No Execution Run Output</p>
-          <p>Click &quot;Run Test Prompt&quot; above to execute your prompt template against selected model AI providers.</p>
-        </div>
+        <EmptyState
+          compact
+          icon={Play}
+          title="No Execution Run Output"
+          description='Click "Run Test Prompt" above to execute your prompt template against selected model AI providers.'
+        />
       )}
     </div>
   );

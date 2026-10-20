@@ -129,7 +129,7 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
 
   return (
     <Modal onClose={onClose} title="Project AI Configuration" maxWidth="max-w-[550px]">
-      <div className="flex flex-col gap-4 text-slate-950">
+      <div className="flex flex-col gap-4 text-slate-900">
         {!isAdmin && (
           <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
             <ShieldAlert className="flex-shrink-0 mt-0.5" size={18} />
@@ -182,9 +182,9 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
             <div className={`flex flex-col gap-4 transition-opacity ${config.enabled ? 'opacity-100' : 'opacity-60 pointer-events-none select-none'}`}>
               {/* Provider Selection */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide pl-1">AI Model Provider</label>
+                <label className="text-sm font-medium text-slate-700 pl-1">AI Model Provider</label>
                 <select
-                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
                   value={config.provider}
                   disabled={!isAdmin || !config.enabled}
                   onChange={(e) => updateField('provider', e.target.value)}
@@ -197,9 +197,9 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
 
               {/* Model Selection Preset Dropdown */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide pl-1">Model Name</label>
+                <label className="text-sm font-medium text-slate-700 pl-1">Model Name</label>
                 <select
-                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
                   value={config.modelName}
                   disabled={!isAdmin || !config.enabled}
                   onChange={(e) => updateField('modelName', e.target.value)}
@@ -212,13 +212,13 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
 
               {/* API Key Input */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide pl-1">API Key</label>
+                <label className="text-sm font-medium text-slate-700 pl-1">API Key</label>
                 {config.apiKey === '••••••••' && !isReplacingKey ? (
                   <div className="flex gap-2 items-center">
                     <div className="relative flex-1">
                       <input
                         type="password"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-sm text-slate-950/60 select-none cursor-not-allowed"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-sm text-slate-900/60 select-none cursor-not-allowed"
                         value="••••••••"
                         disabled
                         readOnly
@@ -242,7 +242,7 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                     <div className="relative flex-1">
                       <input
                         type={showKey ? 'text' : 'password'}
-                        className="w-full bg-white border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-sm text-slate-950 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
+                        className="w-full bg-white border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
                         placeholder="Enter API credential key"
                         value={config.apiKey}
                         disabled={!isAdmin || !config.enabled}
@@ -276,12 +276,12 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
 
               {/* Custom Endpoint Base URL Override */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide pl-1">
+                <label className="text-sm font-medium text-slate-700 pl-1">
                   API Base URL Override <span className="text-[11px] font-normal text-slate-400 italic">(Optional)</span>
                 </label>
                 <input
                   type="text"
-                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-950 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
+                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
                   placeholder={currentPreset?.defaultBaseUrl}
                   value={config.baseUrl}
                   disabled={!isAdmin || !config.enabled}

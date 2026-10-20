@@ -1,5 +1,7 @@
 import React from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Braces, Plus, Trash2 } from "lucide-react";
+import EmptyState from "@/components/EmptyState";
+import { buttonClass, inputClass } from "@/components/ui";
 import { IPromptVariable } from "@/services/prompts";
 
 interface VariableEditorProps {
@@ -35,16 +37,16 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
   };
 
   return (
-    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wide">
-          Template Variables Schema
+    <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="m-0 text-[15px] font-semibold text-slate-900">
+          Template variables schema
         </h3>
         {isEditingPromptContent && (
           <button
             type="button"
             onClick={handleAddVariable}
-            className="text-xs font-semibold text-slate-700 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
+            className={buttonClass("secondary", "sm")}
           >
             <Plus className="w-3.5 h-3.5" /> Add Variable
           </button>
@@ -52,13 +54,16 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
       </div>
 
       {variablesSchema.length === 0 ? (
-        <div className="p-4 rounded-xl border border-dashed border-slate-200 text-center text-slate-400 text-xs">
-          No variables defined for this prompt template.
-        </div>
+        <EmptyState
+          compact
+          icon={Braces}
+          title="No variables"
+          description="No variables defined for this prompt template."
+        />
       ) : (
         <div className="space-y-3">
           {variablesSchema.map((v, index) => (
-            <div key={index} className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2 text-xs">
+            <div key={index} className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
               <div className="flex items-center justify-between gap-2">
                 <input
                   type="text"
@@ -66,22 +71,24 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
                   onChange={(e) => handleVariableChange(index, "name", e.target.value)}
                   placeholder="Variable name"
                   disabled={!isEditingPromptContent}
-                  className="flex-1 bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-900 font-mono"
+                  aria-label="Variable name"
+                  className={`${inputClass} h-8 min-w-0 flex-1 font-mono text-[13px]`}
                 />
                 {isEditingPromptContent && (
                   <button
                     type="button"
                     onClick={() => handleRemoveVariable(index)}
-                    className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
+                    aria-label="Remove variable"
+                    className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-0.5">
+                  <label className="mb-1 block text-[13px] font-medium text-slate-700">
                     Test Runtime Value
                   </label>
                   <input
@@ -91,11 +98,11 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
                       setRuntimeValues((prev) => ({ ...prev, [v.name]: e.target.value }))
                     }
                     placeholder={`Enter value for ${v.name}...`}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-900"
+                    className={`${inputClass} h-8 text-[13px]`}
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-0.5">
+                  <label className="mb-1 block text-[13px] font-medium text-slate-700">
                     Default Schema Value
                   </label>
                   <input
@@ -104,7 +111,7 @@ export const VariableEditor: React.FC<VariableEditorProps> = ({
                     onChange={(e) => handleVariableChange(index, "defaultValue", e.target.value)}
                     placeholder="Default fallback"
                     disabled={!isEditingPromptContent}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-900"
+                    className={`${inputClass} h-8 text-[13px]`}
                   />
                 </div>
               </div>

@@ -404,8 +404,8 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
   const runB = runHistory.find((r) => r.id === compareRunIdB) || runHistory[1] || runHistory[0];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-2 sm:p-4 overflow-y-auto">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-7xl h-[92vh] flex flex-col shadow-xl overflow-hidden text-slate-950">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-3 sm:p-5 overflow-y-auto">
+      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-7xl h-[92vh] flex flex-col shadow-xl overflow-hidden text-slate-900">
         {/* Playground Header Bar */}
         <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-200 bg-slate-50/80 shrink-0">
           <div className="flex items-center gap-3">
@@ -414,7 +414,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold text-slate-950">Prompt Playground</h2>
+                <h2 className="text-lg font-semibold text-slate-900">Prompt Playground</h2>
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 text-slate-800 uppercase tracking-wide">
                   Isolated Environment
                 </span>
@@ -450,7 +450,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-950 hover:bg-slate-100 transition"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition"
             >
               <X className="w-5 h-5" />
             </button>
@@ -463,7 +463,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
             type="button"
             onClick={() => setMobileTab("config")}
             className={`flex-1 py-2.5 text-center transition ${
-              mobileTab === "config" ? "bg-white text-slate-950 border-b-2 border-slate-900 font-semibold" : "text-slate-600"
+              mobileTab === "config" ? "bg-white text-slate-900 border-b-2 border-slate-900 font-semibold" : "text-slate-600"
             }`}
           >
             Configuration & Inputs
@@ -472,7 +472,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
             type="button"
             onClick={() => setMobileTab("output")}
             className={`flex-1 py-2.5 text-center transition ${
-              mobileTab === "output" ? "bg-white text-slate-950 border-b-2 border-slate-900 font-semibold" : "text-slate-600"
+              mobileTab === "output" ? "bg-white text-slate-900 border-b-2 border-slate-900 font-semibold" : "text-slate-600"
             }`}
           >
             Execution Result {runHistory.length > 0 && `(${runHistory.length})`}
@@ -481,12 +481,12 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
 
         {/* Error Banner */}
         {errorMsg && (
-          <div className="px-6 py-2.5 bg-rose-50 border-b border-rose-200 text-rose-800 text-xs flex items-center justify-between shrink-0">
+          <div className="px-6 py-2.5 bg-red-50 border-b border-red-200 text-red-800 text-xs flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
               <span>{errorMsg}</span>
             </div>
-            <button onClick={() => setErrorMsg(null)} className="text-rose-500 hover:text-rose-900 font-semibold">
+            <button onClick={() => setErrorMsg(null)} className="text-red-500 hover:text-red-900 font-semibold">
               ×
             </button>
           </div>
@@ -510,7 +510,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 <select
                   value={selectedPromptId}
                   onChange={(e) => setSelectedPromptId(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-950 focus:outline-none focus:border-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-900 focus:outline-none focus:border-slate-400"
                 >
                   {promptsList.map((p) => (
                     <option key={p._id} value={p._id}>
@@ -528,7 +528,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 <select
                   value={selectedVersionNum}
                   onChange={(e) => handleVersionChange(Number(e.target.value))}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-950 focus:outline-none focus:border-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:border-slate-400"
                 >
                   {versionsList.map((v) => (
                     <option key={v.version} value={v.version}>
@@ -542,7 +542,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
             {/* Prompt Template & Resolved Preview Section */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-semibold text-slate-950 uppercase tracking-wide flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                   <Code2 className="w-4 h-4 text-slate-700" />
                   Prompt Preview & Substitution
                 </h3>
@@ -553,8 +553,8 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                     onClick={() => setPreviewMode("template")}
                     className={`px-2.5 py-1 rounded text-[11px] font-semibold transition ${
                       previewMode === "template"
-                        ? "bg-white text-slate-950 shadow-xs"
-                        : "text-slate-600 hover:text-slate-950"
+                        ? "bg-white text-slate-900 shadow-xs"
+                        : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
                     Template View
@@ -564,8 +564,8 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                     onClick={() => setPreviewMode("resolved")}
                     className={`px-2.5 py-1 rounded text-[11px] font-semibold transition ${
                       previewMode === "resolved"
-                        ? "bg-white text-slate-950 shadow-xs"
-                        : "text-slate-600 hover:text-slate-950"
+                        ? "bg-white text-slate-900 shadow-xs"
+                        : "text-slate-600 hover:text-slate-900"
                     }`}
                   >
                     Resolved View
@@ -605,7 +605,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
             {/* Dynamic Handlebars Variables Inputs */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-semibold text-slate-950 uppercase tracking-wide flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                   <Sliders className="w-4 h-4 text-slate-700" />
                   Detected Variables ({activeDetectedVariables.length})
                 </h3>
@@ -632,9 +632,9 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                     return (
                       <div key={varName} className="p-3.5 rounded-xl bg-slate-50/60 border border-slate-200 space-y-1.5">
                         <div className="flex items-center justify-between text-xs">
-                          <label className="font-mono font-semibold text-slate-950 flex items-center gap-1.5">
+                          <label className="font-mono font-semibold text-slate-900 flex items-center gap-1.5">
                             {`{{${varName}}}`}
-                            {isRequired && <span className="text-rose-500 font-semibold">*</span>}
+                            {isRequired && <span className="text-red-500 font-semibold">*</span>}
                           </label>
                           <span className="text-[11px] text-slate-500 uppercase font-mono px-1.5 py-0.5 rounded bg-slate-100">
                             {varType}
@@ -673,7 +673,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                           <select
                             value={String(val)}
                             onChange={(e) => handleVariableValChange(varName, e.target.value)}
-                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-950 focus:outline-none focus:border-slate-400"
+                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-slate-400"
                           >
                             <option value="">Select option...</option>
                             {schemaDef.options.map((opt) => (
@@ -688,7 +688,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                             onChange={(e) => handleVariableValChange(varName, e.target.value)}
                             placeholder={`Enter ${varName}...`}
                             rows={3}
-                            className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-950 placeholder-slate-400 focus:outline-none focus:border-slate-400 resize-y"
+                            className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs font-mono text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 resize-y"
                           />
                         ) : (
                           <input
@@ -696,7 +696,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                             value={String(val)}
                             onChange={(e) => handleVariableValChange(varName, e.target.value)}
                             placeholder={`Enter ${varName}...`}
-                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-950 placeholder-slate-400 focus:outline-none focus:border-slate-400 font-mono"
+                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 font-mono"
                           />
                         )}
                       </div>
@@ -708,7 +708,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
 
             {/* AI Model & Hyperparameter Settings */}
             <div className="space-y-4 pt-2 border-t border-slate-200">
-              <h3 className="text-xs font-semibold text-slate-950 uppercase tracking-wide flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                 <Cpu className="w-4 h-4 text-slate-700" />
                 Model & Execution Parameters
               </h3>
@@ -719,7 +719,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                   <select
                     value={provider}
                     onChange={(e) => setProvider(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-950 focus:outline-none focus:border-slate-400"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-900 focus:outline-none focus:border-slate-400"
                   >
                     <option value="gemini">Google Gemini AI</option>
                     <option value="openai">OpenAI</option>
@@ -732,7 +732,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                   <select
                     value={modelName}
                     onChange={(e) => setModelName(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-950 focus:outline-none focus:border-slate-400"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-900 focus:outline-none focus:border-slate-400"
                   >
                     {provider === "gemini" && (
                       <>
@@ -763,7 +763,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 <div>
                   <div className="flex justify-between text-xs font-semibold text-slate-800 mb-1">
                     <span>Temperature</span>
-                    <span className="font-mono text-slate-950">{temperature}</span>
+                    <span className="font-mono text-slate-900">{temperature}</span>
                   </div>
                   <input
                     type="range"
@@ -779,20 +779,20 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 <div>
                   <div className="flex justify-between text-xs font-semibold text-slate-800 mb-1">
                     <span>Max Tokens</span>
-                    <span className="font-mono text-slate-950">{maxTokens}</span>
+                    <span className="font-mono text-slate-900">{maxTokens}</span>
                   </div>
                   <input
                     type="number"
                     value={maxTokens}
                     onChange={(e) => setMaxTokens(parseInt(e.target.value, 10) || 100)}
-                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-mono text-slate-950 focus:outline-none focus:border-slate-400"
+                    className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-mono text-slate-900 focus:outline-none focus:border-slate-400"
                   />
                 </div>
 
                 <div>
                   <div className="flex justify-between text-xs font-semibold text-slate-800 mb-1">
                     <span>Top P</span>
-                    <span className="font-mono text-slate-950">{topP}</span>
+                    <span className="font-mono text-slate-900">{topP}</span>
                   </div>
                   <input
                     type="range"
@@ -840,14 +840,14 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
             {isComparing ? (
               <div className="space-y-4 flex-1 flex flex-col">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-                  <h3 className="text-xs font-semibold text-slate-950 uppercase tracking-wide flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                     <GitCompare className="w-4 h-4 text-slate-700" />
                     Side-by-Side Run Comparison
                   </h3>
                   <button
                     type="button"
                     onClick={() => setIsComparing(false)}
-                    className="text-xs text-slate-600 hover:text-slate-950 underline"
+                    className="text-xs text-slate-600 hover:text-slate-900 underline"
                   >
                     Back to Single Output View
                   </button>
@@ -860,7 +860,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                     <select
                       value={compareRunIdA}
                       onChange={(e) => setCompareRunIdA(e.target.value)}
-                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-950"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-900"
                     >
                       {runHistory.map((r, i) => (
                         <option key={r.id} value={r.id}>
@@ -875,7 +875,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                     <select
                       value={compareRunIdB}
                       onChange={(e) => setCompareRunIdB(e.target.value)}
-                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-950"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-900"
                     >
                       {runHistory.map((r, i) => (
                         <option key={r.id} value={r.id}>
@@ -943,7 +943,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
               /* Single Execution Result Output View */
               <div className="flex flex-col flex-1 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-semibold text-slate-950 uppercase tracking-wide flex items-center gap-2">
+                  <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                     <Eye className="w-4 h-4 text-slate-700" />
                     Execution Result
                   </h3>
@@ -965,7 +965,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 {isExecuting ? (
                   <div className="flex-1 min-h-[300px] rounded-xl bg-white border border-slate-200 flex flex-col items-center justify-center p-8 text-center space-y-3">
                     <Zap className="w-8 h-8 animate-bounce text-slate-900" />
-                    <div className="text-sm font-semibold text-slate-950">Generating AI Response...</div>
+                    <div className="text-sm font-semibold text-slate-900">Generating AI Response...</div>
                     <p className="text-xs text-slate-600 max-w-xs">
                       Substitutions complete. Request sent to backend AI execution engine ({modelName}).
                     </p>
@@ -1000,7 +1000,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
 
                     {/* Output Text Container */}
                     <div className="flex-1 p-4 rounded-xl bg-white border border-slate-200 overflow-y-auto max-h-[420px] custom-scrollbar shadow-xs">
-                      <pre className="font-mono text-xs text-slate-950 whitespace-pre-wrap leading-relaxed">
+                      <pre className="font-mono text-xs text-slate-900 whitespace-pre-wrap leading-relaxed">
                         {currentActiveRun.output}
                       </pre>
                     </div>
@@ -1082,9 +1082,9 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
 
       {/* Save as New Version Dialog */}
       {showSaveVersionModal && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-3 sm:p-5">
           <div className="bg-white border border-slate-200 rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl">
-            <h3 className="text-base font-semibold text-slate-950 flex items-center gap-2">
+            <h3 className="text-base font-semibold text-slate-900 flex items-center gap-2">
               <Save className="w-5 h-5 text-slate-800" />
               Save Experiment as New Version
             </h3>
@@ -1099,7 +1099,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 value={saveVersionNote}
                 onChange={(e) => setSaveVersionNote(e.target.value)}
                 placeholder="e.g. Optimized instructions after playground run"
-                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-950 focus:outline-none focus:border-slate-400"
+                className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-slate-400"
               />
             </div>
 
@@ -1126,9 +1126,9 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
 
       {/* Save as New Prompt Dialog */}
       {showSaveNewPromptModal && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-3 sm:p-5">
           <div className="bg-white border border-slate-200 rounded-xl p-6 w-full max-w-md space-y-4 shadow-xl">
-            <h3 className="text-base font-semibold text-slate-950 flex items-center gap-2">
+            <h3 className="text-base font-semibold text-slate-900 flex items-center gap-2">
               <Plus className="w-5 h-5 text-slate-800" />
               Save Experiment as New Prompt
             </h3>
@@ -1144,7 +1144,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                   value={newPromptName}
                   onChange={(e) => setNewPromptName(e.target.value)}
                   placeholder="e.g. Refactored Code Reviewer"
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-950 focus:outline-none focus:border-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-slate-400"
                 />
               </div>
 
@@ -1153,7 +1153,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 <select
                   value={newPromptCategory}
                   onChange={(e) => setNewPromptCategory(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-950 focus:outline-none focus:border-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-slate-400"
                 >
                   <option value="general">General</option>
                   <option value="development">Development</option>
@@ -1170,7 +1170,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                   onChange={(e) => setNewPromptDesc(e.target.value)}
                   placeholder="Short description of this prompt..."
                   rows={2}
-                  className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-950 focus:outline-none focus:border-slate-400"
+                  className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:outline-none focus:border-slate-400"
                 />
               </div>
             </div>

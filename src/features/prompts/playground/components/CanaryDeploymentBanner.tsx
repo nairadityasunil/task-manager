@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   Flame,
 } from "lucide-react";
+import { buttonClass } from "@/components/ui";
 import { PromptCanaryDeployment } from "@/services/prompts";
 
 interface CanaryDeploymentBannerProps {
@@ -53,44 +54,45 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
 
   return (
     <div
-      className={`p-4 rounded-xl border mb-4 transition-all shadow-sm ${
+      className={`rounded-xl border p-4 shadow-sm transition-all ${
         isFailed
-          ? "bg-rose-50 border-rose-200 text-rose-900"
+          ? "border-red-200 bg-red-50 text-red-900"
           : isPaused
-          ? "bg-amber-50 border-amber-200 text-amber-900"
-          : "bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 border-indigo-200 text-indigo-950"
+          ? "border-amber-200 bg-amber-50 text-amber-900"
+          : "border-slate-200 bg-white text-slate-900"
       }`}
     >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Left Status Information */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="p-1.5 rounded-lg bg-indigo-600 text-white shrink-0">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-sky-200 bg-sky-50 text-sky-700">
               <Flame className="w-4 h-4" />
             </span>
-            <h3 className="text-sm font-semibold tracking-tight">
+            <h3 className="m-0 text-[15px] font-semibold">
               Canary Deployment Rollout
             </h3>
 
             {/* Status Pill */}
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium uppercase tracking-wide border ${
+              className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-medium capitalize ring-1 ring-inset ${
                 status === "active"
-                  ? "bg-emerald-100 text-emerald-800 border-emerald-300 animate-pulse"
+                  ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
                   : isPaused
-                  ? "bg-amber-100 text-amber-800 border-amber-300"
-                  : "bg-rose-100 text-rose-800 border-rose-300"
+                  ? "bg-amber-50 text-amber-700 ring-amber-200"
+                  : "bg-red-50 text-red-700 ring-red-200"
               }`}
             >
+              {status === "active" && <span aria-hidden className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />}
               {status}
             </span>
 
-            <span className="text-xs font-mono font-medium bg-white/80 px-2 py-0.5 rounded border border-slate-200 text-slate-800">
+            <span className="rounded-full bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-600 ring-1 ring-inset ring-slate-200">
               Phase {currentPhase}/4 ({trafficWeight?.canary ?? 5}% Traffic to v{candidateVersion})
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-medium flex-wrap text-slate-700">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-slate-600">
             <span>
               Primary Prod: <strong className="font-mono">v{legacyVersion}</strong> ({trafficWeight?.legacy ?? 95}%)
             </span>
@@ -102,7 +104,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
             </span>
             <span
               className={`flex items-center gap-1 ${
-                isErrorHigh ? "text-rose-600 font-semibold" : "text-emerald-700 font-semibold"
+                isErrorHigh ? "font-medium text-red-600" : "font-medium text-emerald-700"
               }`}
             >
               {isErrorHigh && <AlertTriangle className="w-3.5 h-3.5" />}
@@ -112,14 +114,14 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-white/70 h-2 rounded-full overflow-hidden border border-slate-200/80">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
             <div
               className={`h-full transition-all duration-500 ${
                 isFailed
-                  ? "bg-rose-500"
+                  ? "bg-red-500"
                   : isPaused
                   ? "bg-amber-500"
-                  : "bg-indigo-600"
+                  : "bg-sky-500"
               }`}
               style={{ width: `${trafficWeight?.canary ?? 5}%` }}
             />
@@ -135,7 +137,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
                   type="button"
                   onClick={onResume}
                   disabled={isActionLoading}
-                  className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className={buttonClass("primary", "sm")}
                 >
                   <Play className="w-3.5 h-3.5" /> Resume Traffic
                 </button>
@@ -144,7 +146,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
                   type="button"
                   onClick={onPause}
                   disabled={isActionLoading}
-                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className={buttonClass("secondary", "sm")}
                 >
                   <Pause className="w-3.5 h-3.5 text-slate-600" /> Pause Traffic
                 </button>
@@ -155,7 +157,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
                   type="button"
                   onClick={onAdvance}
                   disabled={isActionLoading || isPaused}
-                  className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
+                  className={buttonClass("primary", "sm")}
                 >
                   Advance Phase <ChevronRight className="w-3.5 h-3.5" />
                 </button>
@@ -164,7 +166,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
                   type="button"
                   onClick={onComplete}
                   disabled={isActionLoading}
-                  className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-50"
+                  className={buttonClass("accent", "sm")}
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" /> Complete & Promote
                 </button>
@@ -174,7 +176,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
                 type="button"
                 onClick={onRollback}
                 disabled={isActionLoading}
-                className="px-3 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className={buttonClass("danger", "sm")}
               >
                 <RotateCcw className="w-3.5 h-3.5" /> Rollback
               </button>
@@ -182,7 +184,7 @@ export const CanaryDeploymentBanner: React.FC<CanaryDeploymentBannerProps> = ({
           )}
 
           {isFailed && (
-            <div className="text-xs font-semibold text-rose-700 flex items-center gap-2">
+            <div className="flex items-center gap-2 text-[13px] font-medium text-red-700">
               <span>{canary.rollbackReason || "Canary failed automatically"}</span>
             </div>
           )}

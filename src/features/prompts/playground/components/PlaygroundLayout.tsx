@@ -20,6 +20,8 @@ import { DeployModal } from "./DeployModal";
 import { PromptMoveModal } from "../../library/components/PromptMoveModal";
 import { PromptVersionCompareModal } from "@/components/PromptVersionCompareModal";
 import { PromptParameters } from "../hooks/usePlayground";
+import EmptyState from "@/components/EmptyState";
+import { Button } from "@/components/ui";
 
 interface PlaygroundLayoutProps {
   workspaceId: string;
@@ -175,7 +177,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   }, [versionsList, selectedVersionNum]);
 
   return (
-    <div className="flex flex-col md:flex-row h-full min-h-screen bg-slate-50 text-slate-900 font-sans overflow-hidden">
+    <div className="flex min-h-full flex-col bg-slate-50 font-sans text-slate-900 lg:h-full lg:flex-row lg:overflow-hidden">
       <PlaygroundSidebar
         folders={folders}
         promptsByFolder={promptsByFolder}
@@ -192,26 +194,24 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
         onNewPrompt={onNewPromptImmediate}
       />
 
-      <main className="flex-1 min-w-0 w-full flex flex-col h-full overflow-y-auto custom-scrollbar p-4 sm:p-6 space-y-6 bg-white">
+      <main className="custom-scrollbar flex w-full min-w-0 flex-1 flex-col px-4 py-5 sm:px-6 sm:py-6 lg:h-full lg:overflow-y-auto lg:px-8">
         {!selectedPromptId ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-12 text-center space-y-3 max-w-sm mx-auto">
-            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
-              <FileText className="w-5 h-5" />
+          <div className="flex flex-1 items-center justify-center py-6">
+            <div className="w-full max-w-md">
+              <EmptyState
+                icon={FileText}
+                title="No Prompt Selected"
+                description="Select an existing prompt from the left navigation or create a new prompt to get started."
+                action={
+                  <Button variant="primary" icon={Plus} onClick={onNewPromptImmediate}>
+                    Create New Prompt
+                  </Button>
+                }
+              />
             </div>
-            <h3 className="text-sm font-semibold text-slate-900">No Prompt Selected</h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Select an existing prompt from the left navigation or create a new prompt to get started.
-            </p>
-            <button
-              type="button"
-              onClick={onNewPromptImmediate}
-              className="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold transition shadow-2xs flex items-center gap-1.5 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" /> Create New Prompt
-            </button>
           </div>
         ) : (
-          <div className="space-y-6 w-full">
+          <div className="mx-auto w-full max-w-5xl space-y-5">
             {/* Canary Deployment Status Banner */}
             {activeCanary && (
               <CanaryDeploymentBanner
@@ -249,14 +249,14 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
               }}
             />
 
-            <div className="border-b border-slate-200 flex items-center gap-6 text-xs font-medium w-full">
+            <div className="flex w-full gap-5 overflow-x-auto border-b border-slate-200 hide-scrollbar">
               <button
                 type="button"
                 onClick={() => setActiveTab("prompt")}
-                className={`pb-2.5 transition relative cursor-pointer ${
+                className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors ${
                   activeTab === "prompt"
-                    ? "text-slate-800 font-semibold border-b-2 border-slate-700"
-                    : "text-slate-500 hover:text-slate-900 font-normal"
+                    ? "border-slate-900 text-slate-900"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
                 Prompt
@@ -264,10 +264,10 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab("versions")}
-                className={`pb-2.5 transition relative cursor-pointer ${
+                className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors ${
                   activeTab === "versions"
-                    ? "text-slate-800 font-semibold border-b-2 border-slate-700"
-                    : "text-slate-500 hover:text-slate-900 font-normal"
+                    ? "border-slate-900 text-slate-900"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
                 Versions ({versionsList.length})
@@ -275,10 +275,10 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab("variables")}
-                className={`pb-2.5 transition relative cursor-pointer ${
+                className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors ${
                   activeTab === "variables"
-                    ? "text-slate-800 font-semibold border-b-2 border-slate-700"
-                    : "text-slate-500 hover:text-slate-900 font-normal"
+                    ? "border-slate-900 text-slate-900"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
                 Variables ({variablesSchema.length})
@@ -286,10 +286,10 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab("test")}
-                className={`pb-2.5 transition relative cursor-pointer ${
+                className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors ${
                   activeTab === "test"
-                    ? "text-slate-800 font-semibold border-b-2 border-slate-700"
-                    : "text-slate-500 hover:text-slate-900 font-normal"
+                    ? "border-slate-900 text-slate-900"
+                    : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
                 Execution & Test

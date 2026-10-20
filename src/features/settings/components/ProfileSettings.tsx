@@ -63,7 +63,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({
           <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700">
             <KeyRound className="h-4 w-4 text-slate-400" /> Personal API Key
           </label>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2">
             <div className="flex h-9 min-w-0 flex-1 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 font-mono text-[13px] text-slate-800">
               <span className="truncate select-all">{showKey ? syncApiKey : "sync_ak_" + "•".repeat(32)}</span>
             </div>
