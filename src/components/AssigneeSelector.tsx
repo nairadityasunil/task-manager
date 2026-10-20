@@ -68,7 +68,7 @@ export default function AssigneeSelector({
         aria-haspopup="listbox"
         className={cn(
           'flex h-9 w-full min-w-0 items-center gap-2 rounded-lg border bg-white pl-1.5 pr-2 text-left shadow-sm transition-colors',
-          isOpen ? 'border-slate-900 ring-4 ring-slate-900/10' : 'border-slate-300 hover:border-slate-400',
+          isOpen ? 'border-emerald-500 ring-4 ring-emerald-500/15' : 'border-slate-300 hover:border-slate-400',
           disabled || loading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
         )}
       >

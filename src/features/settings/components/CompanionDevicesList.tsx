@@ -54,7 +54,7 @@ export const CompanionDevicesList: React.FC<CompanionDevicesListProps> = ({
           </>
         }
       />
-      <div className="space-y-4 p-4 sm:p-5">
+      <div className="space-y-4 p-4">
         {/* Device Stats */}
         <div className="flex flex-wrap items-center justify-between gap-2 text-[13px] text-slate-600">
           <span>

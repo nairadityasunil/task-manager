@@ -20,7 +20,7 @@ import {
 import noDataImg from '@/assets/no_data.png';
 import PageHeader from '@/components/PageHeader';
 import EmptyState from '@/components/EmptyState';
-import { Badge, Button, Card, selectClass } from '@/components/ui';
+import { Badge, Button, Card, IconTile, selectClass, type TileTone } from '@/components/ui';
 import type { Project } from '@/types/project';
 import {
   useSemanticIntelligence,
@@ -173,6 +173,7 @@ export default function SemanticIntelligencePage({
     <div className="min-h-full bg-slate-50 font-sans">
       <PageHeader
         icon={Sparkles}
+        tone="violet"
         title="Semantic Intelligence"
         description="Governed metrics, anomalies and trends across your projects."
       >
@@ -226,7 +227,7 @@ export default function SemanticIntelligencePage({
         </div>
       </PageHeader>
 
-      <div className="space-y-5 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <div className="space-y-4 px-3 py-4 sm:px-5 lg:px-6">
         {intel.error ? (
           <div className="flex items-center gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
             <AlertTriangle className="shrink-0" size={16} />
@@ -235,13 +236,13 @@ export default function SemanticIntelligencePage({
         ) : null}
 
         {/* Top Metric Cards */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            { metric: 'project_health_score' as MetricName, icon: Gauge, hint: healthStatus.replace(/_/g, ' '), color: 'var(--color-slate-700)' },
-            { metric: 'task_completion_rate' as MetricName, icon: CheckCircle2, hint: `${getMetricNumber(completion, ['completed'])} completed`, color: 'var(--color-emerald-600)' },
-            { metric: 'overdue_tasks' as MetricName, icon: AlertTriangle, hint: 'open past due date', color: 'var(--color-red-600)' },
-            { metric: 'stale_tasks' as MetricName, icon: Clock3, hint: 'not updated in 7 days', color: 'var(--color-amber-600)' }
-          ].map(({ metric, icon: Icon, hint, color }) => {
+            { metric: 'project_health_score' as MetricName, icon: Gauge, hint: healthStatus.replace(/_/g, ' '), color: 'var(--color-violet-600)', tone: 'violet' as TileTone },
+            { metric: 'task_completion_rate' as MetricName, icon: CheckCircle2, hint: `${getMetricNumber(completion, ['completed'])} completed`, color: 'var(--color-emerald-600)', tone: 'emerald' as TileTone },
+            { metric: 'overdue_tasks' as MetricName, icon: AlertTriangle, hint: 'open past due date', color: 'var(--color-red-600)', tone: 'rose' as TileTone },
+            { metric: 'stale_tasks' as MetricName, icon: Clock3, hint: 'not updated in 7 days', color: 'var(--color-amber-600)', tone: 'amber' as TileTone }
+          ].map(({ metric, icon: Icon, hint, color, tone }) => {
             const result = intel.resultByMetric.get(metric);
             const definition = intel.metricByName.get(metric);
             const scoreValue = typeof getValueRecord(result).score === 'number' ? (getValueRecord(result).score as number) : null;
@@ -259,13 +260,11 @@ export default function SemanticIntelligencePage({
                   {scoreValue !== null ? (
                     <ScoreRing color={color} score={scoreValue} size={48} stroke={4} />
                   ) : (
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
-                      <Icon size={17} />
-                    </div>
+                    <IconTile icon={Icon} size="md" tone={tone} />
                   )}
                 </div>
 
-                <div className="mt-4 flex items-end justify-between gap-3">
+                <div className="mt-3 flex items-end justify-between gap-3">
                   <div className="min-w-0 space-y-1.5">
                     <p className="m-0 text-xs text-slate-500 first-letter:uppercase">{hint}</p>
                     <div className="flex flex-wrap items-center gap-1.5">
@@ -300,7 +299,7 @@ export default function SemanticIntelligencePage({
         {intel.reasoning && (
           <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="flex flex-col xl:flex-row">
-              <div className="min-w-0 flex-1 space-y-5 p-4 sm:p-5">
+              <div className="min-w-0 flex-1 space-y-4 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     {sectionIcon(Sparkles)}
@@ -350,7 +349,7 @@ export default function SemanticIntelligencePage({
                 </div>
               </div>
 
-              <div className="w-full border-t border-slate-200 bg-slate-50/60 p-4 sm:p-5 xl:w-80 xl:border-l xl:border-t-0">
+              <div className="w-full border-t border-slate-200 bg-slate-50/60 p-4 xl:w-80 xl:border-l xl:border-t-0">
                 <p className="m-0 mb-4 text-sm font-medium text-slate-700">Intelligence Vectors</p>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
                   {[
@@ -379,7 +378,7 @@ export default function SemanticIntelligencePage({
         )}
 
         {/* Intelligence Grid */}
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-2">
           {/* Anomalies Panel */}
           <Card>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3.5 sm:px-5">
@@ -390,7 +389,7 @@ export default function SemanticIntelligencePage({
               <span className="text-xs text-slate-500">Threshold: 2.5σ</span>
             </div>
 
-            <div className="space-y-3 p-4 sm:p-5">
+            <div className="space-y-3 p-4">
               {intel.anomalies.length === 0 ? (
                 <EmptyState
                   compact
@@ -423,7 +422,7 @@ export default function SemanticIntelligencePage({
               <span className="text-xs text-slate-500">Causal Vectors</span>
             </div>
 
-            <div className="space-y-3 p-4 sm:p-5">
+            <div className="space-y-3 p-4">
               {intel.trends.length === 0 ? (
                 <EmptyState
                   compact
@@ -467,7 +466,7 @@ export default function SemanticIntelligencePage({
               </Badge>
             </div>
 
-            <div className="grid gap-4 p-4 sm:p-5 md:grid-cols-3">
+            <div className="grid gap-4 p-4 md:grid-cols-3">
               {intel.explanation.factors.map((factor) => (
                 <div key={factor.label} className="space-y-2.5 rounded-lg border border-slate-200 p-4">
                   <FactorBar label={factor.label} share={Math.round(factor.weight * 100)} />
@@ -480,7 +479,7 @@ export default function SemanticIntelligencePage({
 
         {/* Predictive Simulation & Counterfactual Interventions */}
         <Card>
-          <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4">
             <div className="flex min-w-0 items-center gap-3">
               {sectionIcon(Bot, 'emerald')}
               <div className="min-w-0">
@@ -528,7 +527,7 @@ export default function SemanticIntelligencePage({
             <span className="text-xs text-slate-500">{perUserRows.length} active contributors</span>
           </div>
 
-          <div className="p-4 sm:p-5">
+          <div className="p-4">
             {perUserRows.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-6 text-center">
                 <img alt="No activity" className="mb-3 w-24 opacity-50" src={noDataImg} />

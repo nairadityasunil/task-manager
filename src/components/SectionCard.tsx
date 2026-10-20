@@ -9,7 +9,7 @@ function SectionCard({ children, className, ...props }: SectionCardProps): JSX.E
   return (
     <section
       {...props}
-      className={['relative rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5', className ?? ''].join(' ')}
+      className={['relative rounded-xl border border-slate-200 bg-white p-4 shadow-[var(--shadow-card)]', className ?? ''].join(' ')}
     >
       {children}
     </section>

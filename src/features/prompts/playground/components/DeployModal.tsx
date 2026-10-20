@@ -100,7 +100,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({
                   onClick={() => setDeployType("development")}
                   className={`p-3.5 rounded-lg border transition cursor-pointer flex items-start gap-3 ${
                     deployType === "development"
-                      ? "border-slate-900 bg-slate-50 text-slate-900"
+                      ? "border-emerald-500 bg-emerald-50/60 text-slate-900"
                       : "border-slate-200 hover:bg-slate-50 text-slate-700"
                   }`}
                 >
@@ -118,7 +118,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({
                   onClick={() => setDeployType("staging")}
                   className={`p-3.5 rounded-lg border transition cursor-pointer flex items-start gap-3 ${
                     deployType === "staging"
-                      ? "border-slate-900 bg-slate-50 text-slate-900"
+                      ? "border-emerald-500 bg-emerald-50/60 text-slate-900"
                       : "border-slate-200 hover:bg-slate-50 text-slate-700"
                   }`}
                 >
@@ -136,7 +136,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({
                   onClick={() => setDeployType("canary")}
                   className={`p-3.5 rounded-lg border transition cursor-pointer flex items-start gap-3 ${
                     deployType === "canary"
-                      ? "border-slate-900 bg-slate-50 text-slate-900"
+                      ? "border-emerald-500 bg-emerald-50/60 text-slate-900"
                       : "border-slate-200 hover:bg-slate-50 text-slate-700"
                   }`}
                 >
@@ -156,7 +156,7 @@ export const DeployModal: React.FC<DeployModalProps> = ({
                   onClick={() => setDeployType("direct")}
                   className={`p-3.5 rounded-lg border transition cursor-pointer flex items-start gap-3 ${
                     deployType === "direct"
-                      ? "border-slate-900 bg-slate-50 text-slate-900"
+                      ? "border-emerald-500 bg-emerald-50/60 text-slate-900"
                       : "border-slate-200 hover:bg-slate-50 text-slate-700"
                   }`}
                 >

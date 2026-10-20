@@ -329,7 +329,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
                 onClick={() => setEditorMode("blocks")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                   editorMode === "blocks"
-                    ? "bg-slate-900 text-white shadow-sm"
+                    ? "bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-200"
                     : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
@@ -340,7 +340,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
                 onClick={() => setEditorMode("raw")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                   editorMode === "raw"
-                    ? "bg-slate-900 text-white shadow-sm"
+                    ? "bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-200"
                     : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
@@ -547,7 +547,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-black disabled:opacity-50 text-white text-sm font-semibold shadow-md shadow-slate-900/20 transition flex items-center gap-2"
+            className="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-sm font-semibold shadow-sm transition flex items-center gap-2"
           >
             {isSubmitting ? "Saving..." : existingPrompt ? "Save & Create Version" : "Create Prompt"}
           </button>

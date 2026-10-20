@@ -21,10 +21,10 @@ const Skeleton: React.FC<SkeletonProps> = ({
 
   return (
     <div
-      className={`relative overflow-hidden bg-slate-100 ${variantClasses[variant]} ${className}`}
+      className={`relative overflow-hidden bg-slate-200/60 ${variantClasses[variant]} ${className}`}
       style={{ width, height }}
     >
-      <div className="absolute inset-0 animate-shimmer" />
+      <div className="absolute inset-0 -translate-x-full animate-shimmer" />
     </div>
   );
 };

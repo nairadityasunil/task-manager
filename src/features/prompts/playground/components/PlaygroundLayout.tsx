@@ -194,7 +194,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
         onNewPrompt={onNewPromptImmediate}
       />
 
-      <main className="custom-scrollbar flex w-full min-w-0 flex-1 flex-col px-4 py-5 sm:px-6 sm:py-6 lg:h-full lg:overflow-y-auto lg:px-8">
+      <main className="custom-scrollbar flex w-full min-w-0 flex-1 flex-col px-3 py-4 sm:px-5 lg:h-full lg:overflow-y-auto lg:px-6">
         {!selectedPromptId ? (
           <div className="flex flex-1 items-center justify-center py-6">
             <div className="w-full max-w-md">
@@ -211,7 +211,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
             </div>
           </div>
         ) : (
-          <div className="mx-auto w-full max-w-5xl space-y-5">
+          <div className="mx-auto w-full max-w-5xl space-y-4">
             {/* Canary Deployment Status Banner */}
             {activeCanary && (
               <CanaryDeploymentBanner
@@ -255,7 +255,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
                 onClick={() => setActiveTab("prompt")}
                 className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors ${
                   activeTab === "prompt"
-                    ? "border-slate-900 text-slate-900"
+                    ? "border-emerald-500 text-slate-900"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -266,7 +266,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
                 onClick={() => setActiveTab("versions")}
                 className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors ${
                   activeTab === "versions"
-                    ? "border-slate-900 text-slate-900"
+                    ? "border-emerald-500 text-slate-900"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -277,7 +277,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
                 onClick={() => setActiveTab("variables")}
                 className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors ${
                   activeTab === "variables"
-                    ? "border-slate-900 text-slate-900"
+                    ? "border-emerald-500 text-slate-900"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -288,7 +288,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
                 onClick={() => setActiveTab("test")}
                 className={`-mb-px shrink-0 cursor-pointer whitespace-nowrap border-b-2 pb-2.5 pt-1 text-sm font-medium transition-colors ${
                   activeTab === "test"
-                    ? "border-slate-900 text-slate-900"
+                    ? "border-emerald-500 text-slate-900"
                     : "border-transparent text-slate-500 hover:text-slate-800"
                 }`}
               >

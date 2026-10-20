@@ -24,7 +24,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 
 import type { Guide, GuideStatus, GuideType } from '@/lib/guides/types';
-import { Badge, Button, cn, inputClass, type BadgeTone } from '@/components/ui';
+import { Badge, Button, IconTile, cn, inputClass, type BadgeTone } from '@/components/ui';
 
 export type ExperienceKind = 'guides' | 'surveys' | 'checklists';
 type StatusFilter = 'ALL' | GuideStatus;
@@ -173,7 +173,7 @@ function ExperienceLibrary({
             <button
               aria-selected={filter === entry}
               className={`flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors ${
-                filter === entry ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
+                filter === entry ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
               }`}
               key={entry}
               onClick={() => setFilter(entry)}
@@ -193,7 +193,7 @@ function ExperienceLibrary({
       {loading && experiences.length === 0 ? (
         <ul className="m-0 list-none divide-y divide-slate-100 p-0" aria-busy="true">
           {[0, 1, 2].map((row) => (
-            <li className="flex items-center gap-4 px-4 py-4 sm:px-5" key={row}>
+            <li className="flex items-center gap-4 px-4 py-3" key={row}>
               <div className="h-10 w-10 animate-pulse rounded-lg bg-slate-100" />
               <div className="flex-1 space-y-2">
                 <div className="h-3.5 w-1/3 animate-pulse rounded bg-slate-100" />
@@ -203,18 +203,16 @@ function ExperienceLibrary({
           ))}
         </ul>
       ) : visible.length === 0 ? (
-        <div className="flex flex-col items-center px-6 py-12 text-center sm:py-14">
-          <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
-            {experiences.length === 0 ? <ClipboardList size={20} /> : <Inbox size={20} />}
-          </div>
-          <p className="m-0 mt-4 text-[15px] font-semibold text-slate-900">
+        <div className="flex flex-col items-center px-6 py-10 text-center">
+          <IconTile icon={experiences.length === 0 ? ClipboardList : Inbox} size="lg" tone={experiences.length === 0 ? 'emerald' : 'slate'} />
+          <p className="m-0 mt-3 text-sm font-semibold text-slate-900">
             {experiences.length === 0 ? `No ${copy.plural.toLowerCase()} yet` : 'Nothing matches these filters'}
           </p>
           <p className="m-0 mt-1 max-w-sm text-sm text-slate-500">
             {experiences.length === 0 ? copy.empty : 'Try a different search or status.'}
           </p>
           {experiences.length === 0 && (
-            <Button className="mt-5" icon={Plus} onClick={onCreate} variant="primary">
+            <Button className="mt-4" icon={Plus} onClick={onCreate} variant="primary">
               Create your first {copy.singular.toLowerCase()}
             </Button>
           )}
@@ -232,14 +230,12 @@ function ExperienceLibrary({
             const busy = pendingId === experience.id;
 
             return (
-              <li className={`group flex flex-wrap items-start gap-x-3 gap-y-3 px-4 py-4 transition-colors hover:bg-slate-50/70 sm:flex-nowrap sm:items-center sm:gap-x-4 sm:px-5 ${busy ? 'opacity-60' : ''}`} key={experience.id}>
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600">
-                  <TypeIcon size={18} />
-                </div>
+              <li className={`group flex flex-wrap items-start gap-x-3 gap-y-2 px-4 py-3 transition-colors duration-150 hover:bg-slate-50/70 sm:flex-nowrap sm:items-center sm:gap-x-4 ${busy ? 'opacity-60' : ''}`} key={experience.id}>
+                <IconTile icon={TypeIcon} size="lg" tone={kind === 'surveys' ? 'violet' : kind === 'checklists' ? 'emerald' : 'amber'} />
 
                 <button className="min-w-0 flex-1 text-left" onClick={() => onEdit(experience)} type="button">
                   <div className="flex min-w-0 items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-slate-900 group-hover:text-slate-700">{experience.title}</span>
+                    <span className="truncate text-sm font-semibold text-slate-900 transition-colors group-hover:text-emerald-700">{experience.title}</span>
                     <Badge className="shrink-0" dot tone={statusMeta.tone}>
                       {statusMeta.label}
                     </Badge>

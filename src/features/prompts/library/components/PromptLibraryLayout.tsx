@@ -138,6 +138,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
     <div className="min-h-full bg-slate-50 font-sans text-slate-900">
       <PageHeader
         icon={Sparkles}
+        tone="indigo"
         title={
           <span className="flex flex-wrap items-center gap-2">
             Prompt Library
@@ -173,7 +174,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
         }
       />
 
-      <div className="space-y-5 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <div className="space-y-4 px-3 py-4 sm:px-5 lg:px-6">
       {errorMessage && (
         <div className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] text-red-700">
           <div className="flex items-center gap-2">
@@ -249,7 +250,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
           formatTimeAgo={formatTimeAgo}
         />
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
             {selectedFolderId !== null ? (
               <div className="flex min-w-0 flex-wrap items-center gap-3">

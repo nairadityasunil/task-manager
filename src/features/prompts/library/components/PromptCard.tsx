@@ -43,7 +43,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
   return (
     <div
       onClick={() => onOpenPlayground(prompt._id, prompt.version)}
-      className="group relative flex min-w-0 cursor-pointer flex-col justify-between gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md sm:p-5"
+      className="group relative flex min-w-0 cursor-pointer flex-col justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-[var(--shadow-card)] card-hover"
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-2">

@@ -20,6 +20,12 @@
 
   --card-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 
+  /* Brand accent (emerald, matches the logo) */
+  --brand: #058560;
+  --brand-strong: #047857;
+  --brand-soft: #ecfdf5;
+  --ring-brand: rgba(16, 185, 129, 0.35);
+
   --scrollbar-thumb: #cbd5e1;
   --scrollbar-thumb-hover: #94a3b8;
 
@@ -77,6 +83,25 @@
   --color-slate-900: var(--color-slate-900-val);
   --color-slate-950: var(--color-slate-950-val);
 
+  /* Brand accent scale (emerald). `brand-*` utilities read from here. */
+  --color-brand-50:  #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-200: #a7f3d0;
+  --color-brand-300: #6ee7b7;
+  --color-brand-400: #34d399;
+  --color-brand-500: #10b981;
+  --color-brand-600: #058560; /* emerald, deepened for 4.5:1 contrast with white text */
+  --color-brand-700: #047857;
+  --color-brand-800: #065f46;
+  --color-brand-900: #064e3b;
+
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-card-hover: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+
+  --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+  --animate-fade-in: fade-in 0.18s ease-out both;
+  --animate-rise-in: rise-in 0.22s ease-out both;
+
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 }
@@ -96,13 +121,14 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3, h4 { letter-spacing: -0.011em; font-weight: 600; }
+  h1, h2, h3, h4 { letter-spacing: -0.015em; font-weight: 600; }
   h1 { font-size: 1.25rem; }
   h2 { font-size: 1.125rem; }
   h3 { font-size: 0.9375rem; }
   h4 { font-size: 0.875rem; }
 
-  :focus-visible { outline: 2px solid #0f172a; outline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  ::selection { background: #a7f3d0; color: #022c22; }
   button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline-offset: 1px; }
 
   button, a { cursor: pointer; }
@@ -118,40 +144,40 @@
   .card {
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: 12px;
     box-shadow: var(--card-shadow);
   }
 
   .input-base {
     width: 100%;
-    border-radius: 4px;
+    border-radius: 8px;
     background: var(--bg-surface);
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-heavy);
     padding: 0.4rem 0.625rem;
     font-size: 0.8rem;
     color: var(--text-primary);
     outline: none;
     transition: border-color 0.15s;
   }
-  .input-base:focus { border-color: #64748b; }
+  .input-base:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--ring-brand); }
 
   .btn-primary {
     display: inline-flex; align-items: center; gap: 0.375rem;
     padding: 0.4rem 0.875rem;
-    border-radius: 4px;
-    background: #334155;
+    border-radius: 8px;
+    background: var(--brand);
     color: #fff;
     font-size: 0.8rem;
     font-weight: 500;
-    border: 1px solid #334155;
+    border: 1px solid var(--brand-strong);
     transition: background 0.15s;
   }
-  .btn-primary:hover { background: #1e293b; }
+  .btn-primary:hover { background: var(--brand-strong); }
 
   .btn-secondary {
     display: inline-flex; align-items: center; gap: 0.375rem;
     padding: 0.4rem 0.875rem;
-    border-radius: 4px;
+    border-radius: 8px;
     background: var(--bg-surface);
     color: var(--text-secondary);
     font-size: 0.8rem;
@@ -164,7 +190,7 @@
   .badge {
     display: inline-flex; align-items: center;
     padding: 1px 7px;
-    border-radius: 3px;
+    border-radius: 999px;
     font-size: 0.7rem;
     font-weight: 500;
     border: 1px solid transparent;
@@ -187,6 +213,35 @@
   .hide-scrollbar::-webkit-scrollbar { display: none; }
 
   .divider { height: 1px; background: var(--border); }
+
+  /* Interactive surface: lifts slightly on hover. */
+  .card-hover { transition: box-shadow 150ms ease, border-color 150ms ease, transform 150ms ease; }
+  .card-hover:hover { box-shadow: var(--shadow-card-hover); border-color: var(--color-slate-300); }
+
+  /* Very subtle tinted band used behind page headers. */
+  .header-band {
+    background:
+      radial-gradient(1200px 120px at 0% 0%, rgba(16, 185, 129, 0.06), transparent 60%),
+      #ffffff;
+  }
+
+  .custom-scrollbar { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) transparent; }
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgba(148, 163, 184, 0.4) transparent; }
+}
+
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+/* `animate-in` is used by a few overlays; give it a light fade. */
+.animate-in { animation: fade-in 0.18s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer, .animate-in, .animate-rise-in, .animate-fade-in { animation: none !important; }
 }
 
 /* Indeterminate top progress bar (GlobalLoadingSpinner) */

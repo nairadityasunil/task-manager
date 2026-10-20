@@ -87,11 +87,11 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   ];
 
   return (
-    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-5 font-sans lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-8">
+    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 font-sans lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-6">
       <h2 className="sr-only">System & Account Settings</h2>
       {/* Section navigation: scrolling tabs on phones/tablets, left rail on desktop */}
-      <nav aria-label="Settings sections" className="-mx-4 border-b border-slate-200 px-4 sm:mx-0 sm:px-0 lg:border-b-0">
-        <div className="-mb-px flex gap-5 overflow-x-auto hide-scrollbar lg:sticky lg:top-0 lg:mb-0 lg:flex-col lg:gap-0.5 lg:overflow-visible">
+      <nav aria-label="Settings sections" className="-mx-3 border-b border-slate-200 px-3 sm:mx-0 sm:px-0 lg:border-b-0">
+        <div className="-mb-px flex gap-4 overflow-x-auto hide-scrollbar lg:sticky lg:top-0 lg:mb-0 lg:flex-col lg:gap-0.5 lg:overflow-visible">
           {navItems.map(({ id, label, icon: Icon }) => {
             const active = activeTab === id;
             return (
@@ -100,20 +100,20 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
                 type="button"
                 onClick={() => setActiveTab(id)}
                 aria-current={active ? "page" : undefined}
-                className={`flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap border-b-2 pb-3 pt-1 text-sm font-medium transition-colors lg:h-9 lg:rounded-lg lg:border-b-0 lg:px-3 lg:py-0 ${
+                className={`flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap border-b-2 pb-2.5 pt-1 text-[13px] font-medium transition-colors duration-150 lg:h-8 lg:rounded-lg lg:border-b-0 lg:px-3 lg:py-0 ${
                   active
-                    ? "border-slate-900 text-slate-900 lg:bg-white lg:shadow-sm lg:ring-1 lg:ring-slate-200"
-                    : "border-transparent text-slate-500 hover:text-slate-900 lg:hover:bg-slate-100"
+                    ? "border-emerald-500 text-slate-900 lg:bg-white lg:shadow-sm lg:ring-1 lg:ring-slate-200"
+                    : "border-transparent text-slate-500 hover:text-slate-900 lg:hover:bg-slate-200/50"
                 }`}
               >
-                <Icon className={`h-4 w-4 ${active ? "text-slate-700" : "text-slate-400"}`} /> {label}
+                <Icon className={`h-4 w-4 ${active ? "text-emerald-600" : "text-slate-400"}`} /> {label}
               </button>
             );
           })}
         </div>
       </nav>
 
-      <div className="min-w-0 space-y-5">
+      <div className="min-w-0 space-y-4">
       {activeTab === "profile" && (
         <ProfileSettings
           user={user}

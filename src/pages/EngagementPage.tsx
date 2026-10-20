@@ -9,7 +9,8 @@ import {
   Rocket,
   Save,
   Sparkles,
-  UsersRound
+  UsersRound,
+  PencilLine
 } from 'lucide-react';
 
 import {
@@ -37,7 +38,7 @@ import {
 import { listIntegrations, type SdkIntegration } from '@/lib/sdk-integrations/api';
 import { useConfirm } from '@/context/ConfirmationContext';
 import PageHeader from '@/components/PageHeader';
-import { Badge, Button, Field, Tabs, cn, inputClass, selectClass } from '@/components/ui';
+import { Badge, Button, Field, StatCard, Tabs, cn, inputClass, selectClass } from '@/components/ui';
 import {
   ContentEditor,
   EditorDialog,
@@ -216,6 +217,7 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
           title="Engagement"
           description="Guides, surveys, checklists, targeting, and behavior analytics"
           icon={Sparkles}
+          tone="amber"
           actions={integrations.length > 0 && !propSdkIntegrationId ? (
             <div className="w-full sm:w-64">
               <select
@@ -248,12 +250,12 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
       )}
 
 
-      <div className={hideHeader ? '' : 'grid grid-cols-[minmax(0,1fr)] gap-4 px-4 py-5 sm:gap-5 sm:px-6 sm:py-6 lg:px-8'}>
+      <div className={hideHeader ? '' : 'grid grid-cols-[minmax(0,1fr)] gap-4 px-3 py-4 sm:px-5 lg:px-6'}>
         {!hideHeader && (
-          <div className="grid grid-cols-3 gap-3">
-            <Metric label="Live" value={totals.live} />
-            <Metric label="Drafts" value={totals.drafts} />
-            <Metric label="MTU" value={analytics?.mtu.users ?? 0} />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <StatCard hint="Showing to users now" hintTone={totals.live ? 'success' : 'neutral'} icon={Radio} label="Live" tone="emerald" value={totals.live} />
+            <StatCard hint="Not published yet" icon={PencilLine} label="Drafts" tone="amber" value={totals.drafts} />
+            <StatCard hint="Monthly tracked users" icon={UsersRound} label="MTU" tone="sky" value={new Intl.NumberFormat().format(analytics?.mtu.users ?? 0)} />
           </div>
         )}
         {(tab === 'guides' || tab === 'surveys' || tab === 'checklists') && (
@@ -466,14 +468,14 @@ function AnalyticsDashboard({ analytics }: { analytics: GuideAnalyticsSummary | 
   const maxEvent = Math.max(1, ...analytics.events.map((event) => event.count));
 
   return (
-    <div className="grid gap-4 sm:gap-5">
+    <div className="grid gap-4">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard label="Impressions" value={analytics.guides.impressions} />
         <MetricCard label="Completions" value={analytics.guides.completions} />
         <MetricCard label="Dismissals" value={analytics.guides.dismissals} />
         <MetricCard label="NPS" value={Math.round(analytics.surveys.nps)} />
       </div>
-      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[1.4fr_1fr]">
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-100 px-4 py-3.5 sm:px-5">
             <h3 className="m-0 text-[15px] font-semibold text-slate-900">Engagement Events</h3>
@@ -482,7 +484,7 @@ function AnalyticsDashboard({ analytics }: { analytics: GuideAnalyticsSummary | 
           {analytics.events.length === 0 ? (
             <p className="m-0 px-4 py-6 text-sm text-slate-500 sm:px-5">No engagement events yet.</p>
           ) : (
-            <ul className="m-0 grid list-none gap-3 p-4 sm:p-5">
+            <ul className="m-0 grid list-none gap-3 p-4">
               {analytics.events.map((event) => (
                 <li className="grid gap-1.5" key={event.eventName}>
                   <div className="flex items-baseline justify-between gap-3 text-[13px]">
@@ -519,15 +521,6 @@ function AnalyticsDashboard({ analytics }: { analytics: GuideAnalyticsSummary | 
           </dl>
         </section>
       </div>
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: number }): JSX.Element {
-  return (
-    <div className="min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 shadow-sm sm:px-4">
-      <p className="m-0 truncate text-[13px] text-slate-500">{label}</p>
-      <p className="m-0 mt-1 text-xl font-semibold tracking-tight tabular-nums text-slate-900 sm:text-2xl">{new Intl.NumberFormat().format(value)}</p>
     </div>
   );
 }
@@ -755,8 +748,8 @@ function EditExperienceModal({
       onClose={onClose}
       title={`Edit ${experience.type === 'SURVEY' ? 'Survey' : experience.type === 'CHECKLIST' ? 'Checklist' : 'Guide'}`}
     >
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="grid min-w-0 gap-6">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid min-w-0 gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <TextInput label="Name" value={title} onChange={setTitle} />
             {mode !== 'checklist' ? (
@@ -901,8 +894,8 @@ function CreateExperienceModal({
       onClose={onClose}
       title={`Create ${noun}`}
     >
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="grid min-w-0 gap-6">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid min-w-0 gap-4">
           <TemplatePicker kind={type} onPick={applyTemplate} />
           <div className="grid gap-4 sm:grid-cols-2">
             <TextInput label="Name" value={title} onChange={setTitle} />

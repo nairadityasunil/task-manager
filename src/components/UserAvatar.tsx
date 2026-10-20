@@ -1,4 +1,5 @@
 import Tooltip from './Tooltip';
+import { avatarColor, initialsOf } from '@/components/ui';
 
 interface UserAvatarProps {
   name: string | null;
@@ -21,17 +22,13 @@ export default function UserAvatar({
   className = '',
   showTooltip = true
 }: UserAvatarProps) {
-  // Better initials logic: Take first initial of first and last word if available
-  const nameParts = (name || '').trim().split(' ').filter(p => p.length > 0);
-  const initials = nameParts.length >= 2 
-    ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
-    : (nameParts[0]?.[0] || email[0] || 'U').toUpperCase();
+  const initials = initialsOf(name, email);
 
   const fullName = name || email;
 
   const content = (
     <div 
-      className={`flex items-center justify-center shrink-0 rounded-full border border-slate-200 bg-slate-100 font-semibold text-slate-700 ${sizeClasses[size]} ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-full font-semibold ring-2 ring-white ${avatarColor(email || name)} ${sizeClasses[size]} ${className}`}
     >
       {initials}
     </div>

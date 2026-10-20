@@ -297,7 +297,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
   const subTabCls = (active: boolean) =>
     cn(
       "-mb-px shrink-0 border-b-2 pb-2.5 pt-1 text-sm font-medium capitalize transition-colors",
-      active ? "border-slate-900 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-800"
+      active ? "border-emerald-500 text-slate-900" : "border-transparent text-slate-500 hover:text-slate-800"
     );
   const sectionLabel = "text-[13px] font-medium text-slate-500";
 

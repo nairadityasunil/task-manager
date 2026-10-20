@@ -195,7 +195,7 @@ export default function ApprovalSection({ projectId, taskId, members }: Approval
                       type="checkbox"
                       checked={selectedApprovers.includes(member.userId)}
                       onChange={() => toggleApprover(member.userId)}
-                      className="h-4 w-4 rounded border-slate-300 accent-slate-900"
+                      className="h-4 w-4 rounded border-slate-300 accent-emerald-600"
                     />
                     <span className="min-w-0 flex-1 truncate text-sm text-slate-800">{member.user.name || member.user.email}</span>
                     {selectedApprovers.includes(member.userId) ? (

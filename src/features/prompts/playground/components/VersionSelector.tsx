@@ -58,7 +58,7 @@ export const VersionSelector: React.FC<VersionSelectorProps> = ({
               onClick={() => onSelectVersion(ver.version)}
               className={`flex cursor-pointer flex-col justify-between gap-2 rounded-lg border p-3 text-[13px] transition sm:flex-row sm:items-center ${
                 isSelected
-                  ? "border-slate-900 bg-slate-50 text-slate-900"
+                  ? "border-emerald-500 bg-emerald-50/60 text-slate-900"
                   : "border-slate-200 text-slate-700 hover:bg-slate-50"
               }`}
             >

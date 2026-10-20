@@ -135,7 +135,7 @@ function TaskCard({
     <input
       aria-label={`Select ${task.title}`}
       checked={isMultiSelected}
-      className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 accent-slate-900"
+      className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 accent-emerald-600"
       onChange={(e) => {
         e.stopPropagation();
         onToggleSelection(task.id);
@@ -278,7 +278,7 @@ function TaskCard({
     <article
       className={cn(
         'group relative flex flex-col gap-2.5 rounded-xl border bg-white p-3 shadow-sm transition-colors',
-        isSelected ? 'border-slate-900 ring-1 ring-slate-900' : breached ? 'border-red-200 hover:border-red-300' : 'border-slate-200 hover:border-slate-300',
+        isSelected ? 'border-emerald-500 ring-1 ring-emerald-500' : breached ? 'border-red-200 hover:border-red-300' : 'border-slate-200 hover:border-slate-300',
         isUpdating ? 'cursor-wait opacity-60' : 'cursor-pointer'
       )}
       onClick={() => !isUpdating && onSelect?.(task)}

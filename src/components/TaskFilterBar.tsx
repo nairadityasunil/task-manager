@@ -82,7 +82,7 @@ const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
           <button
             aria-pressed={assignedToMe}
             onClick={() => updateFilter('assigneeId', filters.assigneeId === user.id ? 'all' : user.id)}
-            className={buttonClass('secondary', 'md', assignedToMe ? '!border-slate-900 !bg-slate-900 !text-white hover:!bg-slate-800' : '')}
+            className={buttonClass('secondary', 'md', assignedToMe ? '!border-emerald-200 !bg-emerald-50 !text-emerald-800 hover:!bg-emerald-100' : '')}
             title="Assigned to Me"
             type="button"
           >
@@ -101,7 +101,7 @@ const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
           <Filter className="h-4 w-4" />
           <span>Filters</span>
           {activeFilterCount > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-900 px-1 text-[11px] font-medium text-white">
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-600 px-1 text-[11px] font-medium text-white">
               {activeFilterCount}
             </span>
           )}

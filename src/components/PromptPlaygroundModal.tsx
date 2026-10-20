@@ -438,7 +438,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition ${
                   isComparing
-                    ? "bg-slate-900 text-white border-slate-900"
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-300"
                     : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
                 }`}
               >
@@ -463,7 +463,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
             type="button"
             onClick={() => setMobileTab("config")}
             className={`flex-1 py-2.5 text-center transition ${
-              mobileTab === "config" ? "bg-white text-slate-900 border-b-2 border-slate-900 font-semibold" : "text-slate-600"
+              mobileTab === "config" ? "bg-white text-slate-900 border-b-2 border-emerald-500 font-semibold" : "text-slate-600"
             }`}
           >
             Configuration & Inputs
@@ -472,7 +472,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
             type="button"
             onClick={() => setMobileTab("output")}
             className={`flex-1 py-2.5 text-center transition ${
-              mobileTab === "output" ? "bg-white text-slate-900 border-b-2 border-slate-900 font-semibold" : "text-slate-600"
+              mobileTab === "output" ? "bg-white text-slate-900 border-b-2 border-emerald-500 font-semibold" : "text-slate-600"
             }`}
           >
             Execution Result {runHistory.length > 0 && `(${runHistory.length})`}
@@ -772,7 +772,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                     step="0.05"
                     value={temperature}
                     onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                    className="w-full accent-slate-900 cursor-pointer"
+                    className="w-full accent-emerald-600 cursor-pointer"
                   />
                 </div>
 
@@ -801,7 +801,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                     step="0.05"
                     value={topP}
                     onChange={(e) => setTopP(parseFloat(e.target.value))}
-                    className="w-full accent-slate-900 cursor-pointer"
+                    className="w-full accent-emerald-600 cursor-pointer"
                   />
                 </div>
               </div>
@@ -813,7 +813,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 type="button"
                 onClick={handleRunPlayground}
                 disabled={isExecuting}
-                className="w-full py-3 rounded-xl bg-slate-900 hover:bg-black disabled:opacity-50 text-white font-semibold text-sm shadow-md shadow-slate-900/20 transition flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-semibold text-sm shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isExecuting ? (
                   <>
@@ -1053,7 +1053,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                             onClick={() => setSelectedRunId(run.id)}
                             className={`p-2.5 rounded-lg border text-xs cursor-pointer flex items-center justify-between transition ${
                               isSelected
-                                ? "bg-slate-900 text-white border-slate-900 shadow-sm"
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-300 shadow-sm"
                                 : "bg-white text-slate-900 border-slate-200 hover:bg-slate-100"
                             }`}
                           >
@@ -1115,7 +1115,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 type="button"
                 onClick={handleSaveAsVersionSubmit}
                 disabled={isSaving}
-                className="px-4 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-semibold transition"
+                className="px-4 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition"
               >
                 {isSaving ? "Saving..." : "Confirm & Save Version"}
               </button>
@@ -1187,7 +1187,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 type="button"
                 onClick={handleSaveAsNewPromptSubmit}
                 disabled={isSaving}
-                className="px-4 py-1.5 rounded-lg bg-slate-900 hover:bg-black text-white text-xs font-semibold transition"
+                className="px-4 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold transition"
               >
                 {isSaving ? "Creating..." : "Create Prompt"}
               </button>

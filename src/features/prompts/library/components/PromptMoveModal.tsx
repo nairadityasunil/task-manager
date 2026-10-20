@@ -71,7 +71,7 @@ export const PromptMoveModal: React.FC<PromptMoveModalProps> = ({
               onClick={() => setTargetFolderId(null)}
               className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition ${
                 targetFolderId === null
-                  ? "bg-slate-50 border-slate-900 font-medium text-slate-900"
+                  ? "bg-emerald-50/60 border-emerald-500 font-medium text-slate-900"
                   : "border-slate-200 hover:bg-slate-50 text-slate-700"
               }`}
             >
@@ -97,7 +97,7 @@ export const PromptMoveModal: React.FC<PromptMoveModalProps> = ({
                   onClick={() => setTargetFolderId(f._id)}
                   className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition ${
                     isSelected
-                      ? "bg-slate-50 border-slate-900 font-medium text-slate-900"
+                      ? "bg-emerald-50/60 border-emerald-500 font-medium text-slate-900"
                       : "border-slate-200 hover:bg-slate-50 text-slate-700"
                   }`}
                 >

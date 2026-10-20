@@ -230,7 +230,7 @@ export const PromptVersionCompareModal: React.FC<PromptVersionCompareModalProps>
             onClick={() => setActiveTab("side-by-side")}
             className={`-mb-px shrink-0 whitespace-nowrap border-b-2 py-3 transition-colors ${
               activeTab === "side-by-side"
-                ? "border-slate-900 text-slate-900"
+                ? "border-emerald-500 text-slate-900"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -240,7 +240,7 @@ export const PromptVersionCompareModal: React.FC<PromptVersionCompareModalProps>
             onClick={() => setActiveTab("unified-diff")}
             className={`-mb-px shrink-0 whitespace-nowrap border-b-2 py-3 transition-colors ${
               activeTab === "unified-diff"
-                ? "border-slate-900 text-slate-900"
+                ? "border-emerald-500 text-slate-900"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -250,7 +250,7 @@ export const PromptVersionCompareModal: React.FC<PromptVersionCompareModalProps>
             onClick={() => setActiveTab("variables")}
             className={`-mb-px shrink-0 whitespace-nowrap border-b-2 py-3 transition-colors ${
               activeTab === "variables"
-                ? "border-slate-900 text-slate-900"
+                ? "border-emerald-500 text-slate-900"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -260,7 +260,7 @@ export const PromptVersionCompareModal: React.FC<PromptVersionCompareModalProps>
             onClick={() => setActiveTab("model-config")}
             className={`-mb-px shrink-0 whitespace-nowrap border-b-2 py-3 transition-colors ${
               activeTab === "model-config"
-                ? "border-slate-900 text-slate-900"
+                ? "border-emerald-500 text-slate-900"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >
@@ -270,7 +270,7 @@ export const PromptVersionCompareModal: React.FC<PromptVersionCompareModalProps>
             onClick={() => setActiveTab("test-exec")}
             className={`-mb-px shrink-0 whitespace-nowrap border-b-2 py-3 transition-colors ${
               activeTab === "test-exec"
-                ? "border-slate-900 text-slate-900"
+                ? "border-emerald-500 text-slate-900"
                 : "border-transparent text-slate-500 hover:text-slate-800"
             }`}
           >

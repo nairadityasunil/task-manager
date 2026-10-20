@@ -63,7 +63,7 @@ export interface TaskInspectorProps {
 const tabCls = (active: boolean) =>
   cn(
     '-mb-px border-b-2 pb-3 pt-3 text-sm font-medium transition-colors',
-    active ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800',
+    active ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800',
   );
 
 function PropertyRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -310,7 +310,7 @@ export function TaskInspector({
                                   <input
                                     aria-label={`Mark ${subtask.title} as ${subtask.status === 'DONE' ? 'not done' : 'done'}`}
                                     checked={subtask.status === 'DONE'}
-                                    className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded accent-slate-900"
+                                    className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded accent-emerald-600"
                                     disabled={!task.permissions.canUpdate}
                                     onChange={() =>
                                       void handleUpdateSubtaskStatus(

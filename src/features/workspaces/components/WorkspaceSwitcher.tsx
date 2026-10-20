@@ -34,7 +34,7 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
           onClick={() => setIsOpen((v) => !v)}
           className={`flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white pl-1.5 pr-2 text-[13px] font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/10 ${isOpen ? 'bg-slate-50' : ''}`}
         >
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-900 text-[11px] font-semibold text-white">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-emerald-600 text-[11px] font-semibold text-white">
             {isLoading ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : activeWorkspace ? (
@@ -72,7 +72,7 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
                     <div className="flex min-w-0 items-center gap-2.5">
                       <div
                         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-semibold ${
-                          isActive ? 'bg-slate-900 text-white' : 'border border-slate-200 bg-white text-slate-600'
+                          isActive ? 'bg-emerald-600 text-white' : 'border border-slate-200 bg-white text-slate-600'
                         }`}
                       >
                         {initial}

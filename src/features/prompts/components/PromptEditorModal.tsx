@@ -375,7 +375,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
             type="button"
             disabled={loading}
             onClick={handleSubmit}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white font-semibold text-xs transition shadow-2xs cursor-pointer disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition shadow-2xs cursor-pointer disabled:opacity-50"
           >
             {loading ? "Saving..." : existingPrompt ? "Update Prompt" : "Create Prompt"}
           </button>

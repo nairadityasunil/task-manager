@@ -86,7 +86,7 @@ function ProjectTeamPanel({
   return (
     <section className="grid">
       {/* Members */}
-      <div className="grid gap-3 p-4 sm:p-5">
+      <div className="grid gap-3 p-4">
         <div className="flex items-center justify-between gap-3">
           <h3 className="m-0 text-[15px] font-semibold text-slate-900">Project members</h3>
           <Badge>{members.length} {members.length === 1 ? 'member' : 'members'}</Badge>
@@ -160,7 +160,7 @@ function ProjectTeamPanel({
 
       {/* Pending invitations */}
       {canManageTeam && pendingInvitations.length > 0 ? (
-        <div className="grid gap-3 border-t border-slate-200 p-4 sm:p-5">
+        <div className="grid gap-3 border-t border-slate-200 p-4">
           <h3 className="m-0 text-[15px] font-semibold text-slate-900">
             Pending invitations <span className="font-normal text-slate-400">({pendingInvitations.length})</span>
           </h3>
@@ -201,7 +201,7 @@ function ProjectTeamPanel({
 
       {/* Invite */}
       {canManageTeam ? (
-        <form onSubmit={handleSendInvite} className="grid gap-3 border-t border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+        <form onSubmit={handleSendInvite} className="grid gap-3 border-t border-slate-200 bg-slate-50/70 p-4">
           <div>
             <h3 className="m-0 text-[15px] font-semibold text-slate-900">Add team member</h3>
             <p className="m-0 mt-0.5 text-[13px] text-slate-500">

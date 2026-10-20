@@ -373,7 +373,7 @@ export function ActivityHistoryPanel({
               id="legalHold"
               checked={legalHoldInput}
               onChange={(e) => setLegalHoldInput(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 accent-slate-900"
+              className="h-4 w-4 rounded border-slate-300 accent-emerald-600"
             />
             <span className="text-sm font-medium text-red-600">Enable Legal Hold</span>
           </label>

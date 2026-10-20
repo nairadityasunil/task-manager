@@ -115,10 +115,10 @@ export const ChatGPTIntegrationSettings: React.FC<ChatGPTIntegrationSettingsProp
   ];
 
   return (
-    <div className="space-y-5 font-sans">
+    <div className="space-y-4 font-sans">
       {/* Overview */}
       <Card>
-        <div className="flex flex-col justify-between gap-4 p-4 sm:p-5 md:flex-row md:items-center">
+        <div className="flex flex-col justify-between gap-4 p-4 md:flex-row md:items-center">
           <div className="max-w-2xl space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone="neutral">ChatGPT Custom GPT Integration</Badge>
@@ -143,7 +143,7 @@ export const ChatGPTIntegrationSettings: React.FC<ChatGPTIntegrationSettingsProp
       {/* Step-by-Step Setup Guide */}
       <Card>
         <CardHeader title="Setup & Configuration Guide" description="Follow these steps to connect ChatGPT Builder with Pristine Sync API." />
-        <ol className="m-0 grid list-none grid-cols-1 gap-3 p-4 sm:p-5 md:grid-cols-3">
+        <ol className="m-0 grid list-none grid-cols-1 gap-3 p-4 md:grid-cols-3">
           {steps.map((step) => (
             <li key={step.n} className="flex flex-col justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3.5">
               <div className="space-y-1.5">
@@ -168,7 +168,7 @@ export const ChatGPTIntegrationSettings: React.FC<ChatGPTIntegrationSettingsProp
           title="1. Custom GPT Instructions"
           description="Copy and paste these instructions into your Custom GPT's Instructions field."
         />
-        <div className="space-y-3 p-4 sm:p-5">
+        <div className="space-y-3 p-4">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div className="flex min-w-0 items-center gap-2">
               <BookOpen className="h-4 w-4 shrink-0 text-slate-400" />
@@ -220,7 +220,7 @@ export const ChatGPTIntegrationSettings: React.FC<ChatGPTIntegrationSettingsProp
           title="2. ChatGPT OpenAPI Action Schema"
           description="Copy and paste this schema into the Actions section of ChatGPT Builder."
         />
-        <div className="space-y-3 p-4 sm:p-5">
+        <div className="space-y-3 p-4">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div className="flex min-w-0 items-center gap-2">
               <FileCode className="h-4 w-4 shrink-0 text-slate-400" />

@@ -36,6 +36,7 @@ import {
 } from '@tanstack/react-table';
 
 import DataTable from '@/components/DataTable';
+import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
 import { Badge, Button, Field, inputClass } from '@/components/ui';
 
@@ -212,7 +213,7 @@ function EventSummaryBar({
 
   return (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-slate-200 bg-white px-4 py-4 sm:px-5">
-      <div className="flex gap-6">
+      <div className="flex gap-4">
         <div>
           <p className="m-0 text-[13px] text-slate-500">Events recorded</p>
           <p className="m-0 mt-0.5 text-xl font-semibold tracking-tight tabular-nums text-slate-900">{formatCount(total)}</p>
@@ -230,7 +231,7 @@ function EventSummaryBar({
               <button
                 aria-pressed={active}
                 className={`relative h-8 max-w-full overflow-hidden rounded-lg border px-2.5 font-mono text-xs transition-colors ${
-                  active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                  active ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
                 }`}
                 key={event.id}
                 onClick={() => onToggleEvent(event.eventName)}
@@ -253,7 +254,7 @@ function EventSummaryBar({
         <div className="ml-auto flex items-center gap-2">
           <Button icon={Filter} onClick={onOpenFilters}>
             Filters
-            {filterCount > 0 && <span className="rounded-full bg-slate-900 px-1.5 text-[11px] font-medium text-white">{filterCount}</span>}
+            {filterCount > 0 && <span className="rounded-full bg-emerald-600 px-1.5 text-[11px] font-medium text-white">{filterCount}</span>}
           </Button>
           <button
             aria-label="Refresh events"
@@ -505,20 +506,16 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
   ) : null;
 
   const content = (!selectedKeyId && !sdkIntegrationId) ? (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white px-6 py-14 text-center sm:py-16">
-      <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
-        <Activity size={20} />
-      </span>
-      <h3 className="m-0 mt-4 text-[15px] font-semibold text-slate-900">
-        Telemetry Node Required
-      </h3>
-      <p className="m-0 mx-auto mt-1 max-w-[420px] text-sm text-slate-500">
-        Start monitoring your synchronization ecosystem. Select a telemetry node from the dashboard above to explore incoming interaction signals in real-time.
-      </p>
-      <Button className="mt-5" icon={Plus} onClick={() => setIsNodeSwitcherOpen(true)} variant="primary">
-        Provision Tracking Node
-      </Button>
-    </div>
+    <EmptyState
+      action={
+        <Button icon={Plus} onClick={() => setIsNodeSwitcherOpen(true)} variant="primary">
+          Provision Tracking Node
+        </Button>
+      }
+      description="Start monitoring your synchronization ecosystem. Select a telemetry node from the dashboard above to explore incoming interaction signals in real-time."
+      icon={Activity}
+      title="Telemetry Node Required"
+    />
   ) : (
     <DataTable
       table={table}
@@ -573,6 +570,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
           title="Event Tracking"
           description="Telemetry Stream Monitoring"
           icon={Activity}
+          tone="rose"
           actions={
             <>
               {/* Optimized Node Switcher */}
@@ -628,7 +626,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
               >
                 Filters
                 {filterCount > 0 ? (
-                  <span className="rounded-full bg-slate-900 px-1.5 py-0.5 text-[11px] font-medium text-white">
+                  <span className="rounded-full bg-emerald-600 px-1.5 py-0.5 text-[11px] font-medium text-white">
                     {filterCount}
                   </span>
                 ) : null}
@@ -654,7 +652,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
           <div className="flex min-w-0 flex-col">{content}</div>
         </>
       ) : (
-        <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+        <div className="px-3 py-4 sm:px-5 lg:px-6">
           {summaryBar ? (
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
               {summaryBar}
@@ -674,7 +672,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
           }}
           maxWidth="max-w-[520px]"
         >
-          <div className="grid gap-5">
+          <div className="grid gap-4">
             <div className="grid gap-1.5">
               <span className="text-sm font-medium text-slate-700">
                 Events

@@ -215,7 +215,7 @@ function TrendPanel({ trends }: { trends: SurveyExperienceAnalytics['weeklyTrend
         {sorted.map((entry) => (
           <div className="group relative flex h-full max-w-[48px] flex-1 flex-col justify-end" key={entry.period}>
             <div
-              className="rounded-t-[4px] bg-slate-700 transition-colors group-hover:bg-slate-900"
+              className="rounded-t-[4px] bg-emerald-500 transition-colors group-hover:bg-emerald-600"
               style={{ height: `${Math.max(4, (entry.responses / max) * 100)}%` }}
             />
             <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-[11px] text-white shadow-lg group-hover:block">
@@ -265,7 +265,7 @@ function QuestionPanel({ question }: { question: SurveyQuestionAnalytics }): JSX
             <li className="group grid grid-cols-[minmax(0,7rem)_1fr_auto] items-center gap-3 text-xs" key={answer} title={`${answer}: ${count} (${formatPercent((count / answered) * 100)})`}>
               <span className="truncate font-medium text-slate-600">{answer}</span>
               <span className="h-2.5 overflow-hidden rounded-full bg-slate-100">
-                <span className="block h-full rounded-full bg-slate-700 group-hover:bg-slate-900" style={{ width: `${(count / max) * 100}%` }} />
+                <span className="block h-full rounded-full bg-emerald-500 group-hover:bg-emerald-600" style={{ width: `${(count / max) * 100}%` }} />
               </span>
               <span className="w-16 text-right tabular-nums text-slate-900">
                 {formatNumber(count)} <span className="text-slate-400">{formatPercent((count / answered) * 100)}</span>

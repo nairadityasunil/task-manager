@@ -265,7 +265,7 @@ function ChatMessageComponent({
                 </button>
                 <button
                   onClick={handleEditSubmit}
-                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-slate-900 px-3 text-[13px] font-medium text-white transition-colors hover:bg-slate-800"
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-brand-600 px-3 text-[13px] font-medium text-white transition-colors hover:bg-brand-700"
                   type="button"
                 >
                   <Check className="h-3.5 w-3.5" />
@@ -278,7 +278,7 @@ function ChatMessageComponent({
               className={[
                 'rounded-2xl px-3.5 py-2',
                 isOwnMessage
-                  ? 'rounded-tr-md bg-slate-900 text-white'
+                  ? 'rounded-tr-md bg-emerald-600 text-white'
                   : 'rounded-tl-md border border-slate-200 bg-white text-slate-800'
               ].join(' ')}
             >

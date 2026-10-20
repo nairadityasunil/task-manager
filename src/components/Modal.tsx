@@ -83,7 +83,7 @@ function Modal({
             <X size={18} />
           </button>
         </div>
-        <div className={cn('grid min-h-0 flex-1 gap-5 overflow-y-auto p-4 sm:p-5', bodyClassName)}>{children}</div>
+        <div className={cn('grid min-h-0 flex-1 gap-5 overflow-y-auto p-4', bodyClassName)}>{children}</div>
         {footer ? (
           <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200 bg-slate-50/60 px-4 py-3 sm:flex-row sm:items-center sm:justify-end sm:px-5">
             {footer}

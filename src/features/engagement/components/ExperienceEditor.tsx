@@ -95,7 +95,7 @@ export function GuideTypePicker({ value, onChange }: { value: GuideType; onChang
             <button
               aria-checked={active}
               className={`flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/10 ${
-                active ? 'border-slate-900 bg-slate-50 text-slate-900 ring-1 ring-slate-900' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
+                active ? 'border-emerald-500 bg-emerald-50/60 text-slate-900 ring-1 ring-emerald-500' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
               }`}
               key={type}
               onClick={() => onChange(type)}
@@ -456,7 +456,7 @@ function QuestionFields({ question, onChange }: { question: GuideStep; onChange:
           </select>
         </label>
         <label className="flex h-9 items-center gap-2 self-end text-sm text-slate-700">
-          <input checked={Boolean(question.required)} className="h-4 w-4 rounded border-slate-300 accent-slate-900" onChange={(event) => onChange({ required: event.target.checked })} type="checkbox" />
+          <input checked={Boolean(question.required)} className="h-4 w-4 rounded border-slate-300 accent-emerald-600" onChange={(event) => onChange({ required: event.target.checked })} type="checkbox" />
           Required
         </label>
       </div>

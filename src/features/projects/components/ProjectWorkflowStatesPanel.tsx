@@ -169,7 +169,7 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
   const isNameValid = (name: string) => name.trim().length > 0 && name.trim().length <= MAX_NAME_LENGTH;
 
   return (
-    <div className="grid gap-4 p-4 sm:p-5">
+    <div className="grid gap-4 p-4">
       <p className="m-0 text-[13px] text-slate-500">
         Workflow states describe the stages work moves through in this project. The AI planner uses them when it plans and reports on the project.
       </p>
@@ -221,7 +221,7 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
                     <>
                       <button
                         aria-label="Save state"
-                        className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50"
                         disabled={busy || !isNameValid(editDraft.name)}
                         onClick={() => void handleSaveEdit(state._id)}
                         type="button"

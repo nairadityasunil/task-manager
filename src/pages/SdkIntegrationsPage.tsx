@@ -13,7 +13,7 @@ import {
 } from '@/lib/sdk-integrations/api';
 import PageHeader from '@/components/PageHeader';
 import EmptyState from '@/components/EmptyState';
-import { Badge, Button, Field, cn, inputClass, selectClass, textareaClass, type BadgeTone } from '@/components/ui';
+import { Badge, Button, Field, IconTile, StatCard, cn, inputClass, selectClass, textareaClass, type BadgeTone, type TileTone } from '@/components/ui';
 
 // ---------- helpers ----------
 const ENV_LABELS: Record<SdkEnvironment, string> = { development: 'Development', staging: 'Staging', production: 'Production' };
@@ -305,7 +305,7 @@ function IntegrationCard({ integration, onRefresh }: { integration: SdkIntegrati
     <>
       {showDetails && <DetailsModal integration={integration} onClose={() => setShowDetails(false)} onRefresh={onRefresh} />}
       <div
-        className="group flex cursor-pointer flex-col rounded-xl border border-slate-200 bg-white shadow-sm transition-colors hover:border-slate-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/10"
+        className="card-hover group flex cursor-pointer flex-col rounded-xl border border-slate-200 bg-white shadow-[var(--shadow-card)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/20"
         onClick={() => navigate(`/sdk-integrations/${integration.id}/overview`)}
         role="button"
         tabIndex={0}
@@ -313,11 +313,9 @@ function IntegrationCard({ integration, onRefresh }: { integration: SdkIntegrati
       >
         <div className="flex flex-1 flex-col gap-3 p-4">
           <div className="flex items-start gap-3">
-            <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50', inactive ? 'text-slate-400' : 'text-slate-600')}>
-              <Globe size={16} />
-            </span>
+            <IconTile icon={Globe} size="lg" tone={inactive ? 'slate' : 'teal'} />
             <div className="min-w-0 flex-1">
-              <h3 className="m-0 truncate text-sm font-semibold text-slate-900" title={integration.name}>{integration.name}</h3>
+              <h3 className="m-0 truncate text-sm font-semibold text-slate-900 transition-colors group-hover:text-emerald-700" title={integration.name}>{integration.name}</h3>
               <p className="m-0 mt-0.5 truncate text-[13px] text-slate-500">{integration.domain}</p>
             </div>
             <Badge tone={sm.tone} dot>{sm.label}</Badge>
@@ -441,25 +439,20 @@ export default function SdkIntegrationsPage() {
         title="SDK Integrations"
         description="Connect your apps, manage SDK keys and allowed origins."
         icon={Plug}
+        tone="teal"
         actions={<Button variant="primary" icon={Plus} onClick={() => setShowCreate(true)}>New integration</Button>}
       />
 
-      <div className="grid gap-5 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <div className="grid gap-4 px-3 py-4 sm:px-5 lg:px-6">
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
-            { label: 'Total', value: stats.total, icon: Globe },
-            { label: 'Connected', value: stats.connected, icon: CheckCircle2 },
-            { label: 'Pending', value: stats.pending, icon: Clock },
-            { label: 'Inactive', value: stats.disabled, icon: WifiOff },
-          ].map(({ label, value, icon: Icon }) => (
-            <div key={label} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="flex items-center justify-between gap-2">
-                <p className="m-0 text-[13px] text-slate-500">{label}</p>
-                <Icon size={15} className="text-slate-400" />
-              </div>
-              <p className="m-0 mt-1.5 text-2xl font-semibold tracking-tight text-slate-900">{loading ? '–' : value}</p>
-            </div>
+            { label: 'Total', value: stats.total, icon: Globe, tone: 'teal' as TileTone, hint: 'Apps and environments' },
+            { label: 'Connected', value: stats.connected, icon: CheckCircle2, tone: 'emerald' as TileTone, hint: 'Receiving events' },
+            { label: 'Pending', value: stats.pending, icon: Clock, tone: 'amber' as TileTone, hint: 'Waiting for first event' },
+            { label: 'Inactive', value: stats.disabled, icon: WifiOff, tone: 'slate' as TileTone, hint: 'Disabled or revoked' },
+          ].map(({ label, value, icon, tone, hint }) => (
+            <StatCard hint={hint} icon={icon} key={label} label={label} tone={tone} value={loading ? '–' : value} />
           ))}
         </div>
 

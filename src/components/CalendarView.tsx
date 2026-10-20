@@ -104,13 +104,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onTaskClick }
               key={`day-${day}`}
               className="flex h-16 min-w-0 flex-col gap-1 rounded-lg border border-slate-200 p-1 transition-colors hover:border-slate-300 sm:h-28 sm:p-1.5"
             >
-              <div className={isToday ? "flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-[11px] font-medium text-white" : "px-0.5 text-xs font-medium text-slate-500"}>{day}</div>
+              <div className={isToday ? "flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-medium text-white" : "px-0.5 text-xs font-medium text-slate-500"}>{day}</div>
               <div className="min-h-0 space-y-0.5 overflow-y-auto">
                 {dayTasks.map((t) => (
                   <div
                     key={t.id}
                     onClick={() => onTaskClick?.(t)}
-                    className="cursor-pointer truncate rounded border-l-2 border-slate-900 bg-slate-100 px-1 py-0.5 text-[11px] font-medium text-slate-700 transition-colors hover:bg-slate-200"
+                    className="cursor-pointer truncate rounded border-l-2 border-emerald-500 bg-emerald-50 px-1 py-0.5 text-[11px] font-medium text-slate-700 transition-colors hover:bg-slate-200"
                     title={t.title}
                   >
                     {t.title}

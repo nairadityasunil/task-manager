@@ -13,7 +13,7 @@ export const WorkspaceSettings: React.FC<WorkspaceSettingsProps> = ({ currentWor
         title="Workspace Profile & Preferences"
         description="Manage organization settings, default policies, and security limits."
       />
-      <div className="space-y-4 p-4 sm:p-5">
+      <div className="space-y-4 p-4">
         <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="truncate text-sm font-semibold text-slate-900">

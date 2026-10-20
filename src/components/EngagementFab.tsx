@@ -163,7 +163,7 @@ export function EngagementFab(): JSX.Element {
       </AnimatePresence>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg transition-colors hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/20"
+        className="relative flex h-12 w-12 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg transition-colors hover:bg-brand-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/20"
         title="View Product Tours"
         id="btn-trigger-guides-manual"
       >

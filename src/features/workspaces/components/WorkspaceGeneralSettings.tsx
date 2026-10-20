@@ -103,7 +103,7 @@ export function WorkspaceGeneralSettings({ workspace }: WorkspaceGeneralSettings
           onClick={() => setAllowGuests((v) => !v)}
           disabled={!canEdit}
           className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-900/15 disabled:opacity-50 ${
-            allowGuests ? 'bg-slate-900' : 'bg-slate-300'
+            allowGuests ? 'bg-emerald-600' : 'bg-slate-300'
           }`}
         >
           <span

@@ -46,9 +46,9 @@ export const PromptGrid: React.FC<PromptGridProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {[1, 2, 3, 4, 5, 6].map((n) => (
-          <div key={n} className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+          <div key={n} className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="h-4 w-3/4 animate-pulse rounded bg-slate-100" />
             <div className="h-3 w-1/2 animate-pulse rounded bg-slate-100" />
             <div className="h-14 animate-pulse rounded-lg bg-slate-50" />
@@ -92,7 +92,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {prompts.map((p) => (
         <PromptCard
           key={p._id}

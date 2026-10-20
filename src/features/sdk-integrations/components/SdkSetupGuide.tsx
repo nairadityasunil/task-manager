@@ -6,7 +6,7 @@ import type { SdkIntegration } from '@/lib/sdk-integrations/api';
 import { Button } from '@/components/ui';
 
 /** The npm package customers install. Change here once a new name is published. */
-export const SDK_PACKAGE_NAME = '@jamesbond007db05/events-sdk';
+export const SDK_PACKAGE_NAME = '@pristineai/integration-sdk';
 
 const INIT_SNIPPET = `import { Engagement } from '${SDK_PACKAGE_NAME}';
 

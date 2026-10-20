@@ -8,13 +8,13 @@ import {
 import { useToast } from '@/context/ToastContext';
 import { buttonClass, cn } from '@/components/ui';
 
-const INSTALL_SNIPPET = 'npm install @jamesbond007db05/events-sdk';
+const INSTALL_SNIPPET = 'npm install @pristineai/integration-sdk';
 
-const QUICK_START_SNIPPET = "import { initTracker } from '@jamesbond007db05/events-sdk';\n\nconst tracker = initTracker({\n  apiKey: 'your_api_key_here',\n  autoPage: true,\n  debug: false\n});\n\nawait tracker.track('signup_started', {\n  plan: 'pro',\n  source: 'landing-page'\n});";
+const QUICK_START_SNIPPET = "import { initTracker } from '@pristineai/integration-sdk';\n\nconst tracker = initTracker({\n  apiKey: 'your_api_key_here',\n  autoPage: true,\n  debug: false\n});\n\nawait tracker.track('signup_started', {\n  plan: 'pro',\n  source: 'landing-page'\n});";
 
-const ERROR_HANDLING_SNIPPET = "import {\n  initTracker,\n  normalizeSdkError,\n  SDKValidationError\n} from '@jamesbond007db05/events-sdk';\n\ntry {\n  const tracker = initTracker({ apiKey: 'your_api_key_here' });\n  await tracker.track('checkout_completed', { amount: 199 });\n} catch (error) {\n  const normalized = normalizeSdkError(error);\n  console.error(normalized.code, normalized.message);\n\n  if (error instanceof SDKValidationError) {\n    // show friendly validation feedback\n  }\n}";
+const ERROR_HANDLING_SNIPPET = "import {\n  initTracker,\n  normalizeSdkError,\n  SDKValidationError\n} from '@pristineai/integration-sdk';\n\ntry {\n  const tracker = initTracker({ apiKey: 'your_api_key_here' });\n  await tracker.track('checkout_completed', { amount: 199 });\n} catch (error) {\n  const normalized = normalizeSdkError(error);\n  console.error(normalized.code, normalized.message);\n\n  if (error instanceof SDKValidationError) {\n    // show friendly validation feedback\n  }\n}";
 
-const ENGAGEMENT_SNIPPET = "import { Engagement } from '@jamesbond007db05/events-sdk';\n\n// Initialize the Engagement Runtime\nEngagement.init({\n  apiKey: 'your_api_key_here',\n  userId: 'user_123',\n  debug: false\n});\n\n// Trigger a custom event (evaluated immediately for checklist/tour triggers)\nawait Engagement.track('user_onboarded_step1');\n\n// Fetch/refresh eligible flows manually (usually handled automatically on SPA routes)\nawait Engagement.refresh();";
+const ENGAGEMENT_SNIPPET = "import { Engagement } from '@pristineai/integration-sdk';\n\n// Initialize the Engagement Runtime\nEngagement.init({\n  apiKey: 'your_api_key_here',\n  userId: 'user_123',\n  debug: false\n});\n\n// Trigger a custom event (evaluated immediately for checklist/tour triggers)\nawait Engagement.track('user_onboarded_step1');\n\n// Fetch/refresh eligible flows manually (usually handled automatically on SPA routes)\nawait Engagement.refresh();";
 
 const SECTIONS = [
   { id: 'getting-started', label: 'Getting started' },
@@ -53,7 +53,7 @@ function SdkDocsPanel(): JSX.Element {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const sectionCls = 'grid scroll-mt-16 gap-5 border-t border-slate-200 pt-8';
+  const sectionCls = 'grid scroll-mt-16 gap-4 border-t border-slate-200 pt-6';
 
   return (
     <div className="mx-auto w-full max-w-[1160px] px-1 py-2 sm:px-3 lg:py-4">
@@ -69,7 +69,7 @@ function SdkDocsPanel(): JSX.Element {
                     className={cn(
                       'flex h-8 items-center whitespace-nowrap rounded-full border px-3 text-[13px] font-medium transition-colors lg:rounded-lg lg:border-0 lg:px-2.5',
                       activeSection === section.id
-                        ? 'border-slate-900 bg-slate-900 text-white lg:bg-slate-200/70 lg:text-slate-900'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-800 lg:bg-white lg:text-slate-900 lg:shadow-sm lg:ring-1 lg:ring-slate-200'
                         : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900 lg:bg-transparent lg:hover:bg-slate-100'
                     )}
                     href={`#${section.id}`}
@@ -83,7 +83,7 @@ function SdkDocsPanel(): JSX.Element {
           </div>
         </nav>
 
-        <article className="grid min-w-0 max-w-[860px] gap-8 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-8">
+        <article className="grid min-w-0 max-w-[920px] gap-6 rounded-xl border border-slate-200 bg-white p-4 shadow-[var(--shadow-card)] sm:p-6">
           <header className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
               <h1 className="m-0 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Events SDK Documentation</h1>
@@ -93,7 +93,7 @@ function SdkDocsPanel(): JSX.Element {
             </div>
             <a
               className={buttonClass('secondary', 'md')}
-              href="https://www.npmjs.com/package/@jamesbond007db05/events-sdk"
+              href="https://www.npmjs.com/package/@pristineai/integration-sdk"
               rel="noreferrer"
               target="_blank"
             >

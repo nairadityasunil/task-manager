@@ -1,7 +1,7 @@
 import React from "react";
 import { KeyRound, Copy, Check, Eye, EyeOff, RefreshCcw } from "lucide-react";
 import type { AuthProfile } from "@/store/authSlice";
-import { Badge, Button, Card, CardHeader } from "@/components/ui";
+import { Badge, Button, Card, CardHeader, avatarColor } from "@/components/ui";
 
 interface ProfileSettingsProps {
   user: AuthProfile | null;
@@ -34,14 +34,14 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({
   const role = ((user as unknown as Record<string, string>)?.role) || "Member";
 
   return (
-    <div className="space-y-5 font-sans">
+    <div className="space-y-4 font-sans">
       <Card>
         <CardHeader
           title="Personal Account Details"
           description="View and manage your account credentials and personal preferences."
         />
-        <div className="flex items-center gap-4 p-4 sm:p-5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
+        <div className="flex items-center gap-4 p-4">
+          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${avatarColor(user?.email || user?.name)}`}>
             {initials}
           </div>
           <div className="min-w-0 space-y-1">
@@ -59,7 +59,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({
           title="Sync API Key (ChatGPT & External Tools)"
           description="Your personal API key used to authenticate ChatGPT actions and third-party integrations."
         />
-        <div className="space-y-3 p-4 sm:p-5">
+        <div className="space-y-3 p-4">
           <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700">
             <KeyRound className="h-4 w-4 text-slate-400" /> Personal API Key
           </label>

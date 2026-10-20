@@ -220,10 +220,10 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
   ];
 
   return (
-    <div className="space-y-5 font-sans">
+    <div className="space-y-4 font-sans">
       {/* MCP Overview */}
       <Card>
-        <div className="flex flex-col justify-between gap-4 p-4 sm:p-5 md:flex-row md:items-center">
+        <div className="flex flex-col justify-between gap-4 p-4 md:flex-row md:items-center">
           <div className="max-w-2xl space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone="success" className="gap-1.5">
@@ -265,7 +265,7 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
           }
           description="Configure supported AI clients to communicate with your TodoSync workspace backend."
         />
-        <div className="space-y-4 p-4 sm:p-5">
+        <div className="space-y-4 p-4">
           {/* Sync API Key Bar */}
           <div className="flex flex-col justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3 lg:flex-row lg:items-center">
             <div className="min-w-0 space-y-0.5">
@@ -382,7 +382,7 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
             ) : null
           }
         />
-        <div className="p-4 sm:p-5">
+        <div className="p-4">
           {isLoadingCompanionDevices ? (
             <div className="flex items-center justify-center gap-2 p-6 text-[13px] text-slate-500">
               <RefreshCw className="h-4 w-4 animate-spin" /> Loading client devices...
@@ -481,7 +481,7 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
                 onClick={() => setSelectedDomain(dom)}
                 className={`h-7 shrink-0 cursor-pointer whitespace-nowrap rounded-full border px-2.5 text-xs font-medium capitalize transition ${
                   selectedDomain === dom
-                    ? 'border-slate-900 bg-slate-900 text-white'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
                     : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
                 }`}
               >
@@ -493,20 +493,20 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
 
         {/* Tool list */}
         {isLoadingTools ? (
-          <div className="space-y-2 p-4 sm:p-5">
+          <div className="space-y-2 p-4">
             {[0, 1, 2].map((i) => (
               <div key={i} className="h-14 animate-pulse rounded-lg bg-slate-100" />
             ))}
             <p className="sr-only">Loading backend MCP tools manifest...</p>
           </div>
         ) : toolsError ? (
-          <div className="p-4 sm:p-5">
+          <div className="p-4">
             <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-[13px] text-red-700">
               <AlertTriangle className="h-4 w-4 shrink-0" /> {toolsError}
             </div>
           </div>
         ) : filteredTools.length === 0 ? (
-          <div className="p-4 sm:p-5">
+          <div className="p-4">
             <EmptyState compact icon={Search} title="No tools found" description="No tools match the selected domain or query filter." />
           </div>
         ) : (

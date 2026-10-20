@@ -156,7 +156,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                     onChange={(e) =>
                       setTempParams((prev) => ({ ...prev, temperature: parseFloat(e.target.value) }))
                     }
-                    className="w-full accent-slate-900 cursor-pointer"
+                    className="w-full accent-emerald-600 cursor-pointer"
                   />
                   <p className="m-0 text-xs text-slate-500">Controls randomness: 0 is strict & deterministic, 1+ is creative.</p>
                 </div>
@@ -189,7 +189,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                     onChange={(e) =>
                       setTempParams((prev) => ({ ...prev, topP: parseFloat(e.target.value) }))
                     }
-                    className="w-full accent-slate-900 cursor-pointer"
+                    className="w-full accent-emerald-600 cursor-pointer"
                   />
                 </div>
 

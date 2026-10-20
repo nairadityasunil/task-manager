@@ -5,7 +5,7 @@ import { WorkspaceSwitcher } from '@/features/workspaces';
 import EditTaskForm from '@/components/EditTaskForm';
 import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
-import { Badge, Button, buttonClass, cn, type BadgeTone } from '@/components/ui';
+import { Badge, Button, IconTile, buttonClass, cn, type BadgeTone } from '@/components/ui';
 import Modal from '@/components/Modal';
 import EpicForm from '@/components/EpicForm';
 import NoteModal from '@/components/NoteModal';
@@ -35,6 +35,7 @@ import KanbanBoard from '@/components/KanbanBoard';
 import TaskFilterBar from '@/components/TaskFilterBar';
 import AssigneeSelector from '@/components/AssigneeSelector';
 import SlaDashboard from '@/components/SlaDashboard';
+import DashboardOverview from '@/features/dashboard/components/DashboardOverview';
 import { TaskInspector } from '@/features/tasks';
 import {
   Layers3,
@@ -56,6 +57,8 @@ import {
   Bot,
   MoreHorizontal,
   Workflow,
+  Settings,
+  BookOpen,
   type LucideIcon
 } from 'lucide-react';
 import { Note } from '@/types/note';
@@ -269,7 +272,7 @@ export function DashboardPage(): JSX.Element {
               ? 'Semantic Intelligence'
               : dash.activeProject
               ? dash.activeProject.name
-              : 'All Projects'
+              : 'Overview'
           }
           user={{ name: dash.user?.name || null, email: dash.user?.email || '' }}
           notifications={dash.notifications}
@@ -341,7 +344,7 @@ export function DashboardPage(): JSX.Element {
                   )}
                 </>
               ) : (
-                <span className={crumbCurrentCls}>All Projects</span>
+                <span className={crumbCurrentCls}>Overview</span>
               )}
             </>
           }
@@ -357,8 +360,8 @@ export function DashboardPage(): JSX.Element {
         <main className="flex-1 overflow-hidden">
           {dash.activeView === 'settings' ? (
             <div className="h-full overflow-y-auto">
-              <PageHeader description="Account and preferences" title="Settings" />
-              <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+              <PageHeader description="Account and preferences" icon={Settings} title="Settings" tone="slate" />
+              <div className="px-3 py-4 sm:px-5 lg:px-6">
                 <SettingsPanel
                   projects={dash.projects}
                   activeProject={dash.activeProject}
@@ -403,49 +406,64 @@ export function DashboardPage(): JSX.Element {
             </div>
           ) : dash.activeView === 'sdk-docs' ? (
             <div className="h-full overflow-y-auto">
-              <PageHeader description="Integration guide and API reference" title="SDK Documentation" />
-              <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+              <PageHeader description="Integration guide and API reference" icon={BookOpen} title="SDK Documentation" tone="orange" />
+              <div className="px-3 py-4 sm:px-5 lg:px-6">
                 <SdkDocsPanel />
               </div>
             </div>
           ) : !dash.activeProject ? (
             <div className="h-full overflow-y-auto">
-              <ProjectPanel
-                actionProjectId={dash.actionProjectId}
-                currentPage={dash.projectPage}
+              <DashboardOverview
+                epics={dash.epics}
                 loading={dash.loading}
-                onDeleteProject={dash.handleDeleteProject}
-                onDeleteProjects={dash.handleDeleteProjects}
-                onOpenCreateProject={() => dash.setIsProjectCreateModalOpen(true)}
-                onOpenEpicManager={(project) => {
-                  dash.handleProjectSelect(project.id);
-                }}
-                onOpenProject={(projId) => {
-                  dash.handleProjectSelect(projId ?? ALL_PROJECTS_VALUE);
-                }}
-                onOpenUpdateProject={(project) => {
-                  dash.setEditingProject(project);
+                onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
+                onOpenAiPlanner={() => dash.setIsAiPlanningWorkspaceOpen(true)}
+                onOpenTask={(task) => {
+                  if (task.projectId && task.epicId) navigate(`/projects/${task.projectId}/epics/${task.epicId}`);
+                  else if (task.projectId) dash.handleProjectSelect(task.projectId);
                 }}
                 projects={dash.projects}
-                totalPages={dash.projectTotalPages}
-                onPageChange={dash.handleProjectPageChange}
-                onSearch={dash.handleProjectSearch}
-                searchTerm={dash.projectSearchTerm}
-              />
+                tasks={dash.tasks}
+                user={dash.user ? { id: dash.user.id, name: dash.user.name ?? null, email: dash.user.email ?? null } : null}
+              >
+                <ProjectPanel
+                  actionProjectId={dash.actionProjectId}
+                  currentPage={dash.projectPage}
+                  embedded
+                  epics={dash.epics}
+                  loading={dash.loading}
+                  onDeleteProject={dash.handleDeleteProject}
+                  onDeleteProjects={dash.handleDeleteProjects}
+                  onOpenCreateProject={() => dash.setIsProjectCreateModalOpen(true)}
+                  onOpenEpicManager={(project) => {
+                    dash.handleProjectSelect(project.id);
+                  }}
+                  onOpenProject={(projId) => {
+                    dash.handleProjectSelect(projId ?? ALL_PROJECTS_VALUE);
+                  }}
+                  onOpenUpdateProject={(project) => {
+                    dash.setEditingProject(project);
+                  }}
+                  projects={dash.projects}
+                  tasks={dash.tasks}
+                  totalPages={dash.projectTotalPages}
+                  onPageChange={dash.handleProjectPageChange}
+                  onSearch={dash.handleProjectSearch}
+                  searchTerm={dash.projectSearchTerm}
+                />
+              </DashboardOverview>
             </div>
           ) : (
             /* 3-column workspace */
             <div className="flex h-full flex-col overflow-hidden">
-              <div className="shrink-0 border-b border-slate-200 bg-white px-4 py-3 sm:px-6 lg:px-8">
+              <div className="header-band shrink-0 border-b border-slate-200 px-3 py-2.5 sm:px-5 lg:px-6">
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 sm:flex">
-                      <Folder size={17} />
-                    </div>
+                    <IconTile className="hidden sm:inline-flex" icon={Folder} size="md" tone="sky" />
                     <div className="relative flex min-w-0 items-center">
                       <select
                         aria-label="Switch project"
-                        className="m-0 max-w-[60vw] cursor-pointer appearance-none truncate rounded-md border-none bg-transparent p-0 pr-6 text-lg font-semibold tracking-tight text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/15 sm:max-w-none sm:text-xl"
+                        className="m-0 max-w-[60vw] cursor-pointer appearance-none truncate rounded-md border-none bg-transparent p-0 pr-6 text-lg font-semibold tracking-tight text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 sm:max-w-none"
                         onChange={(e) => dash.handleProjectSelect(e.target.value)}
                         value={dash.activeProject.id}
                       >
@@ -475,7 +493,7 @@ export function DashboardPage(): JSX.Element {
                     </button>
                     <button
                       aria-pressed={dash.isChatPanelOpen}
-                      className={cn(headerButtonCls, dash.isChatPanelOpen && '!border-slate-300 !bg-slate-100 !text-slate-900')}
+                      className={cn(headerButtonCls, dash.isChatPanelOpen && '!border-emerald-200 !bg-emerald-50 !text-emerald-800')}
                       onClick={() => dash.setIsChatPanelOpen(!dash.isChatPanelOpen)}
                       type="button"
                     >
@@ -503,14 +521,14 @@ export function DashboardPage(): JSX.Element {
                   </div>
                 </div>
               </div>
-              <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4 sm:p-5 lg:flex-row lg:overflow-hidden lg:px-8 lg:py-6">
+              <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 sm:p-4 lg:flex-row lg:overflow-hidden lg:px-6 lg:py-4">
                 {/* Column 1 — Epics */}
-                <div className={`flex max-h-[45vh] w-full shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-[width] duration-300 ease-in-out lg:h-full lg:max-h-none ${dash.isSidebarCollapsed ? 'lg:w-14' : 'lg:w-[300px]'}`}>
-                  <div className={`flex items-center justify-between gap-2 border-b border-slate-100 py-3 ${dash.isSidebarCollapsed ? 'px-3 lg:flex-col lg:gap-3 lg:px-2' : 'px-4'}`}>
+                <div className={`flex max-h-[45vh] w-full shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[var(--shadow-card)] transition-[width] duration-300 ease-in-out lg:h-full lg:max-h-none ${dash.isSidebarCollapsed ? 'lg:w-14' : 'lg:w-[272px]'}`}>
+                  <div className={`flex items-center justify-between gap-2 border-b border-slate-100 py-2.5 ${dash.isSidebarCollapsed ? 'px-3 lg:flex-col lg:gap-3 lg:px-2' : 'px-4'}`}>
                     {!dash.isSidebarCollapsed ? (
                       <div className="flex min-w-0 items-center gap-2">
-                        <h3 className="m-0 text-[15px] font-semibold text-slate-900">Epics</h3>
-                        <Badge>{dash.epics.length}</Badge>
+                        <h3 className="m-0 text-sm font-semibold tracking-tight text-slate-900">Epics</h3>
+                        <Badge className="tabular-nums">{dash.epics.length}</Badge>
                       </div>
                     ) : (
                       <h3 className="m-0 text-[15px] font-semibold text-slate-900 lg:sr-only">Epics</h3>
@@ -539,16 +557,16 @@ export function DashboardPage(): JSX.Element {
                   </div>
 
                   {!dash.isSidebarCollapsed && (
-                    <div className="custom-scrollbar flex flex-1 flex-col gap-1.5 overflow-y-auto p-2.5">
+                    <div className="custom-scrollbar flex flex-1 flex-col gap-1 overflow-y-auto p-2">
                       {dash.activeProjectEpics.map(epic => {
                         const isActive = dash.selectedEpicId === epic.id;
                         return (
                           <div
                             key={epic.id}
                             className={cn(
-                              'group relative flex cursor-pointer flex-col gap-1.5 rounded-lg border px-3 py-2.5 transition-colors',
+                              'group relative flex cursor-pointer flex-col gap-1 rounded-lg border px-2.5 py-2 transition-colors duration-150',
                               isActive
-                                ? 'border-slate-300 bg-slate-50 shadow-[inset_3px_0_0_0_#0f172a]'
+                                ? 'border-emerald-200 bg-emerald-50/60 shadow-[inset_3px_0_0_0_#10b981]'
                                 : 'border-transparent hover:border-slate-200 hover:bg-slate-50'
                             )}
                             onClick={() => dash.handleEpicSelect(isActive ? null : epic.id)}
@@ -616,12 +634,12 @@ export function DashboardPage(): JSX.Element {
                 </div>
 
                 {/* Column 2 — Tasks */}
-                <div className="flex min-h-[60vh] min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:h-full lg:min-h-0">
+                <div className="flex min-h-[60vh] min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[var(--shadow-card)] lg:h-full lg:min-h-0">
                   {dash.selectedEpicId ? (
                     <>
-                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-2.5">
                         <div className="min-w-0">
-                          <h3 className="m-0 truncate text-[15px] font-semibold text-slate-900">{dash.tasksHeading}</h3>
+                          <h3 className="m-0 truncate text-sm font-semibold tracking-tight text-slate-900">{dash.tasksHeading}</h3>
                           <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
                             <span className="max-w-[200px] truncate">
                               {dash.epics.find(e => e.id === dash.selectedEpicId)?.name}
@@ -669,7 +687,7 @@ export function DashboardPage(): JSX.Element {
                         </div>
                       </div>
 
-                      <div className="grid gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
+                      <div className="grid gap-2.5 border-b border-slate-100 px-4 py-3">
                         <SlaDashboard />
                         <TaskFilterBar
                           filters={dash.taskFilters}
@@ -680,7 +698,7 @@ export function DashboardPage(): JSX.Element {
                       </div>
 
                       {dash.selectedTaskIds.length > 0 && (
-                        <div className="mx-4 mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 sm:mx-5">
+                        <div className="mx-4 mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 py-2">
                           <div className="flex items-center gap-3">
                             <span className="text-sm font-medium text-slate-900">
                               {dash.selectedTaskIds.length} tasks selected
@@ -707,7 +725,7 @@ export function DashboardPage(): JSX.Element {
 
                       <div className="custom-scrollbar flex-1 overflow-auto">
                         {dash.viewMode === 'list' ? (
-                          <div className="p-4 sm:p-5">
+                          <div className="p-3 sm:p-4">
                             <TaskList
                               actionTaskId={dash.actionTaskId}
                               epics={dash.epics}
@@ -759,10 +777,8 @@ export function DashboardPage(): JSX.Element {
                     </>
                   ) : (
                     <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
-                      <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500">
-                        <Layers3 size={20} />
-                      </div>
-                      <h4 className="m-0 text-[15px] font-semibold text-slate-900">Select an epic</h4>
+                      <IconTile className="mb-3" icon={Layers3} size="lg" tone="emerald" />
+                      <h4 className="m-0 text-sm font-semibold text-slate-900">Select an epic</h4>
                       <p className="m-0 mt-1 max-w-xs text-sm text-slate-500">
                         Choose an epic from the list to view its execution plan and tasks.
                       </p>

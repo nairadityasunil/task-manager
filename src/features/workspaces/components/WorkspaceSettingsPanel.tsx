@@ -68,7 +68,7 @@ export function WorkspaceSettingsPanel(): JSX.Element {
       </div>
 
       {/* Sub tabs */}
-      <div className="mt-4 border-b border-slate-200 px-4 sm:px-5">
+      <div className="mt-4 border-b border-slate-200 px-4">
         <div className="-mb-px flex gap-5 overflow-x-auto hide-scrollbar">
           {TABS.map((tab) => {
             if (tab.id === 'danger' && activeWorkspace.role !== 'OWNER') return null;
@@ -83,7 +83,7 @@ export function WorkspaceSettingsPanel(): JSX.Element {
                   active
                     ? tab.id === 'danger'
                       ? 'border-red-600 text-red-700'
-                      : 'border-slate-900 text-slate-900'
+                      : 'border-emerald-500 text-slate-900'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -96,7 +96,7 @@ export function WorkspaceSettingsPanel(): JSX.Element {
       </div>
 
       {/* Tab content */}
-      <div className="p-4 sm:p-5">
+      <div className="p-4">
         {activeTab === 'general' && <WorkspaceGeneralSettings workspace={activeWorkspace} />}
         {activeTab === 'members' && user && (
           <WorkspaceMembers workspace={activeWorkspace} currentUserId={user.id} />

@@ -36,7 +36,7 @@ const Topbar: React.FC<TopbarProps> = ({
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <header className="relative z-50 flex h-[52px] shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white px-3 sm:px-5 lg:px-6">
+    <header className="relative z-50 flex h-12 shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-3 sm:px-5 lg:px-6">
       {/* Left: menu, title / breadcrumbs */}
       <div className="flex min-w-0 items-center gap-1.5">
         {onMenuClick && (
@@ -68,7 +68,7 @@ const Topbar: React.FC<TopbarProps> = ({
             aria-expanded={isNotificationsOpen}
             aria-label="Notifications"
             className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
-              isNotificationsOpen ? 'bg-slate-100 text-slate-900' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+              isNotificationsOpen ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
             }`}
             onClick={onNotificationsToggle}
             type="button"

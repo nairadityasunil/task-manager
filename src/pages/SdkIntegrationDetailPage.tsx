@@ -196,12 +196,12 @@ const SdkIntegrationDetailPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-full bg-slate-50">
-        <div className="border-b border-slate-200 bg-white px-4 pb-5 pt-5 sm:px-6 lg:px-8">
+        <div className="border-b border-slate-200 bg-white px-3 pb-4 pt-4 sm:px-5 lg:px-6">
           <div className="h-4 w-28 animate-pulse rounded bg-slate-100" />
           <div className="mt-3 h-7 w-56 animate-pulse rounded bg-slate-100" />
           <div className="mt-2 h-4 w-40 animate-pulse rounded bg-slate-100" />
         </div>
-        <div className="grid gap-4 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+        <div className="grid gap-4 px-3 py-4 sm:px-5 lg:px-6">
           <div className="h-40 animate-pulse rounded-xl border border-slate-200 bg-white" />
           <div className="h-56 animate-pulse rounded-xl border border-slate-200 bg-white" />
         </div>
@@ -211,7 +211,7 @@ const SdkIntegrationDetailPage: React.FC = () => {
 
   if (error || !integration) {
     return (
-      <div className="px-4 py-10 sm:px-6 lg:px-8">
+      <div className="px-3 py-8 sm:px-5 lg:px-6">
         <div className="mx-auto grid max-w-md justify-items-center gap-3 rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm sm:p-8">
           <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600">
             <AlertTriangle size={20} />
@@ -239,7 +239,7 @@ const SdkIntegrationDetailPage: React.FC = () => {
   return (
     <div className="min-h-full bg-slate-50">
       {/* Detail Header */}
-      <div className="border-b border-slate-200 bg-white px-4 pt-4 sm:px-6 sm:pt-5 lg:px-8">
+      <div className="border-b border-slate-200 header-band px-3 pt-3.5 sm:px-5 lg:px-6">
         <button
           onClick={() => navigate('/sdk-integrations')}
           type="button"
@@ -277,7 +277,7 @@ const SdkIntegrationDetailPage: React.FC = () => {
       </div>
 
       {/* Tab Panels */}
-      <div className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+      <div className="px-3 py-4 sm:px-5 lg:px-6">
         {activeTab === 'overview' && (
           <div className="mb-6">
             <SdkSetupGuide
@@ -289,16 +289,16 @@ const SdkIntegrationDetailPage: React.FC = () => {
           </div>
         )}
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-4">
             {/* Left 2 Columns: Config & Keys */}
-            <div className="grid content-start gap-4 lg:col-span-2 lg:gap-6">
+            <div className="grid content-start gap-4 lg:col-span-2 lg:gap-4">
               {/* SDK Key Panel */}
               <Card>
                 <CardHeader
                   title="Integration SDK Key"
                   description="Used by the SDK to identify this app. Regenerating it stops the old key immediately."
                 />
-                <div className="grid gap-4 p-4 sm:p-5">
+                <div className="grid gap-4 p-4">
                   {newKey ? (
                     <div className="grid gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 sm:p-4">
                       <div>
@@ -365,7 +365,7 @@ const SdkIntegrationDetailPage: React.FC = () => {
                   ) : undefined}
                 />
 
-                <div className="p-4 sm:p-5">
+                <div className="p-4">
                   {isEditing ? (
                     <form onSubmit={handleSaveChanges} className="grid gap-4">
                       <Field label="Integration name">
@@ -474,11 +474,11 @@ const SdkIntegrationDetailPage: React.FC = () => {
             </div>
 
             {/* Right Column: Connection Diagnostics & Control */}
-            <div className="grid content-start gap-4 lg:gap-6">
+            <div className="grid content-start gap-4 lg:gap-4">
               {/* Health Diagnostics Panel */}
               <Card>
                 <CardHeader title="Diagnostics &amp; Health" description="Latest signals from the SDK." />
-                <div className="p-4 sm:p-5">
+                <div className="p-4">
                   <div className="mb-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                     <span className="text-[13px] text-slate-600">Connections (all-time)</span>
                     <span className="text-xl font-semibold tracking-tight text-slate-900">{integration.connectionCount}</span>
@@ -506,7 +506,7 @@ const SdkIntegrationDetailPage: React.FC = () => {
               {/* Danger Zone */}
               <Card className="border-red-200">
                 <CardHeader className="border-red-100" title={<span className="flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-red-600" />Danger Zone</span>} />
-                <div className="grid gap-3 p-4 sm:p-5">
+                <div className="grid gap-3 p-4">
                   <p className="m-0 text-[13px] leading-relaxed text-slate-600">
                     Temporarily disable administrative operations or permanently delete this entire integration context.
                   </p>

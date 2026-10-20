@@ -246,7 +246,7 @@ function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings 
                 <span className="font-medium text-slate-700">AI Provider</span>
                 {isAdmin ? (
                   <select
-                    className="h-8 cursor-pointer rounded-lg border border-slate-300 bg-white px-2 text-[13px] text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-900/10 disabled:opacity-50"
+                    className="h-8 cursor-pointer rounded-lg border border-slate-300 bg-white px-2 text-[13px] text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/15 disabled:opacity-50"
                     value={aiConfig.provider}
                     disabled={updatingModel}
                     onChange={(e) => void handleConfigChange({ provider: e.target.value as ProjectAiConfig['provider'] })}
@@ -266,7 +266,7 @@ function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings 
                 <span className="font-medium text-slate-700">Model Preset</span>
                 {isAdmin ? (
                   <select
-                    className="h-8 cursor-pointer rounded-lg border border-slate-300 bg-white px-2 text-[13px] text-slate-900 focus:border-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-900/10 disabled:opacity-50"
+                    className="h-8 cursor-pointer rounded-lg border border-slate-300 bg-white px-2 text-[13px] text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/15 disabled:opacity-50"
                     value={aiConfig.modelName}
                     disabled={updatingModel}
                     onChange={(e) => void handleConfigChange({ modelName: e.target.value })}
@@ -314,7 +314,7 @@ function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings 
 
         <div className="max-h-[260px] min-h-[140px] space-y-2 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50 p-3">
           {workspace?.messages.length ? workspace.messages.map((item) => (
-            <div className={`max-w-[88%] rounded-lg px-3 py-2 text-sm ${item.role === 'USER' ? 'ml-auto bg-slate-900 text-white' : 'border border-slate-200 bg-white text-slate-800'}`} key={item.id}>
+            <div className={`max-w-[88%] rounded-lg px-3 py-2 text-sm ${item.role === 'USER' ? 'ml-auto bg-emerald-600 text-white' : 'border border-slate-200 bg-white text-slate-800'}`} key={item.id}>
               <div className="mb-0.5 text-xs font-medium opacity-70">{item.role === 'USER' ? 'You' : 'AI planner'}</div>
               <div className="whitespace-pre-wrap">{item.content}</div>
             </div>
@@ -323,12 +323,12 @@ function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings 
 
         <div className="flex gap-2">
           <textarea
-            className="min-h-[72px] flex-1 resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-4 focus:ring-slate-900/10"
+            className="min-h-[72px] flex-1 resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/15"
             onChange={(event) => setMessage(event.target.value)}
             placeholder="Describe requirements or answer next planning question..."
             value={message}
           />
-          <button className="inline-flex h-10 w-10 items-center justify-center self-end rounded-lg bg-slate-900 text-white shadow-sm hover:bg-slate-800 disabled:opacity-50" disabled={loading || !message.trim()} onClick={() => void handleSend()} type="button">
+          <button className="inline-flex h-10 w-10 items-center justify-center self-end rounded-lg bg-brand-600 text-white shadow-sm hover:bg-brand-700 disabled:opacity-50" disabled={loading || !message.trim()} onClick={() => void handleSend()} type="button">
             {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
           </button>
         </div>
@@ -362,7 +362,7 @@ function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings 
           {draft.status === 'REVIEW' ? (
             <div className="flex flex-wrap justify-end gap-2">
               <button className="inline-flex h-9 items-center gap-2 rounded-lg border border-red-200 bg-white px-3 text-sm font-medium text-red-600 shadow-sm hover:bg-red-50" disabled={loading} onClick={() => void handleReject(draft)} type="button"><XCircle size={16} /> Reject</button>
-              {isAdmin ? <button className="inline-flex h-9 items-center gap-2 rounded-lg bg-slate-900 px-3 text-sm font-medium text-white shadow-sm hover:bg-slate-800" disabled={loading} onClick={() => void handleApprove(draft)} type="button"><CheckCircle size={16} /> Approve and create</button> : <span className="self-center text-xs text-slate-500">Admin approval required</span>}
+              {isAdmin ? <button className="inline-flex h-9 items-center gap-2 rounded-lg bg-brand-600 px-3 text-sm font-medium text-white shadow-sm hover:bg-brand-700" disabled={loading} onClick={() => void handleApprove(draft)} type="button"><CheckCircle size={16} /> Approve and create</button> : <span className="self-center text-xs text-slate-500">Admin approval required</span>}
             </div>
           ) : null}
         </section>

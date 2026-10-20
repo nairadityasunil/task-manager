@@ -225,7 +225,7 @@ export default function DataTable<TData>({
                     <button
                       aria-current={page === currentPage ? 'page' : undefined}
                       className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-[13px] font-medium transition-colors ${
-                        page === currentPage ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                        page === currentPage ? 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                       }`}
                       onClick={() => changePage(page)}
                       type="button"
