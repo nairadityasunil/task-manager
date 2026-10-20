@@ -1,857 +1,1009 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ArrowRight,
-  ArrowUpRight,
-  Calculator,
-  CheckCircle2,
+  BellRing,
+  BookOpen,
+  Bot,
+  BrainCircuit,
+  CalendarClock,
   ChevronDown,
-  ChevronRight,
-  Clock,
+  ClipboardCheck,
+  Code2,
+  FileText,
+  Fingerprint,
+  FolderKanban,
+  GitBranch,
+  History,
+  KeyRound,
+  LayoutList,
+  ListChecks,
+  ListTree,
   Lock,
-  LockKeyhole,
-  Menu,
-  Search,
-  Server,
+  LogIn,
+  Mail,
+  Megaphone,
+  MessageCircle,
+  MessagesSquare,
+  MonitorSmartphone,
+  MousePointerClick,
+  Plug,
+  Radar,
+  Rocket,
   ShieldCheck,
+  Smartphone,
   Sparkles,
-  Terminal,
-  TrendingUp,
+  Target,
+  Timer,
+  UserPlus,
   Users,
-  X,
-  Zap
+  Workflow,
+  Zap,
+  type LucideIcon
 } from 'lucide-react';
+
 import { useAuth } from '@/context/AuthContext';
-import logoImg from '@/assets/logo.png';
-import { buttonClass } from '@/components/ui';
+import { cn } from '@/components/ui';
+import MarketingNav from '@/components/marketing/MarketingNav';
+import MarketingFooter from '@/components/marketing/MarketingFooter';
+import { CheckList, CodeBlock, SectionHeading, ctaClass } from '@/components/marketing/primitives';
+import { useHashScroll } from '@/components/marketing/useHashScroll';
+import {
+  BreakdownMock,
+  ChatMock,
+  ChecklistMock,
+  DailyPlanMock,
+  EventsMock,
+  FunnelMock,
+  GuideFormatIllustration,
+  HeroMock,
+  InspectorMock,
+  IntelligenceMock,
+  LifecycleMock,
+  McpMock,
+  ModelsMock,
+  NpsMock,
+  NpsResultsMock,
+  PlannerMock,
+  PlaygroundMock,
+  RolloverMock,
+  SegmentMock,
+  SetupMock,
+  SlaMock,
+  TaskViewsMock
+} from '@/components/marketing/Mockups';
+
+/* ------------------------------------------------------------------ */
+/* Content                                                             */
+/* ------------------------------------------------------------------ */
+
+const SDK_SNIPPET = `// npm install @pristineai/integration-sdk
+import { Engagement } from '@pristineai/integration-sdk';
+
+// Run once when your app starts.
+Engagement.init({
+  apiKey: 'YOUR_SDK_KEY',
+  userId: currentUser.id, // optional: who is signed in
+});
+
+// Call this when something meaningful happens.
+Engagement.track('project_created', { plan: 'pro' });`;
+
+const AI_TABS: Array<{ id: string; label: string; icon: LucideIcon; title: string; body: string; points: string[]; mock: () => JSX.Element }> = [
+  {
+    id: 'planner',
+    label: 'AI Planner',
+    icon: Zap,
+    title: 'Describe a project, get a plan',
+    body: 'Write what you want to build in plain language. The AI Planner proposes epics and tasks, you refine the plan in a conversation, and approving it creates the project.',
+    points: ['Plain-language input, no template to fill', 'Refine by chatting: add, split or drop work', 'Approve to create the project with its epics and tasks'],
+    mock: PlannerMock
+  },
+  {
+    id: 'breakdown',
+    label: 'Task breakdown',
+    icon: ListTree,
+    title: 'Split big tasks into subtasks',
+    body: 'Give a task a short description and let AI suggest the subtasks. Review the list, then apply it to the task.',
+    points: ['Works from a one-line description', 'Suggested subtasks land in the task’s checklist', 'Subtasks keep their own assignees and notes'],
+    mock: BreakdownMock
+  },
+  {
+    id: 'daily',
+    label: 'Daily planner',
+    icon: CalendarClock,
+    title: 'Plan your day in seconds',
+    body: 'The AI daily planner looks at your tasks and the constraints you give it, and suggests what to focus on today.',
+    points: ['Uses your real tasks and their priorities', 'Respects constraints such as meetings or focus time', 'Gives you a short focus summary for the day'],
+    mock: DailyPlanMock
+  },
+  {
+    id: 'models',
+    label: 'Your own model',
+    icon: Bot,
+    title: 'Bring your own model, per project',
+    body: 'Each project can use its own AI provider: Google Gemini, OpenAI, Anthropic Claude, or Groq and local models. Projects without a provider fall back to built-in rules.',
+    points: ['Choose the provider per project in AI settings', 'Keep sensitive projects on a model you trust', 'No provider means “AI off”: built-in rules still work'],
+    mock: ModelsMock
+  },
+  {
+    id: 'intelligence',
+    label: 'Semantic intelligence',
+    icon: BrainCircuit,
+    title: 'See patterns across projects',
+    body: 'The Intelligence page compares metrics across projects over a time range, highlights anomalies and trends, and lets you drill into the lineage behind a number.',
+    points: ['Compare projects side by side over time', 'Spot anomalies and trends early', 'Drill into lineage to see where a metric comes from'],
+    mock: IntelligenceMock
+  },
+  {
+    id: 'prompts',
+    label: 'Prompt library',
+    icon: Sparkles,
+    title: 'A prompt library and playground',
+    body: 'Keep reusable prompt templates in folders with favourites and versions. In the playground, set variables and model parameters, run and compare versions, then deploy one to production with a canary rollout.',
+    points: ['Folders, favourites and version history', 'Variables, model parameters and side-by-side comparison', 'Deploy to production, gradually, with canary rollouts'],
+    mock: PlaygroundMock
+  }
+];
+
+const GUIDE_FORMATS: Array<{ id: 'modal' | 'tour' | 'tip' | 'hotspot' | 'banner'; title: string; body: string }> = [
+  { id: 'modal', title: 'Modal', body: 'A centred dialog for welcome messages and big announcements.' },
+  { id: 'tour', title: 'Product tour', body: 'Multi-step tooltips that point at elements on the page.' },
+  { id: 'tip', title: 'Smart tip', body: 'A small, contextual hint next to the feature it explains.' },
+  { id: 'hotspot', title: 'Hotspot', body: 'A pulsing dot that invites users to discover something new.' },
+  { id: 'banner', title: 'Banner', body: 'A slim bar across the page for notices and updates.' }
+];
+
+const QUESTION_TYPES = [
+  'NPS',
+  'CSAT',
+  'Opinion scale',
+  'Single choice',
+  'Multiple choice',
+  'Dropdown',
+  'Yes / No',
+  'Emoji',
+  'Short text',
+  'Long text',
+  'File upload'
+];
+
+const FAQS: Array<{ q: string; a: ReactNode }> = [
+  {
+    q: 'What is Pristine?',
+    a: 'Pristine is one workspace for two jobs. Your team plans and ships work with projects, epics and tasks, SLAs, self-updating priorities and AI planning. You also engage the people who use your own product with in-app guides, surveys, checklists and event analytics through a JavaScript SDK.'
+  },
+  {
+    q: 'Do I need to install the SDK to manage tasks?',
+    a: 'No. Projects, tasks, SLAs, AI and collaboration work as soon as you create a workspace. The SDK is only needed when you want to show guides, surveys or checklists inside your own app, or track events from it.'
+  },
+  {
+    q: 'Which AI models can I use?',
+    a: 'Each project has its own AI settings. You can pick Google Gemini, OpenAI, Anthropic Claude, or Groq and local models. A project without a provider falls back to built-in rules, shown as “AI off”.'
+  },
+  {
+    q: 'How are task priorities decided?',
+    a: 'You set a priority (Low, Medium, High or Critical) when you create a task. The dynamic priority engine then re-scores priorities automatically from due dates, SLA risk and activity. Project admins can also run it on demand from More → Recalculate priorities.'
+  },
+  {
+    q: 'What happens to tasks I don’t finish today?',
+    a: 'Daily rollover moves unfinished tasks for a day to the next day automatically, so nothing silently slips off the plan.'
+  },
+  {
+    q: 'How do SLAs work?',
+    a: 'You set response and resolution targets per priority in Settings → SLA Targets. Each task then shows its SLA health (healthy, near breach, breached, paused or completed), and each epic header shows the breached count, response and resolution percentages and average resolve time. A background scheduler keeps checking.'
+  },
+  {
+    q: 'Who can invite people and change roles?',
+    a: 'Workspace Owners and Admins can invite members and change roles. Only an Owner can grant or remove the Owner role or delete the workspace, and a workspace always keeps at least one Owner. Inside a project, the Project Admin manages members, epics and workflow states.'
+  },
+  {
+    q: 'Is the SDK key safe to put in my front-end code?',
+    a: 'The SDK key is a public key meant for the browser. Requests are signed and only accepted from the allowed origins you set on the integration. The key is shown once when created, and you can regenerate it at any time.'
+  },
+  {
+    q: 'Can I use Pristine from ChatGPT or Claude Desktop?',
+    a: 'Yes. Connect a custom GPT through GPT Actions with OAuth so ChatGPT can read and update your tasks. MCP clients such as Claude Desktop or IDEs can connect to the Model Context Protocol server, which exposes around 74 tools and 4 prompts.'
+  },
+  {
+    q: 'How do I sign in, and is two-factor available?',
+    a: 'Sign up with email and password (at least 8 characters) or Continue with Google. Two-factor authentication sends a 6-digit code by email. Codes are hashed, expire and allow a limited number of attempts.'
+  }
+];
+
+/* ------------------------------------------------------------------ */
+/* Small layout helpers                                                */
+/* ------------------------------------------------------------------ */
+
+function Section({ id, className, children, labelledBy }: { id?: string; className?: string; children: ReactNode; labelledBy?: string }): JSX.Element {
+  return (
+    <section aria-labelledby={labelledBy} className={cn('scroll-mt-16 px-4 py-16 sm:px-6 sm:py-24', className)} id={id}>
+      <div className="mx-auto max-w-6xl">{children}</div>
+    </section>
+  );
+}
+
+function IconBadge({ icon: Icon, dark = false }: { icon: LucideIcon; dark?: boolean }): JSX.Element {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
+        dark ? 'bg-white/10 text-emerald-300 ring-1 ring-inset ring-white/10' : 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-100'
+      )}
+    >
+      <Icon size={18} />
+    </span>
+  );
+}
+
+function FeatureCard({ icon, title, children, className }: { icon: LucideIcon; title: string; children: ReactNode; className?: string }): JSX.Element {
+  return (
+    <div className={cn('rounded-xl border border-slate-200 bg-white p-5 shadow-sm', className)}>
+      <IconBadge icon={icon} />
+      <h4 className="m-0 mt-4 text-[15px] font-semibold text-slate-900">{title}</h4>
+      <div className="m-0 mt-1.5 text-sm leading-relaxed text-slate-600">{children}</div>
+    </div>
+  );
+}
+
+function SubHeading({ eyebrow, title, children, id }: { eyebrow: string; title: string; children?: ReactNode; id?: string }): JSX.Element {
+  return (
+    <div className="grid gap-3">
+      <p className="m-0 text-sm font-medium text-emerald-700">{eyebrow}</p>
+      <h3 className="m-0 text-xl font-semibold leading-snug tracking-tight text-slate-900 sm:text-2xl" id={id}>
+        {title}
+      </h3>
+      {children ? <div className="text-[15px] leading-relaxed text-slate-600">{children}</div> : null}
+    </div>
+  );
+}
+
+function GuideLink({ hash, children, dark = false }: { hash: string; children: ReactNode; dark?: boolean }): JSX.Element {
+  return (
+    <Link
+      className={cn(
+        'inline-flex w-fit items-center gap-1.5 rounded text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2',
+        dark ? 'text-emerald-300 focus-visible:ring-emerald-400/50' : 'text-emerald-700 focus-visible:ring-emerald-600/30'
+      )}
+      to={{ pathname: '/guide', hash }}
+    >
+      {children} <ArrowRight aria-hidden size={14} />
+    </Link>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
 
 export default function LandingPage(): JSX.Element {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  useHashScroll();
 
-  // Scroll detection for the navbar background
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const [aiTab, setAiTab] = useState(AI_TABS[0].id);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const activeAi = AI_TABS.find((t) => t.id === aiTab) ?? AI_TABS[0];
+  const ActiveAiMock = activeAi.mock;
 
-  // Interactive Calculator State
-  const [basePriority, setBasePriority] = useState<'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'>('MEDIUM');
-  const [slaUrgency, setSlaUrgency] = useState<'NORMAL' | 'NEAR_BREACH' | 'BREACHED'>('NORMAL');
-  const [downstreamTasks, setDownstreamTasks] = useState<number>(3);
-  const [impact, setImpact] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM');
-
-  // Ledger validation state
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanComplete, setScanComplete] = useState(false);
-
-  const triggerLedgerScan = () => {
-    if (isScanning) return;
-    setIsScanning(true);
-    setScanComplete(false);
-    setTimeout(() => {
-      setIsScanning(false);
-      setScanComplete(true);
-    }, 1200);
+  const onTabKey = (e: KeyboardEvent<HTMLButtonElement>, index: number): void => {
+    let next = -1;
+    if (e.key === 'ArrowRight') next = (index + 1) % AI_TABS.length;
+    if (e.key === 'ArrowLeft') next = (index - 1 + AI_TABS.length) % AI_TABS.length;
+    if (e.key === 'Home') next = 0;
+    if (e.key === 'End') next = AI_TABS.length - 1;
+    if (next < 0) return;
+    e.preventDefault();
+    setAiTab(AI_TABS[next].id);
+    tabRefs.current[next]?.focus();
   };
 
-  // Semantic Search Simulation State
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [searchMatches, setSearchMatches] = useState<Array<{ title: string; score: number; status: string; priority: string }>>([]);
-
-  const presetQueries = [
-    { query: "auth latency problems", results: [
-      { title: "Optimize Redis Access Token Cache Store", score: 0.94, status: "IN_PROGRESS", priority: "CRITICAL" },
-      { title: "Review Axios Interceptor Request Queue Delay", score: 0.88, status: "BACKLOG", priority: "HIGH" },
-      { title: "Toggle 2FA Code Delivery Gateway Timeout", score: 0.81, status: "BLOCKED", priority: "HIGH" }
-    ]},
-    { query: "sla resolution breach warnings", results: [
-      { title: "Escalate Legal Hold Deletion Override request", score: 0.96, status: "PENDING_APPROVAL", priority: "CRITICAL" },
-      { title: "Audit Downstream Blocked Tasks on Database Layer", score: 0.89, status: "IN_PROGRESS", priority: "HIGH" },
-      { title: "Check Task Inspector Calculation Offset logs", score: 0.83, status: "COMPLETED", priority: "MEDIUM" }
-    ]},
-    { query: "cryptographic verification logs", results: [
-      { title: "Verify SHA-256 Ledger Chain Integrity Verification", score: 0.98, status: "COMPLETED", priority: "MEDIUM" },
-      { title: "Lock Project Record Retention legal hold logs", score: 0.85, status: "IN_PROGRESS", priority: "HIGH" }
-    ]}
-  ];
-
-  const handleQueryClick = (queryText: string) => {
-    setSearchQuery(queryText);
-    setIsSearching(true);
-    const matched = presetQueries.find(q => q.query === queryText)?.results ?? [];
-    setTimeout(() => {
-      setSearchMatches(matched);
-      setIsSearching(false);
-    }, 450);
-  };
-
-  // FAQ Accordion State
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
-
-  // Interactive Calculator Logic matching backend formulas
-  const calculateScore = () => {
-    let score = 0;
-    const baseMap = { LOW: 10, MEDIUM: 30, HIGH: 60, CRITICAL: 90 };
-    score += baseMap[basePriority];
-    if (slaUrgency === 'NEAR_BREACH') score += 20;
-    else if (slaUrgency === 'BREACHED') score += 40;
-    score += downstreamTasks * 15;
-    const impactMap = { LOW: 5, MEDIUM: 15, HIGH: 30 };
-    score += impactMap[impact];
-    return Math.min(score, 200);
-  };
-
-  const score = calculateScore();
-  const getPriorityLabel = (s: number) => {
-    if (s < 40) return { label: 'LOW', color: 'text-emerald-700 bg-emerald-50 border-emerald-200', darkColor: 'text-emerald-300 bg-emerald-500/10 border-emerald-400/20', led: 'bg-emerald-400' };
-    if (s < 90) return { label: 'MEDIUM', color: 'text-amber-700 bg-amber-50 border-amber-200', darkColor: 'text-amber-300 bg-amber-500/10 border-amber-400/20', led: 'bg-amber-400' };
-    if (s < 140) return { label: 'HIGH', color: 'text-orange-700 bg-orange-50 border-orange-200', darkColor: 'text-orange-300 bg-orange-500/10 border-orange-400/20', led: 'bg-orange-400' };
-    return { label: 'CRITICAL', color: 'text-rose-700 bg-rose-50 border-rose-200', darkColor: 'text-red-300 bg-red-500/10 border-red-400/20', led: 'bg-red-400' };
-  };
-
-  const priorityResult = getPriorityLabel(score);
-
-  const getExecutionLogs = () => {
-    return [
-      { prefix: '[GATEWAY]', text: 'Ingested evaluation trigger payload...', color: 'text-sky-400' },
-      { prefix: '[ENGINE]', text: `Evaluated base priority: ${basePriority} (${basePriority === 'LOW' ? 10 : basePriority === 'MEDIUM' ? 30 : basePriority === 'HIGH' ? 60 : 90} pts)`, color: 'text-emerald-400' },
-      { prefix: '[SLA_MONITOR]', text: `SLA Urgency offset: ${slaUrgency} (${slaUrgency === 'NEAR_BREACH' ? '+20' : slaUrgency === 'BREACHED' ? '+40' : '+0'} pts)`, color: 'text-amber-400' },
-      { prefix: '[CASCADE]', text: `Processed ${downstreamTasks} downstream blocked tasks (${downstreamTasks * 15} pts)`, color: 'text-violet-400' },
-      { prefix: '[IMPACT]', text: `Analyzed organizational weight: ${impact} (${impact === 'LOW' ? 5 : impact === 'MEDIUM' ? 15 : 30} pts)`, color: 'text-teal-400' },
-      { prefix: '[LEDGER]', text: `Dynamic Priority compiled successfully: ${score} / 200`, color: 'text-emerald-300 font-semibold' }
-    ];
-  };
-
-  const faqs = [
-    {
-      q: "How does the Dynamic Priority Engine compute priority scores?",
-      a: "The engine uses a rigorous additive-multiplier model. It takes a Task's Base Priority (10-90 severity points), checks for near/breached SLAs to append latency penalties (+20/40 points), adds downstream dependency block counts (15 points per blocked task), and factors in overall organizational impact (5-30 points) to compile a final capped priority value of 0-200."
-    },
-    {
-      q: "What makes the Activity History cryptographically secure?",
-      a: "Every transaction, update, or change logs directly as a sequential node block. The system computes a unique SHA-256 hash using the previous block's hash, current sequence, timestamps, and active user details. Administrators can trigger a complete integrity verification in the frontend toolbar to validate hashes in milliseconds and detect unauthorized changes."
-    },
-    {
-      q: "How are SLAs paused and monitored?",
-      a: "The portal monitors response and resolution due times. Whenever a task is marked as blocked or pending external ordered approvals, the SLA timer is safely suspended to preserve operational compliance. The timeline automatically resumes once downstream bottlenecks resolve."
-    },
-    {
-      q: "How does Vector AI Semantic Intelligence function without keyword queries?",
-      a: "Our system generates high-dimensional mathematical vector embeddings of tasks and epic notes. When you conceptually search for a task (e.g. 'user credentials latency'), the model performs a cosine similarity analysis to surface contextually related tasks and suggested projects, even if they share zero keyword matches."
-    }
-  ];
-
-  const navLinks = [
-    { href: '#demo', label: 'Simulator' },
-    { href: '#features', label: 'Features' },
-    { href: '#semantic-ai', label: 'Semantic AI' },
-    { href: '#matrix', label: 'Compare' },
-    { href: '#governance', label: 'Governance' },
-    { href: '#faq', label: 'FAQ' }
-  ];
-
-  const optionBtn = (active: boolean): string =>
-    `h-9 rounded-lg border px-2 text-[13px] font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/15 ${
-      active ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
-    }`;
-
-  const comparisonRows = [
-    ['Task priority', 'Static dropdown', 'Dynamic score (0–200) from SLA urgency, impact and dependency chain'],
-    ['Activity log', 'Plain database logs', 'SHA-256 hash chain with on-demand verification'],
-    ['SLA tracking', 'Basic due dates', 'Response and resolution timers that pause while blocked'],
-    ['Search and AI', 'Keyword search', 'Vector similarity, cross-project suggestions and note matching']
-  ] as const;
-
-  const getStarted = () => navigate(user ? '/dashboard' : '/register');
+  const primaryCta = user ? (
+    <Link className={ctaClass('primary')} to="/dashboard">
+      Open app <ArrowRight size={16} />
+    </Link>
+  ) : (
+    <Link className={ctaClass('primary')} to="/register">
+      Get started <ArrowRight size={16} />
+    </Link>
+  );
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white font-sans text-slate-700 selection:bg-emerald-500/15 selection:text-emerald-950">
-      {/* Navbar */}
-      <header
-        className={`fixed inset-x-0 top-0 z-50 border-b transition-colors duration-200 ${
-          isScrolled || menuOpen ? 'border-slate-200 bg-white/90 backdrop-blur-md' : 'border-transparent bg-white/0'
-        }`}
+    <div className="relative min-h-screen overflow-x-clip bg-white font-sans text-slate-700 selection:bg-emerald-500/15 selection:text-emerald-950">
+      <a
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-slate-900 focus:shadow-md"
+        href="#main"
       >
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <a className="flex items-center gap-2" href="#top">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white p-1.5 shadow-sm">
-              <img alt="Pristine Logo" className="h-full w-full object-contain" src={logoImg} />
-            </span>
-            <span className="text-[15px] font-semibold tracking-tight text-slate-900">Pristine</span>
-          </a>
+        Skip to content
+      </a>
+      <MarketingNav />
 
-          <nav className="hidden items-center gap-1 lg:flex">
-            {navLinks.map((link) => (
-              <a
-                className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
-                href={link.href}
-                key={link.href}
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-2">
-            {user ? (
-              <button className={buttonClass('primary', 'md')} onClick={() => navigate('/dashboard')} type="button">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                Launch Portal
-                <ArrowRight size={14} />
-              </button>
-            ) : (
-              <>
-                <button className={buttonClass('ghost', 'md')} onClick={() => navigate('/login')} type="button">
-                  Log In
-                </button>
-                <button className={buttonClass('primary', 'md')} onClick={() => navigate('/register')} type="button">
-                  Register
-                </button>
-              </>
-            )}
-            <button
-              aria-expanded={menuOpen}
-              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-              className={buttonClass('ghost', 'icon', 'lg:hidden')}
-              onClick={() => setMenuOpen((open) => !open)}
-              type="button"
-            >
-              {menuOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
-          </div>
-        </div>
-
-        {menuOpen ? (
-          <div className="border-t border-slate-200 bg-white px-4 pb-4 pt-2 shadow-sm lg:hidden">
-            <nav className="grid">
-              {navLinks.map((link) => (
-                <a
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  href={link.href}
-                  key={link.href}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {link.label}
-                </a>
-              ))}
-            </nav>
-          </div>
-        ) : null}
-      </header>
-
-      {/* Hero */}
-      <section className="relative border-b border-slate-200 bg-slate-50" id="top">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(16,185,129,0.08),transparent)]"
-        />
-        <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-36">
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            className="mx-auto flex max-w-3xl flex-col items-center text-center"
-            initial={{ opacity: 0, y: 12 }}
-            transition={{ duration: 0.4 }}
-          >
-            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[13px] font-medium text-slate-600 shadow-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              Task management with live priorities
-            </span>
-            <h1 className="mt-6 text-4xl font-semibold leading-[1.1] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-              Operational control for <span className="text-emerald-700">high-performance teams</span>
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
-              Pristine brings task coordination, automatic priority scoring, SLA tracking, a tamper-evident activity log and
-              semantic search together in one calm workspace.
-            </p>
-            <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row">
-              <button className={largeButton('primary')} onClick={getStarted} type="button">
-                Get Started Free <ChevronRight size={16} />
-              </button>
-              <a className={largeButton('secondary')} href="#demo">
-                Open the simulator
-              </a>
-            </div>
-          </motion.div>
-
-          {/* Key metrics */}
-          <dl className="mx-auto mt-14 grid max-w-3xl grid-cols-1 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white shadow-sm sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-            {[
-              { label: 'Activity log integrity', value: '100% verified', accent: true },
-              { label: 'Priority calculation', value: '< 0.1 ms' },
-              { label: 'SLA compliance', value: '99.98% met' }
-            ].map((m) => (
-              <div className="px-5 py-4 text-center" key={m.label}>
-                <dt className="text-[13px] text-slate-500">{m.label}</dt>
-                <dd className={`m-0 mt-1 text-xl font-semibold tracking-tight ${m.accent ? 'text-emerald-700' : 'text-slate-900'}`}>
-                  {m.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </section>
-
-      {/* Simulator */}
-      <section className="scroll-mt-20 px-4 py-16 sm:px-6 sm:py-24" id="demo">
-        <div className="mx-auto max-w-6xl">
-          <SectionHeading
-            description="Change the inputs and watch the score update, using the same formula the backend runs."
-            eyebrow="Interactive engine"
-            title="See the priority engine in action"
+      <main id="main">
+        {/* ------------------------------------------------ Hero */}
+        <section aria-labelledby="hero-title" className="relative border-b border-slate-200 bg-slate-50" id="top">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_45%_at_50%_0%,rgba(16,185,129,0.10),transparent),radial-gradient(40%_40%_at_100%_60%,rgba(14,165,233,0.06),transparent)]"
           />
-
-          <div className="mt-10 grid gap-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:grid-cols-2 lg:gap-8 lg:p-8">
-            {/* Controls */}
-            <div className="grid content-start gap-6">
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
-                  <Calculator size={16} />
-                </span>
-                <h3 className="m-0 text-[15px] font-semibold text-slate-900">Simulate a task</h3>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_70%)]"
+          />
+          <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-14 sm:px-6 sm:pb-28 sm:pt-20">
+            <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[13px] font-medium text-slate-600 shadow-sm">
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Work management and product engagement, together
+              </span>
+              <h1 className="m-0 mt-6 text-4xl font-semibold leading-[1.08] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl" id="hero-title">
+                Plan the work. <span className="text-emerald-700">Guide the people</span> who use it.
+              </h1>
+              <p className="m-0 mt-5 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
+                Pristine gives your team projects, epics and tasks with SLAs, self-updating priorities and AI planning, and gives
+                your product in-app guides, surveys, checklists and event analytics through a JavaScript SDK. One workspace,
+                one login.
+              </p>
+              <div className="mt-8 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row">
+                {primaryCta}
+                <Link className={ctaClass('secondary')} to="/guide">
+                  <BookOpen size={16} /> Read the guide
+                </Link>
               </div>
-
-              <fieldset className="m-0 grid gap-2 border-0 p-0">
-                <legend className="mb-2 flex items-center gap-1.5 text-sm font-medium text-slate-700">
-                  <Zap className="text-slate-400" size={14} /> Base priority
-                </legend>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const).map((p) => (
-                    <button className={optionBtn(basePriority === p)} key={p} onClick={() => setBasePriority(p)} type="button">
-                      {toLabel(p)}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <fieldset className="m-0 grid gap-2 border-0 p-0">
-                <legend className="mb-2 flex items-center gap-1.5 text-sm font-medium text-slate-700">
-                  <Clock className="text-slate-400" size={14} /> SLA urgency
-                </legend>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['NORMAL', 'NEAR_BREACH', 'BREACHED'] as const).map((u) => (
-                    <button className={optionBtn(slaUrgency === u)} key={u} onClick={() => setSlaUrgency(u)} type="button">
-                      {toLabel(u)}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <fieldset className="m-0 grid gap-2 border-0 p-0">
-                <legend className="mb-2 flex items-center gap-1.5 text-sm font-medium text-slate-700">
-                  <Users className="text-slate-400" size={14} /> Impact
-                </legend>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['LOW', 'MEDIUM', 'HIGH'] as const).map((i) => (
-                    <button className={optionBtn(impact === i)} key={i} onClick={() => setImpact(i)} type="button">
-                      {toLabel(i)}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-
-              <label className="grid gap-3">
-                <span className="flex items-center justify-between text-sm font-medium text-slate-700">
-                  <span>Blocked downstream tasks</span>
-                  <span className="tabular-nums text-slate-900">{downstreamTasks}</span>
-                </span>
-                <input
-                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-slate-900"
-                  max="8"
-                  min="0"
-                  onChange={(e) => setDownstreamTasks(parseInt(e.target.value))}
-                  type="range"
-                  value={downstreamTasks}
-                />
-              </label>
+              <ul className="m-0 mt-6 flex list-none flex-wrap justify-center gap-x-5 gap-y-2 p-0 text-[13px] text-slate-500">
+                {['Continue with Google', 'Bring your own AI model', 'MCP and ChatGPT ready'].map((t) => (
+                  <li className="flex items-center gap-1.5" key={t}>
+                    <ShieldCheck aria-hidden className="text-emerald-600" size={14} /> {t}
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            {/* Result */}
-            <div className="flex min-w-0 flex-col justify-between gap-6 rounded-xl bg-slate-900 p-5 text-white sm:p-6">
-              <div className="grid gap-5">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3 text-[13px] text-slate-400">
-                  <span>Calculation result</span>
-                  <span className="flex items-center gap-1.5 text-emerald-400">
-                    <TrendingUp size={14} /> Live
-                  </span>
-                </div>
-
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <div className="flex items-baseline text-4xl font-semibold tabular-nums tracking-tight text-white sm:text-5xl">
-                      {score}
-                      <span className="ml-1.5 text-sm font-normal text-slate-500">/ 200</span>
-                    </div>
-                    <p className="m-0 mt-1 text-[13px] text-slate-400">Dynamic priority score</p>
-                  </div>
-                  <span
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${priorityResult.darkColor}`}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full ${priorityResult.led}`} />
-                    {toLabel(priorityResult.label)}
-                  </span>
-                </div>
-
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-                  <div
-                    className="h-full rounded-full bg-emerald-500 transition-all duration-300"
-                    style={{ width: `${(score / 200) * 100}%` }}
-                  />
-                </div>
-
-                <div className="rounded-lg border border-white/10 bg-slate-950/60 p-3.5 font-mono text-xs leading-relaxed">
-                  <div className="mb-2 flex items-center gap-1.5 border-b border-white/5 pb-2 font-sans text-slate-500">
-                    <Terminal size={12} /> Engine log
-                  </div>
-                  <div className="grid gap-1">
-                    {getExecutionLogs()
-                      .slice(-3)
-                      .map((log, i) => (
-                        <div className="flex min-w-0 gap-2" key={i}>
-                          <span className="shrink-0 text-slate-500">{log.prefix}</span>
-                          <span className="min-w-0 break-words text-slate-300">{log.text}</span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
-
-              <button className={buttonClass('accent', 'md', 'w-full').replace('h-9', 'h-10')} onClick={() => navigate('/register')} type="button">
-                Deploy the engine <ArrowRight size={16} />
-              </button>
+            <div className="relative mx-auto mt-14 max-w-5xl">
+              <HeroMock />
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Features */}
-      <section className="scroll-mt-20 border-y border-slate-200 bg-slate-50 px-4 py-16 sm:px-6 sm:py-24" id="features">
-        <div className="mx-auto max-w-6xl">
+        {/* ------------------------------------------------ Two products in one */}
+        <Section id="products" labelledBy="products-title">
           <SectionHeading
-            description="Everything a delivery team needs to decide what matters next, and prove what happened."
-            eyebrow="Platform features"
-            title="Built for teams that ship"
+            description="Most teams juggle a task tracker, an onboarding tool, a survey tool and an analytics script. Pristine puts them in one place, with a developer platform underneath."
+            eyebrow="Two products in one"
+            id="products-title"
+            title="Everything from the first task to the first-run experience"
           />
-
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             {[
               {
-                Icon: Zap,
-                title: 'Dynamic priority engine',
-                body: 'Task priority is recalculated in real time from base severity, organisational impact, SLA urgency and the number of downstream tasks it blocks.',
-                wide: true
+                icon: FolderKanban,
+                tag: 'For your team',
+                title: 'Work management',
+                body: 'Plan, prioritise and deliver work together.',
+                items: ['Projects, epics and tasks with list and kanban views', 'SLA targets, dynamic priority and daily rollover', 'Comments, approvals, notes, chat and history', 'AI planning with the model you choose'],
+                href: 'work'
               },
               {
-                Icon: Clock,
-                title: 'SLA breach tracking',
-                body: 'Separate timers for first response and resolution. Timers pause automatically while a task is blocked.'
+                icon: Megaphone,
+                tag: 'For your users',
+                title: 'Product engagement',
+                body: 'Onboard, inform and listen to the people using your app.',
+                items: ['Guides in five formats, from modals to hotspots', 'Surveys with eleven question types', 'Checklists, targeting and saved segments', 'Event tracking and engagement analytics'],
+                href: 'engagement'
               },
               {
-                Icon: ShieldCheck,
-                title: 'Tamper-evident activity log',
-                body: 'Every project operation is chained with a SHA-256 hash, so edits to history are detected instantly.'
-              },
-              {
-                Icon: Sparkles,
-                title: 'Semantic AI search',
-                body: 'Vector embeddings let you search tasks by meaning, surface related work across projects and match notes automatically.',
-                wide: true
+                icon: Code2,
+                tag: 'For your developers',
+                title: 'Developer platform',
+                body: 'Connect Pristine to your code, your tools and your AI assistants.',
+                items: ['JavaScript SDK with signed requests', 'Personal Sync API key for scripts', 'ChatGPT Actions and an MCP server', 'Companion devices paired by QR code'],
+                href: 'developers'
               }
-            ].map(({ Icon, title, body, wide }) => (
-              <div
-                className={`rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 ${wide ? 'lg:col-span-2' : ''}`}
-                key={title}
-              >
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
-                  <Icon size={18} />
-                </span>
-                <h3 className="m-0 mt-4 text-base font-semibold text-slate-900">{title}</h3>
-                <p className="m-0 mt-2 text-sm leading-relaxed text-slate-600">{body}</p>
+            ].map((p) => (
+              <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:last:col-span-2 lg:last:col-span-1" key={p.title}>
+                <div className="flex items-center justify-between gap-3">
+                  <IconBadge icon={p.icon} />
+                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">{p.tag}</span>
+                </div>
+                <h3 className="m-0 mt-5 text-lg font-semibold text-slate-900">{p.title}</h3>
+                <p className="m-0 mt-1 text-sm text-slate-600">{p.body}</p>
+                <CheckList className="mt-5" items={p.items} />
+                <Link
+                  className="mt-6 inline-flex w-fit items-center gap-1.5 rounded pt-1 text-sm font-medium text-slate-900 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20"
+                  to={{ pathname: '/', hash: p.href }}
+                >
+                  Explore {p.title.toLowerCase()} <ArrowRight aria-hidden size={14} />
+                </Link>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </Section>
 
-      {/* Semantic sandbox */}
-      <section className="scroll-mt-20 px-4 py-16 sm:px-6 sm:py-24" id="semantic-ai">
-        <div className="mx-auto max-w-6xl">
+        {/* ------------------------------------------------ Work management: projects, epics & tasks */}
+        <Section className="border-t border-slate-200 bg-slate-50" id="work" labelledBy="work-title">
           <SectionHeading
-            description="Pick a query. Results match on meaning, even when no keywords overlap."
-            eyebrow="Semantic sandbox"
-            title="Try conceptual search"
+            description="Organise work into projects and epics, then run it from a list or a board, with a detailed inspector for every task."
+            eyebrow="Work management"
+            id="work-title"
+            title="Projects, epics and tasks, the way your team works"
           />
 
-          <div className="mt-10 grid gap-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:grid-cols-3">
-            <div className="grid content-start gap-3 lg:border-r lg:border-slate-200 lg:pr-6">
-              <h4 className="m-0 text-sm font-medium text-slate-700">Choose a query</h4>
-              <div className="grid gap-2">
-                {presetQueries.map((q, idx) => (
+          <div className="mt-14 grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
+            <div className="grid gap-6">
+              <SubHeading eyebrow="Plan and organise" title="From project to subtask in one place">
+                Every project has epics (Planned, Active, Completed, Archived) that group tasks. Tasks carry a title,
+                description, priority, status, assignee, due date and subtasks with their own assignees and notes.
+              </SubHeading>
+              <CheckList
+                items={[
+                  'List and kanban views inside every epic',
+                  'Search, “Assigned to me” and filters by status, priority and assignee',
+                  'Bulk-select tasks and assign them in one go',
+                  'Block and unblock tasks with a reason',
+                  'Custom workflow states per project'
+                ]}
+              />
+              <GuideLink hash="tasks">Read the tasks guide</GuideLink>
+            </div>
+            <TaskViewsMock />
+          </div>
+
+          <div className="mt-16 grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
+            <InspectorMock />
+            <div className="grid gap-6">
+              <SubHeading eyebrow="Task inspector" title="Everything about a task, in one drawer">
+                Open any task to see its properties, a subtask checklist with progress, live comments, approvals, work notes
+                and timers, without leaving the board.
+              </SubHeading>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FeatureCard icon={LayoutList} title="Priorities and statuses">
+                  Low, Medium, High and Critical. Backlog, To do, In progress, In review, Blocked and Done.
+                </FeatureCard>
+                <FeatureCard icon={Workflow} title="Custom workflow states">
+                  Shape the workflow per project from the project’s More menu → Workflow states.
+                </FeatureCard>
+                <FeatureCard icon={ListChecks} title="Subtasks with owners">
+                  Break work down; each subtask has its own assignee and notes, and progress rolls up.
+                </FeatureCard>
+                <FeatureCard icon={Timer} title="Timers and work notes">
+                  Track time on a task and keep working notes next to the work itself.
+                </FeatureCard>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* ------------------------------------------------ SLAs, dynamic priority, rollover */}
+        <Section id="slas" labelledBy="slas-title">
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+            <div className="order-2 grid gap-4 lg:order-1">
+              <SlaMock />
+              <RolloverMock />
+            </div>
+            <div className="order-1 grid gap-6 lg:order-2">
+              <SectionHeading
+                align="left"
+                description="Set service targets, let priorities keep themselves current, and never lose an unfinished task overnight."
+                eyebrow="SLAs and priorities"
+                id="slas-title"
+                title="Deadlines you can see coming"
+              />
+              <div className="grid gap-5">
+                {[
+                  {
+                    icon: Timer,
+                    title: 'SLA targets and health',
+                    body: 'Response and resolution targets per priority, set in Settings → SLA Targets. Each task shows its SLA health: healthy, near breach, breached, paused or completed. Epic headers show the breached count, response %, resolution % and average resolve time. A background scheduler keeps checking.'
+                  },
+                  {
+                    icon: Zap,
+                    title: 'Dynamic priority engine',
+                    body: 'Priorities are re-scored automatically from due dates, SLA risk and activity, so urgent work rises on its own. Run it on demand with More → Recalculate priorities.'
+                  },
+                  {
+                    icon: History,
+                    title: 'Daily rollover',
+                    body: 'Unfinished tasks for a day roll over to the next day automatically, on a schedule.'
+                  }
+                ].map((f) => (
+                  <div className="flex gap-4" key={f.title}>
+                    <IconBadge icon={f.icon} />
+                    <div className="min-w-0">
+                      <h3 className="m-0 text-[15px] font-semibold text-slate-900">{f.title}</h3>
+                      <p className="m-0 mt-1 text-sm leading-relaxed text-slate-600">{f.body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <GuideLink hash="slas">How to set SLA targets</GuideLink>
+            </div>
+          </div>
+        </Section>
+
+        {/* ------------------------------------------------ Collaboration */}
+        <Section className="border-t border-slate-200 bg-slate-50" id="collaboration" labelledBy="collab-title">
+          <SectionHeading
+            description="Discussion, decisions and history stay attached to the work, and everyone hears about what changed."
+            eyebrow="Collaboration"
+            id="collab-title"
+            title="Work together without switching tools"
+          />
+          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+            <div className="grid content-start gap-4 md:col-span-2 lg:col-span-1 lg:row-span-3">
+              <ChatMock />
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                <IconBadge icon={MessagesSquare} />
+                <h3 className="m-0 mt-4 text-[15px] font-semibold text-slate-900">Real-time project chat</h3>
+                <p className="m-0 mt-1.5 text-sm leading-relaxed text-slate-600">
+                  A chat panel in every project, live over WebSockets, with members-only threads.
+                </p>
+              </div>
+            </div>
+            <FeatureCard icon={MessageCircle} title="Live comments">
+              Comment on tasks and see replies appear as they are written.
+            </FeatureCard>
+            <FeatureCard icon={ClipboardCheck} title="Approvals">
+              Request approval on a task, then approve or reject it through the approval workflow.
+            </FeatureCard>
+            <FeatureCard icon={FileText} title="Notes and documents">
+              Project notes, epic notes and task work notes keep context close to the work.
+            </FeatureCard>
+            <FeatureCard icon={History} title="Activity history">
+              An audit trail of project activity, with a retention policy the Project Admin configures.
+            </FeatureCard>
+            <FeatureCard icon={BellRing} title="Notifications and inbox">
+              A bell for task updates and an inbox for invitations and team updates.
+            </FeatureCard>
+            <FeatureCard icon={Users} title="Project team">
+              Add members to a project from the Team panel and set their project role.
+            </FeatureCard>
+          </div>
+        </Section>
+
+        {/* ------------------------------------------------ AI */}
+        <Section id="ai" labelledBy="ai-title">
+          <SectionHeading
+            description="AI that plans projects, breaks down tasks and organises your day, running on the model each project chooses."
+            eyebrow="AI"
+            id="ai-title"
+            title="An AI co-planner, on your terms"
+          />
+
+          <div className="mt-10">
+            <div aria-label="AI features" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:justify-center sm:px-0" role="tablist">
+              {AI_TABS.map((t, i) => {
+                const selected = t.id === aiTab;
+                return (
                   <button
-                    className={`flex min-h-10 items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-colors cursor-pointer ${
-                      searchQuery === q.query
-                        ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
-                    }`}
-                    key={idx}
-                    onClick={() => handleQueryClick(q.query)}
+                    aria-controls={`ai-panel-${t.id}`}
+                    aria-selected={selected}
+                    className={cn(
+                      'inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/25',
+                      selected ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
+                    )}
+                    id={`ai-tab-${t.id}`}
+                    key={t.id}
+                    onClick={() => setAiTab(t.id)}
+                    onKeyDown={(e) => onTabKey(e, i)}
+                    ref={(el) => {
+                      tabRefs.current[i] = el;
+                    }}
+                    role="tab"
+                    tabIndex={selected ? 0 : -1}
                     type="button"
                   >
-                    <span className="min-w-0">"{q.query}"</span>
-                    <Search className={searchQuery === q.query ? 'text-emerald-600' : 'text-slate-400'} size={14} />
+                    <t.icon aria-hidden size={15} />
+                    {t.label}
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
 
-            <div className="grid min-w-0 content-start gap-3 lg:col-span-2">
-              <div className="flex items-center justify-between gap-3">
-                <h4 className="m-0 text-sm font-medium text-slate-700">Matched tasks</h4>
-                <span className="text-xs text-slate-500">Similarity above 0.80</span>
+            <div
+              aria-labelledby={`ai-tab-${activeAi.id}`}
+              className="mt-6 grid items-center gap-8 rounded-2xl border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-5 sm:p-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12"
+              id={`ai-panel-${activeAi.id}`}
+              role="tabpanel"
+            >
+              <div className="grid gap-4">
+                <h3 className="m-0 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">{activeAi.title}</h3>
+                <p className="m-0 text-[15px] leading-relaxed text-slate-600">{activeAi.body}</p>
+                <CheckList items={activeAi.points} />
+                <GuideLink hash={activeAi.id === 'prompts' ? 'prompts' : 'ai'}>Learn more in the guide</GuideLink>
               </div>
+              <ActiveAiMock />
+            </div>
+          </div>
+        </Section>
 
-              {isSearching ? (
-                <div className="grid gap-2">
-                  {[0, 1, 2].map((i) => (
-                    <div className="h-[62px] animate-pulse rounded-lg bg-slate-100" key={i} />
+        {/* ------------------------------------------------ Product engagement */}
+        <section aria-labelledby="engagement-title" className="relative scroll-mt-16 overflow-hidden border-t border-slate-200 bg-slate-50 px-4 py-16 sm:px-6 sm:py-24" id="engagement">
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(50%_60%_at_50%_0%,rgba(16,185,129,0.08),transparent)]" />
+          <div className="relative mx-auto max-w-6xl">
+            <SectionHeading
+              description="Install one JavaScript SDK in your app, then onboard, inform and survey your users, all targeted to the right people and measured."
+              eyebrow="Product engagement"
+              id="engagement-title"
+              title="Guide, survey and understand your own users"
+            />
+
+            {/* SDK integration + guided setup */}
+            <div className="mt-14 grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+              <div className="grid gap-6">
+                <SubHeading eyebrow="SDK integrations" title="Connect each app and environment">
+                  Create an integration per app and environment (Development, Staging or Production) with its domain and
+                  allowed origins. You get a public SDK key, shown once and regenerable at any time, and you can see
+                  connection status, last activity and SDK version.
+                </SubHeading>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    ['Pending', 'bg-amber-50 text-amber-700 ring-amber-200'],
+                    ['Connected', 'bg-emerald-50 text-emerald-700 ring-emerald-200'],
+                    ['Disabled', 'bg-slate-100 text-slate-700 ring-slate-200'],
+                    ['Revoked', 'bg-red-50 text-red-700 ring-red-200']
+                  ].map(([s, c]) => (
+                    <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset', c)} key={s}>
+                      <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current opacity-80" /> {s}
+                    </span>
                   ))}
                 </div>
-              ) : searchMatches.length > 0 ? (
-                <div className="grid gap-2">
-                  {searchMatches.map((m, i) => (
-                    <div
-                      className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50/60 p-3 sm:flex-row sm:items-center sm:justify-between"
-                      key={i}
-                    >
-                      <div className="min-w-0">
-                        <span className="text-xs text-slate-500">{toLabel(m.status)}</span>
-                        <h5 className="m-0 text-sm font-medium text-slate-900">{m.title}</h5>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">
-                          {(m.score * 100).toFixed(0)}% match
-                        </span>
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-inset ring-slate-200">
-                          {toLabel(m.priority)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 p-4 text-center">
-                  <Search className="text-slate-400" size={18} />
-                  <p className="m-0 text-sm text-slate-500">Choose a query to see matching tasks.</p>
-                </div>
-              )}
+                <CheckList
+                  items={[
+                    'Guided setup: install, initialise, connect, track a first event, publish a first experience',
+                    'Steps tick off automatically as your app connects',
+                    'Enable, disable or revoke an integration at any time'
+                  ]}
+                />
+              </div>
+              <SetupMock />
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Comparison matrix */}
-      <section className="scroll-mt-20 px-4 pb-16 sm:px-6 sm:pb-24" id="matrix">
-        <div className="mx-auto max-w-6xl">
-          <SectionHeading eyebrow="Compare" title="Pristine vs. legacy task managers" />
-
-          {/* Phones: one card per capability */}
-          <ul className="m-0 mt-10 grid list-none gap-3 p-0 sm:hidden">
-            {comparisonRows.map(([cap, legacy, pristine]) => (
-              <li className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" key={cap}>
-                <h3 className="m-0 text-[15px] font-semibold text-slate-900">{cap}</h3>
-                <p className="m-0 mt-2 flex items-start gap-2 text-sm text-slate-800">
-                  <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={16} />
-                  {pristine}
-                </p>
-                <p className="m-0 mt-1.5 pl-6 text-[13px] text-slate-500">Standard tools: {legacy}</p>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-10 hidden overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm sm:block">
-            <table className="w-full border-collapse text-left text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Capability</th>
-                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Standard task tool</th>
-                  <th className="px-4 py-3 text-xs font-medium uppercase tracking-wide text-emerald-700">Pristine</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {comparisonRows.map(([cap, legacy, pristine]) => (
-                  <tr key={cap}>
-                    <td className="px-4 py-3.5 font-medium text-slate-900">{cap}</td>
-                    <td className="px-4 py-3.5 text-slate-500">{legacy}</td>
-                    <td className="px-4 py-3.5 text-slate-800">
-                      <span className="flex items-start gap-2">
-                        <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={16} />
-                        {pristine}
-                      </span>
-                    </td>
-                  </tr>
+            {/* Guides */}
+            <div className="mt-20">
+              <SubHeading eyebrow="Guides" title="Five formats for every moment">
+                Start from a template (Welcome message, Product tour, Feature announcement or Feature tip), preview it live,
+                set its priority and build steps with headings, body text, buttons and element selectors.
+              </SubHeading>
+              <ul className="m-0 mt-8 grid list-none grid-cols-1 gap-4 p-0 sm:grid-cols-2 lg:grid-cols-5">
+                {GUIDE_FORMATS.map((g) => (
+                  <li className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm" key={g.id}>
+                    <GuideFormatIllustration format={g.id} />
+                    <h4 className="m-0 mt-3 text-[15px] font-semibold text-slate-900">{g.title}</h4>
+                    <p className="m-0 mt-1 text-[13px] leading-relaxed text-slate-600">{g.body}</p>
+                  </li>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* Governance */}
-      <section className="scroll-mt-16 bg-slate-900 px-4 py-16 text-white sm:px-6 sm:py-24" id="governance">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 md:grid-cols-2 md:gap-12">
-          <div className="grid gap-4">
-            <span className="text-sm font-medium text-emerald-400">Compliance first</span>
-            <h2 className="m-0 text-2xl font-semibold tracking-tight sm:text-3xl">Security and activity governance</h2>
-            <p className="m-0 max-w-lg text-[15px] leading-relaxed text-slate-400">
-              Every sign-off, settings change and task update is written to an append-only audit chain. Administrators can
-              confirm the full history is intact in seconds.
-            </p>
-            <ul className="m-0 mt-2 grid list-none gap-2.5 p-0 text-sm text-slate-300">
-              {['Hash-chained activity history', 'Legal retention holds', 'One-click integrity verification'].map((item) => (
-                <li className="flex items-center gap-2.5" key={item}>
-                  <CheckCircle2 className="shrink-0 text-emerald-400" size={16} /> {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="relative grid min-w-0 gap-3 overflow-hidden rounded-xl border border-white/10 bg-slate-950/60 p-4 sm:p-5">
-            <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
-              <span className="flex items-center gap-2 text-[13px] font-medium text-slate-300">
-                <span className={`h-1.5 w-1.5 rounded-full ${isScanning ? 'animate-pulse bg-amber-400' : 'bg-emerald-400'}`} />
-                {isScanning ? 'Validating ledger…' : 'Ledger integrity signed'}
-              </span>
-              <button
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 text-xs font-medium text-slate-200 transition-colors hover:bg-white/10 disabled:opacity-50 cursor-pointer"
-                disabled={isScanning}
-                onClick={triggerLedgerScan}
-                type="button"
-              >
-                {isScanning ? <Lock className="animate-spin" size={14} /> : <LockKeyhole size={14} />}
-                Verify
-              </button>
+              </ul>
             </div>
 
-            {[
-              { label: 'Genesis block #001', seq: 'Seq 1 · create_project', hash: '8a7f…d49e' },
-              { label: 'Block #002', seq: 'Seq 2 · evaluate_priority', hash: '3c9b…81ea' }
-            ].map((b) => (
-              <div
-                className="flex items-center justify-between gap-3 rounded-lg border border-white/5 bg-slate-900 p-3.5"
-                key={b.label}
-              >
-                <div className="min-w-0">
-                  <div className="text-[13px] font-medium text-white">{b.label}</div>
-                  <div className="truncate font-mono text-xs text-slate-400">{b.seq}</div>
+            {/* Surveys */}
+            <div className="mt-20 grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+              <div className="grid gap-4 sm:grid-cols-2 lg:order-2 lg:grid-cols-1 xl:grid-cols-2">
+                <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+                  <NpsMock />
                 </div>
-                <code className="shrink-0 font-mono text-xs text-slate-500">{b.hash}</code>
-              </div>
-            ))}
-
-            {scanComplete && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-slate-950/95 p-6 text-center">
-                <CheckCircle2 className="text-emerald-400" size={28} />
-                <h3 className="m-0 text-sm font-semibold text-white">Integrity verification OK</h3>
-                <p className="m-0 max-w-sm text-xs text-slate-400">SHA-256 hashes verified. No alterations detected in the ledger.</p>
-                <button
-                  className={buttonClass('secondary', 'sm', 'mt-2')}
-                  onClick={() => setScanComplete(false)}
-                  type="button"
-                >
-                  Close
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Workflow */}
-      <section className="px-4 py-16 sm:px-6 sm:py-24">
-        <div className="mx-auto max-w-6xl">
-          <SectionHeading eyebrow="Workflow" title="How work flows through Pristine" />
-
-          <ol className="m-0 mt-10 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-3 lg:gap-6">
-            {[
-              {
-                Icon: Server,
-                title: 'Capture',
-                body: 'Task creation, subtask updates and notes reach the server instantly over secure WebSocket streams.'
-              },
-              {
-                Icon: Calculator,
-                title: 'Prioritise',
-                body: 'The priority engine rescores work from its base settings, live SLA timers and blocked downstream tasks.'
-              },
-              {
-                Icon: ShieldCheck,
-                title: 'Record',
-                body: 'The change is committed to the activity log with a sequence number and a hash linked to the previous entry.'
-              }
-            ].map(({ Icon, title, body }, i) => (
-              <li className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm" key={title}>
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white">
-                    <Icon size={16} />
-                  </span>
-                  <span className="text-xs font-medium text-slate-500">Step {i + 1}</span>
+                <NpsResultsMock />
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="text-[12px] font-medium text-slate-700">Templates</div>
+                  <ul className="m-0 mt-2 grid list-none gap-1.5 p-0 text-[13px] text-slate-700">
+                    {['NPS', 'Satisfaction (CSAT)', 'Feature feedback', 'Onboarding feedback'].map((t) => (
+                      <li className="flex items-center gap-2" key={t}>
+                        <Target aria-hidden className="text-slate-400" size={13} /> {t}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <h3 className="m-0 mt-4 text-base font-semibold text-slate-900">{title}</h3>
-                <p className="m-0 mt-2 text-sm leading-relaxed text-slate-600">{body}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="scroll-mt-20 border-t border-slate-200 bg-slate-50 px-4 py-16 sm:px-6 sm:py-24" id="faq">
-        <div className="mx-auto max-w-3xl">
-          <SectionHeading eyebrow="FAQ" title="Frequently asked questions" />
-
-          <div className="mt-10 divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            {faqs.map((faq, idx) => (
-              <div key={idx}>
-                <button
-                  aria-expanded={activeFaq === idx}
-                  className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50 sm:px-5 sm:text-[15px] cursor-pointer"
-                  onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                  type="button"
-                >
-                  <span className="min-w-0">{faq.q}</span>
-                  <ChevronDown
-                    className={`shrink-0 text-slate-400 transition-transform duration-200 ${activeFaq === idx ? 'rotate-180' : ''}`}
-                    size={16}
-                  />
-                </button>
-
-                <AnimatePresence initial={false}>
-                  {activeFaq === idx && (
-                    <motion.div
-                      animate={{ height: 'auto' }}
-                      className="overflow-hidden"
-                      exit={{ height: 0 }}
-                      initial={{ height: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <p className="m-0 px-4 pb-4 text-sm leading-relaxed text-slate-600 sm:px-5">{faq.a}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Closing CTA */}
-      <section className="px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 rounded-2xl bg-slate-900 p-6 sm:p-10 md:flex-row md:items-center">
-          <div>
-            <h2 className="m-0 text-2xl font-semibold tracking-tight text-white sm:text-3xl">Ready to bring order to your work?</h2>
-            <p className="m-0 mt-2 text-[15px] text-slate-400">Set up your first project in minutes.</p>
-          </div>
-          <button className={largeButton('accent')} onClick={getStarted} type="button">
-            Get started <ArrowRight size={16} />
-          </button>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white px-4 pb-8 pt-12 sm:px-6">
-        <div className="mx-auto grid max-w-6xl gap-10">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            <div className="col-span-2 grid content-start gap-3 md:col-span-1">
-              <div className="flex items-center gap-2">
-                <img alt="Pristine Logo" className="h-5 w-5 object-contain" src={logoImg} />
-                <span className="text-[15px] font-semibold tracking-tight text-slate-900">Pristine</span>
-              </div>
-              <p className="m-0 max-w-xs text-[13px] leading-relaxed text-slate-500">
-                Task intelligence, SLA timelines and a tamper-evident activity log for delivery teams.
-              </p>
-            </div>
-
-            {[
-              {
-                title: 'Product',
-                links: [
-                  { href: '#features', label: 'Dynamic priority' },
-                  { href: '#features', label: 'SLA tracking' }
-                ]
-              },
-              {
-                title: 'Security',
-                links: [
-                  { href: '#governance', label: 'Activity hash chain' },
-                  { href: '#governance', label: 'Legal retention holds' }
-                ]
-              },
-              {
-                title: 'Resources',
-                links: [
-                  { href: '/sdk-docs', label: 'Developer SDK docs', external: true },
-                  { href: '#matrix', label: 'Comparison' }
-                ]
-              }
-            ].map((col) => (
-              <div className="grid content-start gap-3" key={col.title}>
-                <h4 className="m-0 text-sm font-medium text-slate-900">{col.title}</h4>
-                <ul className="m-0 grid list-none gap-2 p-0 text-[13px] text-slate-500">
-                  {col.links.map((link) => (
-                    <li key={link.label}>
-                      <a className="inline-flex items-center gap-1 transition-colors hover:text-slate-900" href={link.href}>
-                        {link.label}
-                        {'external' in link ? <ArrowUpRight size={12} /> : null}
-                      </a>
+              <div className="grid gap-6 lg:order-1">
+                <SubHeading eyebrow="Surveys" title="Ask the right question, in the right format">
+                  Build surveys from eleven question types, start from a template, then read responses and per-question
+                  results, including NPS promoters, passives and detractors.
+                </SubHeading>
+                <ul aria-label="Survey question types" className="m-0 flex list-none flex-wrap gap-2 p-0">
+                  {QUESTION_TYPES.map((q) => (
+                    <li className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[13px] font-medium text-slate-700 shadow-sm" key={q}>
+                      {q}
                     </li>
                   ))}
                 </ul>
               </div>
-            ))}
-          </div>
+            </div>
 
-          <div className="flex flex-col gap-3 border-t border-slate-200 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-            <span>&copy; {new Date().getFullYear()} Pristine Inc. All rights reserved.</span>
-            <div className="flex items-center gap-5">
-              <a className="transition-colors hover:text-slate-900" href="#">
-                Security policy
-              </a>
-              <a className="transition-colors hover:text-slate-900" href="#">
-                Terms of service
-              </a>
+            {/* Checklists, targeting, lifecycle & analytics */}
+            <div className="mt-20 grid gap-6 lg:grid-cols-3">
+              <div className="grid content-start gap-4">
+                <div>
+                  <h3 className="m-0 flex items-center gap-2 text-[15px] font-semibold text-slate-900">
+                    <ListChecks aria-hidden className="text-emerald-700" size={18} /> Checklists
+                  </h3>
+                  <p className="m-0 mt-1.5 text-sm leading-relaxed text-slate-600">Onboarding checklists with items that guide new users to their first success.</p>
+                </div>
+                <ChecklistMock />
+              </div>
+              <div className="grid content-start gap-4">
+                <div>
+                  <h3 className="m-0 flex items-center gap-2 text-[15px] font-semibold text-slate-900">
+                    <Radar aria-hidden className="text-emerald-700" size={18} /> Targeting and segments
+                  </h3>
+                  <p className="m-0 mt-1.5 text-sm leading-relaxed text-slate-600">
+                    Show an experience to everyone, or to segments defined by page URL, user attributes and events. Save
+                    segments and reuse them across guides and surveys.
+                  </p>
+                </div>
+                <SegmentMock />
+              </div>
+              <div className="grid content-start gap-4">
+                <div>
+                  <h3 className="m-0 flex items-center gap-2 text-[15px] font-semibold text-slate-900">
+                    <Rocket aria-hidden className="text-emerald-700" size={18} /> Lifecycle and analytics
+                  </h3>
+                  <p className="m-0 mt-1.5 text-sm leading-relaxed text-slate-600">
+                    Publish with a confirmation, pause or archive any time, and see views, completions, dismissals and step
+                    drop-off for every guide and survey.
+                  </p>
+                  <div className="mt-3">
+                    <LifecycleMock />
+                  </div>
+                </div>
+                <FunnelMock />
+              </div>
+            </div>
+            <div className="mt-10 flex justify-center">
+              <GuideLink hash="product-engagement">Step-by-step: set up product engagement</GuideLink>
             </div>
           </div>
-        </div>
-      </footer>
+        </section>
+
+        {/* ------------------------------------------------ Event tracking */}
+        <Section id="events" labelledBy="events-title">
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
+            <div className="grid gap-6">
+              <SectionHeading
+                align="left"
+                description={
+                  <>
+                    Everything your app sends with <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[13px] text-slate-800">Engagement.track(…)</code> lands
+                    in one searchable stream.
+                  </>
+                }
+                eyebrow="Event tracking"
+                id="events-title"
+                title="See what your users actually do"
+              />
+              <CheckList
+                items={[
+                  'Filter events by name and time range',
+                  'Inspect any event in the payload viewer',
+                  'Engagement analytics: monthly tracked users, top events and NPS',
+                  'Use events in targeting rules for segments'
+                ]}
+              />
+              <GuideLink hash="event-tracking">Read the event tracking guide</GuideLink>
+            </div>
+            <EventsMock />
+          </div>
+        </Section>
+
+        {/* ------------------------------------------------ Developers */}
+        <section aria-labelledby="dev-title" className="relative scroll-mt-16 overflow-hidden bg-slate-900 px-4 py-16 text-white sm:px-6 sm:py-24" id="developers">
+          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(45%_50%_at_85%_10%,rgba(16,185,129,0.14),transparent)]" />
+          <div className="relative mx-auto max-w-6xl">
+            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+              <div className="grid gap-6">
+                <SectionHeading
+                  align="left"
+                  dark
+                  description="Install the SDK, initialise it with your key and start tracking. Requests are signed and only accepted from the integration's allowed origins."
+                  eyebrow="Developer platform"
+                  id="dev-title"
+                  title="A few lines of code to get started"
+                />
+                <CheckList
+                  dark
+                  items={[
+                    <>
+                      <code className="font-mono text-[13px] text-emerald-300">Engagement.init({'{ apiKey, userId }'})</code> once at start-up
+                    </>,
+                    <>
+                      <code className="font-mono text-[13px] text-emerald-300">Engagement.track(name, properties)</code> for anything meaningful
+                    </>,
+                    'Guides, surveys and checklists appear automatically for matching users'
+                  ]}
+                />
+              </div>
+              <CodeBlock code={SDK_SNIPPET} label="app.ts" />
+            </div>
+
+            <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { icon: KeyRound, title: 'Sync API key', body: 'A personal key for scripts and external tools. Reveal, copy or regenerate it in Settings → Profile & API Key.' },
+                { icon: MessageCircle, title: 'ChatGPT Actions', body: 'Connect a custom GPT through GPT Actions with OAuth so ChatGPT can read and update your tasks.' },
+                { icon: Plug, title: 'MCP server', body: 'A Model Context Protocol endpoint with around 74 tools and 4 prompts for clients such as Claude Desktop and IDEs.' },
+                { icon: Smartphone, title: 'Companion devices', body: 'Pair a phone or tablet with a one-time key or a QR code, and revoke it any time in Settings → Companion Devices.' }
+              ].map((c) => (
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5" key={c.title}>
+                  <IconBadge dark icon={c.icon} />
+                  <h3 className="m-0 mt-4 text-[15px] font-semibold text-white">{c.title}</h3>
+                  <p className="m-0 mt-1.5 text-sm leading-relaxed text-slate-300">{c.body}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 grid items-center gap-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6 lg:grid-cols-2">
+              <div className="grid gap-3">
+                <h3 className="m-0 text-lg font-semibold text-white">Manage work from your AI assistant</h3>
+                <p className="m-0 text-sm leading-relaxed text-slate-300">
+                  MCP clients can list, create and update projects and tasks through Pristine’s MCP server, authenticated with your Sync API
+                  key. Set it up from Settings → MCP Integration.
+                </p>
+                <GuideLink dark hash="developer-integrations">Developer integrations guide</GuideLink>
+              </div>
+              <McpMock />
+            </div>
+          </div>
+        </section>
+
+        {/* ------------------------------------------------ Security */}
+        <Section id="security" labelledBy="security-title">
+          <SectionHeading
+            description="Sensible defaults for signing in, staying signed in and keeping keys under control."
+            eyebrow="Security and accounts"
+            id="security-title"
+            title="Secure by default"
+          />
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+            <FeatureCard icon={LogIn} title="Email or Google sign-in">
+              Sign up with email and a password of at least 8 characters, or Continue with Google. “Remember me” keeps you signed in.
+            </FeatureCard>
+            <FeatureCard icon={Fingerprint} title="Two-factor authentication">
+              A 6-digit code is emailed at sign-in. Codes are hashed, expire and allow a limited number of attempts.
+            </FeatureCard>
+            <FeatureCard icon={Mail} title="Password reset by code">
+              Reset your password with an emailed one-time code. Resetting signs out your other sessions.
+            </FeatureCard>
+            <FeatureCard icon={MonitorSmartphone} title="Device sessions">
+              Sessions use access and refresh tokens. Sign in elsewhere or revoke sessions when a device is lost.
+            </FeatureCard>
+            <FeatureCard icon={Lock} title="Signed SDK requests">
+              SDK requests are signed and only accepted from the allowed origins you set per integration.
+            </FeatureCard>
+            <FeatureCard icon={Users} title="Roles and permissions">
+              Workspace roles and project roles decide who can administer, manage projects and change tasks.
+            </FeatureCard>
+          </div>
+        </Section>
+
+        {/* ------------------------------------------------ Roles */}
+        <Section className="border-t border-slate-200 bg-slate-50" id="roles" labelledBy="roles-title">
+          <SectionHeading
+            description="Two layers of roles: one for the workspace, one for each project. Task creators and assignees get rights on their own tasks."
+            eyebrow="Roles"
+            id="roles-title"
+            title="The right access for everyone"
+          />
+
+          <h3 className="m-0 mt-12 text-[15px] font-semibold text-slate-900">Workspace roles</h3>
+          <ul className="m-0 mt-4 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-5">
+            {[
+              { role: 'Owner', body: 'Everything an Admin can do, plus delete the workspace and grant or remove the Owner role.', dark: true },
+              { role: 'Admin', body: 'Edits workspace settings, invites members and changes roles (not an Owner’s role).' },
+              { role: 'Manager', body: 'Works in the projects they are added to. No workspace administration.' },
+              { role: 'Member', body: 'Works in the projects they are added to. No workspace administration.' },
+              { role: 'Guest', body: 'For outside collaborators with limited access to the projects they join.' }
+            ].map((r) => (
+              <li className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" key={r.role}>
+                <span className={cn('inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset', r.dark ? 'bg-slate-900 text-white ring-slate-900' : 'bg-slate-50 text-slate-700 ring-slate-200')}>
+                  {r.role}
+                </span>
+                <p className="m-0 mt-3 text-[13px] leading-relaxed text-slate-600">{r.body}</p>
+              </li>
+            ))}
+          </ul>
+
+          <h3 className="m-0 mt-10 text-[15px] font-semibold text-slate-900">Project and task roles</h3>
+          <ul className="m-0 mt-4 grid list-none gap-3 p-0 md:grid-cols-3">
+            {[
+              { icon: ShieldCheck, role: 'Project Admin', body: 'The project’s creator. Manages the project, its members, epics, workflow states and history retention; deletes, assigns and reassigns any task.' },
+              { icon: Users, role: 'Project Member', body: 'Sees the project, creates and updates tasks, edits and assigns tasks they created, and takes part in approvals and chat.' },
+              { icon: UserPlus, role: 'Task creator and assignee', body: 'Creators can edit, assign and reassign their own task. Assignees can update the tasks assigned to them.' }
+            ].map((r) => (
+              <li className="flex gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm" key={r.role}>
+                <IconBadge icon={r.icon} />
+                <div className="min-w-0">
+                  <h4 className="m-0 text-[15px] font-semibold text-slate-900">{r.role}</h4>
+                  <p className="m-0 mt-1 text-[13px] leading-relaxed text-slate-600">{r.body}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-8">
+            <GuideLink hash="permissions">See the full permissions matrix</GuideLink>
+          </div>
+        </Section>
+
+        {/* ------------------------------------------------ How it works */}
+        <Section id="how" labelledBy="how-title">
+          <SectionHeading eyebrow="How it works" id="how-title" title="From sign-up to your first live guide" />
+          <ol className="relative m-0 mt-12 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-5 lg:gap-4">
+            {[
+              { icon: GitBranch, title: 'Create a workspace', body: 'Sign up with email or Google and create a workspace for your team.' },
+              { icon: UserPlus, title: 'Invite your team', body: 'Invite people by email and give each a workspace role.' },
+              { icon: Sparkles, title: 'Plan with AI', body: 'Describe a project to the AI Planner and approve the plan it proposes.' },
+              { icon: Timer, title: 'Track SLAs', body: 'Set SLA targets per priority and watch health and priorities update.' },
+              { icon: MousePointerClick, title: 'Engage your users', body: 'Install the SDK, then publish guides, surveys and checklists.' }
+            ].map((s, i) => (
+              <li className="relative rounded-xl border border-slate-200 bg-white p-5 shadow-sm" key={s.title}>
+                <div className="flex items-center justify-between">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">{i + 1}</span>
+                  <s.icon aria-hidden className="text-slate-400" size={18} />
+                </div>
+                <h3 className="m-0 mt-4 text-[15px] font-semibold text-slate-900">{s.title}</h3>
+                <p className="m-0 mt-1.5 text-[13px] leading-relaxed text-slate-600">{s.body}</p>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-8 flex justify-center">
+            <GuideLink hash="getting-started">Follow the getting started guide</GuideLink>
+          </div>
+        </Section>
+
+        {/* ------------------------------------------------ FAQ */}
+        <Section className="border-t border-slate-200 bg-slate-50" id="faq" labelledBy="faq-title">
+          <div className="mx-auto max-w-3xl">
+            <SectionHeading eyebrow="FAQ" id="faq-title" title="Frequently asked questions" />
+            <div className="mt-10 divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+              {FAQS.map((f) => (
+                <details className="group" key={f.q}>
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-left text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-slate-900/20 sm:px-5 sm:text-[15px] [&::-webkit-details-marker]:hidden">
+                    <span className="min-w-0">{f.q}</span>
+                    <ChevronDown aria-hidden className="shrink-0 text-slate-400 transition-transform duration-200 group-open:rotate-180" size={16} />
+                  </summary>
+                  <p className="m-0 px-4 pb-4 text-sm leading-relaxed text-slate-600 sm:px-5">{f.a}</p>
+                </details>
+              ))}
+            </div>
+            <p className="m-0 mt-6 text-center text-sm text-slate-600">
+              More answers in the{' '}
+              <Link className="font-medium text-emerald-700 underline-offset-4 hover:underline" to={{ pathname: '/guide', hash: 'troubleshooting' }}>
+                troubleshooting guide
+              </Link>
+              .
+            </p>
+          </div>
+        </Section>
+
+        {/* ------------------------------------------------ Closing CTA */}
+        <section aria-labelledby="cta-title" className="px-4 py-16 sm:px-6 sm:py-20">
+          <div className="relative mx-auto max-w-6xl overflow-hidden rounded-2xl bg-slate-900 p-6 sm:p-10">
+            <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_80%_at_100%_0%,rgba(16,185,129,0.22),transparent)]" />
+            <div className="relative flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+              <div>
+                <h2 className="m-0 text-2xl font-semibold tracking-tight text-white sm:text-3xl" id="cta-title">
+                  Bring your work and your users into one place
+                </h2>
+                <p className="m-0 mt-2 text-[15px] text-slate-300">Create a workspace, plan your first project with AI, and ship your first guide.</p>
+              </div>
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                {user ? (
+                  <Link className={ctaClass('accent')} to="/dashboard">
+                    Open app <ArrowRight size={16} />
+                  </Link>
+                ) : (
+                  <Link className={ctaClass('accent')} to="/register">
+                    Get started <ArrowRight size={16} />
+                  </Link>
+                )}
+                <Link
+                  className={ctaClass('secondary', '!border-white/15 !bg-white/5 !text-white hover:!bg-white/10')}
+                  to="/guide"
+                >
+                  <BookOpen size={15} /> Read the guide
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <MarketingFooter />
     </div>
   );
-}
-
-/** A 44px call-to-action button. */
-function largeButton(variant: 'primary' | 'secondary' | 'accent'): string {
-  return buttonClass(variant, 'md').replace('h-9 px-3.5 text-sm', 'h-11 px-5 text-[15px]');
-}
-
-/** Small centred heading used by each landing section. */
-function SectionHeading({ eyebrow, title, description }: { eyebrow: string; title: string; description?: string }): JSX.Element {
-  return (
-    <div className="mx-auto max-w-2xl text-center">
-      <span className="text-sm font-medium text-emerald-700">{eyebrow}</span>
-      <h2 className="m-0 mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{title}</h2>
-      {description ? <p className="m-0 mt-3 text-[15px] leading-relaxed text-slate-600">{description}</p> : null}
-    </div>
-  );
-}
-
-/** Turns enum values such as NEAR_BREACH into "Near breach". */
-function toLabel(value: string): string {
-  const text = value.replace(/_/g, ' ').toLowerCase();
-  return text.charAt(0).toUpperCase() + text.slice(1);
 }
