@@ -1,5 +1,8 @@
 import React from "react";
 import { Clock, AlertCircle, Sparkles, User } from "lucide-react";
+import { Badge, Button } from "@/components/ui";
+import { PRIORITY_META, PriorityIcon, TASK_STATUS_TONE, taskStatusLabel } from "@/components/TaskCard";
+import type { TaskPriority } from "@/types/task";
 
 interface TaskItem {
   id: string;
@@ -24,110 +27,72 @@ export const ListView: React.FC<ListViewProps> = ({
   onTaskClick,
   onDecomposeAi,
 }) => {
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "CRITICAL":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
-      case "HIGH":
-        return "bg-orange-500/20 text-orange-400 border-orange-500/30";
-      case "MEDIUM":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-      default:
-        return "bg-slate-700/40 text-slate-400 border-slate-700";
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "DONE":
-        return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
-      case "IN_PROGRESS":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-      case "BLOCKED":
-        return "bg-rose-500/20 text-rose-400 border-rose-500/30";
-      default:
-        return "bg-slate-800 text-slate-400 border-slate-700";
-    }
-  };
-
   if (tasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 bg-slate-900/50 rounded-2xl border border-slate-800 text-center">
-        <Clock className="w-10 h-10 text-slate-500 mb-3" />
-        <h4 className="text-slate-300 font-semibold mb-1">No tasks in list</h4>
-        <p className="text-slate-500 text-sm">Create a task or plan with AI to get started.</p>
+      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center">
+        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100">
+          <Clock className="h-5 w-5 text-slate-400" />
+        </div>
+        <h4 className="m-0 mb-1 text-sm font-medium text-slate-900">No tasks in list</h4>
+        <p className="m-0 text-[13px] text-slate-500">Create a task or plan with AI to get started.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-slate-300">
-          <thead className="bg-slate-950/80 border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+        <table className="w-full text-left text-sm text-slate-700">
+          <thead className="border-b border-slate-200 bg-slate-50 text-xs font-medium uppercase tracking-wide text-slate-500">
             <tr>
-              <th className="py-3.5 px-4">Task Title</th>
-              <th className="py-3.5 px-4">Status</th>
-              <th className="py-3.5 px-4">Priority</th>
-              <th className="py-3.5 px-4">Assignee</th>
-              <th className="py-3.5 px-4">Due Date</th>
-              <th className="py-3.5 px-4 text-right">Actions</th>
+              <th className="px-4 py-2.5 font-medium">Task Title</th>
+              <th className="px-4 py-2.5 font-medium">Status</th>
+              <th className="hidden px-4 py-2.5 font-medium sm:table-cell">Priority</th>
+              <th className="hidden px-4 py-2.5 font-medium md:table-cell">Assignee</th>
+              <th className="hidden px-4 py-2.5 font-medium md:table-cell">Due Date</th>
+              <th className="px-4 py-2.5 text-right font-medium">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/80">
+          <tbody className="divide-y divide-slate-100">
             {tasks.map((task) => (
               <tr
                 key={task.id}
                 onClick={() => onTaskClick?.(task)}
-                className="hover:bg-slate-800/50 transition cursor-pointer group"
+                className="group cursor-pointer transition-colors hover:bg-slate-50"
               >
-                <td className="py-3.5 px-4 font-medium text-slate-200">
-                  <div className="flex items-center space-x-2">
+                <td className="px-4 py-3 font-medium text-slate-900">
+                  <div className="flex min-w-0 items-center gap-2">
                     {task.isBlocked && (
                       <span title="Blocked">
-                        <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                        <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
                       </span>
                     )}
-                    <span className="group-hover:text-blue-400 transition">{task.title}</span>
+                    <span className="truncate">{task.title}</span>
                   </div>
                 </td>
-                <td className="py-3.5 px-4">
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadge(
-                      task.status,
-                    )}`}
-                  >
-                    {task.status}
+                <td className="px-4 py-3">
+                  <Badge dot tone={TASK_STATUS_TONE[task.status] ?? 'neutral'}>{taskStatusLabel(task.status)}</Badge>
+                </td>
+                <td className="hidden px-4 py-3 sm:table-cell">
+                  <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-600">
+                    {task.priority in PRIORITY_META ? <PriorityIcon priority={task.priority as TaskPriority} /> : null}
+                    {PRIORITY_META[task.priority as TaskPriority]?.label ?? task.priority}
                   </span>
                 </td>
-                <td className="py-3.5 px-4">
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ${getPriorityBadge(
-                      task.priority,
-                    )}`}
-                  >
-                    {task.priority}
-                  </span>
-                </td>
-                <td className="py-3.5 px-4 text-slate-400 text-xs">
-                  <div className="flex items-center space-x-1.5">
-                    <User className="w-3.5 h-3.5 text-slate-500" />
-                    <span>{task.assignedTo?.name || task.assignedTo?.email || "Unassigned"}</span>
+                <td className="hidden px-4 py-3 text-[13px] text-slate-600 md:table-cell">
+                  <div className="flex items-center gap-1.5">
+                    <User className="h-3.5 w-3.5 text-slate-400" />
+                    <span className="truncate">{task.assignedTo?.name || task.assignedTo?.email || "Unassigned"}</span>
                   </div>
                 </td>
-                <td className="py-3.5 px-4 text-slate-400 text-xs">
+                <td className="hidden whitespace-nowrap px-4 py-3 text-[13px] text-slate-500 md:table-cell">
                   {task.date || "No due date"}
                 </td>
-                <td className="py-3.5 px-4 text-right space-x-2" onClick={(e) => e.stopPropagation()}>
+                <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
                   {onDecomposeAi && (
-                    <button
-                      onClick={() => onDecomposeAi(task)}
-                      className="inline-flex items-center space-x-1 px-2 py-1 bg-purple-600/20 text-purple-300 hover:bg-purple-600/30 rounded text-xs border border-purple-500/30 transition"
-                      title="Decompose with AI"
-                    >
-                      <Sparkles className="w-3 h-3 text-purple-400" />
-                      <span>Break Down</span>
-                    </button>
+                    <Button icon={Sparkles} onClick={() => onDecomposeAi(task)} size="sm" title="Decompose with AI" variant="secondary">
+                      Break Down
+                    </Button>
                   )}
                 </td>
               </tr>

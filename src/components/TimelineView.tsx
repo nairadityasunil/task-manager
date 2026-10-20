@@ -1,5 +1,7 @@
 import React from "react";
 import { GitCommitHorizontal, Clock } from "lucide-react";
+import { Badge } from "@/components/ui";
+import { TASK_STATUS_TONE, taskStatusLabel } from "@/components/TaskCard";
 
 interface TimelineTask {
   id: string;
@@ -17,45 +19,43 @@ interface TimelineViewProps {
 
 export const TimelineView: React.FC<TimelineViewProps> = ({ tasks, onTaskClick }) => {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
-      <div className="flex items-center space-x-3 mb-6">
-        <GitCommitHorizontal className="w-5 h-5 text-blue-400" />
-        <h3 className="text-lg font-semibold text-slate-100">Project Timeline & Milestones</h3>
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div className="mb-5 flex items-center gap-2.5">
+        <GitCommitHorizontal className="h-[18px] w-[18px] text-slate-400" />
+        <h3 className="m-0 text-[15px] font-semibold text-slate-900">Project Timeline & Milestones</h3>
       </div>
 
       {tasks.length === 0 ? (
-        <div className="text-center py-10 text-slate-500 text-sm">
+        <div className="rounded-lg border border-dashed border-slate-200 py-10 text-center text-[13px] text-slate-500">
           No tasks found on timeline.
         </div>
       ) : (
-        <div className="relative pl-6 border-l-2 border-slate-800 space-y-6">
+        <div className="relative space-y-3 border-l border-slate-200 pl-5">
           {tasks.map((task) => (
             <div
               key={task.id}
               onClick={() => onTaskClick?.(task)}
-              className="relative group cursor-pointer"
+              className="group relative cursor-pointer"
             >
               {/* Dot */}
-              <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-slate-900 border-2 border-blue-500 group-hover:bg-blue-500 transition" />
+              <div className="absolute -left-[25px] top-4 h-2.5 w-2.5 rounded-full border-2 border-white bg-slate-400 ring-1 ring-slate-300 transition-colors group-hover:bg-slate-900" />
 
-              <div className="bg-slate-950/80 border border-slate-800/80 hover:border-slate-700 p-4 rounded-xl transition flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div>
-                  <div className="text-xs font-semibold text-blue-400 uppercase tracking-wide mb-0.5">
+              <div className="flex flex-col justify-between gap-2 rounded-lg border border-slate-200 p-3 transition-colors hover:border-slate-300 hover:bg-slate-50 md:flex-row md:items-center">
+                <div className="min-w-0">
+                  <div className="mb-0.5 text-xs text-slate-500">
                     {task.epicName || "Milestone Task"}
                   </div>
-                  <h4 className="text-sm font-semibold text-slate-200 group-hover:text-blue-300 transition">
+                  <h4 className="m-0 truncate text-sm font-medium text-slate-900">
                     {task.title}
                   </h4>
                 </div>
 
-                <div className="flex items-center space-x-3 text-xs">
-                  <span className="text-slate-400 flex items-center space-x-1">
-                    <Clock className="w-3.5 h-3.5" />
+                <div className="flex shrink-0 items-center gap-3 text-xs">
+                  <span className="flex items-center gap-1 text-slate-500">
+                    <Clock className="h-3.5 w-3.5 text-slate-400" />
                     <span>{task.date || "Scheduled"}</span>
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full font-medium bg-slate-800 text-slate-300 border border-slate-700">
-                    {task.status}
-                  </span>
+                  <Badge dot tone={TASK_STATUS_TONE[task.status] ?? "neutral"}>{taskStatusLabel(task.status)}</Badge>
                 </div>
               </div>
             </div>

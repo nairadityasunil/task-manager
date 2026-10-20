@@ -35,7 +35,7 @@ const NavBtn = ({ children, disabled, onClick, title }: {
   title?: string;
 }): JSX.Element => (
   <button
-    className="flex items-center justify-center w-7 h-7 rounded bg-white  border border-slate-200  text-slate-500  hover:bg-slate-50  disabled:opacity-50 transition-colors"
+    className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-white hover:text-slate-900 disabled:opacity-40"
     disabled={disabled}
     onClick={onClick}
     title={title}
@@ -67,17 +67,17 @@ function DateNavigator({ date, disabled = false, onChange }: DateNavigatorProps)
   const today = getTodayDate();
 
   return (
-    <div className="flex items-center gap-0.5 bg-slate-100  p-0.5 rounded-md border border-slate-200 ">
+    <div className="inline-flex items-center gap-0.5 rounded-lg border border-slate-200 bg-slate-100 p-0.5">
       <NavBtn disabled={disabled} onClick={() => onChange(shiftDate(date, -1))} title="Previous Day">
-        <ChevronLeft size={18} />
+        <ChevronLeft size={16} />
       </NavBtn>
 
       {/* Date pill */}
       <div
-        className="relative flex items-center gap-2 px-2.5 h-7 bg-white  rounded border border-slate-200  min-w-[140px] cursor-pointer"
+        className="relative flex h-8 min-w-[136px] cursor-pointer items-center gap-2 rounded-md bg-white px-2.5 shadow-sm"
         onClick={handleContainerClick}
       >
-        <CalendarDays className="text-slate-400  shrink-0" size={16} />
+        <CalendarDays className="shrink-0 text-slate-400" size={15} />
         <input
           ref={inputRef}
           className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
@@ -86,17 +86,17 @@ function DateNavigator({ date, disabled = false, onChange }: DateNavigatorProps)
           type="date"
           value={date}
         />
-        <span className="text-xs font-semibold text-slate-600  whitespace-nowrap">
+        <span className="whitespace-nowrap text-[13px] font-medium text-slate-700">
           {new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
         </span>
       </div>
 
       <NavBtn disabled={disabled} onClick={() => onChange(shiftDate(date, 1))} title="Next Day">
-        <ChevronRight size={18} />
+        <ChevronRight size={16} />
       </NavBtn>
 
       <NavBtn disabled={disabled || date === today} onClick={() => onChange(today)} title="Go to Today">
-        <RotateCcw size={16} />
+        <RotateCcw size={14} />
         {/* <span className="text-[13px] ml-0.5">Today</span> */}
       </NavBtn>
     </div>

@@ -9,14 +9,6 @@ interface DaySummaryProps {
   summary: TaskSummary | null;
 }
 
-const metricColors = [
-  'text-slate-600',
-  'text-amber-600',
-  'text-cyan-600',
-  'text-violet-600',
-  'text-teal-600',
-  'text-rose-600'
-];
 
 function DaySummary({ controls = null, date, error = null, loading = false, summary }: DaySummaryProps): JSX.Element {
   const metrics = summary
@@ -33,36 +25,36 @@ function DaySummary({ controls = null, date, error = null, loading = false, summ
   return (
     <div className="grid gap-3.5 h-full">
       {/* Header */}
-      <div className="flex items-start justify-between gap-1.5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="grid gap-1.5">
-          <h2 className="text-xl font-semibold text-slate-950  m-0">Daily summary</h2>
-          <p className="text-slate-500  m-0 text-sm">{date}</p>
+          <h2 className="m-0 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Daily summary</h2>
+          <p className="m-0 text-[13px] text-slate-500">{date}</p>
         </div>
         {controls ? <div className="shrink-0 max-w-full">{controls}</div> : null}
       </div>
 
-      {loading ? <p className="text-slate-400  m-0 text-sm">Refreshing summary for {date}...</p> : null}
-      {error ? <p className="text-red-600  m-0 text-sm">{error}</p> : null}
+      {loading ? <p className="m-0 text-[13px] text-slate-500">Refreshing summary for {date}...</p> : null}
+      {error ? <p className="m-0 text-[13px] text-red-600">{error}</p> : null}
 
       {/* Metric grid */}
       {summary ? (
-        <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(160px,1fr))]">
-          {metrics.map(({ label, value }, i) => (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {metrics.map(({ label, value }) => (
             <article
               key={label}
-              className="bg-white/46  border border-slate-200  rounded-lg p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:bg-white/68 "
+              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
             >
-              <span className="text-slate-500  text-sm uppercase tracking-wide font-semibold">
+              <span className="text-[13px] text-slate-500">
                 {label}
               </span>
-              <strong className={`block text-[2.25rem] font-semibold font-sans mt-2 ${metricColors[i]}`}>
+              <strong className="mt-1 block text-2xl font-semibold tabular-nums text-slate-900">
                 {value}
               </strong>
             </article>
           ))}
         </div>
       ) : !loading && !error ? (
-        <p className="bg-slate-50  border border-dashed border-slate-200  rounded-md text-slate-400  p-6 text-center m-0">
+        <p className="m-0 rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-[13px] text-slate-500">
           No summary is available until tasks exist for this date.
         </p>
       ) : null}

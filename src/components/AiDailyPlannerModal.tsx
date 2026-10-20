@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import centralizedAiService, { AIDailyScheduleResponse } from "../services/centralizedAi";
 import { Sparkles, Calendar, X } from "lucide-react";
+import { buttonClass, textareaClass } from "@/components/ui";
 
 interface AiDailyPlannerModalProps {
   isOpen: boolean;
@@ -31,24 +32,24 @@ export const AiDailyPlannerModal: React.FC<AiDailyPlannerModalProps> = ({ isOpen
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl p-6 shadow-xl space-y-5">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center space-x-2.5">
-            <Calendar className="w-5 h-5 text-blue-400" />
-            <h3 className="font-semibold text-slate-100 text-base">✨ AI Daily & Sprint Planner</h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/40 p-3 backdrop-blur-sm sm:p-4">
+      <div className="max-h-[90vh] w-full max-w-xl space-y-5 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 text-slate-900 shadow-xl sm:p-6">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <Calendar className="h-[18px] w-[18px] shrink-0 text-slate-400" />
+            <h3 className="m-0 text-base font-semibold text-slate-900">✨ AI Daily & Sprint Planner</h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
+          <button aria-label="Close" onClick={onClose} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900" type="button">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {error && <div className="p-3 bg-red-950/60 border border-red-800 text-red-300 text-xs rounded-xl">{error}</div>}
+        {error && <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] text-red-700">{error}</div>}
 
         {!schedule ? (
           <form onSubmit={handlePlanDay} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
                 Workload Constraints or Focus for Today (Optional)
               </label>
               <textarea
@@ -56,15 +57,15 @@ export const AiDailyPlannerModal: React.FC<AiDailyPlannerModalProps> = ({ isOpen
                 value={workloadContext}
                 onChange={(e) => setWorkloadContext(e.target.value)}
                 placeholder="e.g. Focus 3 hours on critical authentication bugs, 1 hour on PR reviews, leave afternoon open for client demo."
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 focus:outline-none"
+                className={textareaClass}
               />
             </div>
 
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-1">
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center space-x-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-blue-900/30 transition disabled:opacity-50"
+                className={buttonClass("primary", "md")}
               >
                 <Sparkles className="w-4 h-4" />
                 <span>{loading ? "Planning Schedule..." : "Plan My Work for Today"}</span>
@@ -73,42 +74,42 @@ export const AiDailyPlannerModal: React.FC<AiDailyPlannerModalProps> = ({ isOpen
           </form>
         ) : (
           <div className="space-y-4">
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-              <h4 className="text-sm font-semibold text-slate-100 mb-1">Today's Focus Summary</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">{schedule.summary}</p>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <h4 className="m-0 mb-1 text-sm font-semibold text-slate-900">Today's Focus Summary</h4>
+              <p className="m-0 text-[13px] leading-relaxed text-slate-600">{schedule.summary}</p>
             </div>
 
-            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+            <div className="max-h-64 divide-y divide-slate-100 overflow-y-auto rounded-xl border border-slate-200">
               {schedule.timeBlocks?.map((tb, idx) => (
                 <div
                   key={idx}
-                  className="bg-slate-950/80 border border-slate-800 p-3 rounded-xl flex items-center justify-between text-xs"
+                  className="flex items-center justify-between px-3 py-2.5 text-sm"
                 >
-                  <div className="flex items-center space-x-3">
-                    <span className="font-semibold text-blue-400 px-2 py-1 bg-blue-950/60 rounded border border-blue-800/40 text-[11px]">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium tabular-nums text-slate-700">
                       {tb.time}
                     </span>
                     <div>
-                      <div className="font-semibold text-slate-200">{tb.taskTitle}</div>
-                      {tb.notes && <div className="text-slate-400 text-[11px] mt-0.5">{tb.notes}</div>}
+                      <div className="font-medium text-slate-900">{tb.taskTitle}</div>
+                      {tb.notes && <div className="mt-0.5 text-[13px] text-slate-500">{tb.notes}</div>}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
               <button
                 type="button"
                 onClick={() => setSchedule(null)}
-                className="text-xs text-slate-400 hover:text-slate-200"
+                className={buttonClass("ghost", "sm")}
               >
                 ← Re-plan
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition"
+                className={buttonClass("primary", "md")}
               >
                 Done
               </button>

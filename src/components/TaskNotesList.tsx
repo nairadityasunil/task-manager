@@ -90,22 +90,21 @@ function TaskNotesList({
   }
 
   return (
-    <div className="grid gap-3 max-h-[520px] overflow-auto pr-1">
+    <div className="max-h-[520px] divide-y divide-slate-100 overflow-auto rounded-xl border border-slate-200 bg-white">
       {entries.map((entry) => (
-        <article
-          key={entry.id}
-          className="bg-white/88  border border-slate-200/80  rounded-lg"
-        >
+        <article key={entry.id}>
           <button
-            className="w-full flex flex-col gap-1.5 px-4 py-3.5 text-left hover:bg-teal-600/6  rounded-lg transition-colors"
+            className="flex w-full flex-col items-start gap-1 px-4 py-3 text-left transition-colors hover:bg-slate-50"
             onClick={entry.onOpen}
             type="button"
           >
-            <strong className="text-slate-950  text-base">{entry.label}</strong>
-            <span className="inline-block text-xs font-semibold px-2 py-0.5 rounded bg-slate-50 text-slate-600  ">
-              {entry.kind === 'task' ? 'Task note' : 'Subtask note'}
+            <span className="flex w-full min-w-0 items-center gap-2">
+              <strong className="min-w-0 flex-1 truncate text-sm font-medium text-slate-900">{entry.label}</strong>
+              <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                {entry.kind === 'task' ? 'Task note' : 'Subtask note'}
+              </span>
             </span>
-            <span className="text-slate-400  text-sm truncate">
+            <span className="w-full truncate text-[13px] text-slate-500">
               {entry.note.replace(/<[^>]+>/g, ' ').trim() || 'Open note'}
             </span>
           </button>
