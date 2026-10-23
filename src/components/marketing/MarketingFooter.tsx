@@ -22,6 +22,7 @@ export default function MarketingFooter(): JSX.Element {
     { label: 'Product engagement', to: { pathname: '/', hash: 'engagement' } },
     { label: 'Event tracking', to: { pathname: '/', hash: 'events' } },
     { label: 'Developers', to: { pathname: '/', hash: 'developers' } },
+    { label: 'Agent governance', to: { pathname: '/', hash: 'governance' } },
     { label: 'Security', to: { pathname: '/', hash: 'security' } }
   ];
 

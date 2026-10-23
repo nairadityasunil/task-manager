@@ -4,7 +4,8 @@ import api from '@/services/api';
 export interface AuthProfile {
   id: string;
   email: string;
-  syncApiKey: string;
+  /** Always null: keys are hashed server side and shown once on creation. */
+  syncApiKey?: string | null;
   name: string | null;
   firstName: string | null;
   lastName: string | null;

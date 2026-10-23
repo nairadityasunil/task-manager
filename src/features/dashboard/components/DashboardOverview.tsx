@@ -14,6 +14,7 @@ import {
 import Skeleton from '@/components/Skeleton';
 import UserAvatar from '@/components/UserAvatar';
 import { Badge, Button, Card, CardHeader, IconTile, StatCard, cn, type BadgeTone } from '@/components/ui';
+import { GovernanceCard } from '@/features/agents/components/GovernanceCard';
 import type { Epic } from '@/types/epic';
 import type { Project } from '@/types/project';
 import type { Task, TaskPriority, TaskStatus } from '@/types/task';
@@ -363,6 +364,8 @@ export default function DashboardOverview({
             </div>
           </Card>
         </div>
+
+        <GovernanceCard />
 
         {children}
       </div>

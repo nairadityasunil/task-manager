@@ -28,6 +28,8 @@ export function useSettings() {
   const [instructionsCopied, setInstructionsCopied] = useState(false);
   const [isRegeneratingKey, setIsRegeneratingKey] = useState(false);
   const [showKey, setShowKey] = useState(false);
+  /** A newly created personal key; keys are stored hashed, so this is the only time it is visible. */
+  const [personalKey, setPersonalKey] = useState<string | null>(null);
 
   const [companionDevices, setCompanionDevices] = useState<CompanionDevice[]>([]);
   const [isCompanionModalOpen, setIsCompanionModalOpen] = useState(false);
@@ -104,9 +106,9 @@ export function useSettings() {
 
   const handleRegenerateKey = async () => {
     const isConfirmed = await confirm({
-      title: "Regenerate Sync API Key?",
-      message: "Regenerating this key will immediately revoke your existing ChatGPT Action key. Any active ChatGPT custom GPTs using the old key will stop working until updated.",
-      confirmText: "Regenerate Key",
+      title: "Create a new personal API key?",
+      message: "Your current personal key (and any legacy Sync key) stops working immediately. Integrations using it need the new key.",
+      confirmText: "Create new key",
       type: "danger",
     });
 
@@ -114,9 +116,11 @@ export function useSettings() {
 
     try {
       setIsRegeneratingKey(true);
-      await api.patch<{ message: string; data: { syncApiKey: string } }>("/auth/regenerate-sync-key");
+      const res = await api.patch<{ message: string; data: { syncApiKey: string } }>("/auth/regenerate-sync-key");
+      setPersonalKey(res.data.data.syncApiKey);
+      setShowKey(true);
       await refreshUser();
-      showToast({ variant: "success", message: "Sync API Key regenerated successfully" });
+      showToast({ variant: "success", message: "New personal API key created. Copy it now." });
     } catch (err) {
       console.error("Failed to regenerate key", err);
       showToast({ variant: "error", message: "Failed to regenerate key" });
@@ -199,6 +203,7 @@ export function useSettings() {
     instructionsCopied,
     isRegeneratingKey,
     showKey,
+    personalKey,
     setShowKey,
     companionDevices,
     isCompanionModalOpen,

@@ -19,6 +19,7 @@ import ChatPanel from '@/components/ChatPanel';
 import { ActivityHistoryPanel } from '@/features/projects';
 import { AiProjectPlanModal, ProjectWorkflowStatesPanel } from '@/features/projects';
 import SdkDocsPanel from '@/components/SdkDocsPanel';
+import AgentsPage from '@/pages/AgentsPage';
 import EventTrackingPage from '@/pages/EventTrackingPage';
 import SemanticIntelligencePage from '@/pages/SemanticIntelligencePage';
 import EngagementPage from '@/pages/EngagementPage';
@@ -237,6 +238,7 @@ export function DashboardPage(): JSX.Element {
             }
           } else if (view === 'sdk-docs') navigate('/sdk-docs');
           else if (view === 'settings') navigate('/settings');
+          else if (view === 'agents') navigate('/agents');
         }}
         onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
         onLogout={dash.logout}
@@ -254,6 +256,8 @@ export function DashboardPage(): JSX.Element {
           title={
             dash.activeView === 'settings'
               ? 'Settings'
+              : dash.activeView === 'agents'
+              ? 'Agent Governance'
               : dash.activeView === 'sdk-docs'
               ? 'SDK Documentation'
               : dash.activeView === 'event-tracking'
@@ -296,6 +300,8 @@ export function DashboardPage(): JSX.Element {
 
               {dash.activeView === 'settings' ? (
                 <span className={crumbCurrentCls}>Settings</span>
+              ) : dash.activeView === 'agents' ? (
+                <span className={crumbCurrentCls}>Agent Governance</span>
               ) : dash.activeView === 'sdk-docs' ? (
                 <span className={crumbCurrentCls}>SDK Documentation</span>
               ) : dash.activeView === 'event-tracking' ? (
@@ -372,6 +378,8 @@ export function DashboardPage(): JSX.Element {
                 />
               </div>
             </div>
+          ) : dash.activeView === 'agents' ? (
+            <AgentsPage projects={dash.projects} />
           ) : dash.activeView === 'event-tracking' ? (
             <div className="h-full overflow-y-auto">
               <EventTrackingPage onOpenDocs={() => navigate('/sdk-docs')} />

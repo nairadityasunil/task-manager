@@ -174,6 +174,10 @@ const FAQS: Array<{ q: string; a: ReactNode }> = [
     a: 'Pristine is one workspace for two jobs. Your team plans and ships work with projects, epics and tasks, SLAs, self-updating priorities and AI planning. You also engage the people who use your own product with in-app guides, surveys, checklists and event analytics through a JavaScript SDK.'
   },
   {
+    q: 'How do I control what AI agents can do?',
+    a: 'Open Agent Governance in the portal. Every agent that acts in your workspace is listed with its owner, access and risk. Limit its scopes and projects, add policies that block actions or require approval, and suspend any agent instantly.'
+  },
+  {
     q: 'Do I need to install the SDK to manage tasks?',
     a: 'No. Projects, tasks, SLAs, AI and collaboration work as soon as you create a workspace. The SDK is only needed when you want to show guides, surveys or checklists inside your own app, or track events from it.'
   },
@@ -395,7 +399,7 @@ export default function LandingPage(): JSX.Element {
                 tag: 'For your developers',
                 title: 'Developer platform',
                 body: 'Connect Pristine to your code, your tools and your AI assistants.',
-                items: ['JavaScript SDK with signed requests', 'Personal Sync API key for scripts', 'ChatGPT Actions and an MCP server', 'Companion devices paired by QR code'],
+                items: ['JavaScript SDK with signed requests', 'Scoped, expiring agent keys', 'ChatGPT Actions and an MCP server', 'Companion devices paired by QR code'],
                 href: 'developers'
               }
             ].map((p) => (
@@ -814,7 +818,7 @@ export default function LandingPage(): JSX.Element {
 
             <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { icon: KeyRound, title: 'Sync API key', body: 'A personal key for scripts and external tools. Reveal, copy or regenerate it in Settings → Profile & API Key.' },
+                { icon: KeyRound, title: 'Agent keys', body: 'A key per tool or script, limited to the scopes and projects it needs, with an expiry. Keys are stored hashed and shown once.' },
                 { icon: MessageCircle, title: 'ChatGPT Actions', body: 'Connect a custom GPT through GPT Actions with OAuth so ChatGPT can read and update your tasks.' },
                 { icon: Plug, title: 'MCP server', body: 'A Model Context Protocol endpoint with around 74 tools and 4 prompts for clients such as Claude Desktop and IDEs.' },
                 { icon: Smartphone, title: 'Companion devices', body: 'Pair a phone or tablet with a one-time key or a QR code, and revoke it any time in Settings → Companion Devices.' }
@@ -831,8 +835,8 @@ export default function LandingPage(): JSX.Element {
               <div className="grid gap-3">
                 <h3 className="m-0 text-lg font-semibold text-white">Manage work from your AI assistant</h3>
                 <p className="m-0 text-sm leading-relaxed text-slate-300">
-                  MCP clients can list, create and update projects and tasks through Pristine’s MCP server, authenticated with your Sync API
-                  key. Set it up from Settings → MCP Integration.
+                  MCP clients can list, create and update projects and tasks through Pristine’s MCP server, authenticated with a scoped
+                  agent key or your account. Every call is governed and logged. Set it up from Settings → MCP Integration.
                 </p>
                 <GuideLink dark hash="developer-integrations">Developer integrations guide</GuideLink>
               </div>
@@ -840,6 +844,54 @@ export default function LandingPage(): JSX.Element {
             </div>
           </div>
         </section>
+
+        {/* ------------------------------------------------ Agent governance */}
+        <Section className="border-t border-slate-200 bg-slate-50" id="governance" labelledBy="governance-title">
+          <SectionHeading
+            description="AI agents now act on your work: MCP clients, ChatGPT, scripts with API keys, companion apps and the AI providers behind project AI. See every one, decide what each may do and keep a record."
+            eyebrow="Agent governance"
+            id="governance-title"
+            title="Control every AI agent that touches your work"
+          />
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+            <FeatureCard icon={Radar} title="Automatic inventory">
+              API keys, MCP clients, ChatGPT Actions, companion devices and AI providers register themselves the first time they act, with an owner, scopes and a last-seen time.
+            </FeatureCard>
+            <FeatureCard icon={KeyRound} title="Least-privilege keys">
+              Give each agent only the scopes and projects it needs, with an expiry. Keys are hashed, shown once and can be rotated in a click.
+            </FeatureCard>
+            <FeatureCard icon={Workflow} title="Policies and approvals">
+              Allow, block or require approval by action, risk, project, agent type or time of day. Start in advisory mode, then enforce.
+            </FeatureCard>
+            <FeatureCard icon={ShieldCheck} title="Human in the loop">
+              Held actions wait in an approvals inbox for a workspace or project admin, then run once, exactly as requested.
+            </FeatureCard>
+            <FeatureCard icon={History} title="Activity, alerts and undo">
+              Every agent action is logged with inputs masked. Alerts flag bulk deletes, spikes and refusals; task and epic changes can be undone.
+            </FeatureCard>
+            <FeatureCard icon={Lock} title="Kill switch">
+              Suspend one agent or stop them all at once. It takes effect on the next call, for keys, sessions and AI providers alike.
+            </FeatureCard>
+          </div>
+          <div className="mt-6 grid items-center gap-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:grid-cols-2">
+            <div className="grid gap-3">
+              <h3 className="m-0 text-lg font-semibold text-slate-900">Risk scores and a compliance report</h3>
+              <p className="m-0 text-sm leading-relaxed text-slate-600">
+                Each agent gets a risk score with the reasons behind it. The governance report maps your setup to the OWASP Top 10 for LLM
+                applications, the NIST AI Risk Management Framework, ISO/IEC 42001 and the EU AI Act, and exports to JSON or CSV.
+              </p>
+              <GuideLink hash="agent-governance">Agent governance guide</GuideLink>
+            </div>
+            <CheckList
+              items={[
+                'Personal data and secrets masked before prompts reach AI providers',
+                'Prompt checks for leaked secrets and injection phrases before a canary rollout',
+                'AI usage and cost per provider',
+                'Activity kept for 90 days, exportable for audits'
+              ]}
+            />
+          </div>
+        </Section>
 
         {/* ------------------------------------------------ Security */}
         <Section id="security" labelledBy="security-title">

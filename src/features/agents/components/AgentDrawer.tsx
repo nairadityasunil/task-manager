@@ -1,0 +1,382 @@
+import { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Ban, Gauge, History, KeyRound, Pause, Play, RotateCw, ShieldCheck, X } from 'lucide-react';
+
+import { Badge, Button, Tabs, cn, selectClass } from '@/components/ui';
+import { useConfirm } from '@/context/ConfirmationContext';
+import { useToast } from '@/context/ToastContext';
+import {
+  agentsApi,
+  SCOPE_LABELS,
+  timeAgo,
+  userLabel,
+  type AgentActivity,
+  type AgentDetail
+} from '@/services/agents';
+import type { Project } from '@/types/project';
+import { toDisplayErrorMessage } from '@/utils/apiError';
+import { ProjectPicker, ScopePicker } from './CreateKeyModal';
+import { ActionRiskBadge, KindLabel, OutcomeBadge, RiskBadge, SecretReveal, StatusBadge } from './shared';
+
+type DrawerTab = 'overview' | 'permissions' | 'activity' | 'risk';
+
+interface AgentDrawerProps {
+  agentId: string;
+  projects: Project[];
+  canAdmin: boolean;
+  onClose: () => void;
+  onChanged: () => void;
+}
+
+export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }: AgentDrawerProps): JSX.Element | null {
+  const { showToast } = useToast();
+  const confirm = useConfirm();
+  const [tab, setTab] = useState<DrawerTab>('overview');
+  const [agent, setAgent] = useState<AgentDetail | null>(null);
+  const [activity, setActivity] = useState<AgentActivity[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [newKey, setNewKey] = useState<string | null>(null);
+  const [scopes, setScopes] = useState<string[]>([]);
+  const [projectIds, setProjectIds] = useState<string[]>([]);
+  const [expiry, setExpiry] = useState<string>('keep');
+
+  const load = useCallback(
+    async (refresh = false) => {
+      try {
+        const detail = await agentsApi.get(agentId, refresh);
+        setAgent(detail);
+        setScopes(detail.scopes);
+        setProjectIds(detail.projectIds.map(String));
+      } catch (error) {
+        showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+        onClose();
+      }
+    },
+    [agentId, onClose, showToast]
+  );
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  useEffect(() => {
+    if (tab !== 'activity' || activity) return;
+    agentsApi
+      .activity({ agentId, limit: 100 })
+      .then(setActivity)
+      .catch(() => setActivity([]));
+  }, [tab, agentId, activity]);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const act = async (fn: () => Promise<unknown>, message: string) => {
+    setBusy(true);
+    try {
+      await fn();
+      showToast({ variant: 'success', message });
+      await load(true);
+      onChanged();
+    } catch (error) {
+      showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const savePermissions = () =>
+    act(
+      () =>
+        agentsApi.update(agentId, {
+          scopes,
+          projectIds,
+          ...(expiry === 'keep'
+            ? {}
+            : { expiresAt: expiry === 'never' ? null : new Date(Date.now() + Number(expiry) * 86400000).toISOString() })
+        }),
+      'Permissions saved'
+    );
+
+  if (typeof document === 'undefined') return null;
+
+  const maxDaily = Math.max(1, ...(agent?.usage.daily.map((d) => d.calls) ?? [1]));
+  const revoked = agent?.status === 'revoked';
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9990] flex justify-end" role="dialog" aria-modal="true" aria-label="Agent details">
+      <button aria-label="Close" className="absolute inset-0 bg-slate-950/30 backdrop-blur-[1px]" onClick={onClose} type="button" />
+      <aside className="relative flex h-full w-full max-w-[560px] flex-col border-l border-slate-200 bg-white shadow-2xl animate-in slide-in-from-right duration-200">
+        {!agent ? (
+          <div className="space-y-3 p-5">
+            <div className="h-6 w-48 animate-pulse rounded bg-slate-100" />
+            <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
+          </div>
+        ) : (
+          <>
+            <div className="border-b border-slate-200 px-5 pt-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="m-0 truncate text-lg font-semibold tracking-tight text-slate-900">{agent.name}</h2>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <KindLabel kind={agent.kind} />
+                    <StatusBadge status={agent.status} />
+                    <RiskBadge level={agent.riskLevel} score={agent.riskScore} />
+                    {agent.legacy ? <Badge tone="orange">Legacy key</Badge> : null}
+                  </div>
+                </div>
+                <Button aria-label="Close" icon={X} onClick={onClose} size="icon-sm" variant="ghost" />
+              </div>
+              <Tabs
+                className="mt-3"
+                items={[
+                  { value: 'overview', label: 'Overview', icon: Gauge },
+                  { value: 'permissions', label: 'Permissions', icon: ShieldCheck },
+                  { value: 'activity', label: 'Activity', icon: History },
+                  { value: 'risk', label: 'Risk', icon: Ban, count: agent.riskFactors.length }
+                ]}
+                onChange={setTab}
+                value={tab}
+              />
+            </div>
+
+            <div className="flex-1 space-y-4 overflow-y-auto p-5">
+              {tab === 'overview' ? (
+                <>
+                  {agent.statusReason ? (
+                    <p className="m-0 rounded-lg bg-amber-50 p-2.5 text-[13px] text-amber-800">Reason: {agent.statusReason}</p>
+                  ) : null}
+                  {newKey ? (
+                    <div className="space-y-1.5">
+                      <p className="m-0 text-[13px] font-medium text-slate-700">New key (shown once)</p>
+                      <SecretReveal value={newKey} />
+                    </div>
+                  ) : null}
+                  <dl className="m-0 grid grid-cols-2 gap-3 text-[13px]">
+                    {[
+                      ['Owner', userLabel(agent.ownerUserId)],
+                      ['Last active', timeAgo(agent.lastSeenAt)],
+                      ['Calls', agent.callCount.toLocaleString()],
+                      ['Expires', agent.expiresAt ? new Date(agent.expiresAt).toLocaleDateString() : 'Never'],
+                      ['Key', agent.keyPrefix ? `${agent.keyPrefix}…` : '—'],
+                      ['Client', agent.clientName || agent.userAgent || '—']
+                    ].map(([label, value]) => (
+                      <div className="min-w-0 rounded-lg border border-slate-200 p-2.5" key={label}>
+                        <dt className="text-xs text-slate-500">{label}</dt>
+                        <dd className="m-0 mt-0.5 truncate font-medium text-slate-900">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+
+                  <div className="rounded-xl border border-slate-200 p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[13px] font-medium text-slate-700">Last 30 days</span>
+                      <span className="flex gap-2 text-xs text-slate-500">
+                        <span>{agent.usage.outcomes.allowed ?? 0} allowed</span>
+                        <span className="text-red-600">{agent.usage.outcomes.blocked ?? 0} blocked</span>
+                        <span className="text-amber-600">{agent.usage.outcomes.pending_approval ?? 0} held</span>
+                      </span>
+                    </div>
+                    {agent.usage.daily.length === 0 ? (
+                      <p className="m-0 mt-3 text-xs text-slate-500">No activity yet.</p>
+                    ) : (
+                      <div className="mt-3 flex h-16 items-end gap-0.5" aria-label="Calls per day">
+                        {agent.usage.daily.map((day) => (
+                          <div
+                            className="min-w-[4px] flex-1 rounded-t bg-emerald-400/80"
+                            key={day.date}
+                            style={{ height: `${Math.max(6, (day.calls / maxDaily) * 100)}%` }}
+                            title={`${day.date}: ${day.calls} calls`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    {agent.usage.ai ? (
+                      <div className="mt-3 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-center text-xs text-slate-500">
+                        <div>
+                          <div className="text-base font-semibold text-slate-900 tabular-nums">{agent.usage.ai.calls}</div>
+                          AI calls
+                        </div>
+                        <div>
+                          <div className="text-base font-semibold text-slate-900 tabular-nums">{agent.usage.ai.tokens.toLocaleString()}</div>
+                          tokens
+                        </div>
+                        <div>
+                          <div className="text-base font-semibold text-slate-900 tabular-nums">${agent.usage.ai.cost.toFixed(2)}</div>
+                          cost
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {!revoked ? (
+                    <div className="flex flex-wrap gap-2">
+                      {agent.status === 'active' ? (
+                        <Button
+                          icon={Pause}
+                          loading={busy}
+                          onClick={() => void act(() => agentsApi.suspend(agentId, 'Suspended from the portal'), `${agent.name} suspended`)}
+                        >
+                          Suspend
+                        </Button>
+                      ) : (
+                        <Button icon={Play} loading={busy} onClick={() => void act(() => agentsApi.resume(agentId), `${agent.name} resumed`)}>
+                          Resume
+                        </Button>
+                      )}
+                      {agent.kind === 'api_key' ? (
+                        <Button
+                          icon={RotateCw}
+                          loading={busy}
+                          onClick={async () => {
+                            const ok = await confirm({
+                              title: 'Rotate key?',
+                              message: 'The current key stops working immediately. Update the client with the new key.',
+                              confirmText: 'Rotate'
+                            });
+                            if (!ok) return;
+                            await act(async () => setNewKey((await agentsApi.rotate(agentId)).key), 'Key rotated');
+                          }}
+                        >
+                          Rotate key
+                        </Button>
+                      ) : null}
+                      <Button
+                        icon={KeyRound}
+                        loading={busy}
+                        onClick={async () => {
+                          const ok = await confirm({
+                            title: `Revoke ${agent.name}?`,
+                            message: 'The agent loses access for good. This cannot be undone.',
+                            confirmText: 'Revoke',
+                            type: 'danger'
+                          });
+                          if (ok) await act(() => agentsApi.revoke(agentId, 'Revoked from the portal'), `${agent.name} revoked`);
+                        }}
+                        variant="danger"
+                      >
+                        Revoke
+                      </Button>
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+
+              {tab === 'permissions' ? (
+                <>
+                  <div className="grid gap-1.5">
+                    <span className="text-[13px] font-medium text-slate-700">Scopes</span>
+                    {agent.kind === 'ai_provider' ? (
+                      <p className="m-0 text-[13px] text-slate-500">AI providers only receive prompts; they cannot call tools.</p>
+                    ) : (
+                      <ScopePicker canAdmin={canAdmin} onChange={setScopes} value={scopes} />
+                    )}
+                  </div>
+                  {agent.kind !== 'ai_provider' ? (
+                    <div className="grid gap-1.5">
+                      <span className="text-[13px] font-medium text-slate-700">Projects it can change</span>
+                      <ProjectPicker onChange={setProjectIds} projects={projects} value={projectIds} />
+                    </div>
+                  ) : null}
+                  {agent.kind === 'api_key' ? (
+                    <label className="grid gap-1">
+                      <span className="text-[13px] font-medium text-slate-700">Expiry</span>
+                      <select className={selectClass} onChange={(e) => setExpiry(e.target.value)} value={expiry}>
+                        <option value="keep">Keep ({agent.expiresAt ? new Date(agent.expiresAt).toLocaleDateString() : 'never'})</option>
+                        <option value="30">30 days from now</option>
+                        <option value="90">90 days from now</option>
+                        <option value="365">1 year from now</option>
+                        <option value="never">Never</option>
+                      </select>
+                    </label>
+                  ) : null}
+                  {!revoked && agent.kind !== 'ai_provider' ? (
+                    <Button loading={busy} onClick={() => void savePermissions()} variant="primary">
+                      Save permissions
+                    </Button>
+                  ) : null}
+                  <ul className="m-0 list-none space-y-1 p-0 text-xs text-slate-500">
+                    {scopes.map((scope) => (
+                      <li key={scope}>
+                        <code className="font-mono text-slate-700">{scope}</code> {SCOPE_LABELS[scope]?.description}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
+
+              {tab === 'activity' ? (
+                activity == null ? (
+                  <div className="h-24 animate-pulse rounded-xl bg-slate-100" />
+                ) : activity.length === 0 ? (
+                  <p className="m-0 text-[13px] text-slate-500">No recorded actions yet.</p>
+                ) : (
+                  <ul className="m-0 list-none divide-y divide-slate-100 rounded-xl border border-slate-200 p-0">
+                    {activity.map((row) => (
+                      <li className="flex flex-wrap items-center justify-between gap-2 px-3 py-2" key={row.id}>
+                        <div className="min-w-0">
+                          <code className="font-mono text-[13px] text-slate-900">{row.action}</code>
+                          <div className="text-xs text-slate-500">
+                            {timeAgo(row.createdAt)} · {row.channel.toUpperCase()}
+                            {row.policyName ? ` · ${row.policyName}` : ''}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <ActionRiskBadge risk={row.risk} />
+                          <OutcomeBadge outcome={row.outcome} />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )
+              ) : null}
+
+              {tab === 'risk' ? (
+                <>
+                  <div className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
+                    <div>
+                      <div className="text-xs text-slate-500">Risk score</div>
+                      <div className="text-2xl font-semibold tabular-nums text-slate-900">{agent.riskScore}/100</div>
+                    </div>
+                    <Button icon={RotateCw} loading={busy} onClick={() => void load(true)} size="sm">
+                      Re-assess
+                    </Button>
+                  </div>
+                  {agent.riskFactors.length === 0 ? (
+                    <p className="m-0 text-[13px] text-slate-500">No risk factors. This agent follows least privilege.</p>
+                  ) : (
+                    <ul className="m-0 list-none space-y-2 p-0">
+                      {agent.riskFactors.map((factor) => (
+                        <li className="rounded-lg border border-slate-200 p-3" key={factor.code}>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[13px] font-medium text-slate-900">{factor.label}</span>
+                            <span className={cn('text-xs font-semibold tabular-nums', factor.weight >= 20 ? 'text-red-600' : 'text-amber-600')}>
+                              +{factor.weight}
+                            </span>
+                          </div>
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {factor.frameworks.map((framework) => (
+                              <Badge key={framework} tone="neutral">
+                                {framework}
+                              </Badge>
+                            ))}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <p className="m-0 text-xs text-slate-400">
+                    Framework references help reviews; they are not a certification.
+                  </p>
+                </>
+              ) : null}
+            </div>
+          </>
+        )}
+      </aside>
+    </div>,
+    document.body
+  );
+}

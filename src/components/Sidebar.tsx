@@ -12,6 +12,7 @@ import {
   Sparkles,
   Play,
   ArrowLeft,
+  ShieldHalf,
   type LucideIcon,
 } from 'lucide-react';
 import { avatarColor, cn, type Area } from '@/components/ui';
@@ -40,7 +41,8 @@ export type SidebarView =
   | 'sdk-docs'
   | 'engagement'
   | 'sdk-integrations'
-  | 'sdk-integration-detail';
+  | 'sdk-integration-detail'
+  | 'agents';
 
 interface SidebarProps {
   activeView: SidebarView;
@@ -199,6 +201,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <NavItem area="ai" icon={BrainCircuit} isActive={activeView === 'semantic-intelligence'} label="Intelligence" onClick={() => onViewChange('semantic-intelligence')} />
                 <NavItem area="prompts" icon={Sparkles} isActive={activeView === 'prompts'} label="Prompt Library" onClick={() => onViewChange('prompts')} />
                 <NavItem area="prompts" icon={Play} isActive={activeView === 'playground'} label="Prompt Playground" onClick={() => onViewChange('playground')} />
+                <NavItem area="ai" icon={ShieldHalf} isActive={activeView === 'agents'} label="Agent Governance" onClick={() => onViewChange('agents')} />
               </NavGroup>
 
               <NavGroup label="Product">

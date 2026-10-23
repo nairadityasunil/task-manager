@@ -18,6 +18,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ projects }) => {
       activeTab={settings.activeTab}
       setActiveTab={settings.setActiveTab}
       showKey={settings.showKey}
+      personalKey={settings.personalKey}
       setShowKey={settings.setShowKey}
       apiKeyCopied={settings.apiKeyCopied}
       schemaCopied={settings.schemaCopied}

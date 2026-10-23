@@ -15,13 +15,16 @@ import {
   ChevronUp,
   Smartphone,
 } from 'lucide-react';
-import { Badge, Button, Card, CardHeader, inputClass } from '@/components/ui';
+import { Badge, Button, Card, CardHeader, buttonClass, inputClass } from '@/components/ui';
 import EmptyState from '@/components/EmptyState';
 import { useToast } from '@/context/ToastContext';
-import { useAuth } from '@/context/AuthContext';
 import { useWorkspace } from '@/features/workspaces';
 import { API_BASE_URL } from '@/services/api';
 import { getMcpTools, type McpToolManifestEntry } from '@/services/mcp';
+import { CreateKeyModal } from '@/features/agents/components/CreateKeyModal';
+import { SecretReveal } from '@/features/agents/components/shared';
+import { isAtLeastAdmin } from '@/features/workspaces';
+import { Link } from 'react-router-dom';
 import type { CompanionDevice } from '../hooks/useSettings';
 
 interface McpIntegrationSettingsProps {
@@ -36,11 +39,11 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
   companionDevices = [],
   isLoadingCompanionDevices = false,
   onRevokeCompanionDevice,
-  onNavigateToProfile,
   onOpenCompanionModal,
 }) => {
-  const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
+  const [creatingKey, setCreatingKey] = useState(false);
+  const [mcpKey, setMcpKey] = useState<string | null>(null);
   const { showToast } = useToast();
 
   const userRole = activeWorkspace?.role ?? 'MEMBER';
@@ -53,10 +56,8 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeClientTab, setActiveClientTab] = useState<'claude' | 'cursor' | 'curl'>('claude');
 
-  const [showSyncKey, setShowSyncKey] = useState<boolean>(false);
   const [expandedTool, setExpandedTool] = useState<string | null>(null);
 
-  const [copiedKey, setCopiedKey] = useState<boolean>(false);
   const [copiedConfig, setCopiedConfig] = useState<boolean>(false);
 
   const mcpServerUrl = `${API_BASE_URL}/mcp`;
@@ -79,13 +80,7 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
     fetchTools();
   }, []);
 
-  const handleCopyKey = () => {
-    if (!user?.syncApiKey) return;
-    navigator.clipboard.writeText(user.syncApiKey);
-    setCopiedKey(true);
-    showToast({ variant: 'success', message: 'Sync API Key copied to clipboard' });
-    setTimeout(() => setCopiedKey(false), 2000);
-  };
+  const keyForSnippets = mcpKey || 'YOUR_AGENT_KEY';
 
   const getClaudeConfig = () => {
     return JSON.stringify(
@@ -94,7 +89,7 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
           todosync: {
             url: mcpServerUrl,
             headers: {
-              'x-sync-key': user?.syncApiKey || 'YOUR_SYNC_API_KEY',
+              Authorization: `Bearer ${keyForSnippets}`,
             },
           },
         },
@@ -105,11 +100,11 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
   };
 
   const getCursorConfig = () => {
-    return `// In Cursor Settings -> Features -> MCP Servers\nName: TodoSync\nType: sse\nURL: ${mcpServerUrl}\nHeaders: {\n  "x-sync-key": "${user?.syncApiKey || 'YOUR_SYNC_API_KEY'}"\n}`;
+    return `// In Cursor Settings -> Features -> MCP Servers\nName: TodoSync\nType: sse\nURL: ${mcpServerUrl}\nHeaders: {\n  "Authorization": "Bearer ${keyForSnippets}"\n}`;
   };
 
   const getCurlConfig = () => {
-    return `# List tools\ncurl -X GET "${mcpServerUrl}/tools" \\\n  -H "x-sync-key: ${user?.syncApiKey || 'YOUR_SYNC_API_KEY'}"\n\n# Invoke tool\ncurl -X POST "${mcpServerUrl}/tools/task:search" \\\n  -H "x-sync-key: ${user?.syncApiKey || 'YOUR_SYNC_API_KEY'}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"limit": 10}'`;
+    return `# List tools\ncurl -X GET "${mcpServerUrl}/tools" \\\n  -H "Authorization: Bearer ${keyForSnippets}"\n\n# Invoke tool\ncurl -X POST "${mcpServerUrl}/tools/task:search" \\\n  -H "Authorization: Bearer ${keyForSnippets}" \\\n  -H "Content-Type: application/json" \\\n  -d '{"limit": 10}'`;
   };
 
   const handleCopyConfig = () => {
@@ -247,11 +242,9 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
             </p>
           </div>
 
-          {onNavigateToProfile && (
-            <Button size="sm" icon={Key} onClick={onNavigateToProfile} className="self-start md:self-auto">
-              Manage Sync Key
-            </Button>
-          )}
+          <Link className={buttonClass('secondary', 'sm', 'self-start md:self-auto')} to="/agents/inventory">
+            <ShieldCheck className="h-3.5 w-3.5" /> Agent Governance
+          </Link>
         </div>
       </Card>
 
@@ -266,32 +259,24 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
           description="Configure supported AI clients to communicate with your TodoSync workspace backend."
         />
         <div className="space-y-4 p-4">
-          {/* Sync API Key Bar */}
-          <div className="flex flex-col justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3 lg:flex-row lg:items-center">
-            <div className="min-w-0 space-y-0.5">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium text-slate-900">Your Sync API Key</span>
-                <span className="font-mono text-xs text-slate-500">Header: x-sync-key</span>
+          {/* Agent key */}
+          <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+            <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+              <div className="min-w-0 space-y-0.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium text-slate-900">Agent key for your MCP client</span>
+                  <span className="font-mono text-xs text-slate-500">Authorization: Bearer …</span>
+                </div>
+                <p className="m-0 text-[13px] text-slate-500">
+                  Each client gets its own scoped key, so you can see what it does and cut it off on its own. Signing in with your
+                  account also works; the client then registers itself as an agent.
+                </p>
               </div>
-              <p className="m-0 text-[13px] text-slate-500">Used by MCP clients to authenticate calls. Keep private.</p>
-            </div>
-
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <code className="flex h-8 min-w-0 max-w-full items-center truncate rounded-lg border border-slate-200 bg-white px-2.5 font-mono text-xs text-slate-800">
-                {showSyncKey
-                  ? user?.syncApiKey || 'No Key Generated'
-                  : user?.syncApiKey
-                  ? `${user.syncApiKey.slice(0, 8)}...${user.syncApiKey.slice(-4)}`
-                  : '••••••••••••••••'}
-              </code>
-              <Button size="sm" onClick={() => setShowSyncKey(!showSyncKey)}>
-                {showSyncKey ? 'Hide' : 'Show'}
-              </Button>
-              <Button size="sm" variant="primary" onClick={handleCopyKey} disabled={!user?.syncApiKey}>
-                {copiedKey ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                {copiedKey ? 'Copied' : 'Copy Key'}
+              <Button size="sm" variant="primary" icon={Key} onClick={() => setCreatingKey(true)}>
+                Create MCP key
               </Button>
             </div>
+            {mcpKey ? <SecretReveal value={mcpKey} /> : null}
           </div>
 
           {/* Client tabs + config snippet */}
@@ -346,7 +331,7 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
               <ShieldCheck className="h-4 w-4 text-slate-400" /> Authorized Scopes & Security Policy
             </span>
           }
-          description={`Scopes automatically enforced by backend policy based on your authenticated role (${userRole}).`}
+          description={`Scopes are chosen per agent key; workspace admin is only available to admins (your role: ${userRole}).`}
         />
         <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3">
           {allScopes.map((item) => (
@@ -550,6 +535,16 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
           </ul>
         )}
       </Card>
+      {creatingKey ? (
+        <CreateKeyModal
+          canAdmin={activeWorkspace ? isAtLeastAdmin(activeWorkspace.role) : false}
+          defaultName="Claude Desktop"
+          onClose={() => setCreatingKey(false)}
+          onCreated={() => undefined}
+          onKey={setMcpKey}
+          workspaceId={activeWorkspace?.id ?? null}
+        />
+      ) : null}
     </div>
   );
 };

@@ -26,6 +26,7 @@ interface SettingsLayoutProps {
   activeTab: "profile" | "workspace" | "sla" | "chatgpt" | "companion" | "mcp";
   setActiveTab: (tab: "profile" | "workspace" | "sla" | "chatgpt" | "companion" | "mcp") => void;
   showKey: boolean;
+  personalKey: string | null;
   setShowKey: (show: boolean) => void;
   apiKeyCopied: boolean;
   schemaCopied: boolean;
@@ -55,6 +56,7 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   activeTab,
   setActiveTab,
   showKey,
+  personalKey,
   setShowKey,
   apiKeyCopied,
   schemaCopied,
@@ -118,6 +120,7 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         <ProfileSettings
           user={user}
           showKey={showKey}
+          personalKey={personalKey}
           setShowKey={setShowKey}
           apiKeyCopied={apiKeyCopied}
           isRegeneratingKey={isRegeneratingKey}

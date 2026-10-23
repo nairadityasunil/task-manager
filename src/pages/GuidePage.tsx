@@ -198,7 +198,11 @@ const WORKSPACE_MATRIX = [
   { action: 'Invite members by email', cells: [true, true, false, false, false] },
   { action: 'Change members’ roles', cells: [true, 'Not Owners', false, false, false] },
   { action: 'Grant or remove the Owner role', cells: [true, false, false, false, false] },
-  { action: 'Delete the workspace', cells: [true, false, false, false, false] }
+  { action: 'Delete the workspace', cells: [true, false, false, false, false] },
+  { action: 'See every agent and its activity, set agent policies', cells: [true, true, false, false, false], group: 'Agent governance' },
+  { action: 'Approve or reject held agent actions', cells: [true, true, 'Project Admins', 'Project Admins', false] },
+  { action: 'Suspend agents, stop all agents, export the report', cells: [true, true, false, false, false] },
+  { action: 'Create agent keys and manage their own agents', cells: [true, true, true, true, true] }
 ];
 
 const PROJECT_MATRIX = [
@@ -1078,25 +1082,29 @@ export default function GuidePage(): JSX.Element {
               intro="Connect Pristine to scripts, AI assistants and mobile devices."
               title="Developer integrations"
             >
-              <H3>Sync API key</H3>
+              <H3>Agent keys</H3>
               <Steps
                 items={[
                   <>
-                    Open <Ui>Settings → Profile &amp; API Key</Ui>.
+                    Open <Ui>Agent Governance</Ui> in the sidebar and select <Ui>New agent key</Ui>, or create one from the ChatGPT or MCP
+                    settings.
                   </>,
-                  'Reveal and copy your personal Sync API key. Use it in scripts and external tools.',
-                  <>
-                    If the key leaks, select <Ui>Regenerate</Ui>. The old key stops working.
-                  </>
+                  'Name it after the tool that will use it, choose its scopes and projects, and set an expiry.',
+                  'Copy the key straight away: it is stored hashed and never shown again. Send it as Authorization: Bearer <key>.'
                 ]}
               />
+              <Callout tone="note">
+                Your old personal Sync key keeps working and moves to a hashed key the first time it is used. It is flagged as high risk
+                because it has full access; replace it with scoped keys, or create a new personal key in{' '}
+                <Ui>Settings → Profile &amp; API Key</Ui>.
+              </Callout>
               <H3>ChatGPT integration</H3>
               <Steps
                 items={[
                   <>
                     Open <Ui>Settings → ChatGPT Integration</Ui>.
                   </>,
-                  'Follow the steps to add Pristine as a GPT Action to your custom GPT, with OAuth sign-in.',
+                  'Create a ChatGPT key, then follow the steps to add Pristine as a GPT Action to your custom GPT.',
                   'Once connected, ChatGPT can read and update your tasks.'
                 ]}
               />
@@ -1106,7 +1114,7 @@ export default function GuidePage(): JSX.Element {
                   <>
                     Open <Ui>Settings → MCP Integration</Ui>.
                   </>,
-                  'Copy the server details and add them to your MCP client, such as Claude Desktop or an IDE.',
+                  'Create an MCP key and copy the server details into your MCP client, such as Claude Desktop or an IDE.',
                   'Your client can now use around 74 tools and 4 prompts to manage projects and tasks.'
                 ]}
               />
@@ -1120,12 +1128,85 @@ export default function GuidePage(): JSX.Element {
                   'Manage and revoke paired devices from the same settings page.'
                 ]}
               />
-              <Callout tone="warning">Treat the Sync API key like a password. Never commit it to source control or paste it into shared documents.</Callout>
+              <Callout tone="warning">Treat agent keys like passwords. Never commit them to source control or paste them into shared documents.</Callout>
+            </GuideSection>
+
+            {/* ------------------------------------------------ Agent governance */}
+            <GuideSection
+              eyebrow="14 · Governance"
+              id="agent-governance"
+              intro="See every AI agent acting in your workspace, decide what it may do and keep a record."
+              title="Agent governance"
+            >
+              <P>
+                An <strong className="font-medium text-slate-900">agent</strong> is anything that acts for someone without them clicking
+                through the portal: API keys, MCP clients such as Claude Desktop, ChatGPT Actions, companion devices, and the AI providers
+                that power project AI. Each one appears in <Ui>Agent Governance</Ui> the first time it acts.
+              </P>
+              <H3>Inventory and risk</H3>
+              <Bullets
+                items={[
+                  'The Agents tab lists every agent with its owner, scopes, projects, status, last activity and a risk score.',
+                  'Open an agent to see why it scored the way it did. Each factor names the framework it relates to.',
+                  'High risk usually means admin scope, access to every project, a key that never expires or a legacy full-access key.'
+                ]}
+              />
+              <H3>Policies</H3>
+              <Steps
+                items={[
+                  <>
+                    Open <Ui>Agent Governance → Policies</Ui> (Owners and Admins) and pick a template, or select <Ui>New policy</Ui>.
+                  </>,
+                  'Choose what happens: allow, block or require approval. Match on agent type, action (for example task:delete or *:delete), minimum risk, project or time of day.',
+                  <>
+                    Leave it in <Ui>Advisory</Ui> mode to see what it would do in the activity log, then select <Ui>Enforce</Ui>.
+                  </>,
+                  <>
+                    Use <Ui>Test policies</Ui> to check what would happen to an action before it is tried.
+                  </>
+                ]}
+              />
+              <Callout tone="tip">The highest priority policy that matches decides. On a tie, block beats require approval, which beats allow.</Callout>
+              <H3>Approvals</H3>
+              <P>
+                When a policy requires approval, the agent gets an approval id instead of a result. Workspace Owners and Admins, and Admins of
+                the project involved, see the request under <Ui>Approvals</Ui> with its inputs (personal data masked). Approving runs the
+                action once, exactly as requested; the agent reads the outcome with <code className="font-mono text-[13px]">agents:approval_status</code>{' '}
+                over MCP or <code className="font-mono text-[13px]">GET /api/agents/approvals/:id</code>. Requests expire after 24 hours.
+              </P>
+              <H3>Stop an agent</H3>
+              <Bullets
+                items={[
+                  'Suspend an agent from its detail panel; it is refused on its next call. Resume it later.',
+                  'Revoke an agent to cut it off for good, or rotate a key to replace it.',
+                  <>
+                    In an emergency, <Ui>Stop all agents</Ui> suspends every active agent in the workspace at once.
+                  </>
+                ]}
+              />
+              <H3>Activity, alerts and undo</H3>
+              <P>
+                Every agent action is recorded with its decision for 90 days, with inputs masked. Alerts flag bulk deletes, unusual volume,
+                repeated refusals, first use of a new action and unused agents. Changes an agent made to a task or epic can be undone from
+                the activity log. Export the log as CSV or JSON for audits.
+              </P>
+              <H3>Compliance report and AI data masking</H3>
+              <P>
+                The <Ui>Compliance</Ui> tab scores your setup against controls mapped to the OWASP Top 10 for LLM applications, the NIST AI
+                Risk Management Framework, ISO/IEC 42001 and the EU AI Act, with a recommendation for each gap. Turn on{' '}
+                <Ui>AI data masking</Ui> there to replace emails, phone numbers, card numbers and secrets before prompts reach AI providers.
+              </P>
+              <Callout tone="note">The framework mapping supports your reviews; it is not a certification of compliance.</Callout>
+              <H3>Prompt checks</H3>
+              <P>
+                Before a prompt version starts a canary rollout, Pristine checks it for embedded secrets and known prompt-injection phrases.
+                High-severity findings stop the rollout until the prompt is fixed or the finding is acknowledged.
+              </P>
             </GuideSection>
 
             {/* ------------------------------------------------ Account and security */}
             <GuideSection
-              eyebrow="14 · Account"
+              eyebrow="15 · Account"
               id="account-security"
               intro="How sessions, password resets and Google sign-in work."
               title="Account and security"
@@ -1159,7 +1240,7 @@ export default function GuidePage(): JSX.Element {
 
             {/* ------------------------------------------------ Troubleshooting */}
             <GuideSection
-              eyebrow="15 · Help"
+              eyebrow="16 · Help"
               id="troubleshooting"
               intro="Fixes for the problems people run into most often."
               title="Troubleshooting and FAQ"

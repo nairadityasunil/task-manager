@@ -11,6 +11,7 @@ export const LANDING_NAV_LINKS: MarketingLink[] = [
   { id: 'ai', label: 'AI' },
   { id: 'engagement', label: 'Engagement' },
   { id: 'developers', label: 'Developers' },
+  { id: 'governance', label: 'Governance' },
   { id: 'roles', label: 'Roles' },
   { id: 'faq', label: 'FAQ' }
 ];
@@ -30,6 +31,7 @@ export const GUIDE_SECTIONS: MarketingLink[] = [
   { id: 'product-engagement', label: 'Product engagement' },
   { id: 'event-tracking', label: 'Event tracking' },
   { id: 'developer-integrations', label: 'Developer integrations' },
+  { id: 'agent-governance', label: 'Agent governance' },
   { id: 'account-security', label: 'Account and security' },
   { id: 'troubleshooting', label: 'Troubleshooting and FAQ' }
 ];

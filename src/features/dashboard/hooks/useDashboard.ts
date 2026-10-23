@@ -246,6 +246,8 @@ export function useDashboard() {
       setActiveView('sdk-docs');
     } else if (path === '/settings') {
       setActiveView('settings');
+    } else if (path === '/agents' || path.startsWith('/agents/')) {
+      setActiveView('agents');
     } else if (path.startsWith('/projects/')) {
       setActiveView('dashboard');
       if (projectId) {

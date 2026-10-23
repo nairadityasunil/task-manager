@@ -14,6 +14,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Badge, Button, Card, CardHeader } from "@/components/ui";
+import { CreateKeyModal } from "@/features/agents/components/CreateKeyModal";
+import { isAtLeastAdmin, useWorkspace } from "@/features/workspaces";
 import { SYNC_CHATGPT_ACTION_SCHEMA, SYNC_CHATGPT_INSTRUCTION_TEXT, validateSyncActionSchema } from "@/features/sync/schema";
 
 interface ChatGPTIntegrationSettingsProps {
@@ -29,9 +31,10 @@ export const ChatGPTIntegrationSettings: React.FC<ChatGPTIntegrationSettingsProp
   instructionsCopied,
   onCopySchema,
   onCopyInstructions,
-  onNavigateToProfile,
 }) => {
   const [showFullInstructions, setShowFullInstructions] = useState(true);
+  const [creatingKey, setCreatingKey] = useState(false);
+  const { activeWorkspace } = useWorkspace();
   const [showFullSchema, setShowFullSchema] = useState(true);
 
   const schemaValidationErrors = validateSyncActionSchema(SYNC_CHATGPT_ACTION_SCHEMA);
@@ -53,10 +56,11 @@ export const ChatGPTIntegrationSettings: React.FC<ChatGPTIntegrationSettingsProp
     {
       n: 1,
       meta: <span className="text-xs text-slate-500">Step 1 of 3</span>,
-      title: "Copy Sync API Key",
+      title: "Create a ChatGPT key",
       text: (
         <>
-          Copy your API Key from <strong className="font-medium text-slate-800">Profile & API Key</strong>. It authenticates ChatGPT calls.
+          Create an agent key for ChatGPT with only the access it needs. It is shown once; every call is governed and logged under{" "}
+          <strong className="font-medium text-slate-800">Agent Governance</strong>.
         </>
       ),
       chip: (
@@ -132,11 +136,9 @@ export const ChatGPTIntegrationSettings: React.FC<ChatGPTIntegrationSettingsProp
             </p>
           </div>
 
-          {onNavigateToProfile && (
-            <Button size="sm" icon={Key} onClick={onNavigateToProfile} className="self-start md:self-auto">
-              Get Sync API Key
-            </Button>
-          )}
+          <Button size="sm" variant="primary" icon={Key} onClick={() => setCreatingKey(true)} className="self-start md:self-auto">
+            Create ChatGPT key
+          </Button>
         </div>
       </Card>
 
@@ -296,6 +298,15 @@ export const ChatGPTIntegrationSettings: React.FC<ChatGPTIntegrationSettingsProp
           ))}
         </div>
       </Card>
+      {creatingKey ? (
+        <CreateKeyModal
+          canAdmin={activeWorkspace ? isAtLeastAdmin(activeWorkspace.role) : false}
+          defaultName="ChatGPT custom GPT"
+          onClose={() => setCreatingKey(false)}
+          onCreated={() => undefined}
+          workspaceId={activeWorkspace?.id ?? null}
+        />
+      ) : null}
     </div>
   );
 };
