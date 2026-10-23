@@ -38,7 +38,7 @@ export function SectionHeading({
   id?: string;
 }): JSX.Element {
   return (
-    <div className={cn('max-w-2xl', align === 'center' ? 'mx-auto text-center' : '')}>
+    <div className={cn('max-w-2xl', align === 'center' ? 'mx-auto text-center' : '')} data-reveal>
       <p className={cn('m-0 text-sm font-medium', dark ? 'text-emerald-400' : 'text-emerald-700')}>{eyebrow}</p>
       <h2
         className={cn('m-0 mt-2 text-2xl font-semibold leading-tight tracking-tight sm:text-3xl', dark ? 'text-white' : 'text-slate-900')}

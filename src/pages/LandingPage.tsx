@@ -48,6 +48,7 @@ import MarketingNav from '@/components/marketing/MarketingNav';
 import MarketingFooter from '@/components/marketing/MarketingFooter';
 import { CheckList, CodeBlock, SectionHeading, ctaClass } from '@/components/marketing/primitives';
 import { useHashScroll } from '@/components/marketing/useHashScroll';
+import { useReveal } from '@/components/marketing/useReveal';
 import {
   BreakdownMock,
   ChatMock,
@@ -168,6 +169,23 @@ const QUESTION_TYPES = [
   'File upload'
 ];
 
+const WORKS_WITH = [
+  'OpenAI',
+  'Anthropic Claude',
+  'Google Gemini',
+  'Groq',
+  'Ollama',
+  'ChatGPT Actions',
+  'Claude Desktop',
+  'Cursor',
+  'VS Code',
+  'React',
+  'Next.js',
+  'Vue',
+  'Google sign-in',
+  'Model Context Protocol'
+];
+
 const FAQS: Array<{ q: string; a: ReactNode }> = [
   {
     q: 'What is Pristine?',
@@ -232,7 +250,7 @@ function IconBadge({ icon: Icon, dark = false }: { icon: LucideIcon; dark?: bool
     <span
       aria-hidden
       className={cn(
-        'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
+        'landing-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
         dark ? 'bg-white/10 text-emerald-300 ring-1 ring-inset ring-white/10' : 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-100'
       )}
     >
@@ -243,7 +261,7 @@ function IconBadge({ icon: Icon, dark = false }: { icon: LucideIcon; dark?: bool
 
 function FeatureCard({ icon, title, children, className }: { icon: LucideIcon; title: string; children: ReactNode; className?: string }): JSX.Element {
   return (
-    <div className={cn('rounded-xl border border-slate-200 bg-white p-5 shadow-sm', className)}>
+    <div className={cn('landing-card rounded-xl border border-slate-200 bg-white p-5 shadow-sm', className)}>
       <IconBadge icon={icon} />
       <h4 className="m-0 mt-4 text-[15px] font-semibold text-slate-900">{title}</h4>
       <div className="m-0 mt-1.5 text-sm leading-relaxed text-slate-600">{children}</div>
@@ -284,6 +302,8 @@ function GuideLink({ hash, children, dark = false }: { hash: string; children: R
 export default function LandingPage(): JSX.Element {
   const { user } = useAuth();
   useHashScroll();
+  const pageRef = useRef<HTMLDivElement>(null);
+  useReveal(pageRef);
 
   const [aiTab, setAiTab] = useState(AI_TABS[0].id);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
@@ -313,7 +333,7 @@ export default function LandingPage(): JSX.Element {
   );
 
   return (
-    <div className="relative min-h-screen overflow-x-clip bg-white font-sans text-slate-700 selection:bg-emerald-500/15 selection:text-emerald-950">
+    <div ref={pageRef} className="relative min-h-screen overflow-x-clip bg-white font-sans text-slate-700 selection:bg-emerald-500/15 selection:text-emerald-950">
       <a
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-slate-900 focus:shadow-md"
         href="#main"
@@ -329,18 +349,23 @@ export default function LandingPage(): JSX.Element {
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_45%_at_50%_0%,rgba(16,185,129,0.10),transparent),radial-gradient(40%_40%_at_100%_60%,rgba(14,165,233,0.06),transparent)]"
           />
+          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="landing-blob absolute -left-24 top-10 h-72 w-72 rounded-full bg-emerald-300/25 blur-3xl" />
+            <div className="landing-blob-slow absolute -right-20 top-40 h-80 w-80 rounded-full bg-sky-300/20 blur-3xl" />
+            <div className="landing-blob absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-violet-300/15 blur-3xl" />
+          </div>
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_70%)]"
           />
           <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-14 sm:px-6 sm:pb-28 sm:pt-20">
-            <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+            <div className="landing-hero-in mx-auto flex max-w-3xl flex-col items-center text-center">
               <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[13px] font-medium text-slate-600 shadow-sm">
-                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <span aria-hidden className="landing-pulse-dot h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 Work management and product engagement, together
               </span>
               <h1 className="m-0 mt-6 text-4xl font-semibold leading-[1.08] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl" id="hero-title">
-                Plan the work. <span className="text-emerald-700">Guide the people</span> who use it.
+                Plan the work. <span className="landing-gradient-text bg-gradient-to-r from-emerald-700 via-teal-500 to-sky-600 bg-clip-text text-transparent">Guide the people</span> who use it.
               </h1>
               <p className="m-0 mt-5 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
                 Pristine gives your team projects, epics and tasks with SLAs, self-updating priorities and AI planning, and gives
@@ -362,9 +387,29 @@ export default function LandingPage(): JSX.Element {
               </ul>
             </div>
 
-            <div className="relative mx-auto mt-14 max-w-5xl">
-              <HeroMock />
+            <div className="landing-hero-mock relative mx-auto mt-14 max-w-5xl">
+              <div className="landing-float">
+                <HeroMock />
+              </div>
             </div>
+          </div>
+        </section>
+
+        {/* ------------------------------------------------ Works with */}
+        <section aria-label="Works with" className="border-b border-slate-200 bg-white py-6">
+          <p className="m-0 mb-4 text-center text-xs font-medium uppercase tracking-[0.16em] text-slate-400">Works with the tools you already use</p>
+          <div className="landing-marquee overflow-hidden">
+            <ul className="landing-marquee-track m-0 flex w-max list-none gap-3 p-0">
+              {[...WORKS_WITH, ...WORKS_WITH].map((name, i) => (
+                <li
+                  aria-hidden={i >= WORKS_WITH.length ? true : undefined}
+                  className="whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-sm font-medium text-slate-600"
+                  key={`${name}-${i}`}
+                >
+                  {name}
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
@@ -376,7 +421,7 @@ export default function LandingPage(): JSX.Element {
             id="products-title"
             title="Everything from the first task to the first-run experience"
           />
-          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          <div data-reveal-children className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             {[
               {
                 icon: FolderKanban,
@@ -403,7 +448,7 @@ export default function LandingPage(): JSX.Element {
                 href: 'developers'
               }
             ].map((p) => (
-              <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:last:col-span-2 lg:last:col-span-1" key={p.title}>
+              <div className="landing-card flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:last:col-span-2 lg:last:col-span-1" key={p.title}>
                 <div className="flex items-center justify-between gap-3">
                   <IconBadge icon={p.icon} />
                   <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">{p.tag}</span>
@@ -431,8 +476,8 @@ export default function LandingPage(): JSX.Element {
             title="Projects, epics and tasks, the way your team works"
           />
 
-          <div className="mt-14 grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
-            <div className="grid gap-6">
+          <div data-reveal-children className="mt-14 grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
+            <div data-reveal-children className="grid gap-6">
               <SubHeading eyebrow="Plan and organise" title="From project to subtask in one place">
                 Every project has epics (Planned, Active, Completed, Archived) that group tasks. Tasks carry a title,
                 description, priority, status, assignee, due date and subtasks with their own assignees and notes.
@@ -451,14 +496,14 @@ export default function LandingPage(): JSX.Element {
             <TaskViewsMock />
           </div>
 
-          <div className="mt-16 grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
+          <div data-reveal-children className="mt-16 grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
             <InspectorMock />
-            <div className="grid gap-6">
+            <div data-reveal-children className="grid gap-6">
               <SubHeading eyebrow="Task inspector" title="Everything about a task, in one drawer">
                 Open any task to see its properties, a subtask checklist with progress, live comments, approvals, work notes
                 and timers, without leaving the board.
               </SubHeading>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div data-reveal-children className="grid gap-4 sm:grid-cols-2">
                 <FeatureCard icon={LayoutList} title="Priorities and statuses">
                   Low, Medium, High and Critical. Backlog, To do, In progress, In review, Blocked and Done.
                 </FeatureCard>
@@ -478,7 +523,7 @@ export default function LandingPage(): JSX.Element {
 
         {/* ------------------------------------------------ SLAs, dynamic priority, rollover */}
         <Section id="slas" labelledBy="slas-title">
-          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+          <div data-reveal-children className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
             <div className="order-2 grid gap-4 lg:order-1">
               <SlaMock />
               <RolloverMock />
@@ -531,7 +576,7 @@ export default function LandingPage(): JSX.Element {
             id="collab-title"
             title="Work together without switching tools"
           />
-          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          <div data-reveal-children className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             <div className="grid content-start gap-4 md:col-span-2 lg:col-span-1 lg:row-span-3">
               <ChatMock />
               <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -608,7 +653,7 @@ export default function LandingPage(): JSX.Element {
               id={`ai-panel-${activeAi.id}`}
               role="tabpanel"
             >
-              <div className="grid gap-4">
+              <div data-reveal-children className="grid gap-4">
                 <h3 className="m-0 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">{activeAi.title}</h3>
                 <p className="m-0 text-[15px] leading-relaxed text-slate-600">{activeAi.body}</p>
                 <CheckList items={activeAi.points} />
@@ -631,8 +676,8 @@ export default function LandingPage(): JSX.Element {
             />
 
             {/* SDK integration + guided setup */}
-            <div className="mt-14 grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
-              <div className="grid gap-6">
+            <div data-reveal-children className="mt-14 grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+              <div data-reveal-children className="grid gap-6">
                 <SubHeading eyebrow="SDK integrations" title="Connect each app and environment">
                   Create an integration per app and environment (Development, Staging or Production) with its domain and
                   allowed origins. You get a public SDK key, shown once and regenerable at any time, and you can see
@@ -679,8 +724,8 @@ export default function LandingPage(): JSX.Element {
             </div>
 
             {/* Surveys */}
-            <div className="mt-20 grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
-              <div className="grid gap-4 sm:grid-cols-2 lg:order-2 lg:grid-cols-1 xl:grid-cols-2">
+            <div data-reveal-children className="mt-20 grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+              <div data-reveal-children className="grid gap-4 sm:grid-cols-2 lg:order-2 lg:grid-cols-1 xl:grid-cols-2">
                 <div className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
                   <NpsMock />
                 </div>
@@ -696,7 +741,7 @@ export default function LandingPage(): JSX.Element {
                   </ul>
                 </div>
               </div>
-              <div className="grid gap-6 lg:order-1">
+              <div data-reveal-children className="grid gap-6 lg:order-1">
                 <SubHeading eyebrow="Surveys" title="Ask the right question, in the right format">
                   Build surveys from eleven question types, start from a template, then read responses and per-question
                   results, including NPS promoters, passives and detractors.
@@ -712,7 +757,7 @@ export default function LandingPage(): JSX.Element {
             </div>
 
             {/* Checklists, targeting, lifecycle & analytics */}
-            <div className="mt-20 grid gap-6 lg:grid-cols-3">
+            <div data-reveal-children className="mt-20 grid gap-6 lg:grid-cols-3">
               <div className="grid content-start gap-4">
                 <div>
                   <h3 className="m-0 flex items-center gap-2 text-[15px] font-semibold text-slate-900">
@@ -758,8 +803,8 @@ export default function LandingPage(): JSX.Element {
 
         {/* ------------------------------------------------ Event tracking */}
         <Section id="events" labelledBy="events-title">
-          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
-            <div className="grid gap-6">
+          <div data-reveal-children className="grid items-center gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
+            <div data-reveal-children className="grid gap-6">
               <SectionHeading
                 align="left"
                 description={
@@ -790,8 +835,8 @@ export default function LandingPage(): JSX.Element {
         <section aria-labelledby="dev-title" className="relative scroll-mt-16 overflow-hidden bg-slate-900 px-4 py-16 text-white sm:px-6 sm:py-24" id="developers">
           <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(45%_50%_at_85%_10%,rgba(16,185,129,0.14),transparent)]" />
           <div className="relative mx-auto max-w-6xl">
-            <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
-              <div className="grid gap-6">
+            <div data-reveal-children className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+              <div data-reveal-children className="grid gap-6">
                 <SectionHeading
                   align="left"
                   dark
@@ -816,7 +861,7 @@ export default function LandingPage(): JSX.Element {
               <CodeBlock code={SDK_SNIPPET} label="app.ts" />
             </div>
 
-            <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div data-reveal-children className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { icon: KeyRound, title: 'Agent keys', body: 'A key per tool or script, limited to the scopes and projects it needs, with an expiry. Keys are stored hashed and shown once.' },
                 { icon: MessageCircle, title: 'ChatGPT Actions', body: 'Connect a custom GPT through GPT Actions with OAuth so ChatGPT can read and update your tasks.' },
@@ -831,7 +876,7 @@ export default function LandingPage(): JSX.Element {
               ))}
             </div>
 
-            <div className="mt-6 grid items-center gap-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6 lg:grid-cols-2">
+            <div data-reveal-children className="mt-6 grid items-center gap-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6 lg:grid-cols-2">
               <div className="grid gap-3">
                 <h3 className="m-0 text-lg font-semibold text-white">Manage work from your AI assistant</h3>
                 <p className="m-0 text-sm leading-relaxed text-slate-300">
@@ -853,7 +898,7 @@ export default function LandingPage(): JSX.Element {
             id="governance-title"
             title="Control every AI agent that touches your work"
           />
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          <div data-reveal-children className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             <FeatureCard icon={Radar} title="Automatic inventory">
               API keys, MCP clients, ChatGPT Actions, companion devices and AI providers register themselves the first time they act, with an owner, scopes and a last-seen time.
             </FeatureCard>
@@ -873,7 +918,7 @@ export default function LandingPage(): JSX.Element {
               Suspend one agent or stop them all at once. It takes effect on the next call, for keys, sessions and AI providers alike.
             </FeatureCard>
           </div>
-          <div className="mt-6 grid items-center gap-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:grid-cols-2">
+          <div data-reveal-children className="mt-6 grid items-center gap-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:grid-cols-2">
             <div className="grid gap-3">
               <h3 className="m-0 text-lg font-semibold text-slate-900">Risk scores and a compliance report</h3>
               <p className="m-0 text-sm leading-relaxed text-slate-600">
@@ -901,7 +946,7 @@ export default function LandingPage(): JSX.Element {
             id="security-title"
             title="Secure by default"
           />
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          <div data-reveal-children className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             <FeatureCard icon={LogIn} title="Email or Google sign-in">
               Sign up with email and a password of at least 8 characters, or Continue with Google. “Remember me” keeps you signed in.
             </FeatureCard>
@@ -1024,8 +1069,9 @@ export default function LandingPage(): JSX.Element {
 
         {/* ------------------------------------------------ Closing CTA */}
         <section aria-labelledby="cta-title" className="px-4 py-16 sm:px-6 sm:py-20">
-          <div className="relative mx-auto max-w-6xl overflow-hidden rounded-2xl bg-slate-900 p-6 sm:p-10">
+          <div className="landing-sheen relative mx-auto max-w-6xl overflow-hidden rounded-2xl bg-slate-900 p-6 sm:p-10" data-reveal>
             <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_80%_at_100%_0%,rgba(16,185,129,0.22),transparent)]" />
+            <div aria-hidden className="landing-blob pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
             <div className="relative flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
               <div>
                 <h2 className="m-0 text-2xl font-semibold tracking-tight text-white sm:text-3xl" id="cta-title">

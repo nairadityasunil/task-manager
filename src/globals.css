@@ -253,3 +253,134 @@
 @media (prefers-reduced-motion: reduce) {
   .top-progress-bar { animation-duration: 3s; }
 }
+
+/* ------------------------------------------------------------------ */
+/* Landing page motion (all of it is skipped with reduced motion)       */
+/* ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-ready [data-reveal]:not(.is-revealed) {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  .reveal-ready [data-reveal] {
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+  }
+
+  /* Hero: staged entrance */
+  .landing-hero-in > * {
+    animation: landing-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .landing-hero-in > :nth-child(2) { animation-delay: 80ms; }
+  .landing-hero-in > :nth-child(3) { animation-delay: 160ms; }
+  .landing-hero-in > :nth-child(4) { animation-delay: 240ms; }
+  .landing-hero-in > :nth-child(5) { animation-delay: 320ms; }
+  .landing-hero-mock {
+    animation: landing-rise-far 1s cubic-bezier(0.22, 1, 0.36, 1) 380ms both;
+  }
+  .landing-float {
+    animation: landing-float 7s ease-in-out 1.4s infinite;
+  }
+
+  /* Soft glows drifting behind the hero and the closing call to action */
+  .landing-blob {
+    animation: landing-drift 18s ease-in-out infinite alternate;
+  }
+  .landing-blob-slow {
+    animation: landing-drift 26s ease-in-out -6s infinite alternate-reverse;
+  }
+
+  .landing-gradient-text {
+    background-size: 220% auto;
+    animation: landing-gradient 7s ease-in-out infinite alternate;
+  }
+
+  .landing-pulse-dot {
+    animation: landing-pulse 2.2s ease-out infinite;
+  }
+
+  .landing-marquee-track {
+    animation: landing-marquee 38s linear infinite;
+  }
+  .landing-marquee:hover .landing-marquee-track {
+    animation-play-state: paused;
+  }
+
+  .landing-sheen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.07) 50%, transparent 65%);
+    transform: translateX(-100%);
+    animation: landing-sheen 6s ease-in-out 1s infinite;
+    pointer-events: none;
+  }
+}
+
+/* Cards lift on hover (a transition, so it is harmless with reduced motion handled below) */
+.landing-card {
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+.landing-card:hover {
+  transform: translateY(-4px);
+  border-color: rgb(167 243 208);
+  box-shadow: 0 14px 30px -14px rgba(15, 23, 42, 0.18), 0 4px 10px -6px rgba(16, 185, 129, 0.18);
+}
+.landing-card .landing-icon {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.landing-card:hover .landing-icon {
+  transform: scale(1.12) rotate(-6deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-card,
+  .landing-card .landing-icon {
+    transition: none;
+  }
+  .landing-card:hover,
+  .landing-card:hover .landing-icon {
+    transform: none;
+  }
+}
+
+.landing-marquee {
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+@keyframes landing-rise {
+  from { opacity: 0; transform: translateY(14px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes landing-rise-far {
+  from { opacity: 0; transform: translateY(40px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes landing-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes landing-drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(6%, 4%, 0) scale(1.08); }
+  100% { transform: translate3d(-4%, 8%, 0) scale(0.96); }
+}
+@keyframes landing-gradient {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+@keyframes landing-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
+  80%, 100% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+}
+@keyframes landing-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes landing-sheen {
+  0%, 60% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
