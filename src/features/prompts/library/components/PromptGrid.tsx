@@ -20,6 +20,7 @@ interface PromptGridProps {
   onToggleMenu: (promptId: string, e: React.MouseEvent) => void;
   onCloseMenu: () => void;
   onOpenCompare: (prompt: PromptItem) => void;
+  onOpenDeploy?: (prompt: PromptItem) => void;
   onOpenMoveModal: (prompt: PromptItem, e: React.MouseEvent) => void;
   onOpenDeleteModal: (prompt: PromptItem, e: React.MouseEvent) => void;
   formatTimeAgo: (dateString?: string) => string;
@@ -40,6 +41,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({
   onToggleMenu,
   onCloseMenu,
   onOpenCompare,
+  onOpenDeploy,
   onOpenMoveModal,
   onOpenDeleteModal,
   formatTimeAgo,
@@ -104,6 +106,7 @@ export const PromptGrid: React.FC<PromptGridProps> = ({
           onToggleMenu={onToggleMenu}
           onCloseMenu={onCloseMenu}
           onOpenCompare={onOpenCompare}
+          onOpenDeploy={onOpenDeploy}
           onOpenMoveModal={onOpenMoveModal}
           onOpenDeleteModal={onOpenDeleteModal}
           formatTimeAgo={formatTimeAgo}

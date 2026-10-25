@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Sparkles,
   Plus,
@@ -16,6 +16,7 @@ import { PromptGrid } from "./PromptGrid";
 import { PromptFolderGrid } from "./PromptFolderGrid";
 import { PromptMoveModal } from "./PromptMoveModal";
 import { PromptVersionCompareModal } from "@/components/PromptVersionCompareModal";
+import { PromptDeployModal } from "./PromptDeployModal";
 import PageHeader from "@/components/PageHeader";
 import { Button, buttonClass, inputClass } from "@/components/ui";
 
@@ -114,6 +115,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
   isCompareOpen,
   setIsCompareOpen,
 }) => {
+  const [deployPrompt, setDeployPrompt] = useState<PromptItem | null>(null);
   const currentFolder = React.useMemo(() => {
     if (!selectedFolderId) return null;
     return folders.find((f) => f._id === selectedFolderId) || null;
@@ -232,6 +234,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
             setActiveMenuPromptId(activeMenuPromptId === id ? null : id);
           }}
           onCloseMenu={() => setActiveMenuPromptId(null)}
+          onOpenDeploy={setDeployPrompt}
           onOpenCompare={(prompt) => {
             setComparePrompt(prompt);
             setIsCompareOpen(true);
@@ -341,7 +344,8 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
                 setActiveMenuPromptId(activeMenuPromptId === id ? null : id);
               }}
               onCloseMenu={() => setActiveMenuPromptId(null)}
-              onOpenCompare={(prompt) => {
+              onOpenDeploy={setDeployPrompt}
+          onOpenCompare={(prompt) => {
                 setComparePrompt(prompt);
                 setIsCompareOpen(true);
               }}
@@ -371,6 +375,14 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
         </div>
       )}
       </div>
+
+      {deployPrompt && (
+        <PromptDeployModal
+          workspaceId={workspaceId}
+          prompt={deployPrompt}
+          onClose={() => setDeployPrompt(null)}
+        />
+      )}
 
       {comparePrompt && (
         <PromptVersionCompareModal

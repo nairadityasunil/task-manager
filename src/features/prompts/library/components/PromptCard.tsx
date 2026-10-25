@@ -8,6 +8,7 @@ import {
   MoreVertical,
   Edit3,
   FolderInput,
+  Rocket,
 } from "lucide-react";
 import { PromptItem } from "@/services/prompts";
 
@@ -20,6 +21,7 @@ interface PromptCardProps {
   onToggleMenu: (promptId: string, e: React.MouseEvent) => void;
   onCloseMenu: () => void;
   onOpenCompare: (prompt: PromptItem) => void;
+  onOpenDeploy?: (prompt: PromptItem) => void;
   onOpenMoveModal: (prompt: PromptItem, e: React.MouseEvent) => void;
   onOpenDeleteModal: (prompt: PromptItem, e: React.MouseEvent) => void;
   formatTimeAgo: (dateString?: string) => string;
@@ -34,6 +36,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
   onToggleMenu,
   onCloseMenu,
   onOpenCompare,
+  onOpenDeploy,
   onOpenMoveModal,
   onOpenDeleteModal,
   formatTimeAgo,
@@ -124,6 +127,21 @@ export const PromptCard: React.FC<PromptCardProps> = ({
                   <GitBranch className="w-3.5 h-3.5 text-slate-400" />
                   <span>Compare</span>
                 </button>
+
+                {onOpenDeploy ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCloseMenu();
+                      onOpenDeploy(prompt);
+                    }}
+                    className="w-full px-3 py-2 text-left text-slate-700 hover:bg-slate-50 hover:text-slate-900 flex items-center gap-2.5 transition cursor-pointer"
+                  >
+                    <Rocket className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Deploy</span>
+                  </button>
+                ) : null}
 
                 <button
                   type="button"

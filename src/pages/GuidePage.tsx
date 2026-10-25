@@ -873,14 +873,17 @@ export default function GuidePage(): JSX.Element {
               <Steps
                 items={[
                   <>
-                    When a version is ready, select <Ui>Deploy</Ui>.
+                    In the Prompt Library, open a prompt&apos;s <Ui>⋮</Ui> menu and select <Ui>Deploy</Ui>. Every version is listed with its
+                    environment: development, staging, canary or production.
                   </>,
                   <>
-                    Choose <Ui>Canary Deployment</Ui> (recommended) to send only part of the traffic to the new version while the current one
-                    keeps serving the rest, and set its health parameters. Other options are <Ui>Direct Production Swap</Ui>,{' '}
-                    <Ui>Move to Staging</Ui> and <Ui>Move to Development</Ui>.
+                    Select <Ui>Check</Ui> on a version to scan it for secrets, personal data and prompt-injection phrases before it ships.
                   </>,
-                  'While the canary runs, a banner shows its progress. Advance, pause or resume it, roll it back, or complete it.'
+                  <>
+                    Select <Ui>Start canary</Ui> (recommended) to send 5% of traffic to the new version while production serves the rest.
+                    Other options are <Ui>To staging</Ui> and <Ui>Publish</Ui>, which switches all traffic at once.
+                  </>,
+                  'The canary card shows the phase (5%, 25%, 50%, 100%), requests, error rate and latency for both versions. Advance, pause or resume it, roll it back, or complete it.'
                 ]}
               />
               <Callout>Use canary rollouts for any prompt that runs in production. A small share of traffic is enough to catch surprises.</Callout>

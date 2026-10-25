@@ -72,7 +72,7 @@ export interface PromptVersion {
   _id: string;
   promptId: string;
   version: number;
-  environment?: "development" | "staging" | "production";
+  environment?: "development" | "staging" | "production" | "canary";
   hash?: string;
   body: string;
   messages?: IPromptMessage[];
@@ -369,7 +369,7 @@ export const promptService = {
     workspaceId: string,
     promptId: string,
     candidateVersion: number,
-    options?: { minRequests?: number; errorThreshold?: number },
+    options?: { minRequests?: number; errorThreshold?: number; acknowledgeChecks?: boolean },
   ): Promise<PromptCanaryDeployment> {
     const res = await api.post<{ status: string; data: PromptCanaryDeployment }>(
       `/workspaces/${workspaceId}/prompts/${promptId}/deploy/canary/start`,

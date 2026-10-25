@@ -436,7 +436,7 @@ export default function LandingPage(): JSX.Element {
                 tag: 'For your users',
                 title: 'Product engagement',
                 body: 'Onboard, inform and listen to the people using your app.',
-                items: ['Guides in five formats, from modals to hotspots', 'Surveys with eleven question types', 'Checklists, targeting and saved segments', 'Event tracking and engagement analytics'],
+                items: ['Guides in five formats, from modals to hotspots', 'Surveys with fourteen question types', 'Checklists, targeting and saved segments', 'Event tracking and engagement analytics'],
                 href: 'engagement'
               },
               {
@@ -743,7 +743,7 @@ export default function LandingPage(): JSX.Element {
               </div>
               <div data-reveal-children className="grid gap-6 lg:order-1">
                 <SubHeading eyebrow="Surveys" title="Ask the right question, in the right format">
-                  Build surveys from eleven question types, start from a template, then read responses and per-question
+                  Build surveys from fourteen question types, start from a template, then read responses and per-question
                   results, including NPS promoters, passives and detractors.
                 </SubHeading>
                 <ul aria-label="Survey question types" className="m-0 flex list-none flex-wrap gap-2 p-0">
