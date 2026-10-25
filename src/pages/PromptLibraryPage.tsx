@@ -63,6 +63,7 @@ export const PromptLibraryPage: React.FC<PromptLibraryPageProps> = ({ workspaceI
       onConfirmMove={library.handleConfirmMove}
       onConfirmDelete={library.handleConfirmDelete}
       onOpenPlayground={openPromptInPlayground}
+      onRefresh={library.refresh}
       comparePrompt={comparePrompt}
       setComparePrompt={setComparePrompt}
       isCompareOpen={isCompareOpen}

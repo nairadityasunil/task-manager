@@ -72,16 +72,24 @@ export function ScopePicker({
   );
 }
 
+/**
+ * "All projects" is sent as an empty list, so the picker keeps the restricted
+ * mode itself: clearing the last project must not quietly widen the key.
+ */
 export function ProjectPicker({
   projects,
   value,
-  onChange
+  onChange,
+  restricted,
+  onRestrictedChange
 }: {
   projects: Project[];
   value: string[];
   onChange: (ids: string[]) => void;
+  restricted: boolean;
+  onRestrictedChange: (restricted: boolean) => void;
 }): JSX.Element {
-  const all = value.length === 0;
+  const all = !restricted;
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
@@ -90,7 +98,10 @@ export function ProjectPicker({
             'h-8 rounded-lg border px-2.5 text-[13px] font-medium transition-colors',
             all ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
           )}
-          onClick={() => onChange([])}
+          onClick={() => {
+            onRestrictedChange(false);
+            onChange([]);
+          }}
           type="button"
         >
           All my projects
@@ -100,12 +111,18 @@ export function ProjectPicker({
             'h-8 rounded-lg border px-2.5 text-[13px] font-medium transition-colors',
             !all ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
           )}
-          onClick={() => onChange(projects.slice(0, 1).map((p) => p.id))}
+          onClick={() => {
+            onRestrictedChange(true);
+            if (value.length === 0) onChange(projects.slice(0, 1).map((p) => p.id));
+          }}
           type="button"
         >
           Only selected projects
         </button>
       </div>
+      {restricted && value.length === 0 ? (
+        <p className="m-0 text-xs text-rose-600">Select at least one project, or choose All my projects.</p>
+      ) : null}
       {!all ? (
         <div className="grid max-h-40 gap-1 overflow-y-auto rounded-lg border border-slate-200 p-2 sm:grid-cols-2">
           {projects.length === 0 ? <p className="m-0 p-1 text-xs text-slate-500">No projects yet.</p> : null}
@@ -153,12 +170,14 @@ export function CreateKeyModal({ onClose, onCreated, projects: givenProjects, ca
   const [name, setName] = useState(defaultName);
   const [scopes, setScopes] = useState<string[]>(['work:read', 'work:write', 'collaboration:read', 'analytics:read', 'prompt:read']);
   const [projectIds, setProjectIds] = useState<string[]>([]);
+  const [restricted, setRestricted] = useState(false);
   const [expiry, setExpiry] = useState('90');
   const [saving, setSaving] = useState(false);
   const [created, setCreated] = useState<{ agent: Agent; key: string } | null>(null);
+  const canSubmit = Boolean(name.trim()) && !(restricted && projectIds.length === 0);
 
   const submit = async () => {
-    if (!name.trim()) return;
+    if (!canSubmit) return;
     setSaving(true);
     try {
       const expiresAt = expiry === 'never' ? null : new Date(Date.now() + Number(expiry) * 86400000).toISOString();
@@ -206,7 +225,7 @@ export function CreateKeyModal({ onClose, onCreated, projects: givenProjects, ca
           <Button onClick={onClose} variant="secondary">
             Cancel
           </Button>
-          <Button disabled={!name.trim()} icon={KeyRound} loading={saving} onClick={() => void submit()} variant="primary">
+          <Button disabled={!canSubmit} icon={KeyRound} loading={saving} onClick={() => void submit()} variant="primary">
             Create key
           </Button>
         </>
@@ -225,7 +244,13 @@ export function CreateKeyModal({ onClose, onCreated, projects: givenProjects, ca
         </div>
         <div className="grid gap-1.5">
           <span className="text-[13px] font-medium text-slate-700">Where it can make changes</span>
-          <ProjectPicker onChange={setProjectIds} projects={projects} value={projectIds} />
+          <ProjectPicker
+            onChange={setProjectIds}
+            onRestrictedChange={setRestricted}
+            projects={projects}
+            restricted={restricted}
+            value={projectIds}
+          />
         </div>
         <Field label="Expires after">
           <select className={selectClass} onChange={(e) => setExpiry(e.target.value)} value={expiry}>

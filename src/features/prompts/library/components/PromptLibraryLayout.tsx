@@ -62,6 +62,8 @@ interface PromptLibraryLayoutProps {
   onConfirmMove: () => Promise<void>;
   onConfirmDelete: () => Promise<void>;
   onOpenPlayground: (promptId: string, version: number) => void;
+  /** Reloads the library, e.g. after a deployment changes production versions. */
+  onRefresh?: () => void | Promise<void>;
   comparePrompt: PromptItem | null;
   setComparePrompt: (prompt: PromptItem | null) => void;
   isCompareOpen: boolean;
@@ -110,6 +112,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
   onConfirmMove,
   onConfirmDelete,
   onOpenPlayground,
+  onRefresh,
   comparePrompt,
   setComparePrompt,
   isCompareOpen,
@@ -381,6 +384,7 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
           workspaceId={workspaceId}
           prompt={deployPrompt}
           onClose={() => setDeployPrompt(null)}
+          onChanged={() => void onRefresh?.()}
         />
       )}
 

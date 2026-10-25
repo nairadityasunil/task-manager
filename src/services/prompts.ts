@@ -355,12 +355,14 @@ export const promptService = {
     workspaceId: string,
     promptId: string,
     versionNumber: number,
+    options?: { acknowledgeChecks?: boolean },
   ): Promise<{ promptId: string; productionVersion: number; publishedAt: string }> {
     const res = await api.post<{
       status: string;
       data: { promptId: string; productionVersion: number; publishedAt: string };
     }>(`/workspaces/${workspaceId}/prompts/${promptId}/deploy/direct`, {
       versionNumber,
+      ...options,
     });
     return res.data.data;
   },

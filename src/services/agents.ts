@@ -36,6 +36,10 @@ export interface Agent {
   status: AgentStatus;
   legacy: boolean;
   statusReason?: string | null;
+  /** Suspended by a workspace admin: only an admin can resume it. */
+  statusSetByAdmin?: boolean;
+  /** An admin reduced its access: the owner can only reduce it further. */
+  adminLocked?: boolean;
   expiresAt?: string | null;
   lastSeenAt?: string | null;
   callCount: number;

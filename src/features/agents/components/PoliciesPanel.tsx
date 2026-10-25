@@ -445,9 +445,13 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
                   {policy.mode === 'advisory' ? (
                     <Button
                       onClick={async () => {
-                        await agentsApi.updatePolicy(policy.id, { mode: 'enforce' });
-                        showToast({ variant: 'success', message: `"${policy.name}" is now enforced` });
-                        await load();
+                        try {
+                          await agentsApi.updatePolicy(policy.id, { mode: 'enforce' });
+                          showToast({ variant: 'success', message: `"${policy.name}" is now enforced` });
+                          await load();
+                        } catch (error) {
+                          showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+                        }
                       }}
                       size="sm"
                     >
@@ -467,8 +471,13 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
                     onClick={async () => {
                       const ok = await confirm({ title: 'Delete policy?', message: `"${policy.name}" stops applying immediately.`, confirmText: 'Delete', type: 'danger' });
                       if (!ok) return;
-                      await agentsApi.deletePolicy(policy.id);
-                      await load();
+                      try {
+                        await agentsApi.deletePolicy(policy.id);
+                        showToast({ variant: 'success', message: 'Policy deleted' });
+                        await load();
+                      } catch (error) {
+                        showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+                      }
                     }}
                     size="icon-sm"
                     variant="ghost"

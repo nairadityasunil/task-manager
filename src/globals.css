@@ -262,7 +262,8 @@
     opacity: 0;
     transform: translateY(18px) scale(0.985);
   }
-  .reveal-ready [data-reveal] {
+  /* Entrance only; once `reveal-done` is set the element's own transitions (e.g. card hover) apply again. */
+  .reveal-ready [data-reveal]:not(.reveal-done) {
     transition:
       opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
       transform 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);

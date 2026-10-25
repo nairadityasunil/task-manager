@@ -144,7 +144,8 @@ export function PromptDeployModal({ workspaceId, prompt, onClose, onChanged }: P
     void load();
   }, [load]);
 
-  const runChecks = async (version: PromptVersion): Promise<PromptFinding[]> => {
+  /** Findings, or null when the checks could not run. */
+  const runChecks = async (version: PromptVersion): Promise<PromptFinding[] | null> => {
     setChecks((current) => ({ ...current, [version.version]: 'loading' }));
     try {
       const result = await agentsApi.promptChecks({ body: version.body, messages: version.messages });
@@ -157,8 +158,34 @@ export function PromptDeployModal({ workspaceId, prompt, onClose, onChanged }: P
         return next;
       });
       showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
-      return [];
+      return null;
     }
+  };
+
+  /**
+   * Runs the prompt checks before a version reaches production traffic.
+   * Resolves to whether to go ahead and whether problems were acknowledged.
+   */
+  const checkBeforeRelease = async (version: PromptVersion, action: string): Promise<{ acknowledgeChecks: boolean } | null> => {
+    const findings = await runChecks(version);
+    if (findings === null) {
+      const ok = await confirm({
+        title: 'Prompt checks did not run',
+        message: `The version could not be checked for secrets or injection phrases. ${action} without checks?`,
+        confirmText: `${action} anyway`,
+        type: 'danger'
+      });
+      return ok ? { acknowledgeChecks: true } : null;
+    }
+    const high = findings.filter((f) => f.severity === 'high');
+    if (!high.length) return { acknowledgeChecks: false };
+    const ok = await confirm({
+      title: 'Prompt checks found problems',
+      message: `${high.map((f) => f.message).join(' ')} ${action} anyway?`,
+      confirmText: `${action} anyway`,
+      type: 'danger'
+    });
+    return ok ? { acknowledgeChecks: true } : null;
   };
 
   const act = async (fn: () => Promise<unknown>, message: string) => {
@@ -176,23 +203,37 @@ export function PromptDeployModal({ workspaceId, prompt, onClose, onChanged }: P
   };
 
   const startCanary = async (version: PromptVersion) => {
-    const findings = await runChecks(version);
-    const high = findings.filter((f) => f.severity === 'high');
-    let acknowledgeChecks = false;
-    if (high.length) {
+    setBusy(true);
+    try {
+      const go = await checkBeforeRelease(version, 'Start the rollout');
+      if (!go) return;
+      await act(
+        () => promptService.startCanary(workspaceId, prompt._id, version.version, go),
+        `Canary started: v${version.version} gets 5% of traffic`
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const publish = async (version: PromptVersion) => {
+    setBusy(true);
+    try {
       const ok = await confirm({
-        title: 'Prompt checks found problems',
-        message: `${high.map((f) => f.message).join(' ')} Start the rollout anyway?`,
-        confirmText: 'Start anyway',
-        type: 'danger'
+        title: `Publish v${version.version} to production?`,
+        message: 'All traffic switches to this version at once. Use a canary to roll out gradually.',
+        confirmText: 'Publish now'
       });
       if (!ok) return;
-      acknowledgeChecks = true;
+      const go = await checkBeforeRelease(version, 'Publish');
+      if (!go) return;
+      await act(
+        () => promptService.deployDirectToProduction(workspaceId, prompt._id, version.version, go),
+        `v${version.version} is now in production`
+      );
+    } finally {
+      setBusy(false);
     }
-    await act(
-      () => promptService.startCanary(workspaceId, prompt._id, version.version, { acknowledgeChecks }),
-      `Canary started: v${version.version} gets 5% of traffic`
-    );
   };
 
   const canaryAction = async (action: 'advance' | 'pause' | 'resume' | 'rollback' | 'complete' | 'cancel') => {
@@ -276,7 +317,7 @@ export function PromptDeployModal({ workspaceId, prompt, onClose, onChanged }: P
                       <Button disabled={busy} icon={ShieldCheck} onClick={() => void runChecks(version)} size="sm" variant="ghost">
                         Check
                       </Button>
-                      {!isProduction && env !== 'staging' ? (
+                      {!isProduction && env !== 'staging' && !(liveCanary && canary.candidateVersion === version.version) ? (
                         <Button
                           disabled={busy}
                           onClick={() => void act(() => promptService.moveToStaging(workspaceId, prompt._id, version.version), `v${version.version} moved to staging`)}
@@ -294,14 +335,7 @@ export function PromptDeployModal({ workspaceId, prompt, onClose, onChanged }: P
                         <Button
                           disabled={busy || Boolean(liveCanary)}
                           icon={Rocket}
-                          onClick={async () => {
-                            const ok = await confirm({
-                              title: `Publish v${version.version} to production?`,
-                              message: 'All traffic switches to this version at once. Use a canary to roll out gradually.',
-                              confirmText: 'Publish now'
-                            });
-                            if (ok) await act(() => promptService.deployDirectToProduction(workspaceId, prompt._id, version.version), `v${version.version} is now in production`);
-                          }}
+                          onClick={() => void publish(version)}
                           size="sm"
                           variant="primary"
                         >

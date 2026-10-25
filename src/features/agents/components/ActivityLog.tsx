@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Download, History, Undo2 } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
@@ -24,14 +24,20 @@ export function ActivityLog({ workspaceId, canAdmin }: { workspaceId: string | n
   const [outcome, setOutcome] = useState<ActivityOutcome | ''>('');
   const [rows, setRows] = useState<AgentActivity[] | null>(null);
   const [hasMore, setHasMore] = useState(false);
+  // Only the latest request may write rows, so a slow answer for an old filter is dropped.
+  const requestId = useRef(0);
 
   const load = async (before?: string) => {
+    const id = ++requestId.current;
     try {
       const page = await agentsApi.activity({ workspaceId: canAdmin ? workspaceId : null, outcome: outcome || undefined, before, limit: 50 });
+      if (id !== requestId.current) return;
       setRows((current) => (before ? [...(current ?? []), ...page] : page));
       setHasMore(page.length === 50);
     } catch (error) {
-      setRows([]);
+      if (id !== requestId.current) return;
+      // Keep what is already shown when only the next page failed.
+      if (!before) setRows([]);
       showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
     }
   };

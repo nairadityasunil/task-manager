@@ -23,11 +23,22 @@ export function useReveal(root: RefObject<HTMLElement>): void {
       });
     });
 
+    // After the entrance, `reveal-done` hands transitions back to the element's own styles (e.g. card hover).
+    const reveal = (el: Element) => {
+      el.classList.add('is-revealed');
+      const done = (event: Event) => {
+        if (event.target !== el) return;
+        el.classList.add('reveal-done');
+        el.removeEventListener('transitionend', done);
+      };
+      el.addEventListener('transitionend', done);
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
-          entry.target.classList.add('is-revealed');
+          reveal(entry.target);
           observer.unobserve(entry.target);
         });
       },
@@ -37,7 +48,7 @@ export function useReveal(root: RefObject<HTMLElement>): void {
     // Anything already on screen (e.g. after a hash jump) shows at once.
     const viewport = window.innerHeight;
     targets.forEach((el) => {
-      if (el.getBoundingClientRect().top < viewport * 0.92) el.classList.add('is-revealed');
+      if (el.getBoundingClientRect().top < viewport * 0.92) el.classList.add('is-revealed', 'reveal-done');
       else observer.observe(el);
     });
     container.classList.add('reveal-ready');

@@ -256,5 +256,6 @@ export function usePromptLibrary(workspaceId: string) {
     handleToggleFavorite,
     handleConfirmMove,
     handleConfirmDelete,
+    refresh: loadData,
   };
 }

@@ -10,6 +10,8 @@ import {
   IPromptVariable,
   PlaygroundRunResult,
 } from "@/services/prompts";
+import { useToast } from "@/context/ToastContext";
+import { toDisplayErrorMessage } from "@/utils/apiError";
 
 export interface PromptParameters {
   temperature: number;
@@ -31,6 +33,7 @@ export const DEFAULT_PARAMETERS: PromptParameters = {
 
 export function usePlayground(workspaceId: string) {
   const [searchParams] = useSearchParams();
+  const { showToast } = useToast();
   const initialPromptId = searchParams.get("promptId");
   const initialVersion = searchParams.get("version");
 
@@ -235,12 +238,13 @@ export function usePlayground(workspaceId: string) {
         await promptService.publishProductionVersion(workspaceId, activePrompt._id, targetVer);
         await loadPromptDetails(activePrompt._id, selectedVersionNum);
       } catch (err) {
-        console.error("Failed to publish production prompt version", err);
+        // Includes prompt checks that block publishing (secrets, injection phrases).
+        showToast({ variant: "error", message: toDisplayErrorMessage(err) });
       } finally {
         setIsPublishingProduction(false);
       }
     },
-    [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails]
+    [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails, showToast]
   );
 
   // Canary & Deployment Actions
@@ -253,12 +257,12 @@ export function usePlayground(workspaceId: string) {
         setIsDeployModalOpen(false);
         await loadPromptDetails(activePrompt._id, selectedVersionNum);
       } catch (err) {
-        console.error("Failed to move prompt version to staging", err);
+        showToast({ variant: "error", message: toDisplayErrorMessage(err) });
       } finally {
         setIsCanaryActionLoading(false);
       }
     },
-    [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails]
+    [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails, showToast]
   );
 
   const handleMoveToDevelopment = useCallback(
@@ -287,12 +291,12 @@ export function usePlayground(workspaceId: string) {
         setIsDeployModalOpen(false);
         await loadPromptDetails(activePrompt._id, selectedVersionNum);
       } catch (err) {
-        console.error("Failed to deploy directly to production", err);
+        showToast({ variant: "error", message: toDisplayErrorMessage(err) });
       } finally {
         setIsCanaryActionLoading(false);
       }
     },
-    [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails]
+    [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails, showToast]
   );
 
   const handleStartCanary = useCallback(

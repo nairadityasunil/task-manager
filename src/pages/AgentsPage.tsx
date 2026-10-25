@@ -165,7 +165,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
     try {
       const [nextOverview, nextAgents, nextAlerts] = await Promise.all([
         agentsApi.overview(workspaceId),
-        agentsApi.list({ workspaceId: undefined }),
+        agentsApi.list({ workspaceId: activeWorkspace?.id ?? null }),
         agentsApi.alerts({ open: true })
       ]);
       setOverview(nextOverview);
@@ -175,7 +175,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
       setAgents((current) => current ?? []);
       showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
     }
-  }, [workspaceId, showToast]);
+  }, [workspaceId, activeWorkspace?.id, showToast]);
 
   useEffect(() => {
     void refresh();
@@ -288,8 +288,12 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
               <AlertsCard
                 alerts={alerts}
                 onAcknowledge={async (id) => {
-                  await agentsApi.acknowledgeAlert(id);
-                  setAlerts((current) => current.filter((a) => a.id !== id));
+                  try {
+                    await agentsApi.acknowledgeAlert(id);
+                    setAlerts((current) => current.filter((a) => a.id !== id));
+                  } catch (error) {
+                    showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+                  }
                 }}
               />
               <Card>

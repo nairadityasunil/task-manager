@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Ban, Gauge, History, KeyRound, Pause, Play, RotateCw, ShieldCheck, X } from 'lucide-react';
 
 import { Badge, Button, Tabs, cn, selectClass } from '@/components/ui';
+import { useAuth } from '@/context/AuthContext';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
 import {
@@ -31,6 +32,7 @@ interface AgentDrawerProps {
 export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }: AgentDrawerProps): JSX.Element | null {
   const { showToast } = useToast();
   const confirm = useConfirm();
+  const { user } = useAuth();
   const [tab, setTab] = useState<DrawerTab>('overview');
   const [agent, setAgent] = useState<AgentDetail | null>(null);
   const [activity, setActivity] = useState<AgentActivity[] | null>(null);
@@ -38,6 +40,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
   const [newKey, setNewKey] = useState<string | null>(null);
   const [scopes, setScopes] = useState<string[]>([]);
   const [projectIds, setProjectIds] = useState<string[]>([]);
+  const [restricted, setRestricted] = useState(false);
   const [expiry, setExpiry] = useState<string>('keep');
 
   const load = useCallback(
@@ -47,6 +50,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
         setAgent(detail);
         setScopes(detail.scopes);
         setProjectIds(detail.projectIds.map(String));
+        setRestricted(detail.projectIds.length > 0);
       } catch (error) {
         showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
         onClose();
@@ -104,6 +108,13 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
 
   const maxDaily = Math.max(1, ...(agent?.usage.daily.map((d) => d.calls) ?? [1]));
   const revoked = agent?.status === 'revoked';
+  const ownerId = agent && typeof agent.ownerUserId === 'object' ? agent.ownerUserId._id : agent?.ownerUserId;
+  // Only the owner can get a new secret; admins suspend or revoke instead.
+  const isOwner = Boolean(user?.id && ownerId === user.id && agent?.kind !== 'ai_provider');
+  const lockedByAdmin = Boolean(agent?.statusSetByAdmin && agent.status !== 'active' && !canAdmin);
+  // An admin narrowed this agent: its owner may narrow it further, not widen it.
+  const permissionsLocked = Boolean(agent?.adminLocked && !canAdmin);
+  const emptyRestriction = restricted && projectIds.length === 0;
 
   return createPortal(
     <div className="fixed inset-0 z-[9990] flex justify-end" role="dialog" aria-modal="true" aria-label="Agent details">
@@ -221,12 +232,16 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                         >
                           Suspend
                         </Button>
+                      ) : lockedByAdmin ? (
+                        <p className="m-0 w-full rounded-lg bg-slate-50 p-2.5 text-xs text-slate-600">
+                          A workspace admin suspended this agent. Ask an admin to resume it.
+                        </p>
                       ) : (
                         <Button icon={Play} loading={busy} onClick={() => void act(() => agentsApi.resume(agentId), `${agent.name} resumed`)}>
                           Resume
                         </Button>
                       )}
-                      {agent.kind === 'api_key' ? (
+                      {agent.kind === 'api_key' && isOwner && agent.status === 'active' ? (
                         <Button
                           icon={RotateCw}
                           loading={busy}
@@ -266,6 +281,11 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
 
               {tab === 'permissions' ? (
                 <>
+                  {permissionsLocked ? (
+                    <p className="m-0 rounded-lg bg-amber-50 p-2.5 text-xs text-amber-800">
+                      A workspace admin set these permissions. You can remove access, but only an admin can add it back.
+                    </p>
+                  ) : null}
                   <div className="grid gap-1.5">
                     <span className="text-[13px] font-medium text-slate-700">Scopes</span>
                     {agent.kind === 'ai_provider' ? (
@@ -277,7 +297,13 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                   {agent.kind !== 'ai_provider' ? (
                     <div className="grid gap-1.5">
                       <span className="text-[13px] font-medium text-slate-700">Projects it can change</span>
-                      <ProjectPicker onChange={setProjectIds} projects={projects} value={projectIds} />
+                      <ProjectPicker
+                        onChange={setProjectIds}
+                        onRestrictedChange={setRestricted}
+                        projects={projects}
+                        restricted={restricted}
+                        value={projectIds}
+                      />
                     </div>
                   ) : null}
                   {agent.kind === 'api_key' ? (
@@ -293,7 +319,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                     </label>
                   ) : null}
                   {!revoked && agent.kind !== 'ai_provider' ? (
-                    <Button loading={busy} onClick={() => void savePermissions()} variant="primary">
+                    <Button disabled={emptyRestriction} loading={busy} onClick={() => void savePermissions()} variant="primary">
                       Save permissions
                     </Button>
                   ) : null}
