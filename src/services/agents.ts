@@ -1,6 +1,6 @@
 import api from '@/services/api';
 
-export type AgentKind = 'api_key' | 'mcp_client' | 'chatgpt' | 'companion' | 'ai_provider';
+export type AgentKind = 'api_key' | 'mcp_client' | 'chatgpt' | 'companion' | 'ai_provider' | 'detected';
 export type AgentStatus = 'active' | 'suspended' | 'revoked';
 export type AgentRiskLevel = 'low' | 'medium' | 'high' | 'critical';
 export type RiskLevel = 'read' | 'write' | 'sensitive_write' | 'destructive' | 'security_critical';
@@ -30,6 +30,9 @@ export interface Agent {
   name: string;
   clientName?: string | null;
   userAgent?: string | null;
+  /** Why an unregistered ("detected") agent was judged automated. */
+  detectionSignals?: string[];
+  replacedByAgentId?: string | null;
   keyPrefix?: string | null;
   scopes: string[];
   projectIds: string[];
@@ -203,6 +206,8 @@ export interface ComplianceReport {
 export interface GovernanceSettings {
   workspaceId: string;
   aiDataMasking: boolean;
+  /** Scripts must use agent keys; personal logins from scripts are refused. */
+  requireAgentKeys: boolean;
   activityRetentionDays: number;
 }
 
@@ -243,6 +248,9 @@ export const agentsApi = {
   update: (agentId: string, body: Partial<Pick<Agent, 'name' | 'scopes' | 'projectIds'>> & { expiresAt?: string | null }) =>
     unwrap<Agent>(api.patch(`/agents/${agentId}`, body)),
   rotate: (agentId: string) => unwrap<{ agent: Agent; key: string }>(api.post(`/agents/${agentId}/rotate`)),
+  /** Gives an unregistered agent its own key and retires the detected one. */
+  replaceWithKey: (agentId: string, body: { name: string; scopes?: string[]; projectIds?: string[]; expiresAt?: string | null }) =>
+    unwrap<{ agent: Agent; key: string }>(api.post(`/agents/${agentId}/replace-with-key`, body)),
   suspend: (agentId: string, reason?: string) => unwrap<Agent>(api.post(`/agents/${agentId}/suspend`, { reason })),
   resume: (agentId: string) => unwrap<Agent>(api.post(`/agents/${agentId}/resume`)),
   revoke: (agentId: string, reason?: string) => unwrap<Agent>(api.post(`/agents/${agentId}/revoke`, { reason })),
@@ -287,7 +295,7 @@ export const agentsApi = {
 
   compliance: (workspaceId?: string | null) => unwrap<ComplianceReport>(api.get('/agents/compliance', { params: ws(workspaceId) })),
   settings: (workspaceId?: string | null) => unwrap<GovernanceSettings>(api.get('/agents/settings', { params: ws(workspaceId) })),
-  updateSettings: (body: { aiDataMasking?: boolean }, workspaceId?: string | null) =>
+  updateSettings: (body: { aiDataMasking?: boolean; requireAgentKeys?: boolean }, workspaceId?: string | null) =>
     unwrap<GovernanceSettings>(api.patch('/agents/settings', { ...body, ...ws(workspaceId) })),
   promptChecks: (body: { body?: string; messages?: Array<{ role: string; content: string }>; parameters?: { maxTokens?: number } }) =>
     unwrap<{ findings: PromptFinding[]; blocking: boolean }>(api.post('/agents/prompt-checks', body, { silent: true }))
@@ -300,7 +308,16 @@ export const KIND_LABELS: Record<AgentKind, string> = {
   mcp_client: 'MCP client',
   chatgpt: 'ChatGPT',
   companion: 'Companion device',
-  ai_provider: 'AI provider'
+  ai_provider: 'AI provider',
+  detected: 'Unregistered'
+};
+
+export const DETECTION_SIGNAL_LABELS: Record<string, string> = {
+  automation_library: 'Uses an HTTP library or AI framework',
+  headless_browser: 'Automated (headless) browser',
+  no_user_agent: 'Sends no user agent',
+  not_a_browser: 'Client is not a web browser',
+  browser_without_fetch_metadata: "Claims to be a browser but sends none of a browser's request headers"
 };
 
 export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = {

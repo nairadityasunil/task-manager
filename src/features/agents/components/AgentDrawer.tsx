@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Ban, Gauge, History, KeyRound, Pause, Play, RotateCw, ShieldCheck, X } from 'lucide-react';
+import { Ban, EyeOff, Gauge, History, KeyRound, Pause, Play, RotateCw, ShieldCheck, X } from 'lucide-react';
 
 import { Badge, Button, Tabs, cn, selectClass } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
@@ -8,6 +8,7 @@ import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
 import {
   agentsApi,
+  DETECTION_SIGNAL_LABELS,
   SCOPE_LABELS,
   timeAgo,
   userLabel,
@@ -16,7 +17,7 @@ import {
 } from '@/services/agents';
 import type { Project } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
-import { ProjectPicker, ScopePicker } from './CreateKeyModal';
+import { CreateKeyModal, ProjectPicker, ScopePicker } from './CreateKeyModal';
 import { ActionRiskBadge, KindLabel, OutcomeBadge, RiskBadge, SecretReveal, StatusBadge } from './shared';
 
 type DrawerTab = 'overview' | 'permissions' | 'activity' | 'risk';
@@ -42,6 +43,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
   const [projectIds, setProjectIds] = useState<string[]>([]);
   const [restricted, setRestricted] = useState(false);
   const [expiry, setExpiry] = useState<string>('keep');
+  const [replacing, setReplacing] = useState(false);
 
   const load = useCallback(
     async (refresh = false) => {
@@ -115,6 +117,24 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
   // An admin narrowed this agent: its owner may narrow it further, not widen it.
   const permissionsLocked = Boolean(agent?.adminLocked && !canAdmin);
   const emptyRestriction = restricted && projectIds.length === 0;
+  const unregistered = agent?.kind === 'detected';
+
+  // The key form replaces the drawer while open (the drawer sits above modals).
+  if (replacing && agent) {
+    return (
+      <CreateKeyModal
+        canAdmin={canAdmin}
+        onClose={() => {
+          setReplacing(false);
+          void load(true);
+        }}
+        onCreated={() => onChanged()}
+        projects={projects}
+        replaceAgent={agent}
+        workspaceId={agent.workspaceId}
+      />
+    );
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-[9990] flex justify-end" role="dialog" aria-modal="true" aria-label="Agent details">
@@ -156,6 +176,29 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
             <div className="flex-1 space-y-4 overflow-y-auto p-5">
               {tab === 'overview' ? (
                 <>
+                  {unregistered && !revoked ? (
+                    <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50/60 p-3" data-testid="unregistered-explainer">
+                      <p className="m-0 flex items-start gap-2 text-[13px] font-medium text-amber-900">
+                        <EyeOff className="mt-0.5 h-4 w-4 shrink-0" />
+                        Unregistered agent: it runs with {userLabel(agent.ownerUserId)}&apos;s own login instead of an agent key.
+                      </p>
+                      <ul className="m-0 list-disc space-y-0.5 pl-9 text-xs text-amber-900/90">
+                        {(agent.detectionSignals ?? []).map((signal) => (
+                          <li key={signal}>{DETECTION_SIGNAL_LABELS[signal] ?? signal}</li>
+                        ))}
+                        {agent.userAgent ? (
+                          <li>
+                            User agent: <code className="break-all font-mono">{agent.userAgent}</code>
+                          </li>
+                        ) : null}
+                      </ul>
+                      <p className="m-0 pl-6 text-xs text-amber-900/90">
+                        {isOwner
+                          ? 'Give it its own key so it gets only the access it needs and can be revoked without signing you out. Or block it.'
+                          : 'Its owner can give it its own key. You can block it.'}
+                      </p>
+                    </div>
+                  ) : null}
                   {agent.statusReason ? (
                     <p className="m-0 rounded-lg bg-amber-50 p-2.5 text-[13px] text-amber-800">Reason: {agent.statusReason}</p>
                   ) : null}
@@ -228,9 +271,14 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                         <Button
                           icon={Pause}
                           loading={busy}
-                          onClick={() => void act(() => agentsApi.suspend(agentId, 'Suspended from the portal'), `${agent.name} suspended`)}
+                          onClick={() =>
+                            void act(
+                              () => agentsApi.suspend(agentId, unregistered ? 'Blocked from using a personal login' : 'Suspended from the portal'),
+                              unregistered ? `${agent.name} blocked` : `${agent.name} suspended`
+                            )
+                          }
                         >
-                          Suspend
+                          {unregistered ? 'Block' : 'Suspend'}
                         </Button>
                       ) : lockedByAdmin ? (
                         <p className="m-0 w-full rounded-lg bg-slate-50 p-2.5 text-xs text-slate-600">
@@ -241,6 +289,11 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                           Resume
                         </Button>
                       )}
+                      {unregistered && isOwner ? (
+                        <Button icon={KeyRound} loading={busy} onClick={() => setReplacing(true)} variant="primary">
+                          Give it its own key
+                        </Button>
+                      ) : null}
                       {agent.kind === 'api_key' && isOwner && agent.status === 'active' ? (
                         <Button
                           icon={RotateCw}

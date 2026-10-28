@@ -1154,6 +1154,31 @@ export default function GuidePage(): JSX.Element {
                   'High risk usually means admin scope, access to every project, a key that never expires or a legacy full-access key.'
                 ]}
               />
+              <H3>Unregistered agents (shadow AI)</H3>
+              <P>
+                A script, AI framework or automated browser that calls Pristine with someone&apos;s own login, rather than an agent key, is
+                caught on its first call and listed as an <Ui>Unregistered</Ui> agent, with the reasons it was flagged. It acts with that
+                person&apos;s full access, so it scores as high risk and raises an alert. From then on its changes are logged and policies
+                apply to it like to any agent; people working in the portal are not affected.
+              </P>
+              <Steps
+                items={[
+                  <>
+                    Open it from <Ui>Unregistered agents</Ui> on the overview and select <Ui>Review</Ui>.
+                  </>,
+                  <>
+                    If it is yours, select <Ui>Give it its own key</Ui>, choose only the access it needs and update the script to send the key.
+                    It can no longer use your login, and you stay signed in.
+                  </>,
+                  <>
+                    Otherwise select <Ui>Block</Ui>. To refuse every new one, Owners and Admins can turn on <Ui>Require agent keys</Ui> under{' '}
+                    <Ui>Compliance</Ui>.
+                  </>
+                ]}
+              />
+              <Callout tone="tip">
+                The <Ui>Unregistered agents are read-only</Ui> policy template lets them keep reading while their owners move them to keys.
+              </Callout>
               <H3>Policies</H3>
               <Steps
                 items={[

@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   BellRing,
   Bot,
+  EyeOff,
   FileCheck2,
   Gauge,
   History,
@@ -79,6 +80,40 @@ function AlertsCard({ alerts, onAcknowledge }: { alerts: AgentAlert[]; onAcknowl
   );
 }
 
+/** Scripts and automated browsers found using a person's login: the shadow AI to act on. */
+function UnregisteredCard({ agents, onOpen }: { agents: Agent[]; onOpen: (agent: Agent) => void }): JSX.Element | null {
+  const open = agents.filter((agent) => agent.kind === 'detected' && agent.status !== 'revoked');
+  if (open.length === 0) return null;
+  return (
+    <Card className="border-amber-200" data-testid="unregistered-card">
+      <CardHeader
+        description="Scripts and automated browsers using a person's own login. Give each its own key, or block it."
+        icon={<EyeOff className="h-4 w-4 text-amber-500" />}
+        title={`Unregistered agents (${open.length})`}
+      />
+      <ul className="m-0 list-none divide-y divide-slate-100 p-0">
+        {open.slice(0, 6).map((agent) => (
+          <li className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" key={agent.id}>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[13px] font-medium text-slate-900">{agent.name}</span>
+                <StatusBadge status={agent.status} />
+                <RiskBadge level={agent.riskLevel} score={agent.riskScore} />
+              </div>
+              <p className="m-0 mt-0.5 text-xs text-slate-500">
+                Uses {userLabel(agent.ownerUserId)}&apos;s login · {agent.callCount.toLocaleString()} calls · last seen {timeAgo(agent.lastSeenAt)}
+              </p>
+            </div>
+            <Button onClick={() => onOpen(agent)} size="sm">
+              Review
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
 function InventoryTable({
   agents,
   onOpen
@@ -110,6 +145,11 @@ function InventoryTable({
                 {agent.legacy ? (
                   <Badge className="ml-2" tone="orange">
                     Legacy
+                  </Badge>
+                ) : null}
+                {agent.kind === 'detected' ? (
+                  <Badge className="ml-2" tone="warning">
+                    Uses a personal login
                   </Badge>
                 ) : null}
                 {agent.keyPrefix ? <div className="font-mono text-xs text-slate-400">{agent.keyPrefix}…</div> : null}
@@ -283,6 +323,8 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
                 value={actions24h}
               />
             </div>
+
+            <UnregisteredCard agents={agents ?? []} onOpen={(agent) => setOpenAgent(agent.id)} />
 
             <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
               <AlertsCard

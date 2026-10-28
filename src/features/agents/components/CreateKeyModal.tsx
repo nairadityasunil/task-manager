@@ -156,9 +156,20 @@ interface CreateKeyModalProps {
   defaultName?: string;
   /** Receives the new secret, e.g. to fill in configuration snippets. */
   onKey?: (key: string) => void;
+  /** An unregistered agent to give its own key; it is retired once the key exists. */
+  replaceAgent?: Agent | null;
 }
 
-export function CreateKeyModal({ onClose, onCreated, projects: givenProjects, canAdmin, workspaceId, defaultName = '', onKey }: CreateKeyModalProps): JSX.Element {
+export function CreateKeyModal({
+  onClose,
+  onCreated,
+  projects: givenProjects,
+  canAdmin,
+  workspaceId,
+  defaultName = '',
+  onKey,
+  replaceAgent = null
+}: CreateKeyModalProps): JSX.Element {
   const { showToast } = useToast();
   const [projects, setProjects] = useState<Project[]>(givenProjects ?? []);
   useEffect(() => {
@@ -167,10 +178,15 @@ export function CreateKeyModal({ onClose, onCreated, projects: givenProjects, ca
       .then((page) => setProjects(page.projects))
       .catch(() => undefined);
   }, [givenProjects]);
-  const [name, setName] = useState(defaultName);
-  const [scopes, setScopes] = useState<string[]>(['work:read', 'work:write', 'collaboration:read', 'analytics:read', 'prompt:read']);
-  const [projectIds, setProjectIds] = useState<string[]>([]);
-  const [restricted, setRestricted] = useState(false);
+  const [name, setName] = useState(replaceAgent?.name ?? defaultName);
+  const [scopes, setScopes] = useState<string[]>(
+    // Replacing: start from what the script could do, minus admin unless the person is an admin.
+    replaceAgent
+      ? replaceAgent.scopes.filter((scope) => canAdmin || scope !== 'workspace:admin')
+      : ['work:read', 'work:write', 'collaboration:read', 'analytics:read', 'prompt:read']
+  );
+  const [projectIds, setProjectIds] = useState<string[]>(replaceAgent?.projectIds.map(String) ?? []);
+  const [restricted, setRestricted] = useState(Boolean(replaceAgent?.projectIds.length));
   const [expiry, setExpiry] = useState('90');
   const [saving, setSaving] = useState(false);
   const [created, setCreated] = useState<{ agent: Agent; key: string } | null>(null);
@@ -181,7 +197,10 @@ export function CreateKeyModal({ onClose, onCreated, projects: givenProjects, ca
     setSaving(true);
     try {
       const expiresAt = expiry === 'never' ? null : new Date(Date.now() + Number(expiry) * 86400000).toISOString();
-      const result = await agentsApi.createKey({ name: name.trim(), scopes, projectIds, expiresAt, workspaceId });
+      const body = { name: name.trim(), scopes, projectIds, expiresAt };
+      const result = replaceAgent
+        ? await agentsApi.replaceWithKey(replaceAgent.id, body)
+        : await agentsApi.createKey({ ...body, workspaceId });
       setCreated(result);
       onCreated(result.agent);
       onKey?.(result.key);
@@ -206,6 +225,12 @@ export function CreateKeyModal({ onClose, onCreated, projects: givenProjects, ca
       >
         <div className="space-y-4">
           <SecretReveal value={created.key} />
+          {replaceAgent ? (
+            <p className="m-0 rounded-lg bg-sky-50 p-2.5 text-xs leading-relaxed text-sky-900" data-testid="replace-instructions">
+              Update {replaceAgent.name} to send this key instead of your login. Its access through your login is now blocked, so
+              its next call without the key is refused.
+            </p>
+          ) : null}
           <div className="space-y-1.5">
             <p className="m-0 text-[13px] font-medium text-slate-700">Use it as a bearer token</p>
             <pre className="m-0 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs leading-relaxed text-slate-100">
@@ -219,20 +244,24 @@ export function CreateKeyModal({ onClose, onCreated, projects: givenProjects, ca
 
   return (
     <Modal
-      description="Give each tool or integration its own key, with only the access it needs."
+      description={
+        replaceAgent
+          ? `${replaceAgent.name} is using your login. Give it its own key with only the access it needs; its use of your login stops once the key exists.`
+          : 'Give each tool or integration its own key, with only the access it needs.'
+      }
       footer={
         <>
           <Button onClick={onClose} variant="secondary">
             Cancel
           </Button>
           <Button disabled={!canSubmit} icon={KeyRound} loading={saving} onClick={() => void submit()} variant="primary">
-            Create key
+            {replaceAgent ? 'Create key and retire' : 'Create key'}
           </Button>
         </>
       }
       maxWidth="max-w-[640px]"
       onClose={onClose}
-      title="New agent key"
+      title={replaceAgent ? `Give ${replaceAgent.name} its own key` : 'New agent key'}
     >
       <div className="space-y-4">
         <Field hint="Where the key will be used, e.g. Claude Desktop or Nightly sync." label="Name">
