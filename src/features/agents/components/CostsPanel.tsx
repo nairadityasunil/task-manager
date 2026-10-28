@@ -47,7 +47,7 @@ function DailyChart({ report }: { report: CostReport }): JSX.Element {
         {/* Recessive guides at half and full scale. */}
         <div className="pointer-events-none absolute inset-x-0 top-0 border-t border-dashed border-slate-200" />
         <div className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-dashed border-slate-100" />
-        <span className="pointer-events-none absolute -top-2 right-0 bg-white pl-1 text-[11px] tabular-nums text-slate-400">{usd(max)}</span>
+        <span className="pointer-events-none absolute -top-2 left-0 z-[1] bg-white pr-1 text-[11px] tabular-nums text-slate-400">{usd(max)}</span>
         <div className="absolute inset-0 flex items-end gap-[2px]" role="img" aria-label={`Daily AI spend in ${monthLabel(report.month)}`}>
           {days.map((day, index) => {
             const cost = day.row?.cost ?? 0;

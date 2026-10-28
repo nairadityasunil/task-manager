@@ -1421,6 +1421,8 @@ export function useDashboard() {
     setPriorityEvaluationResult,
     isRecalculatingPriorities,
     isEvaluatingPriority,
+    /** The integration in the URL; navigation uses this, the name is for display. */
+    activeIntegrationId: integrationId ?? null,
     activeIntegrationName,
     activeWorkspaceId,
     isNotificationsOpen,

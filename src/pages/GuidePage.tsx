@@ -1076,6 +1076,19 @@ export default function GuidePage(): JSX.Element {
                 Use consistent, past-tense event names such as <Code>project_created</Code> or <Code>invite_sent</Code>. They are easier to
                 filter and to use in segment rules.
               </Callout>
+              <H3 id="ai-traffic">AI traffic</H3>
+              <P>
+                AI assistants now browse sites for people: ChatGPT, Claude, Perplexity and others open pages, read them and act on them.
+                The integration&apos;s <Ui>AI traffic</Ui> tab shows how much of your traffic they make, next to people, other automated
+                browsers and crawlers, which agents they are and which pages they read most.
+              </P>
+              <Bullets
+                items={[
+                  'Each event is classified from the browser’s user agent and whether it reports being driven by automation. SDK 1.3.0 or later sends both.',
+                  'Shares count classified events only; events from before classification are listed separately.',
+                  'Pages AI agents read often are the ones their answers quote: keep them accurate.'
+                ]}
+              />
             </GuideSection>
 
             {/* ------------------------------------------------ Developer integrations */}

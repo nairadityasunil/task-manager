@@ -13,6 +13,7 @@ import {
   Play,
   ArrowLeft,
   ShieldHalf,
+  Bot,
   type LucideIcon,
 } from 'lucide-react';
 import { avatarColor, cn, type Area } from '@/components/ui';
@@ -178,6 +179,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <NavItem area="engagement" icon={BookOpen} isActive={activeTab === 'guides'} label="Guides" onClick={() => onViewChange('sdk-integration-detail', 'guides')} />
                 <NavItem area="ai" icon={Target} isActive={activeTab === 'surveys'} label="Surveys" onClick={() => onViewChange('sdk-integration-detail', 'surveys')} />
                 <NavItem area="events" icon={Activity} isActive={activeTab === 'events'} label="Events" onClick={() => onViewChange('sdk-integration-detail', 'events')} />
+                <NavItem area="events" icon={Bot} isActive={activeTab === 'ai-traffic'} label="AI traffic" onClick={() => onViewChange('sdk-integration-detail', 'ai-traffic')} />
               </NavGroup>
 
               <NavGroup>
