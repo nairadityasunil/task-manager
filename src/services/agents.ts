@@ -215,7 +215,36 @@ export interface GovernanceSettings {
   /** Agents unused this long are suspended; 0 means never. */
   inactiveAgentDays: number;
   inactiveAgentDayOptions: number[];
+  /** Monthly AI budget in USD; 0 means no limit. */
+  aiMonthlyBudgetUsd: number;
+  /** Refuse AI calls once the budget is used up. */
+  aiBudgetHardStop: boolean;
   activityRetentionDays: number;
+}
+
+export interface CostRow {
+  id: string | null;
+  label: string;
+  cost: number;
+  calls: number;
+  tokens: number;
+  errors: number;
+  kind?: AgentKind | null;
+}
+
+export interface CostReport {
+  month: string;
+  budgetUsd: number;
+  hardStop: boolean;
+  percent: number | null;
+  level: 'ok' | 'warning' | 'exceeded' | 'unlimited';
+  total: { cost: number; calls: number; tokens: number; errors: number };
+  byProvider: CostRow[];
+  byAgent: CostRow[];
+  byUser: CostRow[];
+  byProject: CostRow[];
+  bySource: CostRow[];
+  daily: CostRow[];
 }
 
 export interface ToolCatalog {
@@ -304,7 +333,11 @@ export const agentsApi = {
 
   compliance: (workspaceId?: string | null) => unwrap<ComplianceReport>(api.get('/agents/compliance', { params: ws(workspaceId) })),
   settings: (workspaceId?: string | null) => unwrap<GovernanceSettings>(api.get('/agents/settings', { params: ws(workspaceId) })),
-  updateSettings: (body: { aiDataMasking?: boolean; requireAgentKeys?: boolean; inactiveAgentDays?: number }, workspaceId?: string | null) =>
+  costs: (workspaceId?: string | null, month?: string) =>
+    unwrap<CostReport>(api.get('/agents/costs', { params: { ...ws(workspaceId), month } })),
+  updateSettings: (
+    body: { aiDataMasking?: boolean; requireAgentKeys?: boolean; inactiveAgentDays?: number; aiMonthlyBudgetUsd?: number; aiBudgetHardStop?: boolean },
+    workspaceId?: string | null) =>
     unwrap<GovernanceSettings>(api.patch('/agents/settings', { ...body, ...ws(workspaceId) })),
   promptChecks: (body: { body?: string; messages?: Array<{ role: string; content: string }>; parameters?: { maxTokens?: number } }) =>
     unwrap<{ findings: PromptFinding[]; blocking: boolean }>(api.post('/agents/prompt-checks', body, { silent: true }))

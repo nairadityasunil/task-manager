@@ -1232,6 +1232,22 @@ export default function GuidePage(): JSX.Element {
                 repeated refusals, first use of a new action and unused agents. Changes an agent made to a task or epic can be undone from
                 the activity log. Export the log as CSV or JSON for audits.
               </P>
+              <H3>AI costs and budget</H3>
+              <P>
+                <Ui>Agent Governance → Costs</Ui> (Owners and Admins) shows this month&apos;s AI spend against the workspace budget, spend per
+                day, and who spent it: by agent (calls people make in the portal are shown separately), person, project and provider. Pick
+                an earlier month to compare.
+              </P>
+              <Bullets
+                items={[
+                  'Set the monthly budget in US dollars for all providers together; 0 means no limit. Months run in UTC.',
+                  'Admins are alerted at 80% and 100% of the budget.',
+                  <>
+                    With <Ui>Stop AI calls when the budget is used up</Ui> on, AI features are refused until the next month or until the budget
+                    is raised. Turn it off to keep them running and only be alerted.
+                  </>
+                ]}
+              />
               <H3>Compliance report and AI data masking</H3>
               <P>
                 The <Ui>Compliance</Ui> tab scores your setup against controls mapped to the OWASP Top 10 for LLM applications, the NIST AI

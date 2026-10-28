@@ -5,6 +5,7 @@ import {
   BellRing,
   Bot,
   CalendarCheck,
+  CircleDollarSign,
   EyeOff,
   FileCheck2,
   Gauge,
@@ -27,6 +28,7 @@ import { ActivityLog } from '@/features/agents/components/ActivityLog';
 import { AgentDrawer } from '@/features/agents/components/AgentDrawer';
 import { ApprovalsInbox } from '@/features/agents/components/ApprovalsInbox';
 import { CompliancePanel } from '@/features/agents/components/CompliancePanel';
+import { CostsPanel } from '@/features/agents/components/CostsPanel';
 import { CreateKeyModal } from '@/features/agents/components/CreateKeyModal';
 import { PoliciesPanel } from '@/features/agents/components/PoliciesPanel';
 import { KindLabel, RiskBadge, StatusBadge } from '@/features/agents/components/shared';
@@ -44,8 +46,8 @@ import {
 import type { Project } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
-export type AgentsTab = 'overview' | 'inventory' | 'approvals' | 'policies' | 'activity' | 'compliance';
-const TABS: AgentsTab[] = ['overview', 'inventory', 'approvals', 'policies', 'activity', 'compliance'];
+export type AgentsTab = 'overview' | 'inventory' | 'approvals' | 'policies' | 'activity' | 'costs' | 'compliance';
+const TABS: AgentsTab[] = ['overview', 'inventory', 'approvals', 'policies', 'activity', 'costs', 'compliance'];
 
 const SEVERITY_TONE = { info: 'info', warning: 'warning', critical: 'danger' } as const;
 
@@ -344,6 +346,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
             { value: 'approvals', label: 'Approvals', icon: Inbox, count: pending || undefined },
             { value: 'policies', label: 'Policies', icon: ScrollText },
             { value: 'activity', label: 'Activity', icon: History },
+            { value: 'costs', label: 'Costs', icon: CircleDollarSign },
             { value: 'compliance', label: 'Compliance', icon: FileCheck2 }
           ]}
           onChange={(next) => navigate(next === 'overview' ? '/agents' : `/agents/${next}`)}
@@ -495,6 +498,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
         {tab === 'approvals' ? <ApprovalsInbox onChanged={() => void refresh()} /> : null}
         {tab === 'policies' ? <PoliciesPanel canAdmin={canAdmin} projects={projects} workspaceId={workspaceId} /> : null}
         {tab === 'activity' ? <ActivityLog canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
+        {tab === 'costs' ? <CostsPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'compliance' ? <CompliancePanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
       </div>
 
