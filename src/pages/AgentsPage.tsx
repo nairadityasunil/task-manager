@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   BellRing,
   Bot,
+  CalendarCheck,
   EyeOff,
   FileCheck2,
   Gauge,
@@ -107,6 +108,66 @@ function UnregisteredCard({ agents, onOpen }: { agents: Agent[]; onOpen: (agent:
             <Button onClick={() => onOpen(agent)} size="sm">
               Review
             </Button>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+/** Agents whose access nobody has confirmed for 90 days. */
+function ReviewsCard({
+  agents,
+  onOpen,
+  onConfirm
+}: {
+  agents: Agent[];
+  onOpen: (agent: Agent) => void;
+  onConfirm: (agent: Agent) => Promise<void>;
+}): JSX.Element | null {
+  const [busy, setBusy] = useState<string | null>(null);
+  const due = agents.filter((agent) => agent.reviewDue && agent.status !== 'revoked' && agent.kind !== 'detected');
+  if (due.length === 0) return null;
+  return (
+    <Card data-testid="reviews-card">
+      <CardHeader
+        description="Confirm each agent still needs its access, or suspend it. Reviews are due every 90 days."
+        icon={<CalendarCheck className="h-4 w-4 text-slate-400" />}
+        title={`Access reviews due (${due.length})`}
+      />
+      <ul className="m-0 list-none divide-y divide-slate-100 p-0">
+        {due.slice(0, 8).map((agent) => (
+          <li className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" data-testid="review-row" key={agent.id}>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[13px] font-medium text-slate-900">{agent.name}</span>
+                <KindLabel kind={agent.kind} />
+                <StatusBadge status={agent.status} />
+              </div>
+              <p className="m-0 mt-0.5 text-xs text-slate-500">
+                {userLabel(agent.ownerUserId)} · last active {timeAgo(agent.lastSeenAt)} · {agent.reviewedAt ? `confirmed ${timeAgo(agent.reviewedAt)}` : 'never confirmed'}
+              </p>
+            </div>
+            <div className="flex gap-1.5">
+              <Button
+                loading={busy === agent.id}
+                onClick={async () => {
+                  setBusy(agent.id);
+                  try {
+                    await onConfirm(agent);
+                  } finally {
+                    setBusy(null);
+                  }
+                }}
+                size="sm"
+                variant="primary"
+              >
+                Still needed
+              </Button>
+              <Button onClick={() => onOpen(agent)} size="sm">
+                Review
+              </Button>
+            </div>
           </li>
         ))}
       </ul>
@@ -325,6 +386,19 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
             </div>
 
             <UnregisteredCard agents={agents ?? []} onOpen={(agent) => setOpenAgent(agent.id)} />
+            <ReviewsCard
+              agents={agents ?? []}
+              onConfirm={async (agent) => {
+                try {
+                  const updated = await agentsApi.review(agent.id);
+                  setAgents((current) => current?.map((a) => (a.id === agent.id ? { ...a, ...updated, ownerUserId: a.ownerUserId } : a)) ?? current);
+                  showToast({ variant: 'success', message: `${agent.name} confirmed for another 90 days` });
+                } catch (error) {
+                  showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+                }
+              }}
+              onOpen={(agent) => setOpenAgent(agent.id)}
+            />
 
             <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
               <AlertsCard

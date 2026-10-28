@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, CircleAlert, CircleDashed, Download, EyeOff, FileCheck2, KeyRound } from 'lucide-react';
+import { CheckCircle2, CircleAlert, CircleDashed, Clock3, Download, EyeOff, FileCheck2, KeyRound } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
-import { Badge, Button, Card, CardHeader, cn } from '@/components/ui';
+import { Badge, Button, Card, CardHeader, cn, selectClass } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
 import { agentsApi, type ComplianceReport, type GovernanceSettings } from '@/services/agents';
 import { toDisplayErrorMessage } from '@/utils/apiError';
@@ -77,6 +77,19 @@ export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string
     }
   };
 
+  const setInactiveDays = async (days: number) => {
+    setSaving(true);
+    try {
+      setSettings(await agentsApi.updateSettings({ inactiveAgentDays: days }, workspaceId));
+      showToast({ variant: 'success', message: days ? `Unused agents are suspended after ${days} days` : 'Unused agents are no longer suspended' });
+      setReport(await agentsApi.compliance(workspaceId));
+    } catch (error) {
+      showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const downloadReport = () => {
     const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -92,7 +105,7 @@ export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
+      <div className="grid items-start gap-4 lg:grid-cols-[280px_1fr]">
         <Card className="flex flex-col items-center justify-center gap-2 p-5 text-center">
           <div className="relative h-28 w-28">
             <svg aria-hidden className="h-full w-full -rotate-90" viewBox="0 0 36 36">
@@ -141,6 +154,35 @@ export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string
           </div>
           <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
             Agent activity is kept for {settings.activityRetentionDays} days. Inputs are masked before they are stored.
+          </div>
+        </Card>
+
+        <Card className="lg:col-start-2">
+          <CardHeader
+            description="Unused credentials are a common way in. Agents whose owner leaves the workspace are always suspended."
+            icon={<Clock3 className="h-4 w-4 text-slate-400" />}
+            title="Unused agents"
+          />
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <label className="text-[13px] text-slate-600" htmlFor="inactive-agent-days">
+              Suspend agents that have not been used for
+            </label>
+            <select
+              className={cn(selectClass, 'h-8 w-40')}
+              disabled={saving}
+              id="inactive-agent-days"
+              onChange={(e) => void setInactiveDays(Number(e.target.value))}
+              value={settings.inactiveAgentDays}
+            >
+              {settings.inactiveAgentDayOptions.map((days) => (
+                <option key={days} value={days}>
+                  {days ? `${days} days` : 'Never'}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
+            Owners can resume a suspended agent; using or confirming an agent restarts its clock. Access is reviewed every 90 days.
           </div>
         </Card>
 

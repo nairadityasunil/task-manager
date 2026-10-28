@@ -1212,6 +1212,20 @@ export default function GuidePage(): JSX.Element {
                   </>
                 ]}
               />
+              <H3>Access reviews and unused agents</H3>
+              <Bullets
+                items={[
+                  <>
+                    Every 90 days an agent&apos;s owner, or an admin, confirms it still needs its access. Agents due appear under{' '}
+                    <Ui>Access reviews due</Ui> on the overview: select <Ui>Still needed</Ui>, or open it to narrow or suspend it.
+                  </>,
+                  'An agent whose owner leaves the workspace is suspended the next night; only an admin can resume it.',
+                  <>
+                    Agents unused for 60 days are suspended too. Change the limit, or turn it off, under <Ui>Compliance → Unused agents</Ui>.
+                    Owners can resume their own; using or confirming an agent restarts its clock.
+                  </>
+                ]}
+              />
               <H3>Activity, alerts and undo</H3>
               <P>
                 Every agent action is recorded with its decision for 90 days, with inputs masked. Alerts flag bulk deletes, unusual volume,

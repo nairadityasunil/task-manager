@@ -45,6 +45,10 @@ export interface Agent {
   adminLocked?: boolean;
   expiresAt?: string | null;
   lastSeenAt?: string | null;
+  /** Last time its owner or an admin confirmed it is still needed. */
+  reviewedAt?: string | null;
+  reviewDueAt?: string | null;
+  reviewDue?: boolean;
   callCount: number;
   riskScore: number;
   riskLevel: AgentRiskLevel;
@@ -208,6 +212,9 @@ export interface GovernanceSettings {
   aiDataMasking: boolean;
   /** Scripts must use agent keys; personal logins from scripts are refused. */
   requireAgentKeys: boolean;
+  /** Agents unused this long are suspended; 0 means never. */
+  inactiveAgentDays: number;
+  inactiveAgentDayOptions: number[];
   activityRetentionDays: number;
 }
 
@@ -248,6 +255,8 @@ export const agentsApi = {
   update: (agentId: string, body: Partial<Pick<Agent, 'name' | 'scopes' | 'projectIds'>> & { expiresAt?: string | null }) =>
     unwrap<Agent>(api.patch(`/agents/${agentId}`, body)),
   rotate: (agentId: string) => unwrap<{ agent: Agent; key: string }>(api.post(`/agents/${agentId}/rotate`)),
+  /** Confirms the agent still needs its access (access review). */
+  review: (agentId: string) => unwrap<Agent>(api.post(`/agents/${agentId}/review`)),
   /** Gives an unregistered agent its own key and retires the detected one. */
   replaceWithKey: (agentId: string, body: { name: string; scopes?: string[]; projectIds?: string[]; expiresAt?: string | null }) =>
     unwrap<{ agent: Agent; key: string }>(api.post(`/agents/${agentId}/replace-with-key`, body)),
@@ -295,7 +304,7 @@ export const agentsApi = {
 
   compliance: (workspaceId?: string | null) => unwrap<ComplianceReport>(api.get('/agents/compliance', { params: ws(workspaceId) })),
   settings: (workspaceId?: string | null) => unwrap<GovernanceSettings>(api.get('/agents/settings', { params: ws(workspaceId) })),
-  updateSettings: (body: { aiDataMasking?: boolean; requireAgentKeys?: boolean }, workspaceId?: string | null) =>
+  updateSettings: (body: { aiDataMasking?: boolean; requireAgentKeys?: boolean; inactiveAgentDays?: number }, workspaceId?: string | null) =>
     unwrap<GovernanceSettings>(api.patch('/agents/settings', { ...body, ...ws(workspaceId) })),
   promptChecks: (body: { body?: string; messages?: Array<{ role: string; content: string }>; parameters?: { maxTokens?: number } }) =>
     unwrap<{ findings: PromptFinding[]; blocking: boolean }>(api.post('/agents/prompt-checks', body, { silent: true }))

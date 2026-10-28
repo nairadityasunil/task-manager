@@ -199,6 +199,14 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                       </p>
                     </div>
                   ) : null}
+                  {agent.reviewDue && !revoked && !unregistered ? (
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-sky-200 bg-sky-50 p-2.5" data-testid="review-due">
+                      <span className="text-[13px] text-sky-900">Access review due: does this agent still need its access?</span>
+                      <Button loading={busy} onClick={() => void act(() => agentsApi.review(agentId), 'Confirmed for another 90 days')} size="sm" variant="primary">
+                        Still needed
+                      </Button>
+                    </div>
+                  ) : null}
                   {agent.statusReason ? (
                     <p className="m-0 rounded-lg bg-amber-50 p-2.5 text-[13px] text-amber-800">Reason: {agent.statusReason}</p>
                   ) : null}
@@ -215,6 +223,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                       ['Calls', agent.callCount.toLocaleString()],
                       ['Expires', agent.expiresAt ? new Date(agent.expiresAt).toLocaleDateString() : 'Never'],
                       ['Key', agent.keyPrefix ? `${agent.keyPrefix}…` : '—'],
+                      ['Access confirmed', agent.reviewedAt ? timeAgo(agent.reviewedAt) : 'Never'],
                       ['Client', agent.clientName || agent.userAgent || '—']
                     ].map(([label, value]) => (
                       <div className="min-w-0 rounded-lg border border-slate-200 p-2.5" key={label}>
