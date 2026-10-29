@@ -932,6 +932,7 @@ export default function LandingPage(): JSX.Element {
                 'Personal data and secrets masked before prompts reach AI providers',
                 'Prompt checks for leaked secrets and injection phrases before a canary rollout',
                 'AI cost per agent, person, project and provider, with a monthly budget',
+                'Vendor register with due diligence, evidence, review reminders and a sub-processor list',
                 'Activity kept for 90 days, exportable for audits'
               ]}
             />

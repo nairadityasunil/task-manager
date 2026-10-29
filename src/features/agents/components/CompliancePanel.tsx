@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, CircleAlert, CircleDashed, Clock3, Download, EyeOff, FileCheck2, KeyRound } from 'lucide-react';
+import { Building2, CheckCircle2, CircleAlert, CircleDashed, Clock3, Download, EyeOff, FileCheck2, KeyRound } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
 import { Badge, Button, Card, CardHeader, cn, selectClass } from '@/components/ui';
@@ -64,7 +64,7 @@ export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string
   }
   if (!report || !settings) return <div className="h-64 animate-pulse rounded-xl bg-slate-100" />;
 
-  const toggle = async (key: 'aiDataMasking' | 'requireAgentKeys', on: string, off: string) => {
+  const toggle = async (key: 'aiDataMasking' | 'requireAgentKeys' | 'approvedVendorsOnly', on: string, off: string) => {
     setSaving(true);
     try {
       setSettings(await agentsApi.updateSettings({ [key]: !settings[key] }, workspaceId));
@@ -202,6 +202,27 @@ export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string
               label="Require agent keys"
               onToggle={() =>
                 void toggle('requireAgentKeys', 'Scripts now need agent keys', 'Scripts may use personal logins again (still monitored)')
+              }
+            />
+          </div>
+        </Card>
+
+        <Card className="lg:col-start-2">
+          <CardHeader
+            description="Every third party your agents and integrations use is on the vendor register. Blocked vendors are always refused."
+            icon={<Building2 className="h-4 w-4 text-slate-400" />}
+            title="Approved vendors only"
+          />
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <div className="text-[13px] text-slate-600">
+              When on, agents of vendors still under review can only read, and AI calls to them are refused, until an admin approves the vendor.
+            </div>
+            <SettingSwitch
+              checked={settings.approvedVendorsOnly}
+              disabled={saving}
+              label="Approved vendors only"
+              onToggle={() =>
+                void toggle('approvedVendorsOnly', 'Only approved vendors may change data now', 'Vendors under review work normally again (still listed)')
               }
             />
           </div>

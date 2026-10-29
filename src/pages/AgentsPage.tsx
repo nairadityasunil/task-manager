@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   BellRing,
   Bot,
+  Building2,
   CalendarCheck,
   CircleDollarSign,
   EyeOff,
@@ -33,6 +34,8 @@ import { CostsPanel } from '@/features/agents/components/CostsPanel';
 import { NotificationsPanel } from '@/features/agents/components/NotificationsPanel';
 import { CreateKeyModal } from '@/features/agents/components/CreateKeyModal';
 import { PoliciesPanel } from '@/features/agents/components/PoliciesPanel';
+import { VendorDrawer } from '@/features/agents/components/VendorDrawer';
+import { VendorReviewCard, VendorsPanel } from '@/features/agents/components/VendorsPanel';
 import { KindLabel, RiskBadge, StatusBadge } from '@/features/agents/components/shared';
 import { isAtLeastAdmin, useWorkspace } from '@/features/workspaces';
 import {
@@ -45,15 +48,24 @@ import {
   type AgentKind,
   type AgentOverview
 } from '@/services/agents';
+import { vendorsApi, type VendorListItem } from '@/services/vendors';
 import type { Project } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
-export type AgentsTab = 'overview' | 'inventory' | 'approvals' | 'policies' | 'activity' | 'costs' | 'notifications' | 'compliance';
-const TABS: AgentsTab[] = ['overview', 'inventory', 'approvals', 'policies', 'activity', 'costs', 'notifications', 'compliance'];
+export type AgentsTab = 'overview' | 'inventory' | 'vendors' | 'approvals' | 'policies' | 'activity' | 'costs' | 'notifications' | 'compliance';
+const TABS: AgentsTab[] = ['overview', 'inventory', 'vendors', 'approvals', 'policies', 'activity', 'costs', 'notifications', 'compliance'];
 
 const SEVERITY_TONE = { info: 'info', warning: 'warning', critical: 'danger' } as const;
 
-function AlertsCard({ alerts, onAcknowledge }: { alerts: AgentAlert[]; onAcknowledge: (id: string) => void }): JSX.Element {
+function AlertsCard({
+  alerts,
+  onAcknowledge,
+  onOpenVendor
+}: {
+  alerts: AgentAlert[];
+  onAcknowledge: (id: string) => void;
+  onOpenVendor: (vendorId: string) => void;
+}): JSX.Element {
   return (
     <Card>
       <CardHeader description="Unusual behaviour and blocked actions." icon={<BellRing className="h-4 w-4 text-slate-400" />} title="Open alerts" />
@@ -74,9 +86,16 @@ function AlertsCard({ alerts, onAcknowledge }: { alerts: AgentAlert[]; onAcknowl
                   {alert.detail} · {timeAgo(alert.createdAt)}
                 </p>
               </div>
-              <Button onClick={() => onAcknowledge(alert.id)} size="sm" variant="ghost">
-                Dismiss
-              </Button>
+              <div className="flex shrink-0 gap-1">
+                {alert.vendorId ? (
+                  <Button onClick={() => onOpenVendor(typeof alert.vendorId === 'object' && alert.vendorId ? alert.vendorId._id : String(alert.vendorId))} size="sm">
+                    Open vendor
+                  </Button>
+                ) : null}
+                <Button onClick={() => onAcknowledge(alert.id)} size="sm" variant="ghost">
+                  Dismiss
+                </Button>
+              </div>
             </li>
           ))}
         </ul>
@@ -181,9 +200,11 @@ function ReviewsCard({
 
 function InventoryTable({
   agents,
+  vendorNames,
   onOpen
 }: {
   agents: Agent[];
+  vendorNames: Map<string, string>;
   onOpen: (agent: Agent) => void;
 }): JSX.Element {
   return (
@@ -221,6 +242,11 @@ function InventoryTable({
               </td>
               <td className="px-3 py-2.5">
                 <KindLabel kind={agent.kind} />
+                {agent.vendorId && vendorNames.get(agent.vendorId) ? (
+                  <div className="text-xs text-slate-400" data-testid="agent-vendor">
+                    {vendorNames.get(agent.vendorId)}
+                  </div>
+                ) : null}
               </td>
               <td className="px-3 py-2.5 text-slate-600">{userLabel(agent.ownerUserId)}</td>
               <td className="px-3 py-2.5 text-xs text-slate-600">
@@ -260,11 +286,30 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
   const [agents, setAgents] = useState<Agent[] | null>(null);
   const [alerts, setAlerts] = useState<AgentAlert[]>([]);
   const [openAgent, setOpenAgent] = useState<string | null>(null);
+  const [vendors, setVendors] = useState<VendorListItem[] | null>(null);
+  const [openVendor, setOpenVendor] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [kind, setKind] = useState<AgentKind | ''>('');
   const [status, setStatus] = useState('');
   const [query, setQuery] = useState('');
   const closeDrawer = useCallback(() => setOpenAgent(null), []);
+  const closeVendor = useCallback(() => setOpenVendor(null), []);
+
+  const refreshVendors = useCallback(async () => {
+    if (!canAdmin) return;
+    try {
+      setVendors(await vendorsApi.list(workspaceId));
+    } catch (error) {
+      setVendors((current) => current ?? []);
+      showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+    }
+  }, [canAdmin, workspaceId, showToast]);
+
+  useEffect(() => {
+    void refreshVendors();
+  }, [refreshVendors]);
+
+  const vendorNames = useMemo(() => new Map((vendors ?? []).map((v) => [v.id, v.name])), [vendors]);
 
   const refresh = useCallback(async () => {
     try {
@@ -345,6 +390,9 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
           items={[
             { value: 'overview', label: 'Overview', icon: Gauge },
             { value: 'inventory', label: 'Agents', icon: Bot, count: agents?.filter((a) => a.status !== 'revoked').length },
+            ...(canAdmin
+              ? [{ value: 'vendors' as const, label: 'Vendors', icon: Building2, count: vendors?.filter((v) => v.status === 'under_review').length || undefined }]
+              : []),
             { value: 'approvals', label: 'Approvals', icon: Inbox, count: pending || undefined },
             { value: 'policies', label: 'Policies', icon: ScrollText },
             { value: 'activity', label: 'Activity', icon: History },
@@ -405,6 +453,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
               }}
               onOpen={(agent) => setOpenAgent(agent.id)}
             />
+            <VendorReviewCard onOpen={(vendor) => setOpenVendor(vendor.id)} vendors={vendors ?? []} />
 
             <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
               <AlertsCard
@@ -417,6 +466,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
                     showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
                   }
                 }}
+                onOpenVendor={setOpenVendor}
               />
               <Card>
                 <CardHeader description="Where agents come from." icon={<ShieldCheck className="h-4 w-4 text-slate-400" />} title="Inventory" />
@@ -444,6 +494,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
                 <CardHeader description="Open one to see why and fix it." icon={<AlertTriangle className="h-4 w-4 text-slate-400" />} title="Highest risk" />
                 <InventoryTable
                   agents={agents.filter((a) => a.status !== 'revoked').sort((a, b) => b.riskScore - a.riskScore).slice(0, 5)}
+                  vendorNames={vendorNames}
                   onOpen={(agent) => setOpenAgent(agent.id)}
                 />
               </Card>
@@ -493,11 +544,14 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
                 />
               </div>
             ) : (
-              <InventoryTable agents={visible} onOpen={(agent) => setOpenAgent(agent.id)} />
+              <InventoryTable agents={visible} onOpen={(agent) => setOpenAgent(agent.id)} vendorNames={vendorNames} />
             )}
           </Card>
         ) : null}
 
+        {tab === 'vendors' ? (
+          <VendorsPanel canAdmin={canAdmin} onChanged={() => void refreshVendors()} onOpen={setOpenVendor} vendors={vendors} workspaceId={workspaceId} />
+        ) : null}
         {tab === 'approvals' ? <ApprovalsInbox onChanged={() => void refresh()} /> : null}
         {tab === 'policies' ? <PoliciesPanel canAdmin={canAdmin} projects={projects} workspaceId={workspaceId} /> : null}
         {tab === 'activity' ? <ActivityLog canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
@@ -508,6 +562,17 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
 
       {openAgent ? (
         <AgentDrawer agentId={openAgent} canAdmin={canAdmin} onChanged={() => void refresh()} onClose={closeDrawer} projects={projects} />
+      ) : null}
+      {openVendor ? (
+        <VendorDrawer
+          onChanged={() => {
+            void refreshVendors();
+            void refresh();
+          }}
+          onClose={closeVendor}
+          vendorId={openVendor}
+          workspaceId={workspaceId}
+        />
       ) : null}
       {creating ? (
         <CreateKeyModal

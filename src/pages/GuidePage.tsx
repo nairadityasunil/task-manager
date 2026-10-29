@@ -1282,10 +1282,43 @@ export default function GuidePage(): JSX.Element {
                   </>
                 ]}
               />
+              <H3>Third-party vendors</H3>
+              <P>
+                <Ui>Agent Governance → Vendors</Ui> (Owners and Admins) is your register of the companies behind your agents and
+                integrations. OpenAI, Anthropic, Cursor, Slack, Splunk and others are added the first time one of their agents or a
+                webhook to them is used, start <Ui>Under review</Ui> and raise an alert. Add others by hand from the catalog or by name.
+              </P>
+              <Bullets
+                items={[
+                  <>
+                    <Ui>Approve</Ui>, <Ui>Restrict</Ui> (its agents can read but not change anything) or <Ui>Block</Ui> (its agents are refused
+                    and webhooks to it are not sent). Restricting or blocking needs a reason, and every decision is kept in its history.
+                  </>,
+                  <>
+                    Turn on <Ui>Approved vendors only</Ui> under <Ui>Compliance</Ui> so vendors under review can only read until approved.
+                  </>,
+                  <>
+                    Answer the due-diligence questions under <Ui>Assessment</Ui>: training on your data, retention, location, certifications,
+                    encryption, incident notice and the DPA. Each vendor gets an inherent risk (what it can reach) and a residual risk (after
+                    its controls), with the reasons and the framework behind each.
+                  </>,
+                  'Set its criticality: tier 1 vendors are reassessed every 12 months, tier 2 every 24 and tier 3 every 36.',
+                  <>
+                    Upload SOC 2 reports, ISO certificates and DPAs under <Ui>Evidence</Ui> (PDF, Word, Excel, images or text, up to 15 MB) with
+                    their expiry date. Files are always downloaded, never opened in the browser.
+                  </>,
+                  'Admins are reminded when a review is due, a vendor waits 14 days for a decision, or a DPA, contract or file expires within 30 days.',
+                  <>
+                    Export the register as CSV or JSON, and the <Ui>Sub-processors</Ui> list (approved vendors marked as sub-processors, with
+                    purpose and location) to share with customers.
+                  </>
+                ]}
+              />
               <H3>Compliance report and AI data masking</H3>
               <P>
                 The <Ui>Compliance</Ui> tab scores your setup against controls mapped to the OWASP Top 10 for LLM applications, the NIST AI
-                Risk Management Framework, ISO/IEC 42001 and the EU AI Act, with a recommendation for each gap. Turn on{' '}
+                Risk Management Framework, ISO/IEC 42001, ISO/IEC 27001 supplier controls, NIST CSF supply-chain risk and the EU AI Act,
+                with a recommendation for each gap. Turn on{' '}
                 <Ui>AI data masking</Ui> there to replace emails, phone numbers, card numbers and secrets before prompts reach AI providers.
               </P>
               <Callout tone="note">The framework mapping supports your reviews; it is not a certification of compliance.</Callout>

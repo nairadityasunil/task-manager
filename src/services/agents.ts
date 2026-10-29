@@ -33,6 +33,8 @@ export interface Agent {
   /** Why an unregistered ("detected") agent was judged automated. */
   detectionSignals?: string[];
   replacedByAgentId?: string | null;
+  /** The third party behind it (see the vendor register). */
+  vendorId?: string | null;
   keyPrefix?: string | null;
   scopes: string[];
   projectIds: string[];
@@ -172,7 +174,9 @@ export interface AgentActivity {
 
 export interface AgentAlert {
   id: string;
-  agentId: AgentRef | string;
+  /** Null for vendor alerts. */
+  agentId: AgentRef | string | null;
+  vendorId?: { _id: string; name: string } | string | null;
   type: string;
   severity: 'info' | 'warning' | 'critical';
   title: string;
@@ -221,6 +225,8 @@ export interface GovernanceSettings {
   aiMonthlyBudgetUsd: number;
   /** Refuse AI calls once the budget is used up. */
   aiBudgetHardStop: boolean;
+  /** Vendors under review may only read until approved. */
+  approvedVendorsOnly: boolean;
   activityRetentionDays: number;
 }
 
@@ -382,7 +388,14 @@ export const agentsApi = {
   costs: (workspaceId?: string | null, month?: string) =>
     unwrap<CostReport>(api.get('/agents/costs', { params: { ...ws(workspaceId), month } })),
   updateSettings: (
-    body: { aiDataMasking?: boolean; requireAgentKeys?: boolean; inactiveAgentDays?: number; aiMonthlyBudgetUsd?: number; aiBudgetHardStop?: boolean },
+    body: {
+      aiDataMasking?: boolean;
+      requireAgentKeys?: boolean;
+      approvedVendorsOnly?: boolean;
+      inactiveAgentDays?: number;
+      aiMonthlyBudgetUsd?: number;
+      aiBudgetHardStop?: boolean;
+    },
     workspaceId?: string | null) =>
     unwrap<GovernanceSettings>(api.patch('/agents/settings', { ...body, ...ws(workspaceId) })),
   promptChecks: (body: { body?: string; messages?: Array<{ role: string; content: string }>; parameters?: { maxTokens?: number } }) =>
