@@ -44,6 +44,8 @@ export interface Agent {
   /** An admin reduced its access: the owner can only reduce it further. */
   adminLocked?: boolean;
   expiresAt?: string | null;
+  /** Calls allowed per minute; null for no limit. */
+  rateLimitPerMinute?: number | null;
   lastSeenAt?: string | null;
   /** Last time its owner or an admin confirmed it is still needed. */
   reviewedAt?: string | null;
@@ -247,6 +249,41 @@ export interface CostReport {
   daily: CostRow[];
 }
 
+export interface AgentReach {
+  windowDays: number;
+  since: string;
+  /** Too new to judge its use; no suggestion yet. */
+  tooNew: boolean;
+  scopes: Array<{ scope: string; used: number; removable: boolean; logged: boolean }>;
+  projects: {
+    all: boolean;
+    ownerProjectCount: number | null;
+    granted: Array<{ id: string; name: string; used: number }>;
+    used: Array<{ id: string | null; name: string; calls: number }>;
+  };
+  suggestion: { scopes: string[]; projectIds: string[] } | null;
+}
+
+export type WebhookEvent = 'alert.raised' | 'approval.requested' | 'approval.decided' | 'activity.blocked';
+
+export interface AgentWebhook {
+  id: string;
+  name: string;
+  url: string;
+  format: 'json' | 'slack';
+  events: WebhookEvent[];
+  minSeverity: 'info' | 'warning' | 'critical';
+  enabled: boolean;
+  disabledReason?: string | null;
+  consecutiveFailures: number;
+  lastDeliveryAt?: string | null;
+  lastStatus?: number | null;
+  lastError?: string | null;
+  createdAt: string;
+}
+
+export type WebhookInput = Partial<Pick<AgentWebhook, 'name' | 'url' | 'format' | 'events' | 'minSeverity' | 'enabled'>>;
+
 export interface ToolCatalog {
   tools: Array<{ name: string; domain: string; risk: RiskLevel; description: string }>;
   risks: RiskLevel[];
@@ -281,9 +318,18 @@ export const agentsApi = {
     unwrap<AgentDetail>(api.get(`/agents/${agentId}`, { params: refresh ? { refresh: '1' } : {} })),
   createKey: (body: { name: string; scopes?: string[]; projectIds?: string[]; expiresAt?: string | null; workspaceId?: string | null }) =>
     unwrap<{ agent: Agent; key: string }>(api.post('/agents/keys', body)),
-  update: (agentId: string, body: Partial<Pick<Agent, 'name' | 'scopes' | 'projectIds'>> & { expiresAt?: string | null }) =>
+  update: (agentId: string, body: Partial<Pick<Agent, 'name' | 'scopes' | 'projectIds' | 'rateLimitPerMinute'>> & { expiresAt?: string | null }) =>
     unwrap<Agent>(api.patch(`/agents/${agentId}`, body)),
   rotate: (agentId: string) => unwrap<{ agent: Agent; key: string }>(api.post(`/agents/${agentId}/rotate`)),
+  reach: (agentId: string) => unwrap<AgentReach>(api.get(`/agents/${agentId}/reach`)),
+  webhooks: (workspaceId?: string | null) => unwrap<AgentWebhook[]>(api.get('/agents/webhooks', { params: ws(workspaceId) })),
+  createWebhook: (body: WebhookInput, workspaceId?: string | null) =>
+    unwrap<{ webhook: AgentWebhook; secret: string }>(api.post('/agents/webhooks', { ...body, ...ws(workspaceId) })),
+  updateWebhook: (id: string, body: WebhookInput & { rotateSecret?: boolean }, workspaceId?: string | null) =>
+    unwrap<{ webhook: AgentWebhook; secret: string | null }>(api.patch(`/agents/webhooks/${id}`, { ...body, ...ws(workspaceId) })),
+  deleteWebhook: (id: string, workspaceId?: string | null) => unwrap<unknown>(api.delete(`/agents/webhooks/${id}`, { params: ws(workspaceId) })),
+  testWebhook: (id: string, workspaceId?: string | null) =>
+    unwrap<{ ok: boolean; status: number | null; body: string }>(api.post(`/agents/webhooks/${id}/test`, ws(workspaceId))),
   /** Confirms the agent still needs its access (access review). */
   review: (agentId: string) => unwrap<Agent>(api.post(`/agents/${agentId}/review`)),
   /** Gives an unregistered agent its own key and retires the detected one. */

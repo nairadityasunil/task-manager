@@ -1239,6 +1239,27 @@ export default function GuidePage(): JSX.Element {
                   </>
                 ]}
               />
+              <H3>Reach and rate limits</H3>
+              <Bullets
+                items={[
+                  <>
+                    An agent&apos;s <Ui>Reach</Ui> tab shows what it may do against what it did in the last 90 days. Access it has not used
+                    is marked, and <Ui>Remove unused access</Ui> narrows it in one step. Reads are not logged, so read access is never counted
+                    as unused.
+                  </>,
+                  <>
+                    Under <Ui>Permissions → Rate limit</Ui>, cap how many calls an agent makes per minute across REST, MCP and AI. Calls over the
+                    limit are refused with HTTP 429 and a time to retry, logged as blocked, and raise an alert.
+                  </>
+                ]}
+              />
+              <H3>Notifications: Slack, SIEM and webhooks</H3>
+              <P>
+                Under <Ui>Agent Governance → Notifications</Ui>, Owners and Admins send alerts, approval requests and outcomes, and blocked
+                actions to a Slack channel (incoming webhook), a SIEM such as Splunk or Datadog, or any HTTPS endpoint. Signed JSON
+                deliveries carry an HMAC-SHA256 signature to verify; the signing secret is shown once. Use <Ui>Send test</Ui> to check a
+                destination. Failed deliveries are retried, and a webhook that fails 10 times in a row is turned off until you turn it on.
+              </P>
               <H3>Activity, alerts and undo</H3>
               <P>
                 Every agent action is recorded with its decision for 90 days, with inputs masked. Alerts flag bulk deletes, unusual volume,

@@ -912,7 +912,7 @@ export default function LandingPage(): JSX.Element {
               Held actions wait in an approvals inbox for a workspace or project admin, then run once, exactly as requested.
             </FeatureCard>
             <FeatureCard icon={History} title="Activity, alerts and undo">
-              Every agent action is logged with inputs masked. Alerts flag bulk deletes, spikes and refusals; task and epic changes can be undone.
+              Every agent action is logged with inputs masked. Alerts go to Slack, your SIEM or any webhook; task and epic changes can be undone.
             </FeatureCard>
             <FeatureCard icon={Lock} title="Kill switch">
               Suspend one agent or stop them all at once. It takes effect on the next call, for keys, sessions and AI providers alike.

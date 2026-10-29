@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Ban, EyeOff, Gauge, History, KeyRound, Pause, Play, RotateCw, ShieldCheck, X } from 'lucide-react';
+import { Ban, EyeOff, Gauge, History, KeyRound, Network, Pause, Play, RotateCw, ShieldCheck, X } from 'lucide-react';
 
-import { Badge, Button, Tabs, cn, selectClass } from '@/components/ui';
+import { Badge, Button, Tabs, cn, inputClass, selectClass } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
@@ -18,9 +18,10 @@ import {
 import type { Project } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 import { CreateKeyModal, ProjectPicker, ScopePicker } from './CreateKeyModal';
+import { ReachPanel } from './ReachPanel';
 import { ActionRiskBadge, KindLabel, OutcomeBadge, RiskBadge, SecretReveal, StatusBadge } from './shared';
 
-type DrawerTab = 'overview' | 'permissions' | 'activity' | 'risk';
+type DrawerTab = 'overview' | 'permissions' | 'reach' | 'activity' | 'risk';
 
 interface AgentDrawerProps {
   agentId: string;
@@ -44,6 +45,8 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
   const [restricted, setRestricted] = useState(false);
   const [expiry, setExpiry] = useState<string>('keep');
   const [replacing, setReplacing] = useState(false);
+  /** Calls per minute as typed; empty means no limit. */
+  const [rateLimit, setRateLimit] = useState('');
 
   const load = useCallback(
     async (refresh = false) => {
@@ -53,6 +56,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
         setScopes(detail.scopes);
         setProjectIds(detail.projectIds.map(String));
         setRestricted(detail.projectIds.length > 0);
+        setRateLimit(detail.rateLimitPerMinute ? String(detail.rateLimitPerMinute) : '');
       } catch (error) {
         showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
         onClose();
@@ -97,8 +101,9 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
     act(
       () =>
         agentsApi.update(agentId, {
-          scopes,
-          projectIds,
+          // AI providers have no scopes or projects to set.
+          ...(agent?.kind === 'ai_provider' ? {} : { scopes, projectIds }),
+          rateLimitPerMinute: rateLimit.trim() ? Number(rateLimit) : null,
           ...(expiry === 'keep'
             ? {}
             : { expiresAt: expiry === 'never' ? null : new Date(Date.now() + Number(expiry) * 86400000).toISOString() })
@@ -137,7 +142,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[9990] flex justify-end" role="dialog" aria-modal="true" aria-label="Agent details">
+    <div className="fixed inset-0 z-[900] flex justify-end" role="dialog" aria-modal="true" aria-label="Agent details">
       <button aria-label="Close" className="absolute inset-0 bg-slate-950/30 backdrop-blur-[1px]" onClick={onClose} type="button" />
       <aside className="relative flex h-full w-full max-w-[560px] flex-col border-l border-slate-200 bg-white shadow-2xl animate-in slide-in-from-right duration-200">
         {!agent ? (
@@ -165,6 +170,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                 items={[
                   { value: 'overview', label: 'Overview', icon: Gauge },
                   { value: 'permissions', label: 'Permissions', icon: ShieldCheck },
+                  { value: 'reach', label: 'Reach', icon: Network },
                   { value: 'activity', label: 'Activity', icon: History },
                   { value: 'risk', label: 'Risk', icon: Ban, count: agent.riskFactors.length }
                 ]}
@@ -380,8 +386,29 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                       </select>
                     </label>
                   ) : null}
-                  {!revoked && agent.kind !== 'ai_provider' ? (
-                    <Button disabled={emptyRestriction} loading={busy} onClick={() => void savePermissions()} variant="primary">
+                  <label className="grid gap-1">
+                    <span className="text-[13px] font-medium text-slate-700">Rate limit</span>
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="w-32 shrink-0">
+                        <input
+                          aria-label="Calls per minute"
+                          className={cn(inputClass, 'h-9 tabular-nums')}
+                          inputMode="numeric"
+                          onChange={(e) => setRateLimit(e.target.value.replace(/[^0-9]/g, ''))}
+                          placeholder="No limit"
+                          value={rateLimit}
+                        />
+                      </span>
+                      <span className="text-xs text-slate-500">calls per minute across REST, MCP and AI; empty for no limit</span>
+                    </span>
+                  </label>
+                  {!revoked ? (
+                    <Button
+                      disabled={emptyRestriction || (rateLimit !== '' && (Number(rateLimit) < 1 || Number(rateLimit) > 10000))}
+                      loading={busy}
+                      onClick={() => void savePermissions()}
+                      variant="primary"
+                    >
                       Save permissions
                     </Button>
                   ) : null}
@@ -420,6 +447,8 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                   </ul>
                 )
               ) : null}
+
+              {tab === 'reach' ? <ReachPanel agent={agent} onChanged={() => void load(true).then(onChanged)} /> : null}
 
               {tab === 'risk' ? (
                 <>
