@@ -1,6 +1,6 @@
 import api from '@/services/api';
 
-export type AgentKind = 'api_key' | 'mcp_client' | 'chatgpt' | 'companion' | 'ai_provider';
+export type AgentKind = 'api_key' | 'mcp_client' | 'chatgpt' | 'companion' | 'ai_provider' | 'detected';
 export type AgentStatus = 'active' | 'suspended' | 'revoked';
 export type AgentRiskLevel = 'low' | 'medium' | 'high' | 'critical';
 export type RiskLevel = 'read' | 'write' | 'sensitive_write' | 'destructive' | 'security_critical';
@@ -30,6 +30,11 @@ export interface Agent {
   name: string;
   clientName?: string | null;
   userAgent?: string | null;
+  /** Why an unregistered ("detected") agent was judged automated. */
+  detectionSignals?: string[];
+  replacedByAgentId?: string | null;
+  /** The third party behind it (see the vendor register). */
+  vendorId?: string | null;
   keyPrefix?: string | null;
   scopes: string[];
   projectIds: string[];
@@ -41,7 +46,13 @@ export interface Agent {
   /** An admin reduced its access: the owner can only reduce it further. */
   adminLocked?: boolean;
   expiresAt?: string | null;
+  /** Calls allowed per minute; null for no limit. */
+  rateLimitPerMinute?: number | null;
   lastSeenAt?: string | null;
+  /** Last time its owner or an admin confirmed it is still needed. */
+  reviewedAt?: string | null;
+  reviewDueAt?: string | null;
+  reviewDue?: boolean;
   callCount: number;
   riskScore: number;
   riskLevel: AgentRiskLevel;
@@ -163,7 +174,9 @@ export interface AgentActivity {
 
 export interface AgentAlert {
   id: string;
-  agentId: AgentRef | string;
+  /** Null for vendor alerts. */
+  agentId: AgentRef | string | null;
+  vendorId?: { _id: string; name: string } | string | null;
   type: string;
   severity: 'info' | 'warning' | 'critical';
   title: string;
@@ -203,8 +216,79 @@ export interface ComplianceReport {
 export interface GovernanceSettings {
   workspaceId: string;
   aiDataMasking: boolean;
+  /** Scripts must use agent keys; personal logins from scripts are refused. */
+  requireAgentKeys: boolean;
+  /** Agents unused this long are suspended; 0 means never. */
+  inactiveAgentDays: number;
+  inactiveAgentDayOptions: number[];
+  /** Monthly AI budget in USD; 0 means no limit. */
+  aiMonthlyBudgetUsd: number;
+  /** Refuse AI calls once the budget is used up. */
+  aiBudgetHardStop: boolean;
+  /** Vendors under review may only read until approved. */
+  approvedVendorsOnly: boolean;
   activityRetentionDays: number;
 }
+
+export interface CostRow {
+  id: string | null;
+  label: string;
+  cost: number;
+  calls: number;
+  tokens: number;
+  errors: number;
+  kind?: AgentKind | null;
+}
+
+export interface CostReport {
+  month: string;
+  budgetUsd: number;
+  hardStop: boolean;
+  percent: number | null;
+  level: 'ok' | 'warning' | 'exceeded' | 'unlimited';
+  total: { cost: number; calls: number; tokens: number; errors: number };
+  byProvider: CostRow[];
+  byAgent: CostRow[];
+  byUser: CostRow[];
+  byProject: CostRow[];
+  bySource: CostRow[];
+  daily: CostRow[];
+}
+
+export interface AgentReach {
+  windowDays: number;
+  since: string;
+  /** Too new to judge its use; no suggestion yet. */
+  tooNew: boolean;
+  scopes: Array<{ scope: string; used: number; removable: boolean; logged: boolean }>;
+  projects: {
+    all: boolean;
+    ownerProjectCount: number | null;
+    granted: Array<{ id: string; name: string; used: number }>;
+    used: Array<{ id: string | null; name: string; calls: number }>;
+  };
+  suggestion: { scopes: string[]; projectIds: string[] } | null;
+}
+
+export type WebhookEvent = 'alert.raised' | 'approval.requested' | 'approval.decided' | 'activity.blocked';
+
+export interface AgentWebhook {
+  id: string;
+  name: string;
+  url: string;
+  format: 'json' | 'slack';
+  events: WebhookEvent[];
+  minSeverity: 'info' | 'warning' | 'critical';
+  enabled: boolean;
+  disabledReason?: string | null;
+  consecutiveFailures: number;
+  lastDeliveryAt?: string | null;
+  lastStatus?: number | null;
+  lastError?: string | null;
+  createdAt: string;
+}
+
+export type WebhookInput = Partial<Pick<AgentWebhook, 'name' | 'url' | 'format' | 'events' | 'minSeverity' | 'enabled'>>;
 
 export interface ToolCatalog {
   tools: Array<{ name: string; domain: string; risk: RiskLevel; description: string }>;
@@ -240,9 +324,23 @@ export const agentsApi = {
     unwrap<AgentDetail>(api.get(`/agents/${agentId}`, { params: refresh ? { refresh: '1' } : {} })),
   createKey: (body: { name: string; scopes?: string[]; projectIds?: string[]; expiresAt?: string | null; workspaceId?: string | null }) =>
     unwrap<{ agent: Agent; key: string }>(api.post('/agents/keys', body)),
-  update: (agentId: string, body: Partial<Pick<Agent, 'name' | 'scopes' | 'projectIds'>> & { expiresAt?: string | null }) =>
+  update: (agentId: string, body: Partial<Pick<Agent, 'name' | 'scopes' | 'projectIds' | 'rateLimitPerMinute'>> & { expiresAt?: string | null }) =>
     unwrap<Agent>(api.patch(`/agents/${agentId}`, body)),
   rotate: (agentId: string) => unwrap<{ agent: Agent; key: string }>(api.post(`/agents/${agentId}/rotate`)),
+  reach: (agentId: string) => unwrap<AgentReach>(api.get(`/agents/${agentId}/reach`)),
+  webhooks: (workspaceId?: string | null) => unwrap<AgentWebhook[]>(api.get('/agents/webhooks', { params: ws(workspaceId) })),
+  createWebhook: (body: WebhookInput, workspaceId?: string | null) =>
+    unwrap<{ webhook: AgentWebhook; secret: string }>(api.post('/agents/webhooks', { ...body, ...ws(workspaceId) })),
+  updateWebhook: (id: string, body: WebhookInput & { rotateSecret?: boolean }, workspaceId?: string | null) =>
+    unwrap<{ webhook: AgentWebhook; secret: string | null }>(api.patch(`/agents/webhooks/${id}`, { ...body, ...ws(workspaceId) })),
+  deleteWebhook: (id: string, workspaceId?: string | null) => unwrap<unknown>(api.delete(`/agents/webhooks/${id}`, { params: ws(workspaceId) })),
+  testWebhook: (id: string, workspaceId?: string | null) =>
+    unwrap<{ ok: boolean; status: number | null; body: string }>(api.post(`/agents/webhooks/${id}/test`, ws(workspaceId))),
+  /** Confirms the agent still needs its access (access review). */
+  review: (agentId: string) => unwrap<Agent>(api.post(`/agents/${agentId}/review`)),
+  /** Gives an unregistered agent its own key and retires the detected one. */
+  replaceWithKey: (agentId: string, body: { name: string; scopes?: string[]; projectIds?: string[]; expiresAt?: string | null }) =>
+    unwrap<{ agent: Agent; key: string }>(api.post(`/agents/${agentId}/replace-with-key`, body)),
   suspend: (agentId: string, reason?: string) => unwrap<Agent>(api.post(`/agents/${agentId}/suspend`, { reason })),
   resume: (agentId: string) => unwrap<Agent>(api.post(`/agents/${agentId}/resume`)),
   revoke: (agentId: string, reason?: string) => unwrap<Agent>(api.post(`/agents/${agentId}/revoke`, { reason })),
@@ -287,7 +385,18 @@ export const agentsApi = {
 
   compliance: (workspaceId?: string | null) => unwrap<ComplianceReport>(api.get('/agents/compliance', { params: ws(workspaceId) })),
   settings: (workspaceId?: string | null) => unwrap<GovernanceSettings>(api.get('/agents/settings', { params: ws(workspaceId) })),
-  updateSettings: (body: { aiDataMasking?: boolean }, workspaceId?: string | null) =>
+  costs: (workspaceId?: string | null, month?: string) =>
+    unwrap<CostReport>(api.get('/agents/costs', { params: { ...ws(workspaceId), month } })),
+  updateSettings: (
+    body: {
+      aiDataMasking?: boolean;
+      requireAgentKeys?: boolean;
+      approvedVendorsOnly?: boolean;
+      inactiveAgentDays?: number;
+      aiMonthlyBudgetUsd?: number;
+      aiBudgetHardStop?: boolean;
+    },
+    workspaceId?: string | null) =>
     unwrap<GovernanceSettings>(api.patch('/agents/settings', { ...body, ...ws(workspaceId) })),
   promptChecks: (body: { body?: string; messages?: Array<{ role: string; content: string }>; parameters?: { maxTokens?: number } }) =>
     unwrap<{ findings: PromptFinding[]; blocking: boolean }>(api.post('/agents/prompt-checks', body, { silent: true }))
@@ -300,7 +409,16 @@ export const KIND_LABELS: Record<AgentKind, string> = {
   mcp_client: 'MCP client',
   chatgpt: 'ChatGPT',
   companion: 'Companion device',
-  ai_provider: 'AI provider'
+  ai_provider: 'AI provider',
+  detected: 'Unregistered'
+};
+
+export const DETECTION_SIGNAL_LABELS: Record<string, string> = {
+  automation_library: 'Uses an HTTP library or AI framework',
+  headless_browser: 'Automated (headless) browser',
+  no_user_agent: 'Sends no user agent',
+  not_a_browser: 'Client is not a web browser',
+  browser_without_fetch_metadata: "Claims to be a browser but sends none of a browser's request headers"
 };
 
 export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = {

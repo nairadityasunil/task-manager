@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bot, Check, Copy, Cpu, KeyRound, MessageSquare, Smartphone, type LucideIcon } from 'lucide-react';
+import { Bot, Check, Copy, Cpu, EyeOff, KeyRound, MessageSquare, Smartphone, type LucideIcon } from 'lucide-react';
 
 import { Badge, Button, cn, type BadgeTone } from '@/components/ui';
 import {
@@ -20,7 +20,8 @@ export const KIND_ICONS: Record<AgentKind, LucideIcon> = {
   mcp_client: Bot,
   chatgpt: MessageSquare,
   companion: Smartphone,
-  ai_provider: Cpu
+  ai_provider: Cpu,
+  detected: EyeOff
 };
 
 const RISK_TONES: Record<AgentRiskLevel, BadgeTone> = {

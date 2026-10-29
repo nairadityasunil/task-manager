@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Ban, Gauge, History, KeyRound, Pause, Play, RotateCw, ShieldCheck, X } from 'lucide-react';
+import { Ban, EyeOff, Gauge, History, KeyRound, Network, Pause, Play, RotateCw, ShieldCheck, X } from 'lucide-react';
 
-import { Badge, Button, Tabs, cn, selectClass } from '@/components/ui';
+import { Badge, Button, Tabs, cn, inputClass, selectClass } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
 import {
   agentsApi,
+  DETECTION_SIGNAL_LABELS,
   SCOPE_LABELS,
   timeAgo,
   userLabel,
@@ -16,10 +17,11 @@ import {
 } from '@/services/agents';
 import type { Project } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
-import { ProjectPicker, ScopePicker } from './CreateKeyModal';
+import { CreateKeyModal, ProjectPicker, ScopePicker } from './CreateKeyModal';
+import { ReachPanel } from './ReachPanel';
 import { ActionRiskBadge, KindLabel, OutcomeBadge, RiskBadge, SecretReveal, StatusBadge } from './shared';
 
-type DrawerTab = 'overview' | 'permissions' | 'activity' | 'risk';
+type DrawerTab = 'overview' | 'permissions' | 'reach' | 'activity' | 'risk';
 
 interface AgentDrawerProps {
   agentId: string;
@@ -42,6 +44,9 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
   const [projectIds, setProjectIds] = useState<string[]>([]);
   const [restricted, setRestricted] = useState(false);
   const [expiry, setExpiry] = useState<string>('keep');
+  const [replacing, setReplacing] = useState(false);
+  /** Calls per minute as typed; empty means no limit. */
+  const [rateLimit, setRateLimit] = useState('');
 
   const load = useCallback(
     async (refresh = false) => {
@@ -51,6 +56,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
         setScopes(detail.scopes);
         setProjectIds(detail.projectIds.map(String));
         setRestricted(detail.projectIds.length > 0);
+        setRateLimit(detail.rateLimitPerMinute ? String(detail.rateLimitPerMinute) : '');
       } catch (error) {
         showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
         onClose();
@@ -95,8 +101,9 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
     act(
       () =>
         agentsApi.update(agentId, {
-          scopes,
-          projectIds,
+          // AI providers have no scopes or projects to set.
+          ...(agent?.kind === 'ai_provider' ? {} : { scopes, projectIds }),
+          rateLimitPerMinute: rateLimit.trim() ? Number(rateLimit) : null,
           ...(expiry === 'keep'
             ? {}
             : { expiresAt: expiry === 'never' ? null : new Date(Date.now() + Number(expiry) * 86400000).toISOString() })
@@ -115,9 +122,27 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
   // An admin narrowed this agent: its owner may narrow it further, not widen it.
   const permissionsLocked = Boolean(agent?.adminLocked && !canAdmin);
   const emptyRestriction = restricted && projectIds.length === 0;
+  const unregistered = agent?.kind === 'detected';
+
+  // The key form replaces the drawer while open (the drawer sits above modals).
+  if (replacing && agent) {
+    return (
+      <CreateKeyModal
+        canAdmin={canAdmin}
+        onClose={() => {
+          setReplacing(false);
+          void load(true);
+        }}
+        onCreated={() => onChanged()}
+        projects={projects}
+        replaceAgent={agent}
+        workspaceId={agent.workspaceId}
+      />
+    );
+  }
 
   return createPortal(
-    <div className="fixed inset-0 z-[9990] flex justify-end" role="dialog" aria-modal="true" aria-label="Agent details">
+    <div className="fixed inset-0 z-[900] flex justify-end" role="dialog" aria-modal="true" aria-label="Agent details">
       <button aria-label="Close" className="absolute inset-0 bg-slate-950/30 backdrop-blur-[1px]" onClick={onClose} type="button" />
       <aside className="relative flex h-full w-full max-w-[560px] flex-col border-l border-slate-200 bg-white shadow-2xl animate-in slide-in-from-right duration-200">
         {!agent ? (
@@ -145,6 +170,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                 items={[
                   { value: 'overview', label: 'Overview', icon: Gauge },
                   { value: 'permissions', label: 'Permissions', icon: ShieldCheck },
+                  { value: 'reach', label: 'Reach', icon: Network },
                   { value: 'activity', label: 'Activity', icon: History },
                   { value: 'risk', label: 'Risk', icon: Ban, count: agent.riskFactors.length }
                 ]}
@@ -156,6 +182,37 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
             <div className="flex-1 space-y-4 overflow-y-auto p-5">
               {tab === 'overview' ? (
                 <>
+                  {unregistered && !revoked ? (
+                    <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50/60 p-3" data-testid="unregistered-explainer">
+                      <p className="m-0 flex items-start gap-2 text-[13px] font-medium text-amber-900">
+                        <EyeOff className="mt-0.5 h-4 w-4 shrink-0" />
+                        Unregistered agent: it runs with {userLabel(agent.ownerUserId)}&apos;s own login instead of an agent key.
+                      </p>
+                      <ul className="m-0 list-disc space-y-0.5 pl-9 text-xs text-amber-900/90">
+                        {(agent.detectionSignals ?? []).map((signal) => (
+                          <li key={signal}>{DETECTION_SIGNAL_LABELS[signal] ?? signal}</li>
+                        ))}
+                        {agent.userAgent ? (
+                          <li>
+                            User agent: <code className="break-all font-mono">{agent.userAgent}</code>
+                          </li>
+                        ) : null}
+                      </ul>
+                      <p className="m-0 pl-6 text-xs text-amber-900/90">
+                        {isOwner
+                          ? 'Give it its own key so it gets only the access it needs and can be revoked without signing you out. Or block it.'
+                          : 'Its owner can give it its own key. You can block it.'}
+                      </p>
+                    </div>
+                  ) : null}
+                  {agent.reviewDue && !revoked && !unregistered ? (
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-sky-200 bg-sky-50 p-2.5" data-testid="review-due">
+                      <span className="text-[13px] text-sky-900">Access review due: does this agent still need its access?</span>
+                      <Button loading={busy} onClick={() => void act(() => agentsApi.review(agentId), 'Confirmed for another 90 days')} size="sm" variant="primary">
+                        Still needed
+                      </Button>
+                    </div>
+                  ) : null}
                   {agent.statusReason ? (
                     <p className="m-0 rounded-lg bg-amber-50 p-2.5 text-[13px] text-amber-800">Reason: {agent.statusReason}</p>
                   ) : null}
@@ -172,6 +229,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                       ['Calls', agent.callCount.toLocaleString()],
                       ['Expires', agent.expiresAt ? new Date(agent.expiresAt).toLocaleDateString() : 'Never'],
                       ['Key', agent.keyPrefix ? `${agent.keyPrefix}…` : '—'],
+                      ['Access confirmed', agent.reviewedAt ? timeAgo(agent.reviewedAt) : 'Never'],
                       ['Client', agent.clientName || agent.userAgent || '—']
                     ].map(([label, value]) => (
                       <div className="min-w-0 rounded-lg border border-slate-200 p-2.5" key={label}>
@@ -228,9 +286,14 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                         <Button
                           icon={Pause}
                           loading={busy}
-                          onClick={() => void act(() => agentsApi.suspend(agentId, 'Suspended from the portal'), `${agent.name} suspended`)}
+                          onClick={() =>
+                            void act(
+                              () => agentsApi.suspend(agentId, unregistered ? 'Blocked from using a personal login' : 'Suspended from the portal'),
+                              unregistered ? `${agent.name} blocked` : `${agent.name} suspended`
+                            )
+                          }
                         >
-                          Suspend
+                          {unregistered ? 'Block' : 'Suspend'}
                         </Button>
                       ) : lockedByAdmin ? (
                         <p className="m-0 w-full rounded-lg bg-slate-50 p-2.5 text-xs text-slate-600">
@@ -241,6 +304,11 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                           Resume
                         </Button>
                       )}
+                      {unregistered && isOwner ? (
+                        <Button icon={KeyRound} loading={busy} onClick={() => setReplacing(true)} variant="primary">
+                          Give it its own key
+                        </Button>
+                      ) : null}
                       {agent.kind === 'api_key' && isOwner && agent.status === 'active' ? (
                         <Button
                           icon={RotateCw}
@@ -318,8 +386,29 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                       </select>
                     </label>
                   ) : null}
-                  {!revoked && agent.kind !== 'ai_provider' ? (
-                    <Button disabled={emptyRestriction} loading={busy} onClick={() => void savePermissions()} variant="primary">
+                  <label className="grid gap-1">
+                    <span className="text-[13px] font-medium text-slate-700">Rate limit</span>
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="w-32 shrink-0">
+                        <input
+                          aria-label="Calls per minute"
+                          className={cn(inputClass, 'h-9 tabular-nums')}
+                          inputMode="numeric"
+                          onChange={(e) => setRateLimit(e.target.value.replace(/[^0-9]/g, ''))}
+                          placeholder="No limit"
+                          value={rateLimit}
+                        />
+                      </span>
+                      <span className="text-xs text-slate-500">calls per minute across REST, MCP and AI; empty for no limit</span>
+                    </span>
+                  </label>
+                  {!revoked ? (
+                    <Button
+                      disabled={emptyRestriction || (rateLimit !== '' && (Number(rateLimit) < 1 || Number(rateLimit) > 10000))}
+                      loading={busy}
+                      onClick={() => void savePermissions()}
+                      variant="primary"
+                    >
                       Save permissions
                     </Button>
                   ) : null}
@@ -358,6 +447,8 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                   </ul>
                 )
               ) : null}
+
+              {tab === 'reach' ? <ReachPanel agent={agent} onChanged={() => void load(true).then(onChanged)} /> : null}
 
               {tab === 'risk' ? (
                 <>

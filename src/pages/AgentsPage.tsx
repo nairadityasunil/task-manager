@@ -4,6 +4,10 @@ import {
   AlertTriangle,
   BellRing,
   Bot,
+  Building2,
+  CalendarCheck,
+  CircleDollarSign,
+  EyeOff,
   FileCheck2,
   Gauge,
   History,
@@ -13,7 +17,8 @@ import {
   ScrollText,
   Search,
   ShieldCheck,
-  ShieldHalf
+  ShieldHalf,
+  Webhook
 } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
@@ -25,8 +30,12 @@ import { ActivityLog } from '@/features/agents/components/ActivityLog';
 import { AgentDrawer } from '@/features/agents/components/AgentDrawer';
 import { ApprovalsInbox } from '@/features/agents/components/ApprovalsInbox';
 import { CompliancePanel } from '@/features/agents/components/CompliancePanel';
+import { CostsPanel } from '@/features/agents/components/CostsPanel';
+import { NotificationsPanel } from '@/features/agents/components/NotificationsPanel';
 import { CreateKeyModal } from '@/features/agents/components/CreateKeyModal';
 import { PoliciesPanel } from '@/features/agents/components/PoliciesPanel';
+import { VendorDrawer } from '@/features/agents/components/VendorDrawer';
+import { VendorReviewCard, VendorsPanel } from '@/features/agents/components/VendorsPanel';
 import { KindLabel, RiskBadge, StatusBadge } from '@/features/agents/components/shared';
 import { isAtLeastAdmin, useWorkspace } from '@/features/workspaces';
 import {
@@ -39,15 +48,24 @@ import {
   type AgentKind,
   type AgentOverview
 } from '@/services/agents';
+import { vendorsApi, type VendorListItem } from '@/services/vendors';
 import type { Project } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
-export type AgentsTab = 'overview' | 'inventory' | 'approvals' | 'policies' | 'activity' | 'compliance';
-const TABS: AgentsTab[] = ['overview', 'inventory', 'approvals', 'policies', 'activity', 'compliance'];
+export type AgentsTab = 'overview' | 'inventory' | 'vendors' | 'approvals' | 'policies' | 'activity' | 'costs' | 'notifications' | 'compliance';
+const TABS: AgentsTab[] = ['overview', 'inventory', 'vendors', 'approvals', 'policies', 'activity', 'costs', 'notifications', 'compliance'];
 
 const SEVERITY_TONE = { info: 'info', warning: 'warning', critical: 'danger' } as const;
 
-function AlertsCard({ alerts, onAcknowledge }: { alerts: AgentAlert[]; onAcknowledge: (id: string) => void }): JSX.Element {
+function AlertsCard({
+  alerts,
+  onAcknowledge,
+  onOpenVendor
+}: {
+  alerts: AgentAlert[];
+  onAcknowledge: (id: string) => void;
+  onOpenVendor: (vendorId: string) => void;
+}): JSX.Element {
   return (
     <Card>
       <CardHeader description="Unusual behaviour and blocked actions." icon={<BellRing className="h-4 w-4 text-slate-400" />} title="Open alerts" />
@@ -68,9 +86,16 @@ function AlertsCard({ alerts, onAcknowledge }: { alerts: AgentAlert[]; onAcknowl
                   {alert.detail} · {timeAgo(alert.createdAt)}
                 </p>
               </div>
-              <Button onClick={() => onAcknowledge(alert.id)} size="sm" variant="ghost">
-                Dismiss
-              </Button>
+              <div className="flex shrink-0 gap-1">
+                {alert.vendorId ? (
+                  <Button onClick={() => onOpenVendor(typeof alert.vendorId === 'object' && alert.vendorId ? alert.vendorId._id : String(alert.vendorId))} size="sm">
+                    Open vendor
+                  </Button>
+                ) : null}
+                <Button onClick={() => onAcknowledge(alert.id)} size="sm" variant="ghost">
+                  Dismiss
+                </Button>
+              </div>
             </li>
           ))}
         </ul>
@@ -79,11 +104,107 @@ function AlertsCard({ alerts, onAcknowledge }: { alerts: AgentAlert[]; onAcknowl
   );
 }
 
+/** Scripts and automated browsers found using a person's login: the shadow AI to act on. */
+function UnregisteredCard({ agents, onOpen }: { agents: Agent[]; onOpen: (agent: Agent) => void }): JSX.Element | null {
+  const open = agents.filter((agent) => agent.kind === 'detected' && agent.status !== 'revoked');
+  if (open.length === 0) return null;
+  return (
+    <Card className="border-amber-200" data-testid="unregistered-card">
+      <CardHeader
+        description="Scripts and automated browsers using a person's own login. Give each its own key, or block it."
+        icon={<EyeOff className="h-4 w-4 text-amber-500" />}
+        title={`Unregistered agents (${open.length})`}
+      />
+      <ul className="m-0 list-none divide-y divide-slate-100 p-0">
+        {open.slice(0, 6).map((agent) => (
+          <li className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" key={agent.id}>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[13px] font-medium text-slate-900">{agent.name}</span>
+                <StatusBadge status={agent.status} />
+                <RiskBadge level={agent.riskLevel} score={agent.riskScore} />
+              </div>
+              <p className="m-0 mt-0.5 text-xs text-slate-500">
+                Uses {userLabel(agent.ownerUserId)}&apos;s login · {agent.callCount.toLocaleString()} calls · last seen {timeAgo(agent.lastSeenAt)}
+              </p>
+            </div>
+            <Button onClick={() => onOpen(agent)} size="sm">
+              Review
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+/** Agents whose access nobody has confirmed for 90 days. */
+function ReviewsCard({
+  agents,
+  onOpen,
+  onConfirm
+}: {
+  agents: Agent[];
+  onOpen: (agent: Agent) => void;
+  onConfirm: (agent: Agent) => Promise<void>;
+}): JSX.Element | null {
+  const [busy, setBusy] = useState<string | null>(null);
+  const due = agents.filter((agent) => agent.reviewDue && agent.status !== 'revoked' && agent.kind !== 'detected');
+  if (due.length === 0) return null;
+  return (
+    <Card data-testid="reviews-card">
+      <CardHeader
+        description="Confirm each agent still needs its access, or suspend it. Reviews are due every 90 days."
+        icon={<CalendarCheck className="h-4 w-4 text-slate-400" />}
+        title={`Access reviews due (${due.length})`}
+      />
+      <ul className="m-0 list-none divide-y divide-slate-100 p-0">
+        {due.slice(0, 8).map((agent) => (
+          <li className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" data-testid="review-row" key={agent.id}>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[13px] font-medium text-slate-900">{agent.name}</span>
+                <KindLabel kind={agent.kind} />
+                <StatusBadge status={agent.status} />
+              </div>
+              <p className="m-0 mt-0.5 text-xs text-slate-500">
+                {userLabel(agent.ownerUserId)} · last active {timeAgo(agent.lastSeenAt)} · {agent.reviewedAt ? `confirmed ${timeAgo(agent.reviewedAt)}` : 'never confirmed'}
+              </p>
+            </div>
+            <div className="flex gap-1.5">
+              <Button
+                loading={busy === agent.id}
+                onClick={async () => {
+                  setBusy(agent.id);
+                  try {
+                    await onConfirm(agent);
+                  } finally {
+                    setBusy(null);
+                  }
+                }}
+                size="sm"
+                variant="primary"
+              >
+                Still needed
+              </Button>
+              <Button onClick={() => onOpen(agent)} size="sm">
+                Review
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
 function InventoryTable({
   agents,
+  vendorNames,
   onOpen
 }: {
   agents: Agent[];
+  vendorNames: Map<string, string>;
   onOpen: (agent: Agent) => void;
 }): JSX.Element {
   return (
@@ -112,10 +233,20 @@ function InventoryTable({
                     Legacy
                   </Badge>
                 ) : null}
+                {agent.kind === 'detected' ? (
+                  <Badge className="ml-2" tone="warning">
+                    Uses a personal login
+                  </Badge>
+                ) : null}
                 {agent.keyPrefix ? <div className="font-mono text-xs text-slate-400">{agent.keyPrefix}…</div> : null}
               </td>
               <td className="px-3 py-2.5">
                 <KindLabel kind={agent.kind} />
+                {agent.vendorId && vendorNames.get(agent.vendorId) ? (
+                  <div className="text-xs text-slate-400" data-testid="agent-vendor">
+                    {vendorNames.get(agent.vendorId)}
+                  </div>
+                ) : null}
               </td>
               <td className="px-3 py-2.5 text-slate-600">{userLabel(agent.ownerUserId)}</td>
               <td className="px-3 py-2.5 text-xs text-slate-600">
@@ -155,11 +286,30 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
   const [agents, setAgents] = useState<Agent[] | null>(null);
   const [alerts, setAlerts] = useState<AgentAlert[]>([]);
   const [openAgent, setOpenAgent] = useState<string | null>(null);
+  const [vendors, setVendors] = useState<VendorListItem[] | null>(null);
+  const [openVendor, setOpenVendor] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [kind, setKind] = useState<AgentKind | ''>('');
   const [status, setStatus] = useState('');
   const [query, setQuery] = useState('');
   const closeDrawer = useCallback(() => setOpenAgent(null), []);
+  const closeVendor = useCallback(() => setOpenVendor(null), []);
+
+  const refreshVendors = useCallback(async () => {
+    if (!canAdmin) return;
+    try {
+      setVendors(await vendorsApi.list(workspaceId));
+    } catch (error) {
+      setVendors((current) => current ?? []);
+      showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+    }
+  }, [canAdmin, workspaceId, showToast]);
+
+  useEffect(() => {
+    void refreshVendors();
+  }, [refreshVendors]);
+
+  const vendorNames = useMemo(() => new Map((vendors ?? []).map((v) => [v.id, v.name])), [vendors]);
 
   const refresh = useCallback(async () => {
     try {
@@ -240,9 +390,14 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
           items={[
             { value: 'overview', label: 'Overview', icon: Gauge },
             { value: 'inventory', label: 'Agents', icon: Bot, count: agents?.filter((a) => a.status !== 'revoked').length },
+            ...(canAdmin
+              ? [{ value: 'vendors' as const, label: 'Vendors', icon: Building2, count: vendors?.filter((v) => v.status === 'under_review').length || undefined }]
+              : []),
             { value: 'approvals', label: 'Approvals', icon: Inbox, count: pending || undefined },
             { value: 'policies', label: 'Policies', icon: ScrollText },
             { value: 'activity', label: 'Activity', icon: History },
+            { value: 'costs', label: 'Costs', icon: CircleDollarSign },
+            { value: 'notifications', label: 'Notifications', icon: Webhook },
             { value: 'compliance', label: 'Compliance', icon: FileCheck2 }
           ]}
           onChange={(next) => navigate(next === 'overview' ? '/agents' : `/agents/${next}`)}
@@ -284,6 +439,22 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
               />
             </div>
 
+            <UnregisteredCard agents={agents ?? []} onOpen={(agent) => setOpenAgent(agent.id)} />
+            <ReviewsCard
+              agents={agents ?? []}
+              onConfirm={async (agent) => {
+                try {
+                  const updated = await agentsApi.review(agent.id);
+                  setAgents((current) => current?.map((a) => (a.id === agent.id ? { ...a, ...updated, ownerUserId: a.ownerUserId } : a)) ?? current);
+                  showToast({ variant: 'success', message: `${agent.name} confirmed for another 90 days` });
+                } catch (error) {
+                  showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+                }
+              }}
+              onOpen={(agent) => setOpenAgent(agent.id)}
+            />
+            <VendorReviewCard onOpen={(vendor) => setOpenVendor(vendor.id)} vendors={vendors ?? []} />
+
             <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
               <AlertsCard
                 alerts={alerts}
@@ -295,6 +466,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
                     showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
                   }
                 }}
+                onOpenVendor={setOpenVendor}
               />
               <Card>
                 <CardHeader description="Where agents come from." icon={<ShieldCheck className="h-4 w-4 text-slate-400" />} title="Inventory" />
@@ -322,6 +494,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
                 <CardHeader description="Open one to see why and fix it." icon={<AlertTriangle className="h-4 w-4 text-slate-400" />} title="Highest risk" />
                 <InventoryTable
                   agents={agents.filter((a) => a.status !== 'revoked').sort((a, b) => b.riskScore - a.riskScore).slice(0, 5)}
+                  vendorNames={vendorNames}
                   onOpen={(agent) => setOpenAgent(agent.id)}
                 />
               </Card>
@@ -371,19 +544,35 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
                 />
               </div>
             ) : (
-              <InventoryTable agents={visible} onOpen={(agent) => setOpenAgent(agent.id)} />
+              <InventoryTable agents={visible} onOpen={(agent) => setOpenAgent(agent.id)} vendorNames={vendorNames} />
             )}
           </Card>
         ) : null}
 
+        {tab === 'vendors' ? (
+          <VendorsPanel canAdmin={canAdmin} onChanged={() => void refreshVendors()} onOpen={setOpenVendor} vendors={vendors} workspaceId={workspaceId} />
+        ) : null}
         {tab === 'approvals' ? <ApprovalsInbox onChanged={() => void refresh()} /> : null}
         {tab === 'policies' ? <PoliciesPanel canAdmin={canAdmin} projects={projects} workspaceId={workspaceId} /> : null}
         {tab === 'activity' ? <ActivityLog canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
+        {tab === 'costs' ? <CostsPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
+        {tab === 'notifications' ? <NotificationsPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'compliance' ? <CompliancePanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
       </div>
 
       {openAgent ? (
         <AgentDrawer agentId={openAgent} canAdmin={canAdmin} onChanged={() => void refresh()} onClose={closeDrawer} projects={projects} />
+      ) : null}
+      {openVendor ? (
+        <VendorDrawer
+          onChanged={() => {
+            void refreshVendors();
+            void refresh();
+          }}
+          onClose={closeVendor}
+          vendorId={openVendor}
+          workspaceId={workspaceId}
+        />
       ) : null}
       {creating ? (
         <CreateKeyModal

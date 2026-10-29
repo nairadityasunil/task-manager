@@ -233,8 +233,8 @@ export function DashboardPage(): JSX.Element {
           else if (view === 'engagement') navigate('/engagement');
           else if (view === 'sdk-integrations') navigate('/sdk-integrations');
           else if (view === 'sdk-integration-detail') {
-            if (dash.activeIntegrationName) {
-              navigate(`/sdk-integrations/${dash.activeIntegrationName}/${targetTab || 'overview'}`);
+            if (dash.activeIntegrationId) {
+              navigate(`/sdk-integrations/${dash.activeIntegrationId}/${targetTab || 'overview'}`);
             }
           } else if (view === 'sdk-docs') navigate('/sdk-docs');
           else if (view === 'settings') navigate('/settings');
@@ -243,7 +243,7 @@ export function DashboardPage(): JSX.Element {
         onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
         onLogout={dash.logout}
         user={dash.user ? { name: dash.user.name || null, email: dash.user.email || '' } : null}
-        activeIntegrationId={dash.activeIntegrationName}
+        activeIntegrationId={dash.activeIntegrationId ?? undefined}
         activeIntegrationName={dash.activeIntegrationName}
         activeTab={tab || 'overview'}
       />

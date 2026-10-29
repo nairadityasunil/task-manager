@@ -81,3 +81,22 @@ export const enableIntegration = async (id: string): Promise<SdkIntegration> => 
 export const deleteIntegration = async (id: string): Promise<void> => {
   await api.delete(`/sdk-integrations/${id}`);
 };
+
+export type TrafficType = 'human' | 'ai_agent' | 'automated' | 'crawler' | 'unclassified';
+
+export interface AiTrafficReport {
+  days: number;
+  since: string;
+  totals: Record<TrafficType, { events: number; sessions: number }>;
+  /** Share of classified events made by AI agents, 0-100. */
+  aiAgentShare: number;
+  agents: Array<{ type: TrafficType; agent: string; events: number }>;
+  daily: Array<{ date: string; human: number; aiAgent: number; automated: number; crawler: number }>;
+  aiPages: Array<{ url: string; events: number; agents: string[] }>;
+}
+
+/** Visits by people, AI agents, other automation and crawlers. */
+export const getAiTraffic = async (id: string, days = 30): Promise<AiTrafficReport> => {
+  const res = await api.get<AiTrafficReport>(`/sdk-integrations/${id}/ai-traffic`, { params: { days } });
+  return res.data;
+};

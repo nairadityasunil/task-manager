@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, CircleAlert, CircleDashed, Download, EyeOff, FileCheck2 } from 'lucide-react';
+import { Building2, CheckCircle2, CircleAlert, CircleDashed, Clock3, Download, EyeOff, FileCheck2, KeyRound } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
-import { Badge, Button, Card, CardHeader, cn } from '@/components/ui';
+import { Badge, Button, Card, CardHeader, cn, selectClass } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
 import { agentsApi, type ComplianceReport, type GovernanceSettings } from '@/services/agents';
 import { toDisplayErrorMessage } from '@/utils/apiError';
@@ -12,6 +12,32 @@ const STATUS = {
   partial: { icon: CircleDashed, label: 'Partly met', tone: 'warning' as const, color: 'text-amber-600' },
   gap: { icon: CircleAlert, label: 'Gap', tone: 'danger' as const, color: 'text-red-600' }
 };
+
+function SettingSwitch({
+  checked,
+  label,
+  disabled,
+  onToggle
+}: {
+  checked: boolean;
+  label: string;
+  disabled: boolean;
+  onToggle: () => void;
+}): JSX.Element {
+  return (
+    <button
+      aria-checked={checked}
+      aria-label={label}
+      className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', checked ? 'bg-emerald-500' : 'bg-slate-300')}
+      disabled={disabled}
+      onClick={onToggle}
+      role="switch"
+      type="button"
+    >
+      <span className={cn('absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all', checked ? 'left-[22px]' : 'left-0.5')} />
+    </button>
+  );
+}
 
 export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string | null; canAdmin: boolean }): JSX.Element {
   const { showToast } = useToast();
@@ -38,11 +64,24 @@ export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string
   }
   if (!report || !settings) return <div className="h-64 animate-pulse rounded-xl bg-slate-100" />;
 
-  const toggleMasking = async () => {
+  const toggle = async (key: 'aiDataMasking' | 'requireAgentKeys' | 'approvedVendorsOnly', on: string, off: string) => {
     setSaving(true);
     try {
-      setSettings(await agentsApi.updateSettings({ aiDataMasking: !settings.aiDataMasking }, workspaceId));
-      showToast({ variant: 'success', message: settings.aiDataMasking ? 'AI data masking turned off' : 'AI data masking turned on' });
+      setSettings(await agentsApi.updateSettings({ [key]: !settings[key] }, workspaceId));
+      showToast({ variant: 'success', message: settings[key] ? off : on });
+      setReport(await agentsApi.compliance(workspaceId));
+    } catch (error) {
+      showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const setInactiveDays = async (days: number) => {
+    setSaving(true);
+    try {
+      setSettings(await agentsApi.updateSettings({ inactiveAgentDays: days }, workspaceId));
+      showToast({ variant: 'success', message: days ? `Unused agents are suspended after ${days} days` : 'Unused agents are no longer suspended' });
       setReport(await agentsApi.compliance(workspaceId));
     } catch (error) {
       showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
@@ -66,7 +105,7 @@ export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
+      <div className="grid items-start gap-4 lg:grid-cols-[280px_1fr]">
         <Card className="flex flex-col items-center justify-center gap-2 p-5 text-center">
           <div className="relative h-28 w-28">
             <svg aria-hidden className="h-full w-full -rotate-90" viewBox="0 0 36 36">
@@ -106,20 +145,86 @@ export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string
               Emails, phone numbers, card numbers and API keys become <code className="font-mono">[email]</code>, <code className="font-mono">[phone]</code>,{' '}
               <code className="font-mono">[card]</code> and <code className="font-mono">[secret]</code>.
             </div>
-            <button
-              aria-checked={settings.aiDataMasking}
-              aria-label="AI data masking"
-              className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', settings.aiDataMasking ? 'bg-emerald-500' : 'bg-slate-300')}
+            <SettingSwitch
+              checked={settings.aiDataMasking}
               disabled={saving}
-              onClick={() => void toggleMasking()}
-              role="switch"
-              type="button"
-            >
-              <span className={cn('absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all', settings.aiDataMasking ? 'left-[22px]' : 'left-0.5')} />
-            </button>
+              label="AI data masking"
+              onToggle={() => void toggle('aiDataMasking', 'AI data masking turned on', 'AI data masking turned off')}
+            />
           </div>
           <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
             Agent activity is kept for {settings.activityRetentionDays} days. Inputs are masked before they are stored.
+          </div>
+        </Card>
+
+        <Card className="lg:col-start-2">
+          <CardHeader
+            description="Unused credentials are a common way in. Agents whose owner leaves the workspace are always suspended."
+            icon={<Clock3 className="h-4 w-4 text-slate-400" />}
+            title="Unused agents"
+          />
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <label className="text-[13px] text-slate-600" htmlFor="inactive-agent-days">
+              Suspend agents that have not been used for
+            </label>
+            <select
+              className={cn(selectClass, 'h-8 w-40')}
+              disabled={saving}
+              id="inactive-agent-days"
+              onChange={(e) => void setInactiveDays(Number(e.target.value))}
+              value={settings.inactiveAgentDays}
+            >
+              {settings.inactiveAgentDayOptions.map((days) => (
+                <option key={days} value={days}>
+                  {days ? `${days} days` : 'Never'}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
+            Owners can resume a suspended agent; using or confirming an agent restarts its clock. Access is reviewed every 90 days.
+          </div>
+        </Card>
+
+        <Card className="lg:col-start-2">
+          <CardHeader
+            description="Scripts and automated browsers that use a person's login are always found and shown as unregistered agents."
+            icon={<KeyRound className="h-4 w-4 text-slate-400" />}
+            title="Require agent keys"
+          />
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <div className="text-[13px] text-slate-600">
+              When on, they are refused until they use their own agent key. When off, they keep working and are governed like any agent.
+            </div>
+            <SettingSwitch
+              checked={settings.requireAgentKeys}
+              disabled={saving}
+              label="Require agent keys"
+              onToggle={() =>
+                void toggle('requireAgentKeys', 'Scripts now need agent keys', 'Scripts may use personal logins again (still monitored)')
+              }
+            />
+          </div>
+        </Card>
+
+        <Card className="lg:col-start-2">
+          <CardHeader
+            description="Every third party your agents and integrations use is on the vendor register. Blocked vendors are always refused."
+            icon={<Building2 className="h-4 w-4 text-slate-400" />}
+            title="Approved vendors only"
+          />
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <div className="text-[13px] text-slate-600">
+              When on, agents of vendors still under review can only read, and AI calls to them are refused, until an admin approves the vendor.
+            </div>
+            <SettingSwitch
+              checked={settings.approvedVendorsOnly}
+              disabled={saving}
+              label="Approved vendors only"
+              onToggle={() =>
+                void toggle('approvedVendorsOnly', 'Only approved vendors may change data now', 'Vendors under review work normally again (still listed)')
+              }
+            />
           </div>
         </Card>
       </div>

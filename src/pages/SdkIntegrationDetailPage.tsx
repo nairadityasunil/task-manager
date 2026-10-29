@@ -13,10 +13,12 @@ import {
 import EngagementPage from './EngagementPage';
 import EventTrackingPage from './EventTrackingPage';
 import SdkSetupGuide from '@/features/sdk-integrations/components/SdkSetupGuide';
+import { AiTrafficPanel } from '@/features/sdk-integrations/components/AiTrafficPanel';
 import {
   Activity,
   ArrowLeft,
   BookOpen,
+  Bot,
   Check,
   Copy,
   Globe,
@@ -269,7 +271,8 @@ const SdkIntegrationDetailPage: React.FC = () => {
             { value: 'overview', label: 'Overview', icon: Settings },
             { value: 'guides', label: 'Guides', icon: BookOpen },
             { value: 'surveys', label: 'Surveys', icon: Target },
-            { value: 'events', label: 'Events', icon: Activity }
+            { value: 'events', label: 'Events', icon: Activity },
+            { value: 'ai-traffic', label: 'AI traffic', icon: Bot }
           ]}
           value={activeTab}
           onChange={(next) => navigate(`/sdk-integrations/${integration.id}/${next}`)}
@@ -558,6 +561,8 @@ const SdkIntegrationDetailPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {activeTab === 'ai-traffic' && integrationId ? <AiTrafficPanel sdkIntegrationId={integrationId} /> : null}
       </div>
     </div>
   );

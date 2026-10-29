@@ -899,8 +899,8 @@ export default function LandingPage(): JSX.Element {
             title="Control every AI agent that touches your work"
           />
           <div data-reveal-children className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-            <FeatureCard icon={Radar} title="Automatic inventory">
-              API keys, MCP clients, ChatGPT Actions, companion devices and AI providers register themselves the first time they act, with an owner, scopes and a last-seen time.
+            <FeatureCard icon={Radar} title="Inventory, shadow AI included">
+              API keys, MCP clients, ChatGPT, companion devices and AI providers register the first time they act. Scripts and automated browsers using a person&apos;s login are caught too.
             </FeatureCard>
             <FeatureCard icon={KeyRound} title="Least-privilege keys">
               Give each agent only the scopes and projects it needs, with an expiry. Keys are hashed, shown once and can be rotated in a click.
@@ -912,7 +912,7 @@ export default function LandingPage(): JSX.Element {
               Held actions wait in an approvals inbox for a workspace or project admin, then run once, exactly as requested.
             </FeatureCard>
             <FeatureCard icon={History} title="Activity, alerts and undo">
-              Every agent action is logged with inputs masked. Alerts flag bulk deletes, spikes and refusals; task and epic changes can be undone.
+              Every agent action is logged with inputs masked. Alerts go to Slack, your SIEM or any webhook; task and epic changes can be undone.
             </FeatureCard>
             <FeatureCard icon={Lock} title="Kill switch">
               Suspend one agent or stop them all at once. It takes effect on the next call, for keys, sessions and AI providers alike.
@@ -931,7 +931,8 @@ export default function LandingPage(): JSX.Element {
               items={[
                 'Personal data and secrets masked before prompts reach AI providers',
                 'Prompt checks for leaked secrets and injection phrases before a canary rollout',
-                'AI usage and cost per provider',
+                'AI cost per agent, person, project and provider, with a monthly budget',
+                'Vendor register with due diligence, evidence, review reminders and a sub-processor list',
                 'Activity kept for 90 days, exportable for audits'
               ]}
             />

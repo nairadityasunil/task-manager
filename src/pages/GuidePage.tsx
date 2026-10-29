@@ -1076,6 +1076,19 @@ export default function GuidePage(): JSX.Element {
                 Use consistent, past-tense event names such as <Code>project_created</Code> or <Code>invite_sent</Code>. They are easier to
                 filter and to use in segment rules.
               </Callout>
+              <H3 id="ai-traffic">AI traffic</H3>
+              <P>
+                AI assistants now browse sites for people: ChatGPT, Claude, Perplexity and others open pages, read them and act on them.
+                The integration&apos;s <Ui>AI traffic</Ui> tab shows how much of your traffic they make, next to people, other automated
+                browsers and crawlers, which agents they are and which pages they read most.
+              </P>
+              <Bullets
+                items={[
+                  'Each event is classified from the browser’s user agent and whether it reports being driven by automation. SDK 1.3.0 or later sends both.',
+                  'Shares count classified events only; events from before classification are listed separately.',
+                  'Pages AI agents read often are the ones their answers quote: keep them accurate.'
+                ]}
+              />
             </GuideSection>
 
             {/* ------------------------------------------------ Developer integrations */}
@@ -1154,6 +1167,31 @@ export default function GuidePage(): JSX.Element {
                   'High risk usually means admin scope, access to every project, a key that never expires or a legacy full-access key.'
                 ]}
               />
+              <H3>Unregistered agents (shadow AI)</H3>
+              <P>
+                A script, AI framework or automated browser that calls Pristine with someone&apos;s own login, rather than an agent key, is
+                caught on its first call and listed as an <Ui>Unregistered</Ui> agent, with the reasons it was flagged. It acts with that
+                person&apos;s full access, so it scores as high risk and raises an alert. From then on its changes are logged and policies
+                apply to it like to any agent; people working in the portal are not affected.
+              </P>
+              <Steps
+                items={[
+                  <>
+                    Open it from <Ui>Unregistered agents</Ui> on the overview and select <Ui>Review</Ui>.
+                  </>,
+                  <>
+                    If it is yours, select <Ui>Give it its own key</Ui>, choose only the access it needs and update the script to send the key.
+                    It can no longer use your login, and you stay signed in.
+                  </>,
+                  <>
+                    Otherwise select <Ui>Block</Ui>. To refuse every new one, Owners and Admins can turn on <Ui>Require agent keys</Ui> under{' '}
+                    <Ui>Compliance</Ui>.
+                  </>
+                ]}
+              />
+              <Callout tone="tip">
+                The <Ui>Unregistered agents are read-only</Ui> policy template lets them keep reading while their owners move them to keys.
+              </Callout>
               <H3>Policies</H3>
               <Steps
                 items={[
@@ -1187,16 +1225,100 @@ export default function GuidePage(): JSX.Element {
                   </>
                 ]}
               />
+              <H3>Access reviews and unused agents</H3>
+              <Bullets
+                items={[
+                  <>
+                    Every 90 days an agent&apos;s owner, or an admin, confirms it still needs its access. Agents due appear under{' '}
+                    <Ui>Access reviews due</Ui> on the overview: select <Ui>Still needed</Ui>, or open it to narrow or suspend it.
+                  </>,
+                  'An agent whose owner leaves the workspace is suspended the next night; only an admin can resume it.',
+                  <>
+                    Agents unused for 60 days are suspended too. Change the limit, or turn it off, under <Ui>Compliance → Unused agents</Ui>.
+                    Owners can resume their own; using or confirming an agent restarts its clock.
+                  </>
+                ]}
+              />
+              <H3>Reach and rate limits</H3>
+              <Bullets
+                items={[
+                  <>
+                    An agent&apos;s <Ui>Reach</Ui> tab shows what it may do against what it did in the last 90 days. Access it has not used
+                    is marked, and <Ui>Remove unused access</Ui> narrows it in one step. Reads are not logged, so read access is never counted
+                    as unused.
+                  </>,
+                  <>
+                    Under <Ui>Permissions → Rate limit</Ui>, cap how many calls an agent makes per minute across REST, MCP and AI. Calls over the
+                    limit are refused with HTTP 429 and a time to retry, logged as blocked, and raise an alert.
+                  </>
+                ]}
+              />
+              <H3>Notifications: Slack, SIEM and webhooks</H3>
+              <P>
+                Under <Ui>Agent Governance → Notifications</Ui>, Owners and Admins send alerts, approval requests and outcomes, and blocked
+                actions to a Slack channel (incoming webhook), a SIEM such as Splunk or Datadog, or any HTTPS endpoint. Signed JSON
+                deliveries carry an HMAC-SHA256 signature to verify; the signing secret is shown once. Use <Ui>Send test</Ui> to check a
+                destination. Failed deliveries are retried, and a webhook that fails 10 times in a row is turned off until you turn it on.
+              </P>
               <H3>Activity, alerts and undo</H3>
               <P>
                 Every agent action is recorded with its decision for 90 days, with inputs masked. Alerts flag bulk deletes, unusual volume,
                 repeated refusals, first use of a new action and unused agents. Changes an agent made to a task or epic can be undone from
                 the activity log. Export the log as CSV or JSON for audits.
               </P>
+              <H3>AI costs and budget</H3>
+              <P>
+                <Ui>Agent Governance → Costs</Ui> (Owners and Admins) shows this month&apos;s AI spend against the workspace budget, spend per
+                day, and who spent it: by agent (calls people make in the portal are shown separately), person, project and provider. Pick
+                an earlier month to compare.
+              </P>
+              <Bullets
+                items={[
+                  'Set the monthly budget in US dollars for all providers together; 0 means no limit. Months run in UTC.',
+                  'Admins are alerted at 80% and 100% of the budget.',
+                  <>
+                    With <Ui>Stop AI calls when the budget is used up</Ui> on, AI features are refused until the next month or until the budget
+                    is raised. Turn it off to keep them running and only be alerted.
+                  </>
+                ]}
+              />
+              <H3>Third-party vendors</H3>
+              <P>
+                <Ui>Agent Governance → Vendors</Ui> (Owners and Admins) is your register of the companies behind your agents and
+                integrations. OpenAI, Anthropic, Cursor, Slack, Splunk and others are added the first time one of their agents or a
+                webhook to them is used, start <Ui>Under review</Ui> and raise an alert. Add others by hand from the catalog or by name.
+              </P>
+              <Bullets
+                items={[
+                  <>
+                    <Ui>Approve</Ui>, <Ui>Restrict</Ui> (its agents can read but not change anything) or <Ui>Block</Ui> (its agents are refused
+                    and webhooks to it are not sent). Restricting or blocking needs a reason, and every decision is kept in its history.
+                  </>,
+                  <>
+                    Turn on <Ui>Approved vendors only</Ui> under <Ui>Compliance</Ui> so vendors under review can only read until approved.
+                  </>,
+                  <>
+                    Answer the due-diligence questions under <Ui>Assessment</Ui>: training on your data, retention, location, certifications,
+                    encryption, incident notice and the DPA. Each vendor gets an inherent risk (what it can reach) and a residual risk (after
+                    its controls), with the reasons and the framework behind each.
+                  </>,
+                  'Set its criticality: tier 1 vendors are reassessed every 12 months, tier 2 every 24 and tier 3 every 36.',
+                  <>
+                    Upload SOC 2 reports, ISO certificates and DPAs under <Ui>Evidence</Ui> (PDF, Word, Excel, images or text, up to 15 MB) with
+                    their expiry date. Files are always downloaded, never opened in the browser.
+                  </>,
+                  'Admins are reminded when a review is due, a vendor waits 14 days for a decision, or a DPA, contract or file expires within 30 days.',
+                  <>
+                    Export the register as CSV or JSON, and the <Ui>Sub-processors</Ui> list (approved vendors marked as sub-processors, with
+                    purpose and location) to share with customers.
+                  </>
+                ]}
+              />
               <H3>Compliance report and AI data masking</H3>
               <P>
                 The <Ui>Compliance</Ui> tab scores your setup against controls mapped to the OWASP Top 10 for LLM applications, the NIST AI
-                Risk Management Framework, ISO/IEC 42001 and the EU AI Act, with a recommendation for each gap. Turn on{' '}
+                Risk Management Framework, ISO/IEC 42001, ISO/IEC 27001 supplier controls, NIST CSF supply-chain risk and the EU AI Act,
+                with a recommendation for each gap. Turn on{' '}
                 <Ui>AI data masking</Ui> there to replace emails, phone numbers, card numbers and secrets before prompts reach AI providers.
               </P>
               <Callout tone="note">The framework mapping supports your reviews; it is not a certification of compliance.</Callout>
