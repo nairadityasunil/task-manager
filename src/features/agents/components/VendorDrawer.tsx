@@ -140,8 +140,9 @@ export function VendorDrawer({ vendorId, workspaceId, onClose, onChanged }: Vend
     setBusy(true);
     try {
       await fn();
-      showToast({ variant: 'success', message });
+      // Reload before confirming, so the form is not reset under someone already editing it.
       await load();
+      showToast({ variant: 'success', message });
       onChanged();
       return true;
     } catch (error) {
