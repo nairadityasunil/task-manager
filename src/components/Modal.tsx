@@ -55,7 +55,7 @@ function Modal({
       aria-modal="true"
       aria-label={title}
       className={cn(
-        'fixed inset-0 z-[1000] flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-[2px] sm:p-6',
+        'fixed inset-0 z-[5500] flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-[2px] sm:p-6',
         backdropClassName
       )}
       onClick={onClose}
@@ -83,7 +83,7 @@ function Modal({
             <X size={18} />
           </button>
         </div>
-        <div className={cn('grid min-h-0 flex-1 gap-5 overflow-y-auto p-4', bodyClassName)}>{children}</div>
+        <div className={cn('grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)] gap-5 overflow-y-auto p-4', bodyClassName)}>{children}</div>
         {footer ? (
           <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200 bg-slate-50/60 px-4 py-3 sm:flex-row sm:items-center sm:justify-end sm:px-5">
             {footer}

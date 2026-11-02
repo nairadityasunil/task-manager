@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { showGlobalToast } from '@/context/ToastContext';
 import { startGlobalLoading, stopGlobalLoading } from '@/context/LoadingContext';
-import { normalizeApiError } from '@/utils/apiError';
+import { isAgentForbidden, normalizeApiError } from '@/utils/apiError';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
 const baseURL = API_BASE_URL;
@@ -192,13 +192,24 @@ api.interceptors.response.use(
       }
     }
 
-    showGlobalToast({
-      variant: 'error',
-      message: normalizedError.message,
-      dedupeKey: `${normalizedError.code}:${normalizedError.message}`
-    });
+    // Background requests (polling, optional widgets) handle their own
+    // failures quietly. The key matches the one pages use for the same
+    // message, so a page that also reports the error shows it once.
+    // Pages that load governance data explain an automated-browser refusal
+    // themselves; refused actions are still reported.
+    const explainedByPage = isAgentForbidden(error) && originalRequest?.method?.toLowerCase() === 'get';
+    if (!originalRequest?.silent && !explainedByPage) {
+      showGlobalToast({
+        variant: 'error',
+        message: normalizedError.message,
+        dedupeKey: `error:${normalizedError.message.trim()}`
+      });
+    }
 
-    return Promise.reject(normalizedError);
+    // Reject with the axios error itself (callers read response.data), its
+    // message replaced by the server's so it can be shown as is.
+    error.message = normalizedError.message;
+    return Promise.reject(error);
   }
 );
 

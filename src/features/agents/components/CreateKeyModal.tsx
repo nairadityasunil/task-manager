@@ -160,6 +160,31 @@ interface CreateKeyModalProps {
   replaceAgent?: Agent | null;
 }
 
+/**
+ * How a detected script sends its new key, in the language it was found using.
+ * The key is read from an environment variable rather than pasted into code.
+ */
+export function usageSnippet(agent: Pick<Agent, 'name' | 'userAgent'>): { language: string; code: string } {
+  const client = `${agent.userAgent ?? ''} ${agent.name}`.toLowerCase();
+  const url = `${API_BASE_URL}/projects`;
+  if (/python|requests|httpx|aiohttp|urllib|langchain|llamaindex|crewai|scrapy/.test(client)) {
+    return {
+      language: 'Python',
+      code: `import os, requests\n\nheaders = {"Authorization": f"Bearer {os.environ['PRISTINE_AGENT_KEY']}"}\nrequests.get("${url}", headers=headers)`
+    };
+  }
+  if (/node|axios|undici|got|fetch|deno|bun/.test(client)) {
+    return {
+      language: 'JavaScript',
+      code: `await fetch('${url}', {\n  headers: { Authorization: \`Bearer \${process.env.PRISTINE_AGENT_KEY}\` }\n});`
+    };
+  }
+  return {
+    language: 'curl',
+    code: `curl ${url} \\\n  -H "Authorization: Bearer $PRISTINE_AGENT_KEY"`
+  };
+}
+
 export function CreateKeyModal({
   onClose,
   onCreated,
@@ -231,12 +256,22 @@ export function CreateKeyModal({
               its next call without the key is refused.
             </p>
           ) : null}
-          <div className="space-y-1.5">
-            <p className="m-0 text-[13px] font-medium text-slate-700">Use it as a bearer token</p>
-            <pre className="m-0 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs leading-relaxed text-slate-100">
-              {`curl ${API_BASE_URL}/mcp/tools \\\n  -H "Authorization: Bearer ${created.key.slice(0, 14)}…"`}
-            </pre>
-          </div>
+          {replaceAgent ? (
+            <div className="space-y-1.5" data-testid="replace-snippet">
+              <p className="m-0 text-[13px] font-medium text-slate-700">Change {replaceAgent.name} to send the key ({usageSnippet(replaceAgent).language})</p>
+              <pre className="m-0 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs leading-relaxed text-slate-100">
+                {usageSnippet(replaceAgent).code}
+              </pre>
+              <p className="m-0 text-xs text-slate-500">Keep the key in an environment variable or secret manager, not in the code.</p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <p className="m-0 text-[13px] font-medium text-slate-700">Use it as a bearer token</p>
+              <pre className="m-0 overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-xs leading-relaxed text-slate-100">
+                {`curl ${API_BASE_URL}/mcp/tools \\\n  -H "Authorization: Bearer ${created.key.slice(0, 14)}…"`}
+              </pre>
+            </div>
+          )}
         </div>
       </Modal>
     );

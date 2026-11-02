@@ -990,7 +990,7 @@ export function useDashboard() {
   };
 
   const handleCreateSubtask = async (
-    payload: Array<{ title: string; description?: string; note?: string; status: TaskWorkflowStatus }>
+    payload: Array<{ title: string; description?: string; note?: string; status: TaskWorkflowStatus; assignedToUserId?: string | null }>
   ): Promise<void> => {
     if (subtaskModalTask == null) return;
     setActionTaskId(subtaskModalTask.id);
@@ -1002,6 +1002,7 @@ export function useDashboard() {
           description: subtask.description?.trim(),
           note: subtask.note?.trim(),
           status: subtask.status,
+          assignedToUserId: subtask.assignedToUserId ?? null,
           completedAt: subtask.status === 'DONE' ? new Date().toISOString() : null
         }))
       ];
@@ -1011,9 +1012,8 @@ export function useDashboard() {
       });
       await loadDashboard();
       setSubtaskModalTask(null);
-      setTaskMutationSuccess(payload.length === 1 ? 'Sub-task created.' : 'Sub-tasks created.');
-    } catch {
-      setTaskMutationError('Unable to create the subtask.');
+      setTaskMutationSuccess(payload.length === 1 ? 'Sub-task created.' : `${payload.length} sub-tasks created.`);
+      // On failure the error reaches the form, which stays open with what was typed.
     } finally {
       setActionTaskId(null);
     }
