@@ -9,7 +9,7 @@ import {
   type TaskWorkflowStatus,
   type TaskPriority
 } from '@/types/task';
-import { Badge, cn, type BadgeTone } from '@/components/ui';
+import { StatusIcon, cn, type BadgeTone } from '@/components/ui';
 import UserAvatar from './UserAvatar';
 import SlaIndicator from './SlaIndicator';
 
@@ -110,7 +110,7 @@ export function taskDateInfo(task: Pick<Task, 'date' | 'status'>): { label: stri
 /* ---------- Component ---------- */
 
 const actionBtn =
-  'inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/15';
+  'inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:pointer-events-none disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/15';
 
 function TaskCard({
   actionTaskId,
@@ -135,7 +135,7 @@ function TaskCard({
     <input
       aria-label={`Select ${task.title}`}
       checked={isMultiSelected}
-      className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 accent-emerald-600"
+      className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 accent-brand-600"
       onChange={(e) => {
         e.stopPropagation();
         onToggleSelection(task.id);
@@ -230,39 +230,53 @@ function TaskCard({
   ) : null;
 
   if (variant === 'row') {
+    const statusText =
+      task.isBlocked && !isDone ? (
+        <span className="text-[13px] text-amber-800">Blocked</span>
+      ) : (
+        <span className={cn('text-[13px]', task.status === 'IN_PROGRESS' || task.status === 'IN_REVIEW' ? 'text-brand-700' : 'text-slate-600')}>
+          {taskStatusLabel(task.status)}
+        </span>
+      );
     return (
       <article
         className={cn(
-          'group relative flex items-start gap-3 px-3 py-3 transition-colors sm:px-4',
-          isSelected ? 'bg-slate-50 shadow-[inset_2px_0_0_0_var(--color-slate-900)]' : 'hover:bg-slate-50',
-          breached && !isSelected && 'shadow-[inset_2px_0_0_0_var(--color-red-500)]',
+          'group relative flex items-center gap-3 border-b border-slate-100 px-3 py-2 transition-colors last:border-b-0 sm:px-4',
+          isSelected ? 'bg-brand-50' : 'hover:bg-slate-50',
           isUpdating ? 'cursor-wait opacity-60' : 'cursor-pointer'
         )}
+        data-testid="task-row"
         onClick={() => !isUpdating && onSelect?.(task)}
       >
         {updatingOverlay}
-        {checkbox ? <div className="flex h-8 items-center">{checkbox}</div> : null}
+        {checkbox}
+        <StatusIcon status={task.isBlocked && !isDone ? 'BLOCKED' : task.status} />
 
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5 @3xl:flex-row @3xl:items-center @3xl:gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-1 @3xl:flex-row @3xl:items-center @3xl:gap-4">
           {/* Title */}
-          <div className="flex min-h-8 min-w-0 flex-1 items-center gap-2">
-            <PriorityIcon priority={task.priority} />
-            <h3 className={cn('m-0 min-w-0 text-sm font-medium leading-5 line-clamp-2 @3xl:line-clamp-none @3xl:truncate', isDone ? 'text-slate-500 line-through decoration-slate-300' : 'text-slate-900')}>
+          <div className="flex min-h-7 min-w-0 flex-1 items-center gap-2">
+            <h3 className={cn('m-0 min-w-0 text-[13px] font-normal leading-5 line-clamp-2 @3xl:line-clamp-none @3xl:truncate', isDone ? 'text-slate-500 line-through decoration-slate-300' : 'text-slate-900')}>
               {task.title}
             </h3>
-            {blockedMarker}
+            {subtaskMeta}
+            {task.isBlocked && task.blockedByTaskId ? (
+              <span className="hidden shrink-0 text-xs text-amber-800 @xl:inline" title={`Blocked by task ${task.blockedByTaskId}`}>
+                Waiting on another task
+              </span>
+            ) : null}
           </div>
 
           {/* Meta + actions */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 @3xl:shrink-0 @3xl:flex-nowrap @3xl:gap-x-2">
+          <div className="flex min-w-0 flex-nowrap items-center gap-x-3 @3xl:shrink-0">
             {/* Fixed widths on wide rows keep the meta columns aligned between rows. */}
-            <span className="flex items-center @3xl:w-[104px]">
-              <Badge dot tone={TASK_STATUS_TONE[task.status] ?? 'neutral'}>{taskStatusLabel(task.status)}</Badge>
-            </span>
-            <span className="flex items-center @3xl:w-[120px]">
+            <span className="flex items-center @3xl:w-[92px]">{statusText}</span>
+            <span className="hidden items-center @lg:flex @3xl:w-[112px]">
               <SlaIndicator compact task={task} />
             </span>
-            {subtaskMeta ? <span className="flex items-center @3xl:w-11">{subtaskMeta}</span> : <span aria-hidden className="hidden w-11 @3xl:block" />}
+            <span className="hidden items-center gap-1 @md:flex @3xl:w-[76px]" title={`${PRIORITY_META[task.priority]?.label ?? task.priority} priority`}>
+              <PriorityIcon priority={task.priority} size={13} />
+              <span className="text-xs text-slate-600">{PRIORITY_META[task.priority]?.label ?? task.priority}</span>
+            </span>
             {dateMeta ? <span className="flex items-center @3xl:w-[64px]">{dateMeta}</span> : null}
             <div className="ml-auto flex items-center gap-1 @3xl:ml-0">
               {actions}
@@ -277,8 +291,8 @@ function TaskCard({
   return (
     <article
       className={cn(
-        'group relative flex flex-col gap-2.5 rounded-xl border bg-white p-3 shadow-sm transition-colors',
-        isSelected ? 'border-emerald-500 ring-1 ring-emerald-500' : breached ? 'border-red-200 hover:border-red-300' : 'border-slate-200 hover:border-slate-300',
+        'group relative flex flex-col gap-2.5 rounded-lg border bg-white p-3 transition-colors',
+        isSelected ? 'border-brand-600 ring-1 ring-brand-600' : breached ? 'border-red-200 hover:border-red-300' : 'border-slate-200 hover:border-slate-300',
         isUpdating ? 'cursor-wait opacity-60' : 'cursor-pointer'
       )}
       onClick={() => !isUpdating && onSelect?.(task)}

@@ -2,7 +2,7 @@ import type { HTMLAttributes, ReactNode } from 'react';
 
 import { cn } from './cn';
 
-/** The standard surface: white, hairline border, small shadow, 12px radius. */
+/** The standard surface: white, hairline border, 10px radius. */
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   /** Adds a hover lift for clickable cards. */
   interactive?: boolean;
@@ -12,7 +12,7 @@ export function Card({ className, interactive = false, ...props }: CardProps): J
   return (
     <div
       className={cn(
-        'rounded-xl border border-slate-200 bg-white shadow-[var(--shadow-card)]',
+        'rounded-[10px] border border-slate-200 bg-white shadow-[var(--shadow-card)]',
         interactive && 'card-hover',
         className
       )}

@@ -1,59 +1,60 @@
 /* ============================================================
    GLOBALS — Pristine design system
-   One neutral slate palette; the legacy `olive-*` utilities map onto it.
+   Warm stone neutrals and one ink-blue accent. `slate-*` utilities read the
+   stone values; `emerald-*` and `brand-*` read the accent; `olive-*` is legacy.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 :root {
-  --bg-page:    #f8fafc;
+  --bg-page:    #fafaf9;
   --bg-surface: #ffffff;
-  --bg-raised:  #f1f5f9;
+  --bg-raised:  #f5f5f4;
 
-  --text-primary:   #020617;
-  --text-secondary: #475569;
-  --text-tertiary:  #94a3b8;
+  --text-primary:   #1c1917;
+  --text-secondary: #57534e;
+  --text-tertiary:  #78716c;
 
-  --border:       #e2e8f0;
-  --border-heavy: #cbd5e1;
+  --border:       #e7e5e4;
+  --border-heavy: #d6d3d1;
 
-  --card-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --card-shadow: 0 1px 2px rgba(28, 25, 23, 0.03);
 
-  /* Brand accent (emerald, matches the logo) */
-  --brand: #058560;
-  --brand-strong: #047857;
-  --brand-soft: #ecfdf5;
-  --ring-brand: rgba(16, 185, 129, 0.35);
+  /* Brand accent: ink blue */
+  --brand: #3e50d8;
+  --brand-strong: #2f3da8;
+  --brand-soft: #f1f2fd;
+  --ring-brand: rgba(62, 80, 216, 0.25);
 
-  --scrollbar-thumb: #cbd5e1;
-  --scrollbar-thumb-hover: #94a3b8;
+  --scrollbar-thumb: #d6d3d1;
+  --scrollbar-thumb-hover: #a8a29e;
 
   /* --- Olive scale (legacy name, same values as slate) --- */
-  --color-olive-50-val: #f8fafc;
-  --color-olive-100-val: #f1f5f9;
-  --color-olive-200-val: #e2e8f0;
-  --color-olive-300-val: #cbd5e1;
-  --color-olive-400-val: #94a3b8;
-  --color-olive-500-val: #64748b;
-  --color-olive-600-val: #475569;
-  --color-olive-700-val: #334155;
-  --color-olive-800-val: #1e293b;
-  --color-olive-900-val: #0f172a;
-  --color-olive-950-val: #020617;
+  --color-olive-50-val: #fafaf9;
+  --color-olive-100-val: #f5f5f4;
+  --color-olive-200-val: #e7e5e4;
+  --color-olive-300-val: #d6d3d1;
+  --color-olive-400-val: #a8a29e;
+  --color-olive-500-val: #78716c;
+  --color-olive-600-val: #57534e;
+  --color-olive-700-val: #44403c;
+  --color-olive-800-val: #292524;
+  --color-olive-900-val: #1c1917;
+  --color-olive-950-val: #0c0a09;
 
   /* --- Slate Theme Scale --- */
-  --color-slate-50-val:  #f8fafc;
-  --color-slate-100-val: #f1f5f9;
-  --color-slate-200-val: #e2e8f0;
-  --color-slate-300-val: #cbd5e1;
-  --color-slate-400-val: #94a3b8;
-  --color-slate-500-val: #64748b;
-  --color-slate-600-val: #475569;
-  --color-slate-700-val: #334155;
-  --color-slate-800-val: #1e293b;
-  --color-slate-900-val: #0f172a;
-  --color-slate-950-val: #020617;
+  --color-slate-50-val:  #fafaf9;
+  --color-slate-100-val: #f5f5f4;
+  --color-slate-200-val: #e7e5e4;
+  --color-slate-300-val: #d6d3d1;
+  --color-slate-400-val: #a8a29e;
+  --color-slate-500-val: #78716c;
+  --color-slate-600-val: #57534e;
+  --color-slate-700-val: #44403c;
+  --color-slate-800-val: #292524;
+  --color-slate-900-val: #1c1917;
+  --color-slate-950-val: #0c0a09;
 }
 
 @theme {
@@ -83,17 +84,42 @@
   --color-slate-900: var(--color-slate-900-val);
   --color-slate-950: var(--color-slate-950-val);
 
-  /* Brand accent scale (emerald). `brand-*` utilities read from here. */
-  --color-brand-50:  #ecfdf5;
-  --color-brand-100: #d1fae5;
-  --color-brand-200: #a7f3d0;
-  --color-brand-300: #6ee7b7;
-  --color-brand-400: #34d399;
-  --color-brand-500: #10b981;
-  --color-brand-600: #058560; /* emerald, deepened for 4.5:1 contrast with white text */
-  --color-brand-700: #047857;
-  --color-brand-800: #065f46;
-  --color-brand-900: #064e3b;
+  /* Brand accent scale (ink blue). `brand-*` utilities read from here. */
+  --color-brand-50:  #f1f2fd;
+  --color-brand-100: #e3e6fb;
+  --color-brand-200: #c9cef6;
+  --color-brand-300: #a3abef;
+  --color-brand-400: #7480e5;
+  --color-brand-500: #5462dd;
+  --color-brand-600: #3e50d8;
+  --color-brand-700: #2f3da8;
+  --color-brand-800: #273385;
+  --color-brand-900: #222b66;
+
+  /* The legacy emerald utilities follow the accent. */
+  --color-emerald-50: #f1f2fd;
+  --color-emerald-100: #e3e6fb;
+  --color-emerald-200: #c9cef6;
+  --color-emerald-300: #a3abef;
+  --color-emerald-400: #7480e5;
+  --color-emerald-500: #5462dd;
+  --color-emerald-600: #3e50d8;
+  --color-emerald-700: #2f3da8;
+  --color-emerald-800: #273385;
+  --color-emerald-900: #222b66;
+  --color-emerald-950: #161c45;
+
+  /* Info blue, calmer than Tailwind's sky so it sits with the accent. */
+  --color-sky-50: #f0f6fb;
+  --color-sky-100: #dfecf6;
+  --color-sky-200: #bfd8ec;
+  --color-sky-300: #93bcdc;
+  --color-sky-400: #6299c6;
+  --color-sky-500: #3f7db2;
+  --color-sky-600: #316698;
+  --color-sky-700: #29537c;
+  --color-sky-800: #234565;
+  --color-sky-900: #1e3a53;
 
   --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.04);
   --shadow-card-hover: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
@@ -102,8 +128,8 @@
   --animate-fade-in: fade-in 0.18s ease-out both;
   --animate-rise-in: rise-in 0.22s ease-out both;
 
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
 }
 
 @layer base {
@@ -115,7 +141,6 @@
     font-family: var(--font-sans);
     font-size: 14px;
     line-height: 1.5;
-    font-feature-settings: "cv11", "ss01";
     background: var(--bg-page);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
@@ -128,7 +153,7 @@
   h4 { font-size: 0.875rem; }
 
   :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-  ::selection { background: #a7f3d0; color: #022c22; }
+  ::selection { background: #c9cef6; color: #1c1917; }
   button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline-offset: 1px; }
 
   button, a { cursor: pointer; }
@@ -144,7 +169,7 @@
   .card {
     background: var(--bg-surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow: var(--card-shadow);
   }
 
@@ -218,15 +243,11 @@
   .card-hover { transition: box-shadow 150ms ease, border-color 150ms ease, transform 150ms ease; }
   .card-hover:hover { box-shadow: var(--shadow-card-hover); border-color: var(--color-slate-300); }
 
-  /* Very subtle tinted band used behind page headers. */
-  .header-band {
-    background:
-      radial-gradient(1200px 120px at 0% 0%, rgba(16, 185, 129, 0.06), transparent 60%),
-      #ffffff;
-  }
+  /* Page header surface. */
+  .header-band { background: #ffffff; }
 
   .custom-scrollbar { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) transparent; }
-  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgba(148, 163, 184, 0.4) transparent; }
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: rgba(168, 162, 158, 0.45) transparent; }
 }
 
 @keyframes shimmer {
@@ -329,7 +350,7 @@
 .landing-card:hover {
   transform: translateY(-4px);
   border-color: rgb(167 243 208);
-  box-shadow: 0 14px 30px -14px rgba(15, 23, 42, 0.18), 0 4px 10px -6px rgba(16, 185, 129, 0.18);
+  box-shadow: 0 14px 30px -14px rgba(15, 23, 42, 0.18), 0 4px 10px -6px rgba(62, 80, 216, 0.14);
 }
 .landing-card .landing-icon {
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -374,8 +395,8 @@
   to { background-position: 100% 50%; }
 }
 @keyframes landing-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
-  80%, 100% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(62, 80, 216, 0.4); }
+  80%, 100% { box-shadow: 0 0 0 7px rgba(62, 80, 216, 0); }
 }
 @keyframes landing-marquee {
   from { transform: translateX(0); }

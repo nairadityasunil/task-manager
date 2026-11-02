@@ -7,6 +7,7 @@ import type { Epic } from '@/types/epic';
 import type { Project } from '@/types/project';
 import type { Subtask, Task, TaskWorkflowStatus } from '@/types/task';
 import { flattenProjectLabels } from '@/utils/projectTree';
+import { tagColor } from '@/components/ui';
 
 interface TaskListProps {
   actionTaskId?: string | null;
@@ -51,7 +52,7 @@ function TaskList({
 }: TaskListProps): JSX.Element {
   if (loading) {
     return (
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={`skeleton-${i}`} className="flex items-center gap-3 border-b border-slate-100 px-4 py-3.5 last:border-b-0">
             <Skeleton variant="rectangle" className="h-4 w-4 rounded" />
@@ -185,18 +186,20 @@ function TaskList({
               ];
 
               return (
-                <section className="flex min-w-0 flex-col gap-4" key={section.id}>
-
-                  {/* Epic groups */}
-                  <div className="flex min-w-0 flex-col gap-4">
+                <section className="flex min-w-0 flex-col" key={section.id}>
+                  {/* Epic groups, one list with a heading per epic */}
+                  <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
                     {sectionGroups.map((group) => (
-                      <section
-                        key={group.id}
-                        className="flex min-w-0 flex-col"
-                      >
-
+                      <section aria-label={group.title} className="flex min-w-0 flex-col" data-testid="epic-group" key={group.id}>
+                        <div className="flex h-9 items-center gap-2 border-b border-slate-200 bg-slate-50 px-3 sm:px-4">
+                          <span aria-hidden className="h-2 w-2 shrink-0 rounded-sm" style={{ background: group.epic ? tagColor(group.epic.id) : '#a8a29e' }} />
+                          <h4 className="m-0 truncate text-[13px] font-semibold text-slate-900">{group.title}</h4>
+                          <span className="font-mono text-xs text-slate-500">
+                            {group.tasks.filter((task) => task.status === 'DONE').length}/{group.tasks.length}
+                          </span>
+                        </div>
                         {/* Task rows */}
-                        <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                        <div className="border-b border-slate-200 last:border-b-0">
                           {group.tasks.map((task) => (
                             <TaskCard
                               actionTaskId={actionTaskId}
@@ -223,7 +226,7 @@ function TaskList({
               );
             })
           ) : (
-            <div className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
               {tasks.map((task) => (
                 <TaskCard
                   key={task.id}

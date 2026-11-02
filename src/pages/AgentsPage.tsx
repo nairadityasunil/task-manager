@@ -5,7 +5,6 @@ import {
   BellRing,
   Bot,
   Building2,
-  CalendarCheck,
   CircleDollarSign,
   EyeOff,
   FileCheck2,
@@ -23,7 +22,7 @@ import {
 
 import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
-import { Badge, Button, Card, CardHeader, StatCard, Tabs, cn, inputClass, selectClass } from '@/components/ui';
+import { Badge, Button, Card, CardHeader, Tabs, cn, inputClass, selectClass } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
 import { ActivityLog } from '@/features/agents/components/ActivityLog';
@@ -35,7 +34,7 @@ import { NotificationsPanel } from '@/features/agents/components/NotificationsPa
 import { CreateKeyModal } from '@/features/agents/components/CreateKeyModal';
 import { PoliciesPanel } from '@/features/agents/components/PoliciesPanel';
 import { VendorDrawer } from '@/features/agents/components/VendorDrawer';
-import { VendorReviewCard, VendorsPanel } from '@/features/agents/components/VendorsPanel';
+import { VendorsPanel } from '@/features/agents/components/VendorsPanel';
 import { KindLabel, RiskBadge, StatusBadge } from '@/features/agents/components/shared';
 import { isAtLeastAdmin, useWorkspace } from '@/features/workspaces';
 import {
@@ -128,97 +127,144 @@ function AgentSessionNotice(): JSX.Element {
   );
 }
 
-/** Scripts and automated browsers found using a person's login: the shadow AI to act on. */
-function UnregisteredCard({ agents, onOpen }: { agents: Agent[]; onOpen: (agent: Agent) => void }): JSX.Element | null {
-  const open = agents.filter((agent) => agent.kind === 'detected' && agent.status !== 'revoked');
-  if (open.length === 0) return null;
+const SEVERITY_LABEL: Record<'critical' | 'high' | 'review' | 'routine', { label: string; className: string }> = {
+  critical: { label: 'Critical', className: 'bg-red-50 text-red-700' },
+  high: { label: 'High', className: 'bg-orange-50 text-orange-800' },
+  review: { label: 'Review', className: 'bg-amber-50 text-amber-800' },
+  routine: { label: 'Routine', className: 'bg-slate-100 text-slate-700' }
+};
+
+function AttentionRow({
+  severity,
+  title,
+  detail,
+  children,
+  testId
+}: {
+  severity: keyof typeof SEVERITY_LABEL;
+  title: React.ReactNode;
+  detail: React.ReactNode;
+  children: React.ReactNode;
+  testId?: string;
+}): JSX.Element {
+  const meta = SEVERITY_LABEL[severity];
   return (
-    <Card className="border-amber-200" data-testid="unregistered-card">
-      <CardHeader
-        description="Scripts and automated browsers using a person's own login. Give each its own key, or block it."
-        icon={<EyeOff className="h-4 w-4 text-amber-500" />}
-        title={`Unregistered agents (${open.length})`}
-      />
-      <ul className="m-0 list-none divide-y divide-slate-100 p-0">
-        {open.slice(0, 6).map((agent) => (
-          <li className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" key={agent.id}>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[13px] font-medium text-slate-900">{agent.name}</span>
-                <StatusBadge status={agent.status} />
-                <RiskBadge level={agent.riskLevel} score={agent.riskScore} />
-              </div>
-              <p className="m-0 mt-0.5 text-xs text-slate-500">
-                Uses {userLabel(agent.ownerUserId)}&apos;s login · {agent.callCount.toLocaleString()} calls · last seen {timeAgo(agent.lastSeenAt)}
-              </p>
-            </div>
-            <Button onClick={() => onOpen(agent)} size="sm">
-              Review
-            </Button>
-          </li>
-        ))}
-      </ul>
-    </Card>
+    <li className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 py-3 last:border-b-0" data-testid={testId}>
+      <span className={cn('inline-flex h-5 w-[62px] shrink-0 items-center justify-center rounded text-[11px] font-medium', meta.className)}>{meta.label}</span>
+      <div className="min-w-[220px] flex-1">
+        <div className="text-[13px] font-medium text-slate-900">{title}</div>
+        <div className="text-[13px] text-slate-600">{detail}</div>
+      </div>
+      <div className="flex shrink-0 gap-2">{children}</div>
+    </li>
   );
 }
 
-/** Agents whose access nobody has confirmed for 90 days. */
-function ReviewsCard({
+/**
+ * Everything that needs a decision, most important first: scripts using a
+ * person's login, vendors waiting for review, and agents due their access check.
+ */
+function NeedsAttention({
   agents,
-  onOpen,
+  vendors,
+  onOpenAgent,
+  onOpenVendor,
+  onBlock,
   onConfirm
 }: {
   agents: Agent[];
-  onOpen: (agent: Agent) => void;
+  vendors: VendorListItem[];
+  onOpenAgent: (agent: Agent) => void;
+  onOpenVendor: (vendorId: string) => void;
+  onBlock: (agent: Agent) => Promise<void>;
   onConfirm: (agent: Agent) => Promise<void>;
-}): JSX.Element | null {
+}): JSX.Element {
   const [busy, setBusy] = useState<string | null>(null);
-  const due = agents.filter((agent) => agent.reviewDue && agent.status !== 'revoked' && agent.kind !== 'detected');
-  if (due.length === 0) return null;
+  const run = async (id: string, fn: () => Promise<void>) => {
+    setBusy(id);
+    try {
+      await fn();
+    } finally {
+      setBusy(null);
+    }
+  };
+  const unregistered = agents.filter((agent) => agent.kind === 'detected' && agent.status !== 'revoked');
+  const vendorQueue = vendors.filter((vendor) => vendor.status === 'under_review' || vendor.reviewDue);
+  const reviews = agents.filter((agent) => agent.reviewDue && agent.status !== 'revoked' && agent.kind !== 'detected');
+  const total = unregistered.length + vendorQueue.length + reviews.length;
+
   return (
-    <Card data-testid="reviews-card">
-      <CardHeader
-        description="Confirm each agent still needs its access, or suspend it. Reviews are due every 90 days."
-        icon={<CalendarCheck className="h-4 w-4 text-slate-400" />}
-        title={`Access reviews due (${due.length})`}
-      />
-      <ul className="m-0 list-none divide-y divide-slate-100 p-0">
-        {due.slice(0, 8).map((agent) => (
-          <li className="flex flex-wrap items-center justify-between gap-3 px-4 py-3" data-testid="review-row" key={agent.id}>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[13px] font-medium text-slate-900">{agent.name}</span>
-                <KindLabel kind={agent.kind} />
-                <StatusBadge status={agent.status} />
-              </div>
-              <p className="m-0 mt-0.5 text-xs text-slate-500">
-                {userLabel(agent.ownerUserId)} · last active {timeAgo(agent.lastSeenAt)} · {agent.reviewedAt ? `confirmed ${timeAgo(agent.reviewedAt)}` : 'never confirmed'}
-              </p>
-            </div>
-            <div className="flex gap-1.5">
-              <Button
-                loading={busy === agent.id}
-                onClick={async () => {
-                  setBusy(agent.id);
-                  try {
-                    await onConfirm(agent);
-                  } finally {
-                    setBusy(null);
-                  }
-                }}
-                size="sm"
-                variant="primary"
+    <section aria-labelledby="attention-title">
+      <div className="mb-2 flex items-baseline gap-2">
+        <h2 className="m-0 text-sm font-semibold text-slate-900" id="attention-title">
+          Needs attention
+        </h2>
+        <span className="font-mono text-xs text-slate-500">{total}</span>
+      </div>
+      <div className="overflow-hidden rounded-[10px] border border-slate-200 bg-white">
+        {total === 0 ? <p className="m-0 px-4 py-4 text-[13px] text-slate-600">Nothing needs attention.</p> : null}
+        {unregistered.length ? (
+          <ul className="m-0 list-none border-b border-slate-100 p-0 last:border-b-0" data-testid="unregistered-card">
+            {unregistered.slice(0, 6).map((agent) => (
+              <AttentionRow
+                detail={
+                  <>
+                    <span className="font-mono text-xs">{agent.userAgent?.split(' ')[0] || agent.name}</span> · {agent.callCount.toLocaleString()} calls · last seen{' '}
+                    {timeAgo(agent.lastSeenAt)}
+                  </>
+                }
+                key={agent.id}
+                severity={agent.riskLevel === 'critical' ? 'critical' : 'high'}
+                title={`${agent.name} is using ${userLabel(agent.ownerUserId)}’s login`}
               >
-                Still needed
-              </Button>
-              <Button onClick={() => onOpen(agent)} size="sm">
-                Review
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </Card>
+                <Button disabled={busy === agent.id || agent.status !== 'active'} onClick={() => void run(agent.id, () => onBlock(agent))} size="sm">
+                  {agent.status === 'active' ? 'Block' : 'Blocked'}
+                </Button>
+                <Button onClick={() => onOpenAgent(agent)} size="sm" variant="dark">
+                  Review
+                </Button>
+              </AttentionRow>
+            ))}
+          </ul>
+        ) : null}
+        {vendorQueue.length ? (
+          <ul className="m-0 list-none border-b border-slate-100 p-0 last:border-b-0" data-testid="vendor-review-card">
+            {vendorQueue.slice(0, 6).map((vendor) => (
+              <AttentionRow
+                detail={`${vendor.agentCount} agent(s) · residual risk ${vendor.residualRisk} · found ${timeAgo(vendor.firstSeenAt)}`}
+                key={vendor.id}
+                severity={vendor.riskLevel === 'critical' ? 'critical' : 'review'}
+                title={vendor.reviewDue && vendor.status !== 'under_review' ? `${vendor.name} is due its reassessment` : `${vendor.name} is new and not reviewed yet`}
+              >
+                <Button onClick={() => onOpenVendor(vendor.id)} size="sm" variant="dark">
+                  Review
+                </Button>
+              </AttentionRow>
+            ))}
+          </ul>
+        ) : null}
+        {reviews.length ? (
+          <ul className="m-0 list-none p-0" data-testid="reviews-card">
+            {reviews.slice(0, 8).map((agent) => (
+              <AttentionRow
+                detail={`${userLabel(agent.ownerUserId)} · last active ${timeAgo(agent.lastSeenAt)} · ${agent.reviewedAt ? `confirmed ${timeAgo(agent.reviewedAt)}` : 'never confirmed'}`}
+                key={agent.id}
+                severity="routine"
+                testId="review-row"
+                title={`${agent.name} is due its 90-day access check`}
+              >
+                <Button onClick={() => onOpenAgent(agent)} size="sm">
+                  Review
+                </Button>
+                <Button loading={busy === agent.id} onClick={() => void run(agent.id, () => onConfirm(agent))} size="sm" variant="dark">
+                  Still needed
+                </Button>
+              </AttentionRow>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    </section>
   );
 }
 
@@ -382,6 +428,42 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
   const blocked24h = stats?.activity24h.blocked ?? 0;
   const actions24h = Object.values(stats?.activity24h ?? {}).reduce((sum, n) => sum + (n ?? 0), 0);
 
+  /** Nine pages in five groups; every page keeps its own address. */
+  const groups: Array<{ id: string; label: string; count?: number; pages: Array<{ value: AgentsTab; label: string; icon: typeof Gauge; count?: number }> }> = [
+    { id: 'overview', label: 'Overview', pages: [{ value: 'overview', label: 'Overview', icon: Gauge }] },
+    {
+      id: 'agents',
+      label: 'Agents & vendors',
+      count: agents?.filter((a) => a.status !== 'revoked').length,
+      pages: [
+        { value: 'inventory', label: 'Agents', icon: Bot, count: agents?.filter((a) => a.status !== 'revoked').length },
+        ...(canAdmin
+          ? [{ value: 'vendors' as const, label: 'Vendors', icon: Building2, count: vendors?.filter((v) => v.status === 'under_review').length || undefined }]
+          : [])
+      ]
+    },
+    {
+      id: 'rules',
+      label: 'Rules & approvals',
+      count: pending || undefined,
+      pages: [
+        { value: 'policies', label: 'Policies', icon: ScrollText },
+        { value: 'approvals', label: 'Approvals', icon: Inbox, count: pending || undefined }
+      ]
+    },
+    { id: 'activity', label: 'Activity', pages: [{ value: 'activity', label: 'Activity', icon: History }] },
+    {
+      id: 'settings',
+      label: 'Settings',
+      pages: [
+        { value: 'costs', label: 'Costs', icon: CircleDollarSign },
+        { value: 'notifications', label: 'Notifications', icon: Webhook },
+        { value: 'compliance', label: 'Compliance', icon: FileCheck2 }
+      ]
+    }
+  ];
+  const activeGroup = groups.find((group) => group.pages.some((page) => page.value === tab)) ?? groups[0];
+
   const killSwitch = async () => {
     const ok = await confirm({
       title: 'Stop all agents?',
@@ -422,23 +504,37 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
         tone="violet"
       >
         <Tabs
-          items={[
-            { value: 'overview', label: 'Overview', icon: Gauge },
-            { value: 'inventory', label: 'Agents', icon: Bot, count: agents?.filter((a) => a.status !== 'revoked').length },
-            ...(canAdmin
-              ? [{ value: 'vendors' as const, label: 'Vendors', icon: Building2, count: vendors?.filter((v) => v.status === 'under_review').length || undefined }]
-              : []),
-            { value: 'approvals', label: 'Approvals', icon: Inbox, count: pending || undefined },
-            { value: 'policies', label: 'Policies', icon: ScrollText },
-            { value: 'activity', label: 'Activity', icon: History },
-            { value: 'costs', label: 'Costs', icon: CircleDollarSign },
-            { value: 'notifications', label: 'Notifications', icon: Webhook },
-            { value: 'compliance', label: 'Compliance', icon: FileCheck2 }
-          ]}
-          onChange={(next) => navigate(next === 'overview' ? '/agents' : `/agents/${next}`)}
-          value={tab}
+          items={groups.map((group) => ({ value: group.id, label: group.label, count: group.count }))}
+          onChange={(next) => {
+            const first = groups.find((group) => group.id === next)?.pages[0].value ?? 'overview';
+            navigate(first === 'overview' ? '/agents' : `/agents/${first}`);
+          }}
+          value={activeGroup.id}
         />
       </PageHeader>
+      {activeGroup.pages.length > 1 ? (
+        <div className="border-b border-slate-200 bg-white px-3 py-2 sm:px-5 lg:px-6">
+          <div aria-label={activeGroup.label} className="inline-flex gap-0.5 rounded-md bg-slate-100 p-0.5" role="tablist">
+            {activeGroup.pages.map((page) => (
+              <button
+                aria-selected={tab === page.value}
+                className={cn(
+                  'flex h-7 items-center gap-1.5 rounded px-2.5 text-[13px] font-medium transition-colors',
+                  tab === page.value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                )}
+                key={page.value}
+                onClick={() => navigate(`/agents/${page.value}`)}
+                role="tab"
+                type="button"
+              >
+                <page.icon aria-hidden size={14} />
+                {page.label}
+                {page.count ? <span className="rounded bg-slate-200 px-1.5 font-mono text-[11px] text-slate-700">{page.count}</span> : null}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="space-y-4 px-3 py-4 sm:px-5 lg:px-6">
         {agentSession ? <AgentSessionNotice /> : null}
@@ -447,40 +543,42 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
         <>
         {tab === 'overview' ? (
           <>
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <StatCard hint={`${agents?.length ?? 0} known in total`} icon={Bot} label="Active agents" onClick={() => navigate('/agents/inventory')} tone="violet" value={activeCount} />
-              <StatCard
-                hint={highRisk ? 'Review their risk factors' : 'No high-risk agents'}
-                hintTone={highRisk ? 'danger' : 'success'}
-                icon={AlertTriangle}
-                label="High risk"
-                onClick={() => navigate('/agents/inventory')}
-                tone="rose"
-                value={highRisk}
-              />
-              <StatCard
-                hint={pending ? 'Waiting for a decision' : 'Inbox clear'}
-                hintTone={pending ? 'warning' : 'neutral'}
-                icon={Inbox}
-                label="Approvals"
-                onClick={() => navigate('/agents/approvals')}
-                tone="amber"
-                value={pending}
-              />
-              <StatCard
-                hint={`${blocked24h} blocked`}
-                hintTone={blocked24h ? 'warning' : 'neutral'}
-                icon={History}
-                label="Actions, last 24h"
-                onClick={() => navigate('/agents/activity')}
-                tone="sky"
-                value={actions24h}
-              />
+            <div className="grid grid-cols-2 overflow-hidden rounded-[10px] border border-slate-200 bg-white lg:grid-cols-4" data-testid="governance-stats">
+              {[
+                { label: 'Active agents', value: activeCount, hint: `${agents?.length ?? 0} known in total`, tone: 'text-slate-500', to: '/agents/inventory' },
+                { label: 'High risk', value: highRisk, hint: highRisk ? 'Review their risk factors' : 'No high-risk agents', tone: highRisk ? 'text-red-700' : 'text-slate-500', to: '/agents/inventory' },
+                { label: 'Approvals', value: pending, hint: pending ? 'Waiting for a decision' : 'Inbox clear', tone: pending ? 'text-amber-700' : 'text-slate-500', to: '/agents/approvals' },
+                { label: 'Actions, last 24h', value: actions24h, hint: `${blocked24h} blocked`, tone: blocked24h ? 'text-amber-700' : 'text-slate-500', to: '/agents/activity' }
+              ].map((item, index) => (
+                <button
+                  className={cn(
+                    'px-4 py-3.5 text-left transition-colors hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none',
+                    index % 2 === 0 && 'border-r border-slate-100',
+                    index < 2 && 'border-b border-slate-100 lg:border-b-0',
+                    index === 1 && 'lg:border-r'
+                  )}
+                  key={item.label}
+                  onClick={() => navigate(item.to)}
+                  type="button"
+                >
+                  <span className="block text-[13px] text-slate-600">{item.label}</span>
+                  <span className="mt-1 block text-[22px] font-semibold leading-tight tracking-tight text-slate-900 tabular-nums">{item.value}</span>
+                  <span className={cn('mt-0.5 block truncate text-xs', item.tone)}>{item.hint}</span>
+                </button>
+              ))}
             </div>
 
-            <UnregisteredCard agents={agents ?? []} onOpen={(agent) => setOpenAgent(agent.id)} />
-            <ReviewsCard
+            <NeedsAttention
               agents={agents ?? []}
+              onBlock={async (agent) => {
+                try {
+                  await agentsApi.suspend(agent.id, 'Blocked from using a personal login');
+                  showToast({ variant: 'success', message: `${agent.name} blocked` });
+                  await refresh();
+                } catch (error) {
+                  showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+                }
+              }}
               onConfirm={async (agent) => {
                 try {
                   const updated = await agentsApi.review(agent.id);
@@ -490,9 +588,10 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
                   showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
                 }
               }}
-              onOpen={(agent) => setOpenAgent(agent.id)}
+              onOpenAgent={(agent) => setOpenAgent(agent.id)}
+              onOpenVendor={setOpenVendor}
+              vendors={vendors ?? []}
             />
-            <VendorReviewCard onOpen={(vendor) => setOpenVendor(vendor.id)} vendors={vendors ?? []} />
 
             <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
               <AlertsCard

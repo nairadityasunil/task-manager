@@ -347,16 +347,7 @@ export default function LandingPage(): JSX.Element {
         <section aria-labelledby="hero-title" className="relative border-b border-slate-200 bg-slate-50" id="top">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_45%_at_50%_0%,rgba(16,185,129,0.10),transparent),radial-gradient(40%_40%_at_100%_60%,rgba(14,165,233,0.06),transparent)]"
-          />
-          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="landing-blob absolute -left-24 top-10 h-72 w-72 rounded-full bg-emerald-300/25 blur-3xl" />
-            <div className="landing-blob-slow absolute -right-20 top-40 h-80 w-80 rounded-full bg-sky-300/20 blur-3xl" />
-            <div className="landing-blob absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-violet-300/15 blur-3xl" />
-          </div>
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_70%)]"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(28,25,23,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(28,25,23,0.035)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_70%)]"
           />
           <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-14 sm:px-6 sm:pb-28 sm:pt-20">
             <div className="landing-hero-in mx-auto flex max-w-3xl flex-col items-center text-center">
@@ -365,7 +356,7 @@ export default function LandingPage(): JSX.Element {
                 Work management and product engagement, together
               </span>
               <h1 className="m-0 mt-6 text-4xl font-semibold leading-[1.08] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl" id="hero-title">
-                Plan the work. <span className="landing-gradient-text bg-gradient-to-r from-emerald-700 via-teal-500 to-sky-600 bg-clip-text text-transparent">Guide the people</span> who use it.
+                Plan the work. <span className="text-brand-600">Guide the people</span> who use it.
               </h1>
               <p className="m-0 mt-5 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
                 Pristine gives your team projects, epics and tasks with SLAs, self-updating priorities and AI planning, and gives
@@ -666,8 +657,7 @@ export default function LandingPage(): JSX.Element {
 
         {/* ------------------------------------------------ Product engagement */}
         <section aria-labelledby="engagement-title" className="relative scroll-mt-16 overflow-hidden border-t border-slate-200 bg-slate-50 px-4 py-16 sm:px-6 sm:py-24" id="engagement">
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(50%_60%_at_50%_0%,rgba(16,185,129,0.08),transparent)]" />
-          <div className="relative mx-auto max-w-6xl">
+                    <div className="relative mx-auto max-w-6xl">
             <SectionHeading
               description="Install one JavaScript SDK in your app, then onboard, inform and survey your users, all targeted to the right people and measured."
               eyebrow="Product engagement"
@@ -833,8 +823,7 @@ export default function LandingPage(): JSX.Element {
 
         {/* ------------------------------------------------ Developers */}
         <section aria-labelledby="dev-title" className="relative scroll-mt-16 overflow-hidden bg-slate-900 px-4 py-16 text-white sm:px-6 sm:py-24" id="developers">
-          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(45%_50%_at_85%_10%,rgba(16,185,129,0.14),transparent)]" />
-          <div className="relative mx-auto max-w-6xl">
+                    <div className="relative mx-auto max-w-6xl">
             <div data-reveal-children className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
               <div data-reveal-children className="grid gap-6">
                 <SectionHeading
@@ -1071,8 +1060,6 @@ export default function LandingPage(): JSX.Element {
         {/* ------------------------------------------------ Closing CTA */}
         <section aria-labelledby="cta-title" className="px-4 py-16 sm:px-6 sm:py-20">
           <div className="landing-sheen relative mx-auto max-w-6xl overflow-hidden rounded-2xl bg-slate-900 p-6 sm:p-10" data-reveal>
-            <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_80%_at_100%_0%,rgba(16,185,129,0.22),transparent)]" />
-            <div aria-hidden className="landing-blob pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
             <div className="relative flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
               <div>
                 <h2 className="m-0 text-2xl font-semibold tracking-tight text-white sm:text-3xl" id="cta-title">

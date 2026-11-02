@@ -14,22 +14,12 @@ import {
   ArrowLeft,
   ShieldHalf,
   Bot,
+  Home,
+  Search,
   type LucideIcon,
 } from 'lucide-react';
-import { avatarColor, cn, type Area } from '@/components/ui';
+import { avatarColor, cn, tagColor, type Area } from '@/components/ui';
 
-/** Icon colour on hover, one per product area (literal classes so Tailwind sees them). */
-const AREA_HOVER: Record<Area, string> = {
-  projects: 'group-hover:text-sky-600',
-  tasks: 'group-hover:text-emerald-600',
-  ai: 'group-hover:text-violet-600',
-  prompts: 'group-hover:text-indigo-600',
-  engagement: 'group-hover:text-amber-600',
-  events: 'group-hover:text-rose-600',
-  integrations: 'group-hover:text-teal-600',
-  docs: 'group-hover:text-orange-600',
-  settings: 'group-hover:text-slate-700'
-};
 import logoImg from '@/assets/logo.png';
 
 export type SidebarView =
@@ -63,7 +53,13 @@ interface SidebarProps {
   onMobileClose?: () => void;
   /** Shown in the account area at the bottom. */
   user?: { name: string | null; email: string } | null;
+  /** Projects listed under "Projects" (the first few). */
+  projects?: Array<{ id: string; name: string }>;
+  /** Opens the command palette. */
+  onOpenSearch?: () => void;
 }
+
+const MAX_SIDEBAR_PROJECTS = 8;
 
 interface NavItemProps {
   icon: LucideIcon;
@@ -71,30 +67,29 @@ interface NavItemProps {
   isActive?: boolean;
   onClick: () => void;
   tone?: 'default' | 'muted';
-  /** Product area; tints the icon on hover. */
+  /** Product area (kept for callers; icons stay neutral). */
   area?: Area;
 }
 
 /** One 32px navigation row with a pill for the active page. */
-function NavItem({ icon: Icon, label, isActive = false, onClick, tone = 'default', area }: NavItemProps): JSX.Element {
+function NavItem({ icon: Icon, label, isActive = false, onClick, tone = 'default' }: NavItemProps): JSX.Element {
   return (
     <button
       aria-current={isActive ? 'page' : undefined}
       className={cn(
-        'group relative flex h-8 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-[13px] font-medium outline-none transition-colors duration-150',
-        'focus-visible:ring-2 focus-visible:ring-emerald-500/40',
+        'group relative flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] font-medium outline-none transition-colors duration-150',
+        'focus-visible:ring-2 focus-visible:ring-brand-600/40',
         isActive
-          ? 'bg-white text-slate-900 shadow-[0_1px_2px_rgba(15,23,42,0.06)] ring-1 ring-slate-200'
+          ? 'bg-slate-200 text-slate-900'
           : tone === 'muted'
-          ? 'text-slate-500 hover:bg-slate-200/50 hover:text-slate-900'
-          : 'text-slate-600 hover:bg-slate-200/50 hover:text-slate-900'
+          ? 'text-slate-600 font-normal hover:bg-slate-200/60 hover:text-slate-900'
+          : 'text-slate-700 font-normal hover:bg-slate-200/60 hover:text-slate-900'
       )}
       onClick={onClick}
       type="button"
     >
-      {isActive ? <span aria-hidden className="absolute -left-3 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-emerald-500" /> : null}
       <Icon
-        className={cn('shrink-0 transition-colors duration-150', isActive ? 'text-emerald-600' : cn('text-slate-400', area ? AREA_HOVER[area] : 'group-hover:text-slate-700'))}
+        className={cn('shrink-0 transition-colors duration-150', isActive ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-700')}
         size={16}
         strokeWidth={1.9}
       />
@@ -106,7 +101,7 @@ function NavItem({ icon: Icon, label, isActive = false, onClick, tone = 'default
 function NavGroup({ label, children }: { label?: string; children: React.ReactNode }): JSX.Element {
   return (
     <div className="grid gap-px">
-      {label ? <div className="px-2.5 pb-1 text-xs font-medium text-slate-400">{label}</div> : null}
+      {label ? <div className="px-2.5 pb-1 text-[11px] font-medium text-slate-500">{label}</div> : null}
       {children}
     </div>
   );
@@ -126,6 +121,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   mobileOpen = false,
   onMobileClose,
   user,
+  projects = [],
+  onOpenSearch,
 }) => {
   const displayName = user?.name || user?.email || '';
   const initials = (user?.name || user?.email || 'U')
@@ -143,7 +140,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-[61] flex h-full w-[264px] select-none flex-col border-r border-slate-200 bg-slate-50 transition-transform duration-200',
+          'fixed inset-y-0 left-0 z-[61] flex h-full w-[264px] select-none flex-col border-r border-slate-200 bg-slate-100 transition-transform duration-200',
           'lg:static lg:z-auto lg:w-[232px] lg:shrink-0 lg:translate-x-0',
           mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         )}
@@ -153,18 +150,32 @@ const Sidebar: React.FC<SidebarProps> = ({
         }}
       >
         {/* Brand */}
-        <div className="flex h-12 shrink-0 items-center gap-2.5 px-4">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white p-1 shadow-sm ring-1 ring-slate-200">
+        <div className="flex h-12 shrink-0 items-center gap-2 px-4">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-white p-0.5 ring-1 ring-slate-200">
             <img src={logoImg} alt="Pristine" className="h-full w-full object-contain" />
           </div>
-          <span className="text-[15px] font-semibold tracking-tight text-slate-900">Pristine</span>
+          <span className="text-[14px] font-semibold tracking-tight text-slate-900">Pristine</span>
         </div>
+        {onOpenSearch ? (
+          <div className="px-3 pb-1">
+            <button
+              className="flex h-8 w-full items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 text-left text-[13px] text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40"
+              data-testid="open-search"
+              onClick={onOpenSearch}
+              type="button"
+            >
+              <Search size={14} strokeWidth={2} />
+              Search
+              <kbd className="ml-auto font-mono text-[11px] text-slate-500">⌘K</kbd>
+            </button>
+          </div>
+        ) : null}
 
         {/* Navigation */}
         <nav aria-label="Main" className="scrollbar-thin flex flex-1 flex-col gap-4 overflow-y-auto px-3 pb-4 pt-2">
           {activeIntegrationId ? (
             <>
-              <div className="rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
+              <div className="rounded-lg border border-slate-200 bg-white p-2.5">
                 <div className="text-xs font-medium text-slate-500">Integration</div>
                 <div className="mt-1.5 flex items-center gap-2">
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-teal-50 text-teal-600 ring-1 ring-inset ring-teal-100">
@@ -188,15 +199,14 @@ const Sidebar: React.FC<SidebarProps> = ({
             </>
           ) : (
             <>
-              <NavGroup label="Workspace">
+              <NavGroup>
                 <NavItem
                   area="projects"
-                  icon={Folder}
+                  icon={Home}
                   isActive={selectedProjectView === allProjectsValue && activeView === 'dashboard'}
-                  label="All Projects"
+                  label="Home"
                   onClick={() => onProjectSelect(allProjectsValue)}
                 />
-                <NavItem area="tasks" icon={Plus} label="New Project" onClick={onNewProject} tone="muted" />
               </NavGroup>
 
               <NavGroup label="AI">
@@ -209,6 +219,31 @@ const Sidebar: React.FC<SidebarProps> = ({
               <NavGroup label="Product">
                 <NavItem area="integrations" icon={Plug} isActive={activeView === 'sdk-integrations'} label="SDK Integrations" onClick={() => onViewChange('sdk-integrations')} />
               </NavGroup>
+
+              <NavGroup label="Projects">
+                {projects.slice(0, MAX_SIDEBAR_PROJECTS).map((project) => {
+                  const isActive = activeView === 'dashboard' && selectedProjectView === project.id;
+                  return (
+                    <button
+                      aria-current={isActive ? 'page' : undefined}
+                      className={cn(
+                        'flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-brand-600/40',
+                        isActive ? 'bg-slate-200 font-medium text-slate-900' : 'text-slate-700 hover:bg-slate-200/60 hover:text-slate-900'
+                      )}
+                      key={project.id}
+                      onClick={() => onProjectSelect(project.id)}
+                      type="button"
+                    >
+                      <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: tagColor(project.id) }} />
+                      <span className="truncate">{project.name}</span>
+                    </button>
+                  );
+                })}
+                {projects.length > MAX_SIDEBAR_PROJECTS ? (
+                  <NavItem icon={Folder} label={`All ${projects.length} projects`} onClick={() => onProjectSelect(allProjectsValue)} tone="muted" />
+                ) : null}
+                <NavItem area="tasks" icon={Plus} label="New Project" onClick={onNewProject} tone="muted" />
+              </NavGroup>
             </>
           )}
         </nav>
@@ -219,10 +254,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           <NavItem area="settings" icon={Settings} isActive={activeView === 'settings'} label="Settings" onClick={() => onViewChange('settings')} />
         </div>
 
-        <div className="mx-3 mb-2 flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
+        <div className="mx-3 mb-1 flex items-center gap-2.5 border-t border-slate-200 px-1 pt-2.5 pb-1">
           {user ? (
             <>
-              <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold', avatarColor(user.email || user.name))}>
+              <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold', avatarColor(user.email || user.name))}>
                 {initials}
               </div>
               <div className="min-w-0 flex-1 leading-tight">
@@ -235,7 +270,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
           <button
             aria-label="Sign out"
-            className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs font-medium text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+            className="flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-slate-500 transition-colors hover:bg-red-50 hover:text-red-700"
             onClick={onLogout}
             title="Sign out"
             type="button"
