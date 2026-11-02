@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import React, { Suspense, lazy } from 'react';
 
 import AuthProvider from '@/context/AuthContext';
@@ -16,6 +16,7 @@ const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const GuidePage = lazy(() => import('@/pages/GuidePage'));
 const AcceptInvitationPage = lazy(() => import('@/pages/AcceptInvitationPage'));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 import { LoadingProvider } from '@/context/LoadingContext';
 import GlobalLoadingSpinner from '@/components/GlobalLoadingSpinner';
@@ -67,7 +68,7 @@ function App(): JSX.Element {
                     <Route path="/agents/:tab" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/projects/:projectId" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/projects/:projectId/epics/:epicId" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
-                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </Suspense>
                 </GuideRuntimeProvider>

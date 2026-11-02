@@ -13,6 +13,8 @@ export interface AuthProfile {
   openaiApiKeyConfigured?: boolean;
   anthropicApiKeyConfigured?: boolean;
   geminiApiKeyConfigured?: boolean;
+  /** Providers the server has its own key for, usable without a personal key. */
+  aiPlatformProviders?: Array<'openai' | 'anthropic' | 'gemini'>;
   twoFactorEnabled?: boolean;
 }
 

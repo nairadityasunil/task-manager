@@ -21,6 +21,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Badge, Button, buttonClass, cn, Field, inputClass, selectClass, textareaClass } from "@/components/ui";
+import { AiKeySetup, useAiProviderReady } from "@/features/ai/AiKeySetup";
 
 interface PlanningSessionItem {
   id: string;
@@ -78,6 +79,10 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
   // Model Selector State
   const [selectedProvider, setSelectedProvider] = useState<"gemini" | "openai" | "anthropic">("gemini");
   const [selectedModel, setSelectedModel] = useState<string>("gemini-3.6-flash");
+  const providerReady = useAiProviderReady(selectedProvider);
+  /** The server said there is no key (e.g. it was removed meanwhile). */
+  const [keyMissing, setKeyMissing] = useState(false);
+  const needsKey = !providerReady || keyMissing;
 
   useEffect(() => {
     if (isOpen) {
@@ -206,6 +211,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
       );
       setGeneratedPlan(plan);
       setLastDelta(null);
+      setKeyMissing(false);
 
       // Auto-title session
       const title = plan.name || prompt.slice(0, 32);
@@ -223,7 +229,11 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
       ]);
       setPrompt("");
     } catch (err: unknown) {
-      const errorObj = err as { response?: { data?: { error?: string } }; message?: string };
+      const errorObj = err as { response?: { data?: { error?: string; code?: string } }; message?: string };
+      if (errorObj.response?.data?.code === "MISSING_API_KEY") {
+        setKeyMissing(true);
+        return;
+      }
       setError(errorObj.response?.data?.error || errorObj.message || "Failed to generate project plan");
     } finally {
       setLoading(false);
@@ -473,6 +483,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
               {!generatedPlan ? (
                 /* System Prompt Input */
                 <form onSubmit={handleGenerate} className="mx-auto max-w-2xl space-y-5 pt-2 sm:pt-6">
+                  {needsKey ? <AiKeySetup onSaved={() => setKeyMissing(false)} provider={selectedProvider} /> : null}
                   <div className="mb-2 space-y-1.5 text-center">
                     <h4 className="m-0 text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">Describe Your System or Product Idea</h4>
                     <p className="mx-auto m-0 max-w-lg text-[13px] leading-relaxed text-slate-500">Describe the basic workflow in simple language. The AI will decompose actors, system modules, feature specs, effort, and risks without writing source code.</p>
@@ -526,7 +537,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   )}
 
                   <div className="flex justify-end pt-1">
-                    <Button className="h-10 w-full" disabled={loading} icon={Sparkles} type="submit" variant="primary">
+                    <Button className="h-10 w-full" disabled={loading || needsKey} icon={Sparkles} type="submit" variant="primary">
                       {loading ? "Synthesizing Architecture..." : "Synthesize Technical Plan & PRD"}
                     </Button>
                   </div>

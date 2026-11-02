@@ -39,6 +39,15 @@ export const normalizeApiError = (error: unknown): NormalizedApiError => {
     };
   }
 
+  // Already normalized (e.g. passed through twice).
+  if (isRecord(error) && typeof error.message === 'string' && typeof error.code === 'string' && !(error instanceof Error)) {
+    return {
+      message: error.message,
+      code: error.code,
+      status: typeof error.status === 'number' ? error.status : undefined
+    };
+  }
+
   if (error instanceof Error) {
     return {
       message: error.message,
@@ -47,10 +56,21 @@ export const normalizeApiError = (error: unknown): NormalizedApiError => {
   }
 
   return {
-    message: 'Unexpected error',
+    message: 'Something went wrong. Please try again.',
     code: 'UNKNOWN_ERROR'
   };
 };
+
+/**
+ * The request came from a session the server treats as an automated agent
+ * (a script or automated browser on a person's login), on an endpoint only
+ * people may use: sign-in, credentials and agent governance.
+ */
+export const isAgentForbidden = (error: unknown): boolean =>
+  axios.isAxiosError(error) &&
+  error.response?.status === 403 &&
+  isRecord(error.response.data) &&
+  error.response.data.error === 'agent_forbidden';
 
 export const toDisplayErrorMessage = (error: unknown): string =>
   normalizeApiError(error).message;

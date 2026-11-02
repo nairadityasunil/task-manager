@@ -50,7 +50,7 @@ import {
 } from '@/services/agents';
 import { vendorsApi, type VendorListItem } from '@/services/vendors';
 import type { Project } from '@/types/project';
-import { toDisplayErrorMessage } from '@/utils/apiError';
+import { isAgentForbidden, toDisplayErrorMessage } from '@/utils/apiError';
 
 export type AgentsTab = 'overview' | 'inventory' | 'vendors' | 'approvals' | 'policies' | 'activity' | 'costs' | 'notifications' | 'compliance';
 const TABS: AgentsTab[] = ['overview', 'inventory', 'vendors', 'approvals', 'policies', 'activity', 'costs', 'notifications', 'compliance'];
@@ -100,6 +100,30 @@ function AlertsCard({
           ))}
         </ul>
       )}
+    </Card>
+  );
+}
+
+/** Shown when this session is an automated browser: governance is for people only. */
+function AgentSessionNotice(): JSX.Element {
+  return (
+    <Card className="border-amber-200" data-testid="agent-session-notice">
+      <CardHeader
+        description="This browser identifies itself as automated (for example headless Chrome, Playwright or Selenium), so it is treated as an agent using your login."
+        icon={<EyeOff className="h-4 w-4 text-amber-500" />}
+        title="Agent Governance is for people"
+      />
+      <div className="space-y-2 p-4 text-[13px] text-slate-600">
+        <p className="m-0">
+          Agents cannot see or change agent governance, sign-in or credentials, so an agent cannot approve or unblock itself. The rest of the
+          workspace works as usual, under your agent policies.
+        </p>
+        <ul className="m-0 list-disc space-y-1 pl-5">
+          <li>Open this page in your normal browser to manage agents, vendors and policies.</li>
+          <li>For automated access, give the tool its own agent key under Agent Governance instead of your login.</li>
+          <li>This session is listed under Agents as an unregistered agent, where an admin can review or block it.</li>
+        </ul>
+      </div>
     </Card>
   );
 }
@@ -283,6 +307,8 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
   const confirm = useConfirm();
 
   const [overview, setOverview] = useState<AgentOverview | null>(null);
+  /** null until the first load: whether this session is an automated agent (governance refused). */
+  const [agentSession, setAgentSession] = useState<boolean | null>(null);
   const [agents, setAgents] = useState<Agent[] | null>(null);
   const [alerts, setAlerts] = useState<AgentAlert[]>([]);
   const [openAgent, setOpenAgent] = useState<string | null>(null);
@@ -300,6 +326,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
     try {
       setVendors(await vendorsApi.list(workspaceId));
     } catch (error) {
+      if (isAgentForbidden(error)) return;
       setVendors((current) => current ?? []);
       showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
     }
@@ -321,7 +348,13 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
       setOverview(nextOverview);
       setAgents(nextAgents);
       setAlerts(nextAlerts);
+      setAgentSession(false);
     } catch (error) {
+      if (isAgentForbidden(error)) {
+        setAgentSession(true);
+        return;
+      }
+      setAgentSession(false);
       setAgents((current) => current ?? []);
       showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
     }
@@ -370,6 +403,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
     <div className="h-full overflow-y-auto">
       <PageHeader
         actions={
+          agentSession ? null : (
           <>
             {canAdmin ? (
               <Button icon={OctagonX} onClick={() => void killSwitch()} size="sm" variant="danger">
@@ -380,6 +414,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
               New agent key
             </Button>
           </>
+          )
         }
         description="See every AI agent and integration acting in your workspace, control what it can do and keep a record."
         icon={ShieldHalf}
@@ -406,6 +441,10 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
       </PageHeader>
 
       <div className="space-y-4 px-3 py-4 sm:px-5 lg:px-6">
+        {agentSession ? <AgentSessionNotice /> : null}
+        {agentSession === null && tab !== 'overview' && tab !== 'inventory' ? <div className="h-64 animate-pulse rounded-xl bg-slate-100" /> : null}
+        {agentSession === false || (agentSession === null && (tab === 'overview' || tab === 'inventory')) ? (
+        <>
         {tab === 'overview' ? (
           <>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -558,6 +597,8 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
         {tab === 'costs' ? <CostsPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'notifications' ? <NotificationsPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'compliance' ? <CompliancePanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
+        </>
+        ) : null}
       </div>
 
       {openAgent ? (
