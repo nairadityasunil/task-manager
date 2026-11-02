@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useToast } from "@/context/ToastContext";
 import { workspaceService, Workspace } from "../services/workspaces";
 import { Plus, UserPlus, Check, ChevronDown, Building } from "lucide-react";
 
@@ -11,6 +12,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
   currentWorkspaceId,
   onSelectWorkspace,
 }) => {
+  const { showToast } = useToast();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -66,7 +68,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({
       await workspaceService.inviteMember(activeWorkspace.id, inviteEmail);
       setInviteEmail("");
       setShowInviteModal(false);
-      alert(`Invitation sent to ${inviteEmail}`);
+      showToast({ variant: 'success', message: `Invitation sent to ${inviteEmail}` });
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { error?: string } } };
       setError(errorObj.response?.data?.error || "Failed to invite user");

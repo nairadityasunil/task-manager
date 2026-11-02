@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Trash2, Shield } from 'lucide-react';
 import type { WorkspaceMember, WorkspaceRole } from '../types/workspace';
 import { ROLE_HIERARCHY } from '../types/workspace';
-import { Badge, Button, selectClass, type BadgeTone } from '@/components/ui';
+import { Badge, Button, selectClass, type BadgeTone, Select } from '@/components/ui';
 
 interface WorkspaceMemberRowProps {
   member: WorkspaceMember;
@@ -84,7 +84,7 @@ export function WorkspaceMemberRow({
 
       <div className="flex shrink-0 items-center gap-2 pl-11 sm:pl-0">
         {canModify ? (
-          <select
+          <Select
             value={member.role}
             onChange={(e) => void handleRoleChange(e.target.value as WorkspaceRole)}
             disabled={isUpdating}
@@ -96,7 +96,7 @@ export function WorkspaceMemberRow({
                 {r}
               </option>
             ))}
-          </select>
+          </Select>
         ) : (
           <Badge tone={ROLE_TONES[member.role]}>{member.role}</Badge>
         )}

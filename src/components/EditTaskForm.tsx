@@ -5,7 +5,7 @@ import type { Project } from '@/types/project';
 import { TASK_WORKFLOW_STATUS_OPTIONS, type Task, type TaskWorkflowStatus, type TaskPriority } from '@/types/task';
 import AssigneeSelector from './AssigneeSelector';
 import { AlertCircle } from 'lucide-react';
-import { Button, Field, inputClass, selectClass, textareaClass } from '@/components/ui';
+import { Button, Field, selectClass, textareaClass, Select, DateInput, Input } from '@/components/ui';
 
 interface EditTaskFormProps {
   epics: Epic[];
@@ -114,9 +114,8 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
   return (
     <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
       <Field label="Title">
-        <input
+        <Input
           autoFocus
-          className={inputClass}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="Task title"
           type="text"
@@ -136,7 +135,7 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Priority">
-          <select
+          <Select
             className={selectClass}
             onChange={(event) => setPriority(event.target.value as TaskPriority)}
             value={priority}
@@ -145,11 +144,11 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
             <option value="MEDIUM">Medium</option>
             <option value="HIGH">High</option>
             <option value="CRITICAL">Critical</option>
-          </select>
+          </Select>
         </Field>
 
         <Field label="Status">
-          <select
+          <Select
             className={selectClass}
             onChange={(event) => setStatus(event.target.value as TaskWorkflowStatus)}
             value={status}
@@ -159,7 +158,7 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
                 {option.label}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       </div>
 
@@ -181,7 +180,7 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
         {isBlocked && (
           <div className="mt-3 border-t border-red-200/60 pt-3">
             <Field label="Blocking task">
-              <select
+              <Select
                 className={`${selectClass} !border-red-200 focus:!border-red-500`}
                 onChange={(event) => setBlockedByTaskId(event.target.value)}
                 value={blockedByTaskId}
@@ -192,7 +191,7 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
                     {t.title}
                   </option>
                 ))}
-              </select>
+              </Select>
             </Field>
           </div>
         )}
@@ -200,10 +199,8 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Date">
-          <input
-            className={inputClass}
+          <DateInput
             onChange={(event) => setDate(event.target.value)}
-            type="date"
             value={date}
           />
         </Field>
@@ -221,7 +218,7 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label={<>Project {optional}</>}>
-          <select
+          <Select
             className={selectClass}
             disabled={!canChangeProject}
             onChange={(event) => handleProjectChange(event.target.value)}
@@ -233,12 +230,12 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
                 {project.name}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
 
         {projectId && (
           <Field label={<>Epic {optional}</>}>
-            <select
+            <Select
               className={selectClass}
               onChange={(event) => setEpicId(event.target.value)}
               value={epicId}
@@ -249,7 +246,7 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
                   {epic.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
         )}
       </div>

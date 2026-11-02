@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Building2, CalendarClock, Download, FileText, Plus, Search, X } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
-import { Badge, Button, Card, CardHeader, Field, cn, inputClass, selectClass } from '@/components/ui';
+import { Badge, Button, Card, CardHeader, Field, cn, inputClass, selectClass, Select, Input } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
 import { timeAgo } from '@/services/agents';
 import {
@@ -121,19 +121,19 @@ function AddVendor({
         ) : null}
         <div className="grid gap-3 sm:grid-cols-[1fr_1fr_180px_auto] sm:items-end">
           <Field label="Name">
-            <input className={inputClass} maxLength={80} onChange={(e) => setName(e.target.value)} placeholder="e.g. Acme Analytics" value={name} />
+            <Input maxLength={80} onChange={(e) => setName(e.target.value)} placeholder="e.g. Acme Analytics" value={name} />
           </Field>
           <Field label="Website">
-            <input className={inputClass} maxLength={300} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" value={website} />
+            <Input maxLength={300} onChange={(e) => setWebsite(e.target.value)} placeholder="https://" value={website} />
           </Field>
           <Field label="Category">
-            <select className={selectClass} onChange={(e) => setCategory(e.target.value as VendorCategory)} value={category}>
+            <Select className={selectClass} onChange={(e) => setCategory(e.target.value as VendorCategory)} value={category}>
               {(Object.keys(VENDOR_CATEGORY_LABELS) as VendorCategory[]).map((c) => (
                 <option key={c} value={c}>
                   {VENDOR_CATEGORY_LABELS[c]}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Button
             disabled={!name.trim()}
@@ -212,7 +212,7 @@ export function VendorsPanel({ canAdmin, workspaceId, vendors, onOpen, onChanged
               value={query}
             />
           </div>
-          <select
+          <Select
             aria-label="Vendor status"
             className={cn(selectClass, 'h-8 sm:w-48')}
             onChange={(e) => setStatus(e.target.value as VendorStatus | '')}
@@ -224,7 +224,7 @@ export function VendorsPanel({ canAdmin, workspaceId, vendors, onOpen, onChanged
                 {VENDOR_STATUS_LABELS[s]} ({counts[s] ?? 0})
               </option>
             ))}
-          </select>
+          </Select>
           <div className="flex flex-wrap gap-1.5 sm:ml-auto">
             <Button icon={Download} onClick={() => void download('register', 'csv')} size="sm">
               Register CSV

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Check, Inbox, X } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
-import { Button, Card, cn } from '@/components/ui';
+import { Button, Card, cn, Input } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
 import { agentName, agentsApi, timeAgo, userLabel, type AgentApproval, type ApprovalStatus } from '@/services/agents';
 import { toDisplayErrorMessage } from '@/utils/apiError';
@@ -121,9 +121,9 @@ export function ApprovalsInbox({ onChanged }: { onChanged?: () => void }): JSX.E
                 {approval.note ? <p className="m-0 mt-2 text-xs text-slate-600">Note: {approval.note}</p> : null}
                 {pending ? (
                   <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <input
+                    <Input
                       aria-label="Note"
-                      className="h-8 min-w-0 flex-1 rounded-lg border border-slate-300 px-2.5 text-[13px] focus:border-emerald-500 focus:outline-none"
+                      className="min-w-0 flex-1"
                       onChange={(e) => setNotes((n) => ({ ...n, [approval.id]: e.target.value }))}
                       placeholder="Optional note"
                       value={notes[approval.id] ?? ''}

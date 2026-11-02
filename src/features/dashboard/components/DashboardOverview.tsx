@@ -118,7 +118,7 @@ export default function DashboardOverview({
 
   return (
     <div className="flex min-h-full flex-col bg-white">
-      <div className="mx-auto grid w-full max-w-[1120px] gap-7 px-3 py-6 sm:px-6 lg:px-8">
+      <div className="grid w-full gap-7 px-3 py-6 sm:px-6 lg:px-8">
         {/* Greeting */}
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
           <div className="min-w-0">

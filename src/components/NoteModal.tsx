@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 
 import Modal from '@/components/Modal';
-import { Button, Field, inputClass, textareaClass } from '@/components/ui';
+import { Button, Field, textareaClass, Input } from '@/components/ui';
 import type { Note } from '@/types/note';
 
 interface NoteModalProps {
@@ -86,9 +86,8 @@ function NoteModal({
       <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
         {showTitle ? (
           <Field label="Title">
-            <input
+            <Input
               autoFocus
-              className={inputClass}
               onChange={(event) => setTitle(event.target.value)}
               placeholder={titlePlaceholder}
               type="text"

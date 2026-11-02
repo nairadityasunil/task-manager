@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
 
-import { Button, Field, inputClass, textareaClass } from '@/components/ui';
+import { Button, Field, textareaClass, Input } from '@/components/ui';
 
 interface ProjectFormProps {
   initialDescription?: string;
@@ -48,7 +48,7 @@ function ProjectForm({
   return (
     <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
       <Field label="Project name">
-        <input className={inputClass} onChange={(event) => setName(event.target.value)} placeholder="Backend" type="text" value={name} />
+        <Input onChange={(event) => setName(event.target.value)} placeholder="Backend" type="text" value={name} />
       </Field>
       <Field label="Description">
         <textarea

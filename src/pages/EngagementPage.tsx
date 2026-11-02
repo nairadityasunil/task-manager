@@ -1,55 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
+import Modal from '@/components/Modal';
 import { useParams } from 'react-router-dom';
-import {
-  BarChart3,
-  CheckSquare,
-  Eye,
-  Layers3,
-  Radio,
-  Rocket,
-  Save,
-  Sparkles,
-  UsersRound,
-  PencilLine
-} from 'lucide-react';
+import { BarChart3, CheckSquare, Eye, Layers3, Radio, Save, Sparkles, UsersRound, PencilLine } from 'lucide-react';
 
-import {
-  createChecklist,
-  createGuide,
-  createSurvey,
-  deleteChecklist,
-  deleteGuide,
-  deleteSurvey,
-  getGuideAnalyticsSummary,
-  listChecklists,
-  listGuides,
-  listSurveys,
-  updateChecklist,
-  updateGuide,
-  updateGuideStatus,
-  updateSurvey,
-  listSurveyResponses,
-  type GuideAnalyticsSummary,
-  type SurveyResponse,
-  type GuidePayload,
-  type SurveyPayload,
-  type ChecklistPayload
-} from '@/lib/engagement/api';
+import { createChecklist, createGuide, createSurvey, deleteChecklist, deleteGuide, deleteSurvey, getGuideAnalyticsSummary, listChecklists, listGuides, listSurveys, updateChecklist, updateGuide, updateGuideStatus, updateSurvey, listSurveyResponses, type GuideAnalyticsSummary, type SurveyResponse, type GuidePayload, type SurveyPayload, type ChecklistPayload } from '@/lib/engagement/api';
 import { listIntegrations, type SdkIntegration } from '@/lib/sdk-integrations/api';
 import { useConfirm } from '@/context/ConfirmationContext';
 import PageHeader from '@/components/PageHeader';
-import { Badge, Button, Field, StatCard, Tabs, cn, inputClass, selectClass } from '@/components/ui';
-import {
-  ContentEditor,
-  EditorDialog,
-  GuideTypePicker,
-  TemplatePicker,
-  newChecklistItem,
-  newGuideStep,
-  newQuestion,
-  validateExperience,
-  type ExperienceTemplate
-} from '@/features/engagement/components/ExperienceEditor';
+import { Badge, Button, Field, StatCard, Tabs, cn, inputClass, selectClass, Select } from '@/components/ui';
+import { ContentEditor, EditorDialog, GuideTypePicker, TemplatePicker, newChecklistItem, newGuideStep, newQuestion, validateExperience, type ExperienceTemplate } from '@/features/engagement/components/ExperienceEditor';
 import SegmentsPanel from '@/features/engagement/components/SegmentsPanel';
 import ExperienceLibrary from '@/features/engagement/components/ExperienceLibrary';
 import ExperienceAnalyticsModal from '@/features/engagement/components/ExperienceAnalyticsModal';
@@ -220,7 +179,7 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
           tone="amber"
           actions={integrations.length > 0 && !propSdkIntegrationId ? (
             <div className="w-full sm:w-64">
-              <select
+              <Select
                 aria-label="Integration"
                 value={activeIntegrationId}
                 onChange={(e) => setActiveIntegrationId(e.target.value)}
@@ -231,7 +190,7 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
                     {integration.name} ({integration.environment})
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           ) : undefined}
         >
@@ -545,9 +504,9 @@ function TextInput({ label, value, onChange }: { label: string; value: string; o
 function SelectInput({ label, value, values, onChange }: { label: string; value: string; values: string[]; onChange: (value: string) => void }): JSX.Element {
   return (
     <Field className="min-w-0" label={label}>
-      <select className={cn(selectClass, 'min-w-0')} onChange={(event) => onChange(event.target.value)} value={value}>
+      <Select className={cn(selectClass, 'min-w-0')} onChange={(event) => onChange(event.target.value)} value={value}>
         {values.map((entry) => <option key={entry} value={entry}>{entry.charAt(0) + entry.slice(1).toLowerCase()}</option>)}
-      </select>
+      </Select>
     </Field>
   );
 }
@@ -933,26 +892,24 @@ function PublishConfirmModal({
 }): JSX.Element | null {
   if (!isOpen || !experience) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5">
-      <div aria-modal="true" className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6" role="dialog">
-        <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700">
-          <Rocket size={18} />
-        </span>
-        <h3 className="m-0 mt-4 text-base font-semibold text-slate-900">Publish Experience?</h3>
-        <p className="m-0 mt-1.5 text-sm text-slate-500">
-          Are you sure you want to publish <span className="font-medium text-slate-800">"{experience.title}"</span>?
-          This will make it live and visible to matching users immediately.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-end gap-2">
-          <Button onClick={onClose}>
-            Cancel
-          </Button>
+    <Modal
+      footer={
+        <>
+          <Button onClick={onClose}>Cancel</Button>
           <Button onClick={onConfirm} variant="accent">
             Publish Live
           </Button>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+      maxWidth="max-w-md"
+      onClose={onClose}
+      title="Publish Experience?"
+    >
+      <p className="m-0 text-sm text-slate-600">
+        Are you sure you want to publish <span className="font-medium text-slate-800">"{experience.title}"</span>? This will make it live and
+        visible to matching users immediately.
+      </p>
+    </Modal>
   );
 }
 

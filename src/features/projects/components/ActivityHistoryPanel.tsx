@@ -1,24 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  History,
-  Plus,
-  Pencil,
-  Trash2,
-  UserPlus,
-  UserMinus,
-  ArrowRightLeft,
-  Loader2,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  ShieldCheck,
-  ShieldAlert,
-  Scale,
-} from 'lucide-react';
+import { History, Plus, Pencil, Trash2, UserPlus, UserMinus, ArrowRightLeft, Loader2, Filter, ChevronLeft, ChevronRight, ShieldCheck, ShieldAlert, Scale } from 'lucide-react';
 import { getProjectActivities, verifyProjectAuditChain, getRetentionPolicy, updateRetentionPolicy, type ActivityLog, type RetentionPolicy } from '@/services/activity';
 import Modal from '@/components/Modal';
 import { useToast } from '@/context/ToastContext';
-import { Badge, Button, Field, inputClass, selectClass } from '@/components/ui';
+import { Badge, Button, Field, selectClass, Select, Checkbox, Input } from '@/components/ui';
 
 interface ActivityHistoryPanelProps {
   projectId: string;
@@ -201,7 +186,7 @@ export function ActivityHistoryPanel({
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-4 py-3 sm:px-5">
         <div className="relative flex items-center">
           <Filter className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-slate-400" />
-          <select
+          <Select
             aria-label="Filter activity"
             value={entityFilter}
             onChange={(e) => {
@@ -215,7 +200,7 @@ export function ActivityHistoryPanel({
                 {opt.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <Button icon={ShieldCheck} loading={verifying} onClick={handleVerifyChain} size="sm" variant="secondary">
@@ -357,23 +342,20 @@ export function ActivityHistoryPanel({
           </p>
 
           <Field label="Retention days">
-            <input
+            <Input
               type="number"
               min="0"
               value={retentionDaysInput}
               onChange={(e) => setRetentionDaysInput(e.target.value)}
               placeholder="e.g. 2555 for 7 years (leave empty for infinite)"
-              className={inputClass}
             />
           </Field>
 
           <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3" htmlFor="legalHold">
-            <input
-              type="checkbox"
+            <Checkbox
               id="legalHold"
               checked={legalHoldInput}
               onChange={(e) => setLegalHoldInput(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 accent-emerald-600"
             />
             <span className="text-sm font-medium text-red-600">Enable Legal Hold</span>
           </label>

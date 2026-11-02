@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
+import { useConfirm } from "@/context/ConfirmationContext";
 import documentService, { Document } from "../services/documents";
 import centralizedAiService from "../services/centralizedAi";
 import { FileText, Sparkles, Plus, Edit3, Trash2, BookOpen, Save, X } from "lucide-react";
 
+import { Select } from '@/components/ui';
 interface ProjectDocsPanelProps {
   projectId: string;
 }
 
 export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId }) => {
+  const confirm = useConfirm();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [loading, setLoading] = useState(false);
@@ -96,7 +99,7 @@ export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId })
   };
 
   const handleDelete = async (docId: string) => {
-    if (!confirm("Are you sure you want to delete this document?")) return;
+    if (!(await confirm({ title: 'Delete document?', message: 'This document is removed for everyone on the project.', confirmText: 'Delete', type: 'danger' }))) return;
     try {
       await documentService.deleteDocument(docId);
       setDocuments((prev) => prev.filter((d) => d._id !== docId));
@@ -269,7 +272,7 @@ export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId })
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
                   Document Type
                 </label>
-                <select
+                <Select
                   value={docType}
                   onChange={(e) => setDocType(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none"
@@ -280,7 +283,7 @@ export const ProjectDocsPanel: React.FC<ProjectDocsPanelProps> = ({ projectId })
                   <option value="ARCHITECTURE">Architecture Document</option>
                   <option value="MEETING_NOTES">Meeting Notes</option>
                   <option value="GENERAL">General Document</option>
-                </select>
+                </Select>
               </div>
 
               <div>

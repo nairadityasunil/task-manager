@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
 
-import { Button, Field, inputClass, selectClass, textareaClass } from '@/components/ui';
+import { Button, Field, selectClass, textareaClass, Select, Input } from '@/components/ui';
 import { EPIC_STATUS_OPTIONS, type EpicStatus } from '@/types/epic';
 
 interface EpicFormProps {
@@ -51,7 +51,7 @@ function EpicForm({
   return (
     <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
       <Field label="Epic name">
-        <input className={inputClass} onChange={(event) => setName(event.target.value)} placeholder="Launch workflow cleanup" type="text" value={name} />
+        <Input onChange={(event) => setName(event.target.value)} placeholder="Launch workflow cleanup" type="text" value={name} />
       </Field>
 
       <Field label="Description">
@@ -65,13 +65,13 @@ function EpicForm({
       </Field>
 
       <Field label="Status">
-        <select className={selectClass} onChange={(event) => setStatus(event.target.value as EpicStatus)} value={status}>
+        <Select className={selectClass} onChange={(event) => setStatus(event.target.value as EpicStatus)} value={status}>
           {EPIC_STATUS_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
-        </select>
+        </Select>
       </Field>
 
       {errorMessage ? <p className="m-0 text-sm text-red-600">{errorMessage}</p> : null}

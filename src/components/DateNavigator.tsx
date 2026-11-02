@@ -1,5 +1,8 @@
-import { useRef, type ChangeEvent } from 'react';
+import { useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CalendarDays, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+
+import { Calendar, parseIsoDate, popoverPanelClass, usePopover } from '@/components/ui';
 
 interface DateNavigatorProps {
   date: string;
@@ -46,23 +49,9 @@ const NavBtn = ({ children, disabled, onClick, title }: {
 );
 
 function DateNavigator({ date, disabled = false, onChange }: DateNavigatorProps): JSX.Element {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    onChange(event.target.value);
-  };
-
-  const handleContainerClick = (): void => {
-    if (disabled) return;
-    try {
-      // Modern browsers support showPicker() on input[type="date"]
-      inputRef.current?.showPicker();
-    } catch {
-      // Fallback for older browsers
-      inputRef.current?.focus();
-      inputRef.current?.click();
-    }
-  };
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
+  const { triggerRef, panelRef, style } = usePopover<HTMLButtonElement, HTMLDivElement>({ open, onClose: close });
 
   const today = getTodayDate();
 
@@ -72,24 +61,37 @@ function DateNavigator({ date, disabled = false, onChange }: DateNavigatorProps)
         <ChevronLeft size={16} />
       </NavBtn>
 
-      {/* Date pill */}
-      <div
-        className="relative flex h-8 min-w-[136px] cursor-pointer items-center gap-2 rounded-md bg-white px-2.5 shadow-sm"
-        onClick={handleContainerClick}
+      {/* Date pill: opens a calendar */}
+      <button
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        aria-label="Choose date"
+        className="flex h-8 min-w-[136px] items-center gap-2 rounded-md bg-white px-2.5 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50"
+        disabled={disabled}
+        onClick={() => setOpen((isOpen) => !isOpen)}
+        ref={triggerRef}
+        type="button"
       >
         <CalendarDays className="shrink-0 text-slate-400" size={15} />
-        <input
-          ref={inputRef}
-          className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
-          disabled={disabled}
-          onChange={handleInputChange}
-          type="date"
-          value={date}
-        />
         <span className="whitespace-nowrap text-[13px] font-medium text-slate-700">
-          {new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+          {(parseIsoDate(date) ?? new Date()).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
         </span>
-      </div>
+      </button>
+      {open
+        ? createPortal(
+            <div aria-label="Choose date" className={popoverPanelClass} data-calendar ref={panelRef} role="dialog" style={style}>
+              <Calendar
+                autoFocus
+                onSelect={(next) => {
+                  setOpen(false);
+                  onChange(next);
+                }}
+                value={date}
+              />
+            </div>,
+            document.body
+          )
+        : null}
 
       <NavBtn disabled={disabled} onClick={() => onChange(shiftDate(date, 1))} title="Next Day">
         <ChevronRight size={16} />

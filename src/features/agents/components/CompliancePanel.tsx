@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Building2, CheckCircle2, CircleAlert, CircleDashed, Clock3, Download, EyeOff, FileCheck2, KeyRound } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
-import { Badge, Button, Card, CardHeader, cn, selectClass } from '@/components/ui';
+import { Badge, Button, Card, CardHeader, cn, selectClass, Select } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
 import { agentsApi, type ComplianceReport, type GovernanceSettings } from '@/services/agents';
 import { toDisplayErrorMessage } from '@/utils/apiError';
@@ -167,7 +167,7 @@ export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string
             <label className="text-[13px] text-slate-600" htmlFor="inactive-agent-days">
               Suspend agents that have not been used for
             </label>
-            <select
+            <Select
               className={cn(selectClass, 'h-8 w-40')}
               disabled={saving}
               id="inactive-agent-days"
@@ -179,7 +179,7 @@ export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string
                   {days ? `${days} days` : 'Never'}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
             Owners can resume a suspended agent; using or confirming an agent restarts its clock. Access is reviewed every 90 days.

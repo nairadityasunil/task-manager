@@ -211,7 +211,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
             </div>
           </div>
         ) : (
-          <div className="mx-auto w-full max-w-5xl space-y-4">
+          <div className="w-full space-y-4">
             {/* Canary Deployment Status Banner */}
             {activeCanary && (
               <CanaryDeploymentBanner

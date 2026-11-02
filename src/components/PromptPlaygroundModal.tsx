@@ -28,6 +28,7 @@ import {
   PlaygroundRunResult,
 } from "@/services/prompts";
 
+import { Select, Radio, Slider } from '@/components/ui';
 export interface PlaygroundRunItem {
   id: string;
   timestamp: string;
@@ -507,7 +508,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                   <FileText className="w-3.5 h-3.5 text-slate-700" />
                   Select Prompt Template
                 </label>
-                <select
+                <Select
                   value={selectedPromptId}
                   onChange={(e) => setSelectedPromptId(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-900 focus:outline-none focus:border-slate-400"
@@ -517,7 +518,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                       {p.name} (v{p.version})
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div>
@@ -525,7 +526,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                   <Layers className="w-3.5 h-3.5 text-slate-700" />
                   Prompt Version
                 </label>
-                <select
+                <Select
                   value={selectedVersionNum}
                   onChange={(e) => handleVersionChange(Number(e.target.value))}
                   className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 focus:outline-none focus:border-slate-400"
@@ -535,7 +536,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                       v{v.version} — {v.changeNote || "Immutable Version"}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
             </div>
 
@@ -649,28 +650,24 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                         {varType === "boolean" ? (
                           <div className="flex items-center gap-4 pt-1">
                             <label className="flex items-center gap-2 text-xs font-medium text-slate-900 cursor-pointer">
-                              <input
-                                type="radio"
+                              <Radio
                                 name={`var-${varName}`}
                                 checked={val === true || val === "true"}
                                 onChange={() => handleVariableValChange(varName, true)}
-                                className="text-slate-900 focus:ring-0"
                               />
                               true
                             </label>
                             <label className="flex items-center gap-2 text-xs font-medium text-slate-900 cursor-pointer">
-                              <input
-                                type="radio"
+                              <Radio
                                 name={`var-${varName}`}
                                 checked={val === false || val === "false"}
                                 onChange={() => handleVariableValChange(varName, false)}
-                                className="text-slate-900 focus:ring-0"
                               />
                               false
                             </label>
                           </div>
                         ) : varType === "enum" && schemaDef?.options ? (
-                          <select
+                          <Select
                             value={String(val)}
                             onChange={(e) => handleVariableValChange(varName, e.target.value)}
                             className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-slate-400"
@@ -681,7 +678,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                                 {opt}
                               </option>
                             ))}
-                          </select>
+                          </Select>
                         ) : String(val).length > 60 || varType === "json" ? (
                           <textarea
                             value={String(val)}
@@ -716,7 +713,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-800 mb-1">AI Provider</label>
-                  <select
+                  <Select
                     value={provider}
                     onChange={(e) => setProvider(e.target.value)}
                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-900 focus:outline-none focus:border-slate-400"
@@ -724,12 +721,12 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                     <option value="gemini">Google Gemini AI</option>
                     <option value="openai">OpenAI</option>
                     <option value="anthropic">Anthropic Claude</option>
-                  </select>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-800 mb-1">Model Architecture</label>
-                  <select
+                  <Select
                     value={modelName}
                     onChange={(e) => setModelName(e.target.value)}
                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-900 focus:outline-none focus:border-slate-400"
@@ -754,7 +751,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                         <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
                       </>
                     )}
-                  </select>
+                  </Select>
                 </div>
               </div>
 
@@ -765,14 +762,12 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                     <span>Temperature</span>
                     <span className="font-mono text-slate-900">{temperature}</span>
                   </div>
-                  <input
-                    type="range"
+                  <Slider
                     min="0"
                     max="1"
                     step="0.05"
                     value={temperature}
                     onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                    className="w-full accent-emerald-600 cursor-pointer"
                   />
                 </div>
 
@@ -794,14 +789,12 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                     <span>Top P</span>
                     <span className="font-mono text-slate-900">{topP}</span>
                   </div>
-                  <input
-                    type="range"
+                  <Slider
                     min="0"
                     max="1"
                     step="0.05"
                     value={topP}
                     onChange={(e) => setTopP(parseFloat(e.target.value))}
-                    className="w-full accent-emerald-600 cursor-pointer"
                   />
                 </div>
               </div>
@@ -857,7 +850,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <span className="text-[11px] uppercase font-semibold text-slate-600 block mb-1">Run A</span>
-                    <select
+                    <Select
                       value={compareRunIdA}
                       onChange={(e) => setCompareRunIdA(e.target.value)}
                       className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-900"
@@ -867,12 +860,12 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                           Run #{runHistory.length - i} ({r.timestamp}) — {r.modelName}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
 
                   <div>
                     <span className="text-[11px] uppercase font-semibold text-slate-600 block mb-1">Run B</span>
-                    <select
+                    <Select
                       value={compareRunIdB}
                       onChange={(e) => setCompareRunIdB(e.target.value)}
                       className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-900"
@@ -882,7 +875,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                           Run #{runHistory.length - i} ({r.timestamp}) — {r.modelName}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
                 </div>
 
@@ -1150,7 +1143,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-800 mb-1">Category</label>
-                <select
+                <Select
                   value={newPromptCategory}
                   onChange={(e) => setNewPromptCategory(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-slate-400"
@@ -1160,7 +1153,7 @@ export const PromptPlaygroundModal: React.FC<PromptPlaygroundModalProps> = ({
                   <option value="backend">Backend</option>
                   <option value="frontend">Frontend</option>
                   <option value="testing">Testing</option>
-                </select>
+                </Select>
               </div>
 
               <div>

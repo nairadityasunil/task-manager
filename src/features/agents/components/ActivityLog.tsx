@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Download, History, Undo2 } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
-import { Button, Card, CardHeader, selectClass } from '@/components/ui';
+import { Button, Card, CardHeader, selectClass, Select } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
 import { agentName, agentsApi, timeAgo, type ActivityOutcome, type AgentActivity } from '@/services/agents';
@@ -79,13 +79,13 @@ export function ActivityLog({ workspaceId, canAdmin }: { workspaceId: string | n
       <CardHeader
         actions={
           <>
-            <select aria-label="Outcome" className={`${selectClass} h-8 sm:w-44`} onChange={(e) => setOutcome(e.target.value as ActivityOutcome | '')} value={outcome}>
+            <Select aria-label="Outcome" className={`${selectClass} h-8 sm:w-44`} onChange={(e) => setOutcome(e.target.value as ActivityOutcome | '')} value={outcome}>
               <option value="">All outcomes</option>
               <option value="allowed">Allowed</option>
               <option value="blocked">Blocked</option>
               <option value="pending_approval">Held for approval</option>
               <option value="error">Failed</option>
-            </select>
+            </Select>
             {canAdmin ? (
               <>
                 <Button icon={Download} onClick={() => void exportAs('csv')} size="sm">

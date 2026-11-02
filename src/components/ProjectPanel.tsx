@@ -27,7 +27,7 @@ import DataTable from './DataTable';
 import { useConfirm } from '@/context/ConfirmationContext';
 import EmptyState from './EmptyState';
 import PageHeader from './PageHeader';
-import { Badge, Button, Card, IconTile, cn, inputClass, type TileTone } from '@/components/ui';
+import { Badge, Button, Card, IconTile, cn, inputClass, type TileTone, Checkbox } from '@/components/ui';
 
 const PROJECT_TONES: TileTone[] = ['sky', 'violet', 'amber', 'emerald', 'rose', 'indigo', 'teal', 'orange'];
 
@@ -110,10 +110,8 @@ function ProjectPanel({
       meta: { className: 'hidden sm:table-cell !pr-0' },
       header: ({ table }) => (
         <div className="flex items-center justify-center">
-          <input
-            type="checkbox"
+          <Checkbox
             aria-label="Select all projects"
-            className="h-4 w-4 cursor-pointer rounded accent-emerald-600"
             checked={table.getIsAllPageRowsSelected()}
             ref={(el) => {
               if (el) {
@@ -126,10 +124,8 @@ function ProjectPanel({
       ),
       cell: ({ row }) => (
         <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-          <input
-            type="checkbox"
+          <Checkbox
             aria-label={`Select ${row.original.name}`}
-            className="h-4 w-4 cursor-pointer rounded accent-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
             checked={row.getIsSelected()}
             disabled={row.original.currentUserRole !== 'ADMIN'}
             onChange={row.getToggleSelectedHandler()}
@@ -380,13 +376,11 @@ function ProjectPanel({
                         {project.description || 'No description'}
                       </p>
                     </div>
-                    <input
+                    <Checkbox
                       aria-label={`Select ${project.name}`}
-                      checked={row.getIsSelected()}
-                      className="relative z-10 mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded accent-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
+                      checked={row.getIsSelected()} className="mt-0.5 shrink-0"
                       disabled={!isAdmin}
                       onChange={row.getToggleSelectedHandler()}
-                      type="checkbox"
                     />
                   </div>
 

@@ -1,21 +1,9 @@
+import Modal from '@/components/Modal';
 import React, { useState, useEffect } from "react";
-import {
-  X,
-  Plus,
-  Trash2,
-  Code,
-  Sparkles,
-  AlertCircle,
-  Play,
-} from "lucide-react";
-import {
-  promptService,
-  PromptItem,
-  PromptFolder,
-  IPromptMessage,
-  IPromptVariable,
-} from "@/services/prompts";
+import { Plus, Trash2, Code, AlertCircle, Play } from "lucide-react";
+import { promptService, PromptItem, PromptFolder, IPromptMessage, IPromptVariable } from "@/services/prompts";
 
+import { Select, Checkbox, Input, Textarea } from '@/components/ui';
 interface PromptEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -211,31 +199,14 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-3 sm:p-5 overflow-y-auto">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-xl overflow-hidden text-slate-900">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/70">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800 border border-slate-200">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">
-                {existingPrompt ? `Edit Prompt — ${existingPrompt.name}` : "Create New Prompt Template"}
-              </h2>
-              <p className="text-xs text-slate-600">
-                Define Handlebars variables, multi-role block structures, and canonical versions.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
+    <Modal
+      description="Define Handlebars variables, multi-role block structures, and canonical versions."
+      dismissOnBackdrop={false}
+      maxWidth="max-w-4xl"
+      onClose={onClose}
+      plainBody
+      title={existingPrompt ? `Edit Prompt — ${existingPrompt.name}` : "Create New Prompt Template"}
+    >
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-6 flex-1 custom-scrollbar">
           {error && (
@@ -251,18 +222,18 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
               <label className="block text-xs font-semibold text-slate-800 mb-1">
                 Prompt Name <span className="text-red-500">*</span>
               </label>
-              <input
+              <Input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Code Review Assistant"
-                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-4 focus:ring-slate-700/5 transition"
+                className="w-full"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1">Category</label>
-              <select
+              <Select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-slate-400 focus:ring-4 focus:ring-slate-700/5 transition"
@@ -277,12 +248,12 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
                 <option value="testing">Testing</option>
                 <option value="devops">DevOps</option>
                 <option value="security">Security</option>
-              </select>
+              </Select>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1">Folder</label>
-              <select
+              <Select
                 value={folderId}
                 onChange={(e) => setFolderId(e.target.value)}
                 className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:border-slate-400 focus:ring-4 focus:ring-slate-700/5 transition"
@@ -293,31 +264,31 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
                     {f.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-800 mb-1">
                 Tags <span className="text-slate-500 font-normal">(comma separated)</span>
               </label>
-              <input
+              <Input
                 type="text"
                 value={tagsInput}
                 onChange={(e) => setTagsInput(e.target.value)}
                 placeholder="code-review, typescript, ai"
-                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-4 focus:ring-slate-700/5 transition"
+                className="w-full"
               />
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-800 mb-1">Description</label>
-            <textarea
+            <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the purpose and expected outputs of this prompt..."
               rows={2}
-              className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-4 focus:ring-slate-700/5 transition resize-none"
+              className="w-full resize-none"
             />
           </div>
 
@@ -361,7 +332,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
                   className="p-4 rounded-xl bg-slate-50/50 border border-slate-200 space-y-2 relative group"
                 >
                   <div className="flex items-center justify-between">
-                    <select
+                    <Select
                       value={msg.role}
                       onChange={(e) => {
                         const updated = [...messages];
@@ -373,7 +344,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
                       <option value="system">SYSTEM</option>
                       <option value="user">USER</option>
                       <option value="assistant">ASSISTANT</option>
-                    </select>
+                    </Select>
 
                     {messages.length > 1 && (
                       <button
@@ -386,12 +357,12 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
                     )}
                   </div>
 
-                  <textarea
+                  <Textarea
                     value={msg.content}
                     onChange={(e) => handleMessageChange(index, e.target.value)}
                     placeholder={`Enter ${msg.role} message content with {{variable}} placeholders...`}
                     rows={3}
-                    className="w-full bg-white border border-slate-200 rounded-lg p-3 text-sm font-mono text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 transition resize-none"
+                    className="w-full font-mono resize-none"
                   />
                 </div>
               ))}
@@ -415,12 +386,12 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
             </div>
           ) : (
             <div>
-              <textarea
+              <Textarea
                 value={rawBody}
                 onChange={(e) => setRawBody(e.target.value)}
                 placeholder="Write system and user prompt content with {{variable}} placeholders..."
                 rows={8}
-                className="w-full bg-white border border-slate-200 rounded-xl p-4 font-mono text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 transition resize-y"
+                className="w-full font-mono resize-y"
               />
             </div>
           )}
@@ -457,7 +428,7 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
                           {`{{${v.name}}}`}
                         </td>
                         <td className="px-3 py-2">
-                          <select
+                          <Select
                             value={v.type || "string"}
                             onChange={(e) => handleVariableChange(i, "type", e.target.value)}
                             className="bg-white border border-slate-200 text-slate-900 rounded px-2 py-1 focus:outline-none"
@@ -467,32 +438,30 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
                             <option value="json">JSON</option>
                             <option value="boolean">Boolean</option>
                             <option value="enum">Enum</option>
-                          </select>
+                          </Select>
                         </td>
                         <td className="px-3 py-2">
-                          <input
+                          <Input
                             type="text"
                             value={v.defaultValue || ""}
                             onChange={(e) => handleVariableChange(i, "defaultValue", e.target.value)}
                             placeholder="Default..."
-                            className="bg-white border border-slate-200 text-slate-900 rounded px-2 py-1 font-mono w-full focus:outline-none"
+                            className="font-mono w-full !h-8 !text-[12px]"
                           />
                         </td>
                         <td className="px-3 py-2">
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={v.required ?? true}
                             onChange={(e) => handleVariableChange(i, "required", e.target.checked)}
-                            className="rounded border-slate-300 text-slate-800 focus:ring-0"
                           />
                         </td>
                         <td className="px-3 py-2">
-                          <input
+                          <Input
                             type="text"
                             value={v.description || ""}
                             onChange={(e) => handleVariableChange(i, "description", e.target.value)}
                             placeholder="Usage description..."
-                            className="bg-white border border-slate-200 text-slate-900 rounded px-2 py-1 w-full focus:outline-none"
+                            className="w-full !h-8 !text-[12px]"
                           />
                         </td>
                       </tr>
@@ -509,12 +478,12 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
               <label className="block text-xs font-semibold text-slate-800 mb-1">
                 Version Change Note <span className="text-slate-500 font-normal">(bump v{existingPrompt.version + 1})</span>
               </label>
-              <input
+              <Input
                 type="text"
                 value={changeNote}
                 onChange={(e) => setChangeNote(e.target.value)}
                 placeholder="Explain what changed in this version..."
-                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-400 focus:ring-4 focus:ring-slate-700/5 transition"
+                className="w-full"
               />
             </div>
           )}
@@ -552,7 +521,6 @@ export const PromptEditorModal: React.FC<PromptEditorModalProps> = ({
             {isSubmitting ? "Saving..." : existingPrompt ? "Save & Create Version" : "Create Prompt"}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

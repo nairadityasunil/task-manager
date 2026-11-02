@@ -4,7 +4,7 @@ import { workspaceService } from '../services/workspaceService';
 import { useWorkspace } from '../context/WorkspaceContext';
 import type { Workspace, WorkspaceRole } from '../types/workspace';
 import { isAtLeastAdmin } from '../types/workspace';
-import { Button, Field, inputClass, selectClass } from '@/components/ui';
+import { Button, Field, inputClass, selectClass, Select, Input } from '@/components/ui';
 
 interface WorkspaceGeneralSettingsProps {
   workspace: Workspace;
@@ -58,12 +58,11 @@ export function WorkspaceGeneralSettings({ workspace }: WorkspaceGeneralSettings
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Workspace Name">
-          <input
+          <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={!canEdit}
-            className={inputClass}
           />
         </Field>
         <Field label="Slug">
@@ -78,7 +77,7 @@ export function WorkspaceGeneralSettings({ workspace }: WorkspaceGeneralSettings
       </div>
 
       <Field label="Default Project Role for New Members" className="sm:max-w-xs">
-        <select
+        <Select
           value={defaultRole}
           onChange={(e) => setDefaultRole(e.target.value as WorkspaceRole)}
           disabled={!canEdit}
@@ -87,7 +86,7 @@ export function WorkspaceGeneralSettings({ workspace }: WorkspaceGeneralSettings
           {['ADMIN', 'MANAGER', 'MEMBER', 'GUEST'].map((r) => (
             <option key={r} value={r}>{r}</option>
           ))}
-        </select>
+        </Select>
       </Field>
 
       <div className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 p-3.5">

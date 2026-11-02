@@ -1,19 +1,13 @@
+import Modal from '@/components/Modal';
 import { useEffect, useState, type ReactNode } from 'react';
-import {
-  AlertCircle, AlertTriangle, CheckCircle2, Clock, Copy, Eye, EyeOff, Globe,
-  KeyRound, Plus, RefreshCw, Search, Server,
-  Trash2, WifiOff, Zap, ChevronDown, ChevronRight, Code2,
-  Settings, BookOpen, Target, Activity, Plug, X
-} from 'lucide-react';
+import { useConfirm } from '@/context/ConfirmationContext';
+import { AlertCircle, AlertTriangle, CheckCircle2, Clock, Copy, Eye, EyeOff, Globe, KeyRound, Plus, RefreshCw, Search, Server, Trash2, WifiOff, Zap, ChevronDown, ChevronRight, Code2, Settings, BookOpen, Target, Activity, Plug } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { SdkIntegration, SdkEnvironment } from '@/lib/sdk-integrations/api';
-import {
-  listIntegrations, createIntegration, regenerateKey,
-  disableIntegration, enableIntegration, deleteIntegration
-} from '@/lib/sdk-integrations/api';
+import { listIntegrations, createIntegration, regenerateKey, disableIntegration, enableIntegration, deleteIntegration } from '@/lib/sdk-integrations/api';
 import PageHeader from '@/components/PageHeader';
 import EmptyState from '@/components/EmptyState';
-import { Badge, Button, Field, IconTile, StatCard, cn, inputClass, selectClass, textareaClass, type BadgeTone, type TileTone } from '@/components/ui';
+import { Badge, Button, Field, IconTile, StatCard, cn, inputClass, selectClass, textareaClass, type BadgeTone, type TileTone, Select, Input } from '@/components/ui';
 
 // ---------- helpers ----------
 const ENV_LABELS: Record<SdkEnvironment, string> = { development: 'Development', staging: 'Staging', production: 'Production' };
@@ -43,7 +37,7 @@ function CopyBtn({ text, className }: { text: string; className?: string }) {
 }
 
 /** Centered dialog shell used by the modals on this page. */
-function DialogShell({ title, description, icon, onClose, onBackdrop, children, footer, maxWidth = 'max-w-lg' }: {
+function DialogShell({ title, description, onClose, onBackdrop, children, footer, maxWidth = 'max-w-lg' }: {
   title: string;
   description?: ReactNode;
   icon?: ReactNode;
@@ -54,26 +48,19 @@ function DialogShell({ title, description, icon, onClose, onBackdrop, children, 
   maxWidth?: string;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5" onClick={onBackdrop}>
-      <div className={cn('flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl', maxWidth)} onClick={e => e.stopPropagation()}>
-        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-4 sm:px-6">
-          <div className="flex min-w-0 items-start gap-3">
-            {icon && <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600">{icon}</span>}
-            <div className="min-w-0">
-              <h2 className="m-0 text-base font-semibold text-slate-900">{title}</h2>
-              {description && <p className="m-0 mt-0.5 text-[13px] text-slate-500">{description}</p>}
-            </div>
-          </div>
-          {onClose && (
-            <button aria-label="Close" onClick={onClose} type="button" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900">
-              <X size={16} />
-            </button>
-          )}
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">{children}</div>
-        {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-slate-200 bg-slate-50/60 px-4 py-3 sm:px-6">{footer}</div>}
-      </div>
-    </div>
+    <Modal
+      bodyClassName="py-5 sm:px-6"
+      closeLabel="Close"
+      description={description}
+      dismissOnBackdrop={Boolean(onBackdrop)}
+      footer={footer}
+      hideClose={!onClose}
+      maxWidth={maxWidth}
+      onClose={onClose ?? onBackdrop ?? (() => undefined)}
+      title={title}
+    >
+      <div className="min-w-0">{children}</div>
+    </Modal>
   );
 }
 
@@ -125,22 +112,22 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           </div>
         )}
         <Field label="Integration name">
-          <input className={inputClass} placeholder="e.g. Production Website" value={name} onChange={e => setName(e.target.value)} />
+          <Input placeholder="e.g. Production Website" value={name} onChange={e => setName(e.target.value)} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-[1fr_1.4fr]">
           <Field label="Environment">
-            <select className={selectClass} value={env} onChange={e => setEnv(e.target.value as SdkEnvironment)}>
+            <Select className={selectClass} value={env} onChange={e => setEnv(e.target.value as SdkEnvironment)}>
               <option value="production">Production</option>
               <option value="staging">Staging</option>
               <option value="development">Development</option>
-            </select>
+            </Select>
           </Field>
           <Field label="Application URL">
-            <input className={inputClass} placeholder="https://app.company.com" value={domain} onChange={e => setDomain(e.target.value)} />
+            <Input placeholder="https://app.company.com" value={domain} onChange={e => setDomain(e.target.value)} />
           </Field>
         </div>
         <Field label="Additional allowed origins" hint="Optional. Separate multiple origins with commas.">
-          <input className={inputClass} placeholder="https://origin2.com, http://localhost:5173" value={origins} onChange={e => setOrigins(e.target.value)} />
+          <Input placeholder="https://origin2.com, http://localhost:5173" value={origins} onChange={e => setOrigins(e.target.value)} />
         </Field>
         <Field label="Description" hint="Optional.">
           <textarea className={cn(textareaClass, 'h-20 resize-none')} placeholder="Brief description of this integration" value={desc} onChange={e => setDesc(e.target.value)} />
@@ -237,6 +224,7 @@ const SECTION_LINKS = [
 // ---------- Details modal ----------
 function DetailsModal({ integration, onClose, onRefresh }: { integration: SdkIntegration; onClose: () => void; onRefresh: () => Promise<void> }) {
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
   const [newKey, setNewKey] = useState<string | null>(null);
   const act = async (fn: () => Promise<unknown>) => { setBusy(true); try { await fn(); await onRefresh(); } finally { setBusy(false); } };
@@ -282,7 +270,7 @@ function DetailsModal({ integration, onClose, onRefresh }: { integration: SdkInt
               ? <Button size="sm" icon={Zap} onClick={() => act(() => enableIntegration(integration.id))} disabled={busy}>Enable</Button>
               : <Button size="sm" icon={WifiOff} onClick={() => act(() => disableIntegration(integration.id))} disabled={busy || integration.status === 'revoked'}>Disable</Button>
             }
-            <Button size="sm" variant="danger" icon={Trash2} className="ml-auto" onClick={() => { if (window.confirm(`Delete "${integration.name}"?`)) void act(() => deleteIntegration(integration.id)); }} disabled={busy}>
+            <Button size="sm" variant="danger" icon={Trash2} className="ml-auto" onClick={async () => { if (await confirm({ title: 'Delete integration?', message: `"${integration.name}" is deleted permanently.`, confirmText: 'Delete', type: 'danger' })) void act(() => deleteIntegration(integration.id)); }} disabled={busy}>
               Delete
             </Button>
           </div>
@@ -466,21 +454,21 @@ export default function SdkIntegrationsPage() {
             />
           </div>
           <div className="min-w-0 flex-1 sm:w-48 sm:flex-none">
-          <select aria-label="Environment" className={selectClass} value={filterEnv} onChange={e => setFilterEnv(e.target.value as typeof filterEnv)}>
+          <Select aria-label="Environment" className={selectClass} value={filterEnv} onChange={e => setFilterEnv(e.target.value as typeof filterEnv)}>
             <option value="all">All environments</option>
             <option value="production">Production</option>
             <option value="staging">Staging</option>
             <option value="development">Development</option>
-          </select>
+          </Select>
           </div>
           <div className="min-w-0 flex-1 sm:w-44 sm:flex-none">
-          <select aria-label="Status" className={selectClass} value={filterStatus} onChange={e => setFilterStatus(e.target.value as typeof filterStatus)}>
+          <Select aria-label="Status" className={selectClass} value={filterStatus} onChange={e => setFilterStatus(e.target.value as typeof filterStatus)}>
             <option value="all">All statuses</option>
             <option value="pending">Pending</option>
             <option value="connected">Connected</option>
             <option value="disabled">Disabled</option>
             <option value="revoked">Revoked</option>
-          </select>
+          </Select>
           </div>
           <span className="ml-auto hidden text-[13px] text-slate-500 sm:inline">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
         </div>

@@ -4,6 +4,7 @@ import { getProjectAiConfig, updateProjectAiConfig, testAiConnection } from '@/s
 import type { ProjectAiConfig } from '@/types/aiPlanning';
 import Modal from './Modal';
 
+import { Select, Switch, Input } from '@/components/ui';
 interface ProjectAiSettingsModalProps {
   projectId: string;
   isAdmin: boolean;
@@ -167,23 +168,17 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                 <span className="font-semibold text-sm">Enable Custom AI Planner</span>
                 <p className="text-xs text-slate-500 m-0">Route planning requests to this model instead of static fallbacks.</p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
+              <Switch aria-label="Use AI for this project"
                   checked={config.enabled}
                   disabled={!isAdmin}
-                  onChange={(e) => updateField('enabled', e.target.checked)}
-                />
-                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-600"></div>
-              </label>
+                  onChange={(e) => updateField('enabled', e.target.checked)} />
             </div>
 
             <div className={`flex flex-col gap-4 transition-opacity ${config.enabled ? 'opacity-100' : 'opacity-60 pointer-events-none select-none'}`}>
               {/* Provider Selection */}
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-slate-700 pl-1">AI Model Provider</label>
-                <select
+                <Select
                   className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
                   value={config.provider}
                   disabled={!isAdmin || !config.enabled}
@@ -192,13 +187,13 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                   {Object.entries(PROVIDER_PRESETS).map(([key, info]) => (
                     <option key={key} value={key}>{info.name}</option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               {/* Model Selection Preset Dropdown */}
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-slate-700 pl-1">Model Name</label>
-                <select
+                <Select
                   className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
                   value={config.modelName}
                   disabled={!isAdmin || !config.enabled}
@@ -207,7 +202,7 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                   {currentPreset?.models.map((model) => (
                     <option key={model} value={model}>{model}</option>
                   ))}
-                </select>
+                </Select>
               </div>
 
               {/* API Key Input */}
@@ -216,9 +211,9 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                 {config.apiKey === '••••••••' && !isReplacingKey ? (
                   <div className="flex gap-2 items-center">
                     <div className="relative flex-1">
-                      <input
+                      <Input
                         type="password"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-sm text-slate-900/60 select-none cursor-not-allowed"
+                        className="w-full pl-3 pr-10"
                         value="••••••••"
                         disabled
                         readOnly
@@ -240,9 +235,9 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                 ) : (
                   <div className="flex gap-2 items-center">
                     <div className="relative flex-1">
-                      <input
+                      <Input
                         type={showKey ? 'text' : 'password'}
-                        className="w-full bg-white border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
+                        className="w-full pl-3 pr-10"
                         placeholder="Enter API credential key"
                         value={config.apiKey}
                         disabled={!isAdmin || !config.enabled}
@@ -279,9 +274,9 @@ function ProjectAiSettingsModal({ projectId, isAdmin, onClose }: ProjectAiSettin
                 <label className="text-sm font-medium text-slate-700 pl-1">
                   API Base URL Override <span className="text-[11px] font-normal text-slate-400 italic">(Optional)</span>
                 </label>
-                <input
+                <Input
                   type="text"
-                  className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-500 disabled:bg-slate-50"
+                 
                   placeholder={currentPreset?.defaultBaseUrl}
                   value={config.baseUrl}
                   disabled={!isAdmin || !config.enabled}

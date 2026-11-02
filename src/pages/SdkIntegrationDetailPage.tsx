@@ -1,45 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  getIntegration,
-  updateIntegration,
-  regenerateKey,
-  disableIntegration,
-  enableIntegration,
-  deleteIntegration,
-  type SdkIntegration,
-  type SdkEnvironment
-} from '@/lib/sdk-integrations/api';
+import { getIntegration, updateIntegration, regenerateKey, disableIntegration, enableIntegration, deleteIntegration, type SdkIntegration, type SdkEnvironment } from '@/lib/sdk-integrations/api';
 import EngagementPage from './EngagementPage';
 import EventTrackingPage from './EventTrackingPage';
 import SdkSetupGuide from '@/features/sdk-integrations/components/SdkSetupGuide';
 import { AiTrafficPanel } from '@/features/sdk-integrations/components/AiTrafficPanel';
-import {
-  Activity,
-  ArrowLeft,
-  BookOpen,
-  Bot,
-  Check,
-  Copy,
-  Globe,
-  KeyRound,
-  Pencil,
-  RefreshCw,
-  Settings,
-  ShieldAlert,
-  Target,
-  Trash2,
-  AlertTriangle,
-  Play,
-  Pause
-} from 'lucide-react';
-import { Badge, Button, Card, CardHeader, Field, Tabs, cn, inputClass, selectClass, textareaClass, type BadgeTone } from '@/components/ui';
+import { Activity, ArrowLeft, BookOpen, Bot, Check, Copy, Globe, KeyRound, Pencil, RefreshCw, Settings, ShieldAlert, Target, Trash2, AlertTriangle, Play, Pause } from 'lucide-react';
+import { Badge, Button, Card, CardHeader, Field, Tabs, cn, selectClass, textareaClass, type BadgeTone, Select, Input } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
+import { useToast } from '@/context/ToastContext';
 
 const SdkIntegrationDetailPage: React.FC = () => {
   const { integrationId, tab } = useParams<{ integrationId: string; tab?: string }>();
   const navigate = useNavigate();
   const confirm = useConfirm();
+  const { showToast } = useToast();
 
   const [integration, setIntegration] = useState<SdkIntegration | null>(null);
   const [loading, setLoading] = useState(true);
@@ -122,7 +97,7 @@ const SdkIntegrationDetailPage: React.FC = () => {
       }
     } catch (err) {
       console.error('Failed to regenerate key', err);
-      alert('Failed to regenerate SDK key.');
+      showToast({ variant: 'error', message: 'Failed to regenerate SDK key.' });
     }
   };
 
@@ -145,7 +120,7 @@ const SdkIntegrationDetailPage: React.FC = () => {
       setIntegration(updated);
     } catch (err) {
       console.error('Failed to toggle integration status', err);
-      alert('Failed to update integration status.');
+      showToast({ variant: 'error', message: 'Failed to update integration status.' });
     }
   };
 
@@ -165,7 +140,7 @@ const SdkIntegrationDetailPage: React.FC = () => {
       navigate('/sdk-integrations');
     } catch (err) {
       console.error('Failed to delete integration', err);
-      alert('Failed to delete SDK integration.');
+      showToast({ variant: 'error', message: 'Failed to delete SDK integration.' });
     }
   };
 
@@ -189,7 +164,7 @@ const SdkIntegrationDetailPage: React.FC = () => {
       setIsEditing(false);
     } catch (err) {
       console.error('Failed to save integration details', err);
-      alert('Failed to update SDK integration details.');
+      showToast({ variant: 'error', message: 'Failed to update SDK integration details.' });
     } finally {
       setSaving(false);
     }
@@ -372,28 +347,26 @@ const SdkIntegrationDetailPage: React.FC = () => {
                   {isEditing ? (
                     <form onSubmit={handleSaveChanges} className="grid gap-4">
                       <Field label="Integration name">
-                        <input
+                        <Input
                           type="text"
                           required
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          className={inputClass}
                         />
                       </Field>
 
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <Field label="Primary domain">
-                          <input
+                          <Input
                             type="text"
                             required
                             value={editDomain}
                             onChange={(e) => setEditDomain(e.target.value)}
                             placeholder="example.com"
-                            className={inputClass}
                           />
                         </Field>
                         <Field label="Environment">
-                          <select
+                          <Select
                             value={editEnvironment}
                             onChange={(e) => setEditEnvironment(e.target.value as SdkEnvironment)}
                             className={selectClass}
@@ -401,17 +374,16 @@ const SdkIntegrationDetailPage: React.FC = () => {
                             <option value="development">Development</option>
                             <option value="staging">Staging</option>
                             <option value="production">Production</option>
-                          </select>
+                          </Select>
                         </Field>
                       </div>
 
                       <Field label="Allowed CORS origins" hint="Comma-separated URLs.">
-                        <input
+                        <Input
                           type="text"
                           value={editAllowedOrigins}
                           onChange={(e) => setEditAllowedOrigins(e.target.value)}
                           placeholder="http://localhost:3000, https://staging.example.com"
-                          className={inputClass}
                         />
                       </Field>
 

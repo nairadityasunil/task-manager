@@ -4,6 +4,7 @@ import { buttonClass, inputClass, selectClass } from "@/components/ui";
 import { PromptParameters } from "../hooks/usePlayground";
 import { getLlmProviders, getLlmModels, LlmProviderItem, LlmModelItem } from "@/services/aiProviders";
 
+import { Select, Slider } from '@/components/ui';
 interface ParameterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -90,7 +91,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                 <label className="flex items-center gap-1.5 font-medium text-slate-700">
                   <Layers className="w-3.5 h-3.5 text-slate-500" /> AI Provider
                 </label>
-                <select
+                <Select
                   value={tempParams.provider}
                   onChange={(e) => handleProviderChange(e.target.value)}
                   className={selectClass}
@@ -109,7 +110,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                       <option value="groq">Groq / Local AI</option>
                     </>
                   )}
-                </select>
+                </Select>
               </div>
 
               {/* Model Selection */}
@@ -117,7 +118,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                 <label className="flex items-center gap-1.5 font-medium text-slate-700">
                   <Cpu className="w-3.5 h-3.5 text-slate-500" /> Model Name
                 </label>
-                <select
+                <Select
                   value={tempParams.modelName}
                   onChange={(e) => setTempParams((prev) => ({ ...prev, modelName: e.target.value }))}
                   className={selectClass}
@@ -131,7 +132,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                   ) : (
                     <option value={tempParams.modelName}>{tempParams.modelName}</option>
                   )}
-                </select>
+                </Select>
                 {currentSelectedModel && (
                   <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-slate-500">
                     <span>Context: {currentSelectedModel.contextWindow?.toLocaleString() || 128000} tokens</span>
@@ -147,8 +148,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                     <label className="font-medium text-slate-700">Temperature</label>
                     <span className="font-mono text-[13px] text-slate-500">{tempParams.temperature}</span>
                   </div>
-                  <input
-                    type="range"
+                  <Slider
                     min="0"
                     max="2"
                     step="0.05"
@@ -156,7 +156,6 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                     onChange={(e) =>
                       setTempParams((prev) => ({ ...prev, temperature: parseFloat(e.target.value) }))
                     }
-                    className="w-full accent-emerald-600 cursor-pointer"
                   />
                   <p className="m-0 text-xs text-slate-500">Controls randomness: 0 is strict & deterministic, 1+ is creative.</p>
                 </div>
@@ -180,8 +179,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                     <label className="font-medium text-slate-700">Top P</label>
                     <span className="font-mono text-[13px] text-slate-500">{tempParams.topP}</span>
                   </div>
-                  <input
-                    type="range"
+                  <Slider
                     min="0"
                     max="1"
                     step="0.05"
@@ -189,14 +187,13 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                     onChange={(e) =>
                       setTempParams((prev) => ({ ...prev, topP: parseFloat(e.target.value) }))
                     }
-                    className="w-full accent-emerald-600 cursor-pointer"
                   />
                 </div>
 
                 {/* Response Format */}
                 <div className="space-y-1.5">
                   <label className="block font-medium text-slate-700">Response Format</label>
-                  <select
+                  <Select
                     value={tempParams.responseFormat}
                     onChange={(e) =>
                       setTempParams((prev) => ({ ...prev, responseFormat: e.target.value as "text" | "json" }))
@@ -205,7 +202,7 @@ export const ParameterDrawer: React.FC<ParameterDrawerProps> = ({
                   >
                     <option value="text">Plain Text</option>
                     <option value="json">Structured JSON Object</option>
-                  </select>
+                  </Select>
                 </div>
               </div>
             </>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { buttonClass, inputClass } from '@/components/ui';
-import { Building2, X } from 'lucide-react';
+import Modal from '@/components/Modal';
+import { buttonClass, inputClass, Input } from '@/components/ui';
 import { useWorkspace } from '../context/WorkspaceContext';
 
 interface CreateWorkspaceDialogProps {
@@ -38,25 +38,8 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps): 
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm animate-in fade-in duration-150 sm:p-5" role="dialog" aria-modal="true">
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50">
-              <Building2 className="h-[18px] w-[18px] text-slate-600" />
-            </div>
-            <h3 className="m-0 text-base font-semibold text-slate-900">Create New Workspace</h3>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
+    <Modal maxWidth="max-w-md" onClose={onClose} title="Create New Workspace">
+      <div>
         {error && (
           <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] text-red-700">
             {error}
@@ -68,12 +51,11 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps): 
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
               Workspace Name
             </label>
-            <input
+            <Input
               type="text"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="e.g. Acme Product Team"
-              className={inputClass}
               autoFocus
               required
             />
@@ -110,7 +92,7 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps): 
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 }
 
