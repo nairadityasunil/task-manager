@@ -24,3 +24,14 @@ export function initialsOf(name: string | null | undefined, email?: string | nul
   if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   return (parts[0]?.[0] || email?.[0] || 'U').toUpperCase();
 }
+
+/** Muted tag colours for projects and epics (hex, for small swatches). */
+const TAG_COLORS = ['#3e50d8', '#0e7490', '#a16207', '#6d5bd0', '#c2410c', '#2f7d4f', '#b4416e', '#57534e'];
+
+/** A stable tag colour for a project or epic, derived from its id. */
+export function tagColor(seed: string | null | undefined): string {
+  const text = (seed || '?').toLowerCase();
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+  return TAG_COLORS[hash % TAG_COLORS.length];
+}

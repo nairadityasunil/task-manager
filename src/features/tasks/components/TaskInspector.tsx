@@ -135,7 +135,7 @@ export function TaskInspector({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-slate-900/30 z-[5000]"
+            className="fixed inset-0 z-[5000] bg-slate-900/30 xl:hidden"
           />
 
           {/* Drawer container */}
@@ -145,7 +145,7 @@ export function TaskInspector({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="fixed top-0 right-0 z-[5001] flex h-full w-full flex-col border-l border-slate-200 bg-white shadow-xl sm:w-[480px]"
+            className="fixed top-0 right-0 z-[5001] flex h-full w-full flex-col border-l border-slate-200 bg-white shadow-xl sm:w-[480px] xl:w-[440px] xl:shadow-none"
             role="dialog"
             aria-modal="true"
             aria-label={task.title}
@@ -155,7 +155,7 @@ export function TaskInspector({
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                    <span className="text-xs text-slate-500">Task inspector</span>
+                    <span className="text-xs text-slate-500">Task</span>
                     {dynamicMeta && (
                       <Badge
                         tone={task.dynamicPriority === 'CRITICAL' || task.dynamicPriority === 'HIGH' ? 'danger' : task.dynamicPriority === 'MEDIUM' ? 'warning' : 'neutral'}
@@ -272,7 +272,7 @@ export function TaskInspector({
                   <section className="flex flex-col gap-3">
                     <div className="flex items-center justify-between gap-3">
                       <h4 className="m-0 text-[15px] font-semibold text-slate-900">
-                        Checklist Subtasks <span className="font-normal tabular-nums text-slate-500">({completedSubtasks}/{task.subtasks.length})</span>
+                        Sub-tasks <span className="font-normal tabular-nums text-slate-500">({completedSubtasks}/{task.subtasks.length})</span>
                       </h4>
                       <Button
                         aria-label="New Subtask"
@@ -404,10 +404,10 @@ export function TaskInspector({
                   </section>
 
                   {/* SLA timers and details */}
-                  <section className="rounded-xl border border-slate-200">
+                  <section className="rounded-lg border border-slate-200">
                     <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
                       <Clock size={16} className="text-slate-400" />
-                      <h4 className="m-0 text-[15px] font-semibold text-slate-900">Dual-Timers</h4>
+                      <h4 className="m-0 text-[15px] font-semibold text-slate-900">Response and resolution times</h4>
                     </div>
                     <div className="px-4 pb-4 pt-3">
                       <SlaIndicator task={task} />
@@ -422,7 +422,7 @@ export function TaskInspector({
                             ? new Date(task.slaResolutionDueAt).toLocaleString()
                             : 'Not configured'}
                         </DetailRow>
-                        <DetailRow className={task.firstResponseAt ? 'text-emerald-700' : 'text-slate-400'} label="First Response registered">
+                        <DetailRow className={task.firstResponseAt ? 'text-emerald-700' : 'text-slate-400'} label="First response">
                           {task.firstResponseAt
                             ? new Date(task.firstResponseAt).toLocaleString()
                             : 'Awaiting action'}
@@ -430,18 +430,18 @@ export function TaskInspector({
                         <DetailRow className={task.completedAt ? 'text-emerald-700' : 'text-slate-400'} label="Completed at">
                           {task.completedAt
                             ? new Date(task.completedAt).toLocaleString()
-                            : 'In-progress'}
+                            : 'Not yet'}
                         </DetailRow>
-                        <DetailRow className={task.slaPausedAt ? 'text-amber-700' : 'text-slate-700'} label="Timer Paused details">
+                        <DetailRow className={task.slaPausedAt ? 'text-amber-700' : 'text-slate-700'} label="Timer">
                           {task.slaPausedAt
                             ? `Paused on ${new Date(task.slaPausedAt).toLocaleDateString()}`
-                            : 'Active SLA Running'}
+                            : 'Running'}
                         </DetailRow>
-                        <DetailRow className="font-medium text-slate-900" label="Vector priority factor">
-                          {task.dynamicPriority} (Score: {task.dynamicPriorityScore})
+                        <DetailRow className="font-medium text-slate-900" label="Priority score">
+                          {dynamicMeta?.label ?? task.dynamicPriority} · {task.dynamicPriorityScore}
                         </DetailRow>
-                        <DetailRow label="Cascade impact weight">
-                          {task.impactScore} Org impact, {task.dependencyWeight} blocked items
+                        <DetailRow label="Effect on other work">
+                          {task.dependencyWeight ? `Blocks ${task.dependencyWeight} ${task.dependencyWeight === 1 ? 'task' : 'tasks'}` : 'Blocks nothing'} · impact {task.impactScore}
                         </DetailRow>
                       </dl>
                       {task.priorityEscalationReason && (

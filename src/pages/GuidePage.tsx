@@ -332,8 +332,7 @@ export default function GuidePage(): JSX.Element {
 
       {/* Header */}
       <header className="relative border-b border-slate-200 bg-slate-50">
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_70%_at_20%_0%,rgba(16,185,129,0.08),transparent)]" />
-        <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+                <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
           <p className="m-0 flex items-center gap-2 text-sm font-medium text-emerald-700">
             <BookOpen aria-hidden size={16} /> Product guide
           </p>

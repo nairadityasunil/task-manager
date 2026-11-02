@@ -664,7 +664,7 @@ export function IntelligenceMock(): JSX.Element {
             <line key={y} stroke="#e2e8f0" strokeDasharray="3 3" x1="0" x2="300" y1={y} y2={y} />
           ))}
           <path d={toPath(b)} fill="none" stroke="#94a3b8" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-          <path d={toPath(a)} fill="none" stroke="#059669" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+          <path d={toPath(a)} fill="none" stroke="#3e50d8" strokeWidth="2" vectorEffect="non-scaling-stroke" />
           <circle cx={(10 * 300) / 11} cy={100 - 82} fill="#f59e0b" r="4" />
         </svg>
         <div className="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-slate-600">

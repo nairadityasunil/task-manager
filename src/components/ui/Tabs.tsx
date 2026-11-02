@@ -27,20 +27,20 @@ export function Tabs<T extends string>({ items, value, onChange, className }: Ta
             aria-selected={active}
             className={cn(
               'group flex shrink-0 items-center gap-1.5 border-b-2 pb-2.5 pt-1 text-[13px] font-medium transition-colors duration-150',
-              active ? 'border-emerald-500 text-slate-900' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800'
+              active ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-600 hover:border-slate-300 hover:text-slate-900'
             )}
             key={itemValue}
             onClick={() => onChange(itemValue)}
             role="tab"
             type="button"
           >
-            {Icon ? <Icon className={active ? 'text-emerald-600' : 'text-slate-400 group-hover:text-slate-600'} size={15} /> : null}
+            {Icon ? <Icon className={active ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'} size={15} /> : null}
             {label}
             {count != null ? (
               <span
                 className={cn(
-                  'rounded-full px-1.5 text-[11px] tabular-nums',
-                  active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                  'rounded px-1.5 font-mono text-[11px] tabular-nums',
+                  active ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'
                 )}
               >
                 {count}

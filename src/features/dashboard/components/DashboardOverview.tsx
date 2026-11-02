@@ -1,19 +1,11 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-  CircleDot,
-  ListTodo,
-  CircleDashed,
-  Plus,
-  Sparkles,
-  Zap
-} from 'lucide-react';
+import { ArrowRight, Plus, Sparkles, Zap } from 'lucide-react';
 
 import Skeleton from '@/components/Skeleton';
 import UserAvatar from '@/components/UserAvatar';
-import { Badge, Button, Card, CardHeader, IconTile, StatCard, cn, type BadgeTone } from '@/components/ui';
+import { Badge, Button, Card, CardHeader, StatusIcon, cn } from '@/components/ui';
+import { SetupChecklist } from './SetupChecklist';
+import { WaitingOnYou } from './WaitingOnYou';
 import { GovernanceCard } from '@/features/agents/components/GovernanceCard';
 import type { Epic } from '@/types/epic';
 import type { Project } from '@/types/project';
@@ -41,13 +33,6 @@ const STATUS_META: Array<{ key: TaskStatus | 'IN_REVIEW'; label: string; bar: st
   { key: 'DONE', label: 'Done', bar: 'bg-emerald-500', dot: 'bg-emerald-500' }
 ];
 
-const PRIORITY_TONE: Record<TaskPriority, BadgeTone> = {
-  LOW: 'neutral',
-  MEDIUM: 'info',
-  HIGH: 'orange',
-  CRITICAL: 'danger'
-};
-
 const PRIORITY_RANK: Record<TaskPriority, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
 
 const label = (value: string): string => {
@@ -63,11 +48,6 @@ function greeting(date: Date): string {
   if (h < 12) return 'Good morning';
   if (h < 18) return 'Good afternoon';
   return 'Good evening';
-}
-
-function StatusDot({ status }: { status: TaskStatus }): JSX.Element {
-  const meta = STATUS_META.find((m) => m.key === normalisedStatus(status));
-  return <span aria-hidden className={cn('h-2 w-2 shrink-0 rounded-full', meta?.dot ?? 'bg-slate-300')} />;
 }
 
 export default function DashboardOverview({
@@ -137,21 +117,21 @@ export default function DashboardOverview({
   const showSkeleton = loading && tasks.length === 0;
 
   return (
-    <div className="flex min-h-full flex-col">
-      {/* Greeting */}
-      <div className="header-band border-b border-slate-200 px-3 py-4 sm:px-5 lg:px-6">
+    <div className="flex min-h-full flex-col bg-white">
+      <div className="mx-auto grid w-full max-w-[1120px] gap-7 px-3 py-6 sm:px-6 lg:px-8">
+        {/* Greeting */}
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
           <div className="min-w-0">
-            <p className="m-0 text-xs font-medium text-emerald-700">{dateLabel}</p>
-            <h1 className="m-0 mt-0.5 truncate text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">
+            <p className="m-0 text-xs text-slate-500">{dateLabel}</p>
+            <h1 className="m-0 mt-0.5 truncate text-[22px] font-semibold tracking-tight text-slate-900">
               {greeting(now)}, {firstName}
             </h1>
-            <p className="m-0 mt-0.5 text-[13px] text-slate-500">
+            <p className="m-0 mt-1 text-[13px] text-slate-600">
               {showSkeleton
                 ? 'Loading your day…'
                 : tasks.length === 0
                 ? 'Nothing is planned for today yet.'
-                : `${stats.open} open ${stats.open === 1 ? 'task' : 'tasks'} today across ${projects.length} ${projects.length === 1 ? 'project' : 'projects'}.`}
+                : `${stats.open} open ${stats.open === 1 ? 'task' : 'tasks'} today across ${projects.length} ${projects.length === 1 ? 'project' : 'projects'}${stats.blocked ? `. ${stats.blocked} blocked.` : '.'}`}
             </p>
           </div>
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
@@ -163,94 +143,74 @@ export default function DashboardOverview({
             </Button>
           </div>
         </div>
-      </div>
 
-      <div className="grid gap-3 px-3 py-4 sm:gap-4 sm:px-5 lg:px-6">
-        {/* KPIs */}
-        <section aria-label="Today at a glance" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <SetupChecklist onConnectAi={onOpenAiPlanner} onNewProject={onNewProject} projectCount={projects.length} />
+
+        {/* Today at a glance */}
+        <section aria-label="Today at a glance">
           {showSkeleton ? (
-            Array.from({ length: 4 }).map((_, i) => <Skeleton className="h-[92px] rounded-xl" key={i} />)
+            <Skeleton className="h-[86px] rounded-[10px]" />
           ) : (
-            <>
-              <StatCard
-                hint={stats.inProgress ? `${stats.inProgress} in progress` : 'None started yet'}
-                icon={ListTodo}
-                label="Open today"
-                tone="sky"
-                value={stats.open}
-              />
-              <StatCard
-                hint={stats.inReview ? `${stats.inReview} in review` : 'Actively being worked on'}
-                icon={CircleDashed}
-                label="In progress"
-                tone="violet"
-                value={stats.inProgress}
-              />
-              <StatCard
-                hint={
-                  stats.slaBreached
-                    ? `${stats.slaBreached} SLA breached`
-                    : stats.nearBreach
-                    ? `${stats.nearBreach} near SLA breach`
-                    : 'No SLA risk'
-                }
-                hintTone={stats.slaBreached ? 'danger' : stats.nearBreach ? 'warning' : 'success'}
-                icon={AlertTriangle}
-                label="Blocked"
-                tone="rose"
-                value={stats.blocked}
-              />
-              <StatCard
-                hint={tasks.length ? `${stats.percent}% of today's tasks` : 'No tasks today'}
-                hintTone={stats.percent >= 50 ? 'success' : 'neutral'}
-                icon={CheckCircle2}
-                label="Completed"
-                tone="emerald"
-                value={stats.done}
-              />
-            </>
+            <dl className="m-0 grid grid-cols-2 overflow-hidden rounded-[10px] border border-slate-200 lg:grid-cols-4">
+              {[
+                { label: 'Open today', value: stats.open, hint: stats.inProgress ? `${stats.inProgress} in progress` : 'None started yet', tone: 'text-slate-500' },
+                { label: 'In progress', value: stats.inProgress, hint: stats.inReview ? `${stats.inReview} in review` : 'Being worked on', tone: 'text-slate-500' },
+                {
+                  label: 'Blocked',
+                  value: stats.blocked,
+                  hint: stats.slaBreached ? `${stats.slaBreached} SLA breached` : stats.nearBreach ? `${stats.nearBreach} near SLA breach` : 'No SLA risk',
+                  tone: stats.slaBreached ? 'text-red-700' : stats.nearBreach ? 'text-amber-700' : 'text-slate-500'
+                },
+                { label: 'Completed', value: stats.done, hint: tasks.length ? `${stats.percent}% of today's tasks` : 'No tasks today', tone: 'text-slate-500' }
+              ].map((item, index) => (
+                <div
+                  className={cn('px-4 py-3.5', index % 2 === 0 && 'border-r border-slate-100', index < 2 && 'border-b border-slate-100 lg:border-b-0', index === 1 && 'lg:border-r')}
+                  key={item.label}
+                >
+                  <dt className="text-[13px] text-slate-600">{item.label}</dt>
+                  <dd className="m-0 mt-1 text-[22px] font-semibold leading-tight tracking-tight text-slate-900 tabular-nums">{item.value}</dd>
+                  <div className={cn('mt-0.5 truncate text-xs', item.tone)}>{item.hint}</div>
+                </div>
+              ))}
+            </dl>
           )}
         </section>
 
-        <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_340px]">
-          {/* Up next */}
-          <Card className="min-w-0 overflow-hidden">
-            <CardHeader
-              actions={
-                <div className="flex rounded-lg bg-slate-100 p-0.5" role="group" aria-label="Show tasks">
-                  {(['mine', 'all'] as const).map((value) => (
-                    <button
-                      aria-pressed={scope === value}
-                      className={cn(
-                        'h-7 rounded-md px-2.5 text-xs font-medium transition-colors duration-150',
-                        scope === value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'
-                      )}
-                      key={value}
-                      onClick={() => setScope(value)}
-                      type="button"
-                    >
-                      {value === 'mine' ? `Mine${mine.length ? ` · ${mine.filter((t) => normalisedStatus(t.status) !== 'DONE').length}` : ''}` : 'Everyone'}
-                    </button>
-                  ))}
-                </div>
-              }
-              description="Highest priority open work for today"
-              icon={<IconTile icon={CircleDot} size="sm" tone="emerald" />}
-              title="Up next"
-            />
+        <div className="grid min-w-0 gap-7 lg:grid-cols-[minmax(0,1fr)_320px]">
+          {/* My work */}
+          <section aria-labelledby="mywork-title" className="min-w-0">
+            <div className="mb-2 flex flex-wrap items-center gap-3">
+              <h2 className="m-0 text-sm font-semibold text-slate-900" id="mywork-title">
+                Up next
+              </h2>
+              <span className="text-xs text-slate-500">Highest priority open work</span>
+              <div className="ml-auto flex rounded-md bg-slate-100 p-0.5" role="group" aria-label="Show tasks">
+                {(['mine', 'all'] as const).map((value) => (
+                  <button
+                    aria-pressed={scope === value}
+                    className={cn(
+                      'h-7 rounded px-2.5 text-xs font-medium transition-colors duration-150',
+                      scope === value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                    )}
+                    key={value}
+                    onClick={() => setScope(value)}
+                    type="button"
+                  >
+                    {value === 'mine' ? `Mine${mine.length ? ` · ${mine.filter((t) => normalisedStatus(t.status) !== 'DONE').length}` : ''}` : 'Everyone'}
+                  </button>
+                ))}
+              </div>
+            </div>
             {showSkeleton ? (
-              <div className="grid gap-2 p-3">
+              <div className="grid gap-2">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <Skeleton className="h-10" key={i} />
                 ))}
               </div>
             ) : upNext.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
-                <IconTile icon={CheckCircle2} size="lg" tone="emerald" />
-                <div className="text-sm font-semibold text-slate-900">
-                  {tasks.length === 0 ? 'No tasks planned for today' : 'You are all caught up'}
-                </div>
-                <p className="m-0 max-w-sm text-[13px] text-slate-500">
+              <div className="flex flex-col items-center gap-2 rounded-[10px] border border-dashed border-slate-300 px-4 py-8 text-center">
+                <div className="text-sm font-semibold text-slate-900">{tasks.length === 0 ? 'No tasks planned for today' : 'You are all caught up'}</div>
+                <p className="m-0 max-w-sm text-[13px] text-slate-600">
                   {tasks.length === 0
                     ? 'Open a project to add tasks, or let the AI planner draft a plan for you.'
                     : scope === 'mine'
@@ -264,54 +224,46 @@ export default function DashboardOverview({
                 ) : null}
               </div>
             ) : (
-              <ul className="m-0 list-none divide-y divide-slate-100 p-0">
+              <ul className="m-0 list-none border-t border-slate-100 p-0">
                 {upNext.map((task) => {
                   const priority = (task.dynamicPriority || task.priority) as TaskPriority;
                   const where = [task.projectId ? projectName.get(task.projectId) : null, task.epicId ? epicName.get(task.epicId) : null]
                     .filter(Boolean)
-                    .join(' / ');
+                    .join(' · ');
                   return (
-                    <li key={task.id}>
+                    <li className="border-b border-slate-100" key={task.id}>
                       <button
-                        className="group flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150 hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none"
+                        className="group flex min-h-[44px] w-full items-center gap-3 px-1 py-2 text-left transition-colors duration-150 hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none"
                         onClick={() => onOpenTask(task)}
                         type="button"
                       >
-                        <StatusDot status={task.status} />
+                        <StatusIcon status={task.status} />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13px] font-medium text-slate-900 group-hover:text-emerald-700">{task.title}</span>
-                          <span className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
-                            <span className="shrink-0">{label(normalisedStatus(task.status))}</span>
-                            {where ? (
-                              <>
-                                <span aria-hidden className="text-slate-300">·</span>
-                                <span className="truncate">{where}</span>
-                              </>
-                            ) : null}
-                          </span>
+                          <span className="block truncate text-[13px] text-slate-900">{task.title}</span>
+                          {where ? <span className="block truncate text-xs text-slate-500">{where}</span> : null}
                         </span>
                         {task.currentSlaState === 'BREACHED' || task.currentSlaState === 'NEAR_BREACH' ? (
-                          <Badge className="hidden sm:inline-flex" dot tone={task.currentSlaState === 'BREACHED' ? 'danger' : 'warning'}>
+                          <Badge className="hidden sm:inline-flex" tone={task.currentSlaState === 'BREACHED' ? 'danger' : 'warning'}>
                             {task.currentSlaState === 'BREACHED' ? 'SLA breached' : 'Near breach'}
                           </Badge>
                         ) : null}
-                        <Badge className="shrink-0" tone={PRIORITY_TONE[priority] ?? 'neutral'}>
-                          {label(priority)}
-                        </Badge>
+                        <span className="hidden w-16 shrink-0 text-xs text-slate-600 sm:block">{label(priority)}</span>
                         {task.assignedTo?.email ? (
                           <UserAvatar className="hidden sm:flex" email={task.assignedTo.email} name={task.assignedTo.name} showTooltip={false} size="sm" />
                         ) : null}
-                        <ArrowRight className="hidden shrink-0 text-slate-300 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-slate-500 sm:block" size={14} />
+                        <ArrowRight className="hidden shrink-0 text-slate-300 group-hover:text-slate-500 sm:block" size={14} />
                       </button>
                     </li>
                   );
                 })}
               </ul>
             )}
-          </Card>
+          </section>
 
-          {/* Progress */}
-          <Card className="min-w-0">
+          <div className="grid content-start gap-7">
+            <WaitingOnYou />
+            {/* Progress */}
+            <Card className="min-w-0">
             <CardHeader description="Today's tasks by status" title="Progress" />
             <div className="grid gap-4 p-4">
               <div>
@@ -363,6 +315,7 @@ export default function DashboardOverview({
               </div>
             </div>
           </Card>
+          </div>
         </div>
 
         <GovernanceCard />

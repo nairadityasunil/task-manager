@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AddTaskForm from '@/components/AddTaskForm';
 import { WorkspaceSwitcher } from '@/features/workspaces';
 import EditTaskForm from '@/components/EditTaskForm';
 import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
-import { Badge, Button, IconTile, buttonClass, cn, type BadgeTone } from '@/components/ui';
+import { Badge, Button, IconTile, buttonClass, cn, tagColor, type BadgeTone } from '@/components/ui';
 import Modal from '@/components/Modal';
 import EpicForm from '@/components/EpicForm';
 import NoteModal from '@/components/NoteModal';
@@ -29,6 +29,7 @@ import PromptLibraryPage from '@/pages/PromptLibraryPage';
 import PromptPlaygroundPage from '@/pages/PromptPlaygroundPage';
 import Sidebar, { SidebarView } from '@/components/Sidebar';
 import Topbar from '@/components/Topbar';
+import { CommandPalette, buildPaletteItems } from '@/components/CommandPalette';
 import type { TaskWorkflowStatus } from '@/types/task';
 import InvitationNotificationPanel from '@/components/InvitationNotificationPanel';
 import TaskList from '@/components/TaskList';
@@ -157,6 +158,22 @@ export function DashboardPage(): JSX.Element {
   const navigate = useNavigate();
   const { tab } = useParams();
   const dash = useDashboard();
+  // With no epic chosen, the project's tasks show grouped by epic.
+  const columnTasks = dash.selectedEpicId ? dash.activeEpicTasks : dash.visibleTasks;
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const closePalette = useCallback(() => setIsPaletteOpen(false), []);
+
+  // ⌘K / Ctrl+K opens the command palette from anywhere in the app.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setIsPaletteOpen((open) => !open);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
   const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -241,11 +258,36 @@ export function DashboardPage(): JSX.Element {
           else if (view === 'agents') navigate('/agents');
         }}
         onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
+        onOpenSearch={() => setIsPaletteOpen(true)}
+        projects={dash.projects}
         onLogout={dash.logout}
         user={dash.user ? { name: dash.user.name || null, email: dash.user.email || '' } : null}
         activeIntegrationId={dash.activeIntegrationId ?? undefined}
         activeIntegrationName={dash.activeIntegrationName}
         activeTab={tab || 'overview'}
+      />
+
+      <CommandPalette
+        items={
+          isPaletteOpen
+            ? buildPaletteItems({
+                projects: dash.projects,
+                epics: dash.epics,
+                tasks: dash.tasks,
+                go: (path) => navigate(path),
+                openTask: (task) => {
+                  if (task.projectId) navigate(task.epicId ? `/projects/${task.projectId}/epics/${task.epicId}` : `/projects/${task.projectId}`);
+                  dash.setSelectedTaskId(task.id);
+                },
+                actions: [
+                  { id: 'project', label: 'New project', run: () => dash.setIsProjectCreateModalOpen(true) },
+                  { id: 'plan', label: 'Plan a project with AI', run: () => dash.setIsAiPlanningWorkspaceOpen(true) }
+                ]
+              })
+            : []
+        }
+        onClose={closePalette}
+        open={isPaletteOpen}
       />
 
       {/* Right side wrapper */}
@@ -529,7 +571,13 @@ export function DashboardPage(): JSX.Element {
                   </div>
                 </div>
               </div>
-              <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 sm:p-4 lg:flex-row lg:overflow-hidden lg:px-6 lg:py-4">
+              <div
+                className={cn(
+                  'flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 transition-[padding] duration-200 sm:p-4 lg:flex-row lg:overflow-hidden lg:px-6 lg:py-4',
+                  // On wide screens the task panel sits beside the list instead of covering it.
+                  dash.selectedTaskId && dash.activeTask && 'xl:pr-[456px]'
+                )}
+              >
                 {/* Column 1 — Epics */}
                 <div className={`flex max-h-[45vh] w-full shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[var(--shadow-card)] transition-[width] duration-300 ease-in-out lg:h-full lg:max-h-none ${dash.isSidebarCollapsed ? 'lg:w-14' : 'lg:w-[272px]'}`}>
                   <div className={`flex items-center justify-between gap-2 border-b border-slate-100 py-2.5 ${dash.isSidebarCollapsed ? 'px-3 lg:flex-col lg:gap-3 lg:px-2' : 'px-4'}`}>
@@ -566,6 +614,22 @@ export function DashboardPage(): JSX.Element {
 
                   {!dash.isSidebarCollapsed && (
                     <div className="custom-scrollbar flex flex-1 flex-col gap-1 overflow-y-auto p-2">
+                      {dash.activeProjectEpics.length > 0 ? (
+                        <button
+                          aria-pressed={!dash.selectedEpicId}
+                          className={cn(
+                            'flex h-9 items-center gap-2 rounded-lg border px-2.5 text-left text-sm transition-colors duration-150',
+                            !dash.selectedEpicId ? 'border-brand-200 bg-brand-50 font-medium text-slate-900' : 'border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-50'
+                          )}
+                          data-testid="all-epics"
+                          onClick={() => dash.handleEpicSelect(null)}
+                          type="button"
+                        >
+                          <Layers3 className="text-slate-500" size={14} />
+                          All epics
+                          <span className="ml-auto font-mono text-xs text-slate-500">{dash.visibleTasks.length}</span>
+                        </button>
+                      ) : null}
                       {dash.activeProjectEpics.map(epic => {
                         const isActive = dash.selectedEpicId === epic.id;
                         return (
@@ -574,14 +638,15 @@ export function DashboardPage(): JSX.Element {
                             className={cn(
                               'group relative flex cursor-pointer flex-col gap-1 rounded-lg border px-2.5 py-2 transition-colors duration-150',
                               isActive
-                                ? 'border-emerald-200 bg-emerald-50/60 shadow-[inset_3px_0_0_0_#10b981]'
+                                ? 'border-brand-200 bg-brand-50'
                                 : 'border-transparent hover:border-slate-200 hover:bg-slate-50'
                             )}
                             onClick={() => dash.handleEpicSelect(isActive ? null : epic.id)}
                           >
                             <div className="flex items-start justify-between gap-2">
-                              <h4 className="m-0 min-w-0 truncate text-sm font-medium leading-snug text-slate-900">
-                                {epic.name}
+                              <h4 className="m-0 flex min-w-0 items-center gap-2 truncate text-sm font-medium leading-snug text-slate-900">
+                                <span aria-hidden className="h-2 w-2 shrink-0 rounded-sm" style={{ background: tagColor(epic.id) }} />
+                                <span className="truncate">{epic.name}</span>
                               </h4>
                               <Badge className="shrink-0" tone={STATUS_TONES[epic.status] ?? 'neutral'}>
                                 {epicStatusLabel(epic.status)}
@@ -643,18 +708,18 @@ export function DashboardPage(): JSX.Element {
 
                 {/* Column 2 — Tasks */}
                 <div className="flex min-h-[60vh] min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[var(--shadow-card)] lg:h-full lg:min-h-0">
-                  {dash.selectedEpicId ? (
+                  {dash.selectedEpicId || dash.activeProjectEpics.length > 0 || dash.visibleTasks.length > 0 ? (
                     <>
                       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-2.5">
                         <div className="min-w-0">
                           <h3 className="m-0 truncate text-sm font-semibold tracking-tight text-slate-900">{dash.tasksHeading}</h3>
                           <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
                             <span className="max-w-[200px] truncate">
-                              {dash.epics.find(e => e.id === dash.selectedEpicId)?.name}
+                              {dash.selectedEpicId ? dash.epics.find(e => e.id === dash.selectedEpicId)?.name : 'All epics'}
                             </span>
                             <span aria-hidden className="text-slate-300">·</span>
                             <span className="shrink-0">
-                              {dash.activeEpicTasks.length} {dash.activeEpicTasks.length === 1 ? 'Task' : 'Tasks'}
+                              {columnTasks.length} {columnTasks.length === 1 ? 'Task' : 'Tasks'}
                             </span>
                           </div>
                         </div>
@@ -745,7 +810,7 @@ export function DashboardPage(): JSX.Element {
                               onUpdateStatus={(task, status) => void dash.handleUpdateTaskStatus(task, status)}
                               onUpdateEpic={(task, epicId) => void dash.handleUpdateTaskEpic(task, epicId)}
                               projects={dash.projects}
-                              tasks={dash.activeEpicTasks}
+                              tasks={columnTasks}
                               onSelectTask={(task) => dash.setSelectedTaskId(task.id)}
                               onCommentTask={(task) => {
                                 dash.setSelectedTaskId(task.id);
@@ -761,7 +826,7 @@ export function DashboardPage(): JSX.Element {
                         ) : (
                           <div className="h-full">
                             <KanbanBoard
-                              tasks={dash.activeEpicTasks}
+                              tasks={columnTasks}
                               onUpdateStatus={async (taskId, status) => {
                                 const task = dash.tasks.find(t => t.id === taskId);
                                 if (task) await dash.handleUpdateTaskStatus(task, status, true);
@@ -786,9 +851,9 @@ export function DashboardPage(): JSX.Element {
                   ) : (
                     <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
                       <IconTile className="mb-3" icon={Layers3} size="lg" tone="emerald" />
-                      <h4 className="m-0 text-sm font-semibold text-slate-900">Select an epic</h4>
+                      <h4 className="m-0 text-sm font-semibold text-slate-900">No epics yet</h4>
                       <p className="m-0 mt-1 max-w-xs text-sm text-slate-500">
-                        Choose an epic from the list to view its execution plan and tasks.
+                        Epics group the work in a project. Add one to start planning tasks.
                       </p>
                       {dash.activeProjectEpics.length === 0 && dash.canManageActiveProject ? (
                         <Button className="mt-4" icon={Plus} onClick={() => dash.setIsEpicCreateModalOpen(true)} variant="primary">
