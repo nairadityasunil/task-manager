@@ -22,7 +22,7 @@ import {
 
 import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
-import { Badge, Button, Card, CardHeader, Tabs, cn, inputClass, selectClass } from '@/components/ui';
+import { Badge, Button, Card, CardHeader, Tabs, cn, inputClass, selectClass, Select } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
 import { ActivityLog } from '@/features/agents/components/ActivityLog';
@@ -647,19 +647,19 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                 <input aria-label="Search agents" className={cn(inputClass, 'h-8 pl-8')} onChange={(e) => setQuery(e.target.value)} placeholder="Search agents" value={query} />
               </div>
-              <select aria-label="Type" className={cn(selectClass, 'h-8 sm:w-44')} onChange={(e) => setKind(e.target.value as AgentKind | '')} value={kind}>
+              <Select aria-label="Type" className={cn(selectClass, 'h-8 sm:w-44')} onChange={(e) => setKind(e.target.value as AgentKind | '')} value={kind}>
                 <option value="">All types</option>
                 {(Object.keys(KIND_LABELS) as AgentKind[]).map((k) => (
                   <option key={k} value={k}>
                     {KIND_LABELS[k]}
                   </option>
                 ))}
-              </select>
-              <select aria-label="Status" className={cn(selectClass, 'h-8 sm:w-48')} onChange={(e) => setStatus(e.target.value)} value={status}>
+              </Select>
+              <Select aria-label="Status" className={cn(selectClass, 'h-8 sm:w-48')} onChange={(e) => setStatus(e.target.value)} value={status}>
                 <option value="">Active and suspended</option>
                 <option value="active">Active</option>
                 <option value="suspended">Suspended</option>
-              </select>
+              </Select>
             </div>
             {agents == null ? (
               <div className="space-y-2 p-4">

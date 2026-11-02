@@ -11,7 +11,7 @@ import {
 import { TaskStatus, TASK_WORKFLOW_STATUS_OPTIONS } from '../types/task';
 import { ProjectMember } from '../types/project';
 import { useAuth } from '../context/AuthContext';
-import { buttonClass, cn, Field, inputClass, selectClass } from '@/components/ui';
+import { buttonClass, cn, Field, inputClass, selectClass, Select } from '@/components/ui';
 
 export interface TaskFilters {
   search: string;
@@ -124,7 +124,7 @@ const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
         <div className="mt-3 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:grid-cols-2">
           {/* Status */}
           <Field label={<span className="inline-flex items-center gap-1.5"><Activity className="h-3.5 w-3.5 text-slate-400" /> Status</span>}>
-            <select
+            <Select
               value={filters.status}
               onChange={(e) => updateFilter('status', e.target.value)}
               className={selectClass}
@@ -133,12 +133,12 @@ const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
               {[...TASK_WORKFLOW_STATUS_OPTIONS, { value: 'rolled_over', label: 'Rolled Over' }].map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
-            </select>
+            </Select>
           </Field>
 
           {/* Assignee */}
           <Field label={<span className="inline-flex items-center gap-1.5"><User className="h-3.5 w-3.5 text-slate-400" /> Assigned to</span>}>
-            <select
+            <Select
               value={filters.assigneeId}
               onChange={(e) => updateFilter('assigneeId', e.target.value)}
               className={selectClass}
@@ -147,7 +147,7 @@ const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
               {members.map(member => (
                 <option key={member.id} value={member.userId}>{member.user.name || member.user.email}</option>
               ))}
-            </select>
+            </Select>
           </Field>
         </div>
       )}

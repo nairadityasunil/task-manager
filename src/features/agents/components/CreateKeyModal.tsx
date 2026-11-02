@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { KeyRound, ShieldAlert } from 'lucide-react';
 
 import Modal from '@/components/Modal';
-import { Button, Field, cn, inputClass, selectClass } from '@/components/ui';
+import { Button, Field, cn, selectClass, Select, Checkbox, Input } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
 import { API_BASE_URL } from '@/services/api';
 import { agentsApi, SCOPE_LABELS, type Agent } from '@/services/agents';
@@ -52,14 +52,12 @@ export function ScopePicker({
             )}
             key={scope}
           >
-            <input
-              checked={checked}
-              className="mt-0.5 h-4 w-4 accent-emerald-600"
+            <Checkbox
+              checked={checked} className="mt-0.5"
               disabled={locked}
               onChange={(event) =>
                 onChange(event.target.checked ? [...value, scope] : value.filter((item) => item !== scope))
               }
-              type="checkbox"
             />
             <span className="min-w-0">
               <span className="block text-[13px] font-medium text-slate-900">{SCOPE_LABELS[scope]?.label ?? scope}</span>
@@ -128,13 +126,11 @@ export function ProjectPicker({
           {projects.length === 0 ? <p className="m-0 p-1 text-xs text-slate-500">No projects yet.</p> : null}
           {projects.map((project) => (
             <label className="flex items-center gap-2 rounded-md px-1.5 py-1 text-[13px] text-slate-700 hover:bg-slate-50" key={project.id}>
-              <input
+              <Checkbox
                 checked={value.includes(project.id)}
-                className="h-4 w-4 accent-emerald-600"
                 onChange={(event) =>
                   onChange(event.target.checked ? [...value, project.id] : value.filter((id) => id !== project.id))
                 }
-                type="checkbox"
               />
               <span className="truncate">{project.name}</span>
             </label>
@@ -300,7 +296,7 @@ export function CreateKeyModal({
     >
       <div className="space-y-4">
         <Field hint="Where the key will be used, e.g. Claude Desktop or Nightly sync." label="Name">
-          <input autoFocus className={inputClass} maxLength={120} onChange={(e) => setName(e.target.value)} placeholder="Claude Desktop" value={name} />
+          <Input autoFocus maxLength={120} onChange={(e) => setName(e.target.value)} placeholder="Claude Desktop" value={name} />
         </Field>
         <div className="grid gap-1.5">
           <span className="text-[13px] font-medium text-slate-700">What it can do</span>
@@ -317,13 +313,13 @@ export function CreateKeyModal({
           />
         </div>
         <Field label="Expires after">
-          <select className={selectClass} onChange={(e) => setExpiry(e.target.value)} value={expiry}>
+          <Select className={selectClass} onChange={(e) => setExpiry(e.target.value)} value={expiry}>
             {EXPIRY_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
         {expiry === 'never' || projectIds.length === 0 ? (
           <p className="m-0 flex items-start gap-2 rounded-lg bg-amber-50 p-2.5 text-xs text-amber-800">

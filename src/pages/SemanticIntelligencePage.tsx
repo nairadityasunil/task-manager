@@ -1,4 +1,5 @@
 import React from 'react';
+import Modal from '@/components/Modal';
 import {
   Activity,
   AlertTriangle,
@@ -20,7 +21,7 @@ import {
 import noDataImg from '@/assets/no_data.png';
 import PageHeader from '@/components/PageHeader';
 import EmptyState from '@/components/EmptyState';
-import { Badge, Button, Card, IconTile, selectClass, type TileTone } from '@/components/ui';
+import { Badge, Button, Card, IconTile, selectClass, type TileTone, Select } from '@/components/ui';
 import type { Project } from '@/types/project';
 import {
   useSemanticIntelligence,
@@ -181,7 +182,7 @@ export default function SemanticIntelligencePage({
         <div className="flex flex-wrap items-center gap-2 pb-4 sm:gap-3">
           <div className="relative w-full sm:w-64">
             <Workflow className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-            <select
+            <Select
               aria-label="Project scope"
               className={`${selectClass} pl-8`}
               onChange={(event) => intel.setActiveProjectId(event.target.value)}
@@ -193,7 +194,7 @@ export default function SemanticIntelligencePage({
                   {project.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
 
           <div className="flex max-w-full overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 p-0.5 hide-scrollbar">
@@ -556,19 +557,13 @@ export default function SemanticIntelligencePage({
 
         {/* Drilldown Modal */}
         {intel.drilldown && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true">
-            <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-4 py-4 sm:px-6">
-                <div className="min-w-0">
-                  <h4 className="m-0 truncate text-base font-semibold capitalize text-slate-900">{intel.drilldown.metric.replace(/_/g, ' ')} Lineage</h4>
-                  <p className="m-0 text-[13px] text-slate-500">Drilldown results: {intel.drilldown.pagination.total} records</p>
-                </div>
-                <Button onClick={() => intel.setDrilldown(null)} size="sm" variant="ghost">
-                  Close
-                </Button>
-              </div>
-
-              <div className="space-y-2 overflow-y-auto p-4 sm:p-6">
+          <Modal
+            description={`Drilldown results: ${intel.drilldown.pagination.total} records`}
+            maxWidth="max-w-2xl"
+            onClose={() => intel.setDrilldown(null)}
+            title={<span className="capitalize">{intel.drilldown.metric.replace(/_/g, ' ')} Lineage</span>}
+          >
+              <div className="space-y-2">
                 {intel.drilldown.rows.map((row, idx) => (
                   <div key={idx} className="space-y-1 rounded-lg border border-slate-200 p-3">
                     <div className="text-sm font-medium text-slate-900">{String(row.title || `Record #${idx + 1}`)}</div>
@@ -576,8 +571,7 @@ export default function SemanticIntelligencePage({
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
+          </Modal>
         )}
       </div>
     </div>

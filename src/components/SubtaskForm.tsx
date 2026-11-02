@@ -3,7 +3,7 @@ import { ChevronDown, Plus, Trash2 } from 'lucide-react';
 
 import { TASK_WORKFLOW_STATUS_OPTIONS, type TaskWorkflowStatus } from '@/types/task';
 import type { ProjectMember } from '@/types/project';
-import { Button, Field, cn, inputClass, selectClass } from '@/components/ui';
+import { Button, Field, cn, inputClass, selectClass, Select, Input } from '@/components/ui';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
 interface SubtaskDraft {
@@ -193,7 +193,7 @@ function SubtaskForm({ onSubmit, members }: SubtaskFormProps): JSX.Element {
               <div className="mt-2.5 grid gap-3 pl-7">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <Field label="Assign to">
-                    <select
+                    <Select
                       className={selectClass}
                       onChange={(event) => updateDraft(draft.id, { assignedToUserId: event.target.value || null })}
                       value={draft.assignedToUserId || ''}
@@ -204,10 +204,10 @@ function SubtaskForm({ onSubmit, members }: SubtaskFormProps): JSX.Element {
                           {member.user.name || member.user.email}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </Field>
                   <Field label="Status">
-                    <select
+                    <Select
                       className={selectClass}
                       onChange={(event) => updateDraft(draft.id, { status: event.target.value as TaskWorkflowStatus })}
                       value={draft.status}
@@ -217,12 +217,11 @@ function SubtaskForm({ onSubmit, members }: SubtaskFormProps): JSX.Element {
                           {option.label}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </Field>
                 </div>
                 <Field label="Description">
-                  <input
-                    className={inputClass}
+                  <Input
                     onChange={(event) => updateDraft(draft.id, { description: event.target.value })}
                     placeholder="Optional"
                     type="text"
@@ -230,8 +229,7 @@ function SubtaskForm({ onSubmit, members }: SubtaskFormProps): JSX.Element {
                   />
                 </Field>
                 <Field label="Internal note">
-                  <input
-                    className={inputClass}
+                  <Input
                     onChange={(event) => updateDraft(draft.id, { note: event.target.value })}
                     placeholder="Optional private note"
                     type="text"

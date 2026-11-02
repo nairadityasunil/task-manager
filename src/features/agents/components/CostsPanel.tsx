@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, CircleDollarSign, Gauge, Wallet } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
-import { Badge, Button, Card, CardHeader, cn, inputClass, type BadgeTone } from '@/components/ui';
+import { Badge, Button, Card, CardHeader, cn, inputClass, type BadgeTone, Checkbox } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
 import { agentsApi, KIND_LABELS, type CostReport, type CostRow, type GovernanceSettings } from '@/services/agents';
 import { toDisplayErrorMessage } from '@/utils/apiError';
@@ -199,16 +199,14 @@ function BudgetSettings({
         </Button>
       </form>
       <label className="flex cursor-pointer items-start gap-2.5 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-700">
-        <input
-          checked={hardStop}
-          className="mt-0.5 h-4 w-4 accent-emerald-600"
+        <Checkbox
+          checked={hardStop} className="mt-0.5"
           disabled={saving}
           onChange={(e) => {
             const next = e.target.checked;
             setHardStop(next);
             void save({ aiBudgetHardStop: next }, next ? 'AI calls stop when the budget is used up' : 'AI calls continue past the budget (alerts only)');
           }}
-          type="checkbox"
         />
         <span>
           Stop AI calls when the budget is used up

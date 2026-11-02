@@ -1,44 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Plus,
-  Trash2,
-  Copy,
-  Check,
-  RefreshCw,
-  ChevronDown,
-  Loader2,
-  Filter,
-  BookOpen,
-  AlertTriangle,
-  X
-} from 'lucide-react';
-import {
-  listApiKeys,
-  createApiKey,
-  deleteApiKey,
-  AnalyticsKey,
-  getAnalyticsEvents,
-  getEventLogs,
-  getTrackedEvents,
-  RawEvent,
-  EventLog,
-  TrackedEvent
-} from '@/services/eventTracking';
+import { Plus, Trash2, Copy, Check, RefreshCw, ChevronDown, Loader2, Filter, BookOpen, AlertTriangle, X } from 'lucide-react';
+import { listApiKeys, createApiKey, deleteApiKey, AnalyticsKey, getAnalyticsEvents, getEventLogs, getTrackedEvents, RawEvent, EventLog, TrackedEvent } from '@/services/eventTracking';
 import Modal from '@/components/Modal';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { Activity } from 'lucide-react';
-import {
-  useReactTable,
-  getCoreRowModel,
-  getExpandedRowModel,
-  createColumnHelper,
-  ExpandedState,
-} from '@tanstack/react-table';
+import { useReactTable, getCoreRowModel, getExpandedRowModel, createColumnHelper, ExpandedState } from '@tanstack/react-table';
 
 import DataTable from '@/components/DataTable';
 import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
-import { Badge, Button, Field, inputClass } from '@/components/ui';
+import { Badge, Button, Field, DateInput, Input } from '@/components/ui';
 
 const columnHelper = createColumnHelper<RawEvent>();
 
@@ -687,18 +658,14 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Start date">
-                <input
-                  className={inputClass}
+                <DateInput
                   onChange={(event) => setDraftFilters((current) => ({ ...current, startDate: event.target.value }))}
-                  type="date"
                   value={draftFilters.startDate}
                 />
               </Field>
               <Field label="End date">
-                <input
-                  className={inputClass}
+                <DateInput
                   onChange={(event) => setDraftFilters((current) => ({ ...current, endDate: event.target.value }))}
-                  type="date"
                   value={draftFilters.endDate}
                 />
               </Field>
@@ -794,13 +761,12 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
         >
           <form onSubmit={handleCreateKey} className="grid gap-5">
             <Field label="Node name">
-              <input
+              <Input
                 autoFocus
                 type="text"
                 value={newKeyName}
                 onChange={(e) => setNewKeyName(e.target.value)}
                 placeholder="e.g. Production Client"
-                className={inputClass}
               />
             </Field>
             <div className="flex justify-end gap-2">

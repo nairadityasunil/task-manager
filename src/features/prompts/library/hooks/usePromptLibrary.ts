@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmationContext";
 import { promptService, PromptItem, PromptFolder } from "@/services/prompts";
 
 export function usePromptLibrary(workspaceId: string) {
+  const confirm = useConfirm();
   const [activeView, setActiveView] = useState<"prompts" | "folders">("prompts");
   const [prompts, setPrompts] = useState<PromptItem[]>([]);
   const [folders, setFolders] = useState<PromptFolder[]>([]);
@@ -114,7 +116,7 @@ export function usePromptLibrary(workspaceId: string) {
 
   const handleDeleteFolder = async (folderId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this folder? Prompts inside will remain accessible.")) return;
+    if (!(await confirm({ title: 'Delete folder?', message: 'Prompts inside stay available.', confirmText: 'Delete', type: 'danger' }))) return;
     try {
       await promptService.deleteFolder(workspaceId, folderId);
       if (selectedFolderId === folderId) setSelectedFolderId(null);

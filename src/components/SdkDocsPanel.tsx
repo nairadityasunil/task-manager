@@ -56,7 +56,7 @@ function SdkDocsPanel(): JSX.Element {
   const sectionCls = 'grid scroll-mt-16 gap-4 border-t border-slate-200 pt-6';
 
   return (
-    <div className="mx-auto w-full max-w-[1160px] px-1 py-2 sm:px-3 lg:py-4">
+    <div className="w-full px-1 py-2 sm:px-3 lg:py-4">
       <div className="lg:grid lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-10">
         {/* Section nav: sticky sidebar on desktop, scrollable chips on phones */}
         <nav aria-label="On this page" className="mb-4 lg:mb-0">

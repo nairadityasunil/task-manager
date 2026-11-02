@@ -1,19 +1,10 @@
+import Modal from '@/components/Modal';
 import React, { useState, useEffect } from "react";
-import {
-  X,
-  GitCompare,
-  CheckCircle2,
-  AlertTriangle,
-  ShieldCheck,
-  Play,
-} from "lucide-react";
+import { CheckCircle2, AlertTriangle, ShieldCheck, Play } from "lucide-react";
 import { buttonClass, inputClass, selectClass } from "@/components/ui";
-import {
-  promptService,
-  PromptItem,
-  PromptVersion,
-} from "@/services/prompts";
+import { promptService, PromptItem, PromptVersion } from "@/services/prompts";
 
+import { Select } from '@/components/ui';
 interface PromptVersionCompareModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -146,39 +137,21 @@ export const PromptVersionCompareModal: React.FC<PromptVersionCompareModalProps>
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-xl overflow-hidden text-slate-900">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-4 sm:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 sm:flex">
-              <GitCompare className="h-[18px] w-[18px]" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="m-0 text-base font-semibold text-slate-900">
-                5-Tab Version Compare — {prompt.name}
-              </h2>
-              <p className="m-0 mt-0.5 text-[13px] text-slate-500">
-                Compare immutable SHA-256 content hashes, variables, and multi-role prompt structures.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-900"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
+    <Modal
+      closeLabel="Close"
+      description="Compare immutable SHA-256 content hashes, variables, and multi-role prompt structures."
+      dismissOnBackdrop={false}
+      maxWidth="max-w-5xl"
+      onClose={onClose}
+      plainBody
+      title={`5-Tab Version Compare — ${prompt.name}`}
+    >
         {/* Version Selector Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-6">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px]">
             <div className="flex items-center gap-2">
               <span className="font-medium text-slate-700">Base Version (v1):</span>
-              <select
+              <Select
                 value={v1Number}
                 onChange={(e) => handleSelectV1(Number(e.target.value))}
                 className={`${selectClass} h-8 w-auto font-mono text-xs`}
@@ -188,14 +161,14 @@ export const PromptVersionCompareModal: React.FC<PromptVersionCompareModalProps>
                     v{v.version} ({new Date(v.createdAt).toLocaleDateString()})
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             <span className="text-slate-400">vs</span>
 
             <div className="flex items-center gap-2">
               <span className="font-medium text-slate-700">Candidate Version (v2):</span>
-              <select
+              <Select
                 value={v2Number}
                 onChange={(e) => handleSelectV2(Number(e.target.value))}
                 className={`${selectClass} h-8 w-auto font-mono text-xs`}
@@ -205,7 +178,7 @@ export const PromptVersionCompareModal: React.FC<PromptVersionCompareModalProps>
                     v{v.version} ({new Date(v.createdAt).toLocaleDateString()})
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
 
@@ -471,7 +444,6 @@ export const PromptVersionCompareModal: React.FC<PromptVersionCompareModalProps>
             Close Comparison
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };

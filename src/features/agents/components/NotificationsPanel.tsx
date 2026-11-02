@@ -3,7 +3,7 @@ import { BellRing, Plus, RotateCw, Send, Trash2, Webhook } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
 import Modal from '@/components/Modal';
-import { Badge, Button, Card, CardHeader, Field, cn, inputClass, selectClass } from '@/components/ui';
+import { Badge, Button, Card, CardHeader, Field, cn, inputClass, selectClass, Select, Checkbox, Radio, Input } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
 import { agentsApi, timeAgo, type AgentWebhook, type WebhookEvent, type WebhookInput } from '@/services/agents';
@@ -70,7 +70,7 @@ function WebhookForm({
     >
       <div className="space-y-4">
         <Field label="Name">
-          <input autoFocus className={inputClass} maxLength={80} onChange={(e) => setName(e.target.value)} placeholder="Security channel" value={name} />
+          <Input autoFocus maxLength={80} onChange={(e) => setName(e.target.value)} placeholder="Security channel" value={name} />
         </Field>
         <Field hint="Must start with https://. Private and local addresses are refused." label="URL">
           <input className={cn(inputClass, 'font-mono text-[13px]')} onChange={(e) => setUrl(e.target.value)} placeholder="https://hooks.slack.com/services/…" value={url} />
@@ -91,7 +91,7 @@ function WebhookForm({
                 )}
                 key={value}
               >
-                <input checked={format === value} className="mt-0.5 accent-emerald-600" name="format" onChange={() => setFormat(value)} type="radio" />
+                <Radio checked={format === value} className="mt-0.5" name="format" onChange={() => setFormat(value)} />
                 <span>
                   <span className="block text-[13px] font-medium text-slate-900">{label}</span>
                   <span className="block text-xs text-slate-500">{hint}</span>
@@ -104,11 +104,9 @@ function WebhookForm({
           <span className="text-[13px] font-medium text-slate-700">Send</span>
           {EVENTS.map((event) => (
             <label className="flex cursor-pointer items-start gap-2 text-[13px]" key={event.value}>
-              <input
-                checked={events.includes(event.value)}
-                className="mt-0.5 h-4 w-4 accent-emerald-600"
+              <Checkbox
+                checked={events.includes(event.value)} className="mt-0.5"
                 onChange={(e) => setEvents((current) => (e.target.checked ? [...current, event.value] : current.filter((v) => v !== event.value)))}
-                type="checkbox"
               />
               <span>
                 <span className="font-medium text-slate-800">{event.label}</span>
@@ -119,11 +117,11 @@ function WebhookForm({
         </div>
         {events.includes('alert.raised') ? (
           <Field label="Alerts from">
-            <select className={selectClass} onChange={(e) => setMinSeverity(e.target.value as AgentWebhook['minSeverity'])} value={minSeverity}>
+            <Select className={selectClass} onChange={(e) => setMinSeverity(e.target.value as AgentWebhook['minSeverity'])} value={minSeverity}>
               <option value="info">Info and above (everything)</option>
               <option value="warning">Warning and above</option>
               <option value="critical">Critical only</option>
-            </select>
+            </Select>
           </Field>
         ) : null}
       </div>

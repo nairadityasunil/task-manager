@@ -1,3 +1,4 @@
+import ConfirmationModal from '@/components/ConfirmationModal';
 import React, { useState } from "react";
 import {
   Sparkles,
@@ -414,41 +415,15 @@ export const PromptLibraryLayout: React.FC<PromptLibraryLayoutProps> = ({
       )}
 
       {deleteModalPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="p-5 space-y-3">
-              <h3 className="m-0 text-base font-semibold text-slate-900">Delete prompt?</h3>
-              <p className="m-0 text-sm leading-relaxed text-slate-600">
-                Are you sure you want to delete <span className="font-semibold text-slate-900">"{deleteModalPrompt.name}"</span>? This action cannot be undone.
-              </p>
-            </div>
-
-            <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-end gap-2 bg-slate-50/50">
-              <button
-                type="button"
-                disabled={isDeleting}
-                onClick={() => setDeleteModalPrompt(null)}
-                className={buttonClass("secondary", "sm")}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={isDeleting}
-                onClick={onConfirmDelete}
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-red-600 px-3 text-[13px] font-medium text-white shadow-sm transition hover:bg-red-700 disabled:opacity-50"
-              >
-                {isDeleting ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Deleting...
-                  </>
-                ) : (
-                  "Delete"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmationModal
+          confirmText="Delete"
+          isLoading={isDeleting}
+          message={`Delete "${deleteModalPrompt.name}"? This cannot be undone.`}
+          onCancel={() => !isDeleting && setDeleteModalPrompt(null)}
+          onConfirm={onConfirmDelete}
+          title="Delete prompt?"
+          type="danger"
+        />
       )}
     </div>
   );

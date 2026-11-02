@@ -1,28 +1,11 @@
+import Modal from '@/components/Modal';
 import React, { useState, useEffect } from "react";
-import {
-  centralizedAiService,
-  AIProjectPlanResponse,
-  AIPlanModificationResponse,
-  WorkspaceSessionItem,
-} from "@/services/centralizedAi";
-import {
-  Sparkles,
-  Check,
-  X,
-  Plus,
-  Edit3,
-  BookOpen,
-  MessageSquare,
-  History,
-  Copy,
-  AlertCircle,
-  FolderPlus,
-  Trash2,
-  Loader2,
-} from "lucide-react";
-import { Badge, Button, buttonClass, cn, Field, inputClass, selectClass, textareaClass } from "@/components/ui";
+import { centralizedAiService, AIProjectPlanResponse, AIPlanModificationResponse, WorkspaceSessionItem } from "@/services/centralizedAi";
+import { Sparkles, Check, X, Plus, Edit3, BookOpen, MessageSquare, History, Copy, AlertCircle, FolderPlus, Trash2, Loader2 } from "lucide-react";
+import { Badge, Button, buttonClass, cn, Field, inputClass, selectClass } from "@/components/ui";
 import { AiKeySetup, useAiProviderReady } from "@/features/ai/AiKeySetup";
 
+import { Select, Textarea } from '@/components/ui';
 interface PlanningSessionItem {
   id: string;
   title: string;
@@ -444,7 +427,8 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
               {/* Model Selector Dropdown */}
               <label className="mb-2 flex min-w-0 items-center gap-2 text-[13px] text-slate-500">
                 <span className="hidden sm:inline">Model:</span>
-                <select
+                <Select
+                  aria-label="AI model"
                   value={`${selectedProvider}:${selectedModel}`}
                   onChange={(e) => {
                     const [p, m] = e.target.value.split(":");
@@ -458,7 +442,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   <option value="openai:gpt-4o">🚀 OpenAI GPT-4o</option>
                   <option value="openai:gpt-4o-mini">⚡ OpenAI GPT-4o Mini</option>
                   <option value="anthropic:claude-3-5-sonnet">🎭 Anthropic Claude 3.5 Sonnet</option>
-                </select>
+                </Select>
               </label>
             </div>
           </div>
@@ -490,23 +474,21 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                   </div>
 
                   <Field label="High-Level System Requirement">
-                    <textarea
+                    <Textarea
                       rows={5}
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
                       placeholder="e.g. I want to build a SaaS CRM where sales reps manage leads and opportunities, managers monitor team pipelines and metrics, and admins configure user permissions."
-                      className={textareaClass}
                       required
                     />
                   </Field>
 
                   <Field label="Technical Stack / Constraints (Optional)">
-                    <textarea
+                    <Textarea
                       rows={2}
                       value={context}
                       onChange={(e) => setContext(e.target.value)}
                       placeholder="e.g. Stack: Node, React, Mongoose. Target: Launch MVP in 6 weeks."
-                      className={textareaClass}
                     />
                   </Field>
 
@@ -813,18 +795,22 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
       {/* Explicit Approval Safety Confirmation Modal */}
       {showApprovalDialog && generatedPlan && (
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/40 p-3 sm:p-4">
-          <div className="max-h-[90vh] w-full max-w-md space-y-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 text-slate-900 shadow-xl sm:p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600">
-                <FolderPlus className="h-5 w-5" />
-              </div>
-              <div>
-                <h4 className="m-0 text-base font-semibold text-slate-900">Approve & Create Project</h4>
-                <p className="m-0 text-[13px] text-slate-500">Confirm project materialization from approved plan</p>
-              </div>
-            </div>
-
+        <Modal
+          description="Confirm project materialization from approved plan"
+          footer={
+            <>
+              <Button onClick={() => setShowApprovalDialog(false)} variant="secondary">
+                Cancel
+              </Button>
+              <Button disabled={confirming} icon={Check} loading={confirming} onClick={handleConfirmPlanExecution} variant="accent">
+                {confirming ? "Creating Project..." : "Confirm & Create"}
+              </Button>
+            </>
+          }
+          maxWidth="max-w-md"
+          onClose={() => !confirming && setShowApprovalDialog(false)}
+          title="Approve & Create Project"
+        >
             <dl className="m-0 divide-y divide-slate-100 rounded-lg border border-slate-200 text-sm">
               <div className="flex justify-between gap-3 px-3.5 py-2.5">
                 <dt className="text-slate-500">Project Name:</dt>
@@ -848,16 +834,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
               Clicking Confirm will create the Project, Custom Workflow States, Epics, Tasks, Subtasks, Dependencies, and canonical PRD Document.
             </p>
 
-            <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
-              <Button onClick={() => setShowApprovalDialog(false)} variant="secondary">
-                Cancel
-              </Button>
-              <Button disabled={confirming} icon={Check} loading={confirming} onClick={handleConfirmPlanExecution} variant="accent">
-                {confirming ? "Creating Project..." : "Confirm & Create"}
-              </Button>
-            </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

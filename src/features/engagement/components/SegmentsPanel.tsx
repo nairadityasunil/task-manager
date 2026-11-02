@@ -5,19 +5,10 @@ import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
 import { RuleBuilder, UrlTargeting } from '@/features/engagement/components/TargetingRuleEditor';
 import { EditorDialog } from '@/features/engagement/components/ExperienceEditor';
-import { Badge, Button, Field, inputClass } from '@/components/ui';
+import { Badge, Button, Field, Input } from '@/components/ui';
 import { conditionLabels, defaultRules } from '@/features/engagement/hooks/useEngagement';
 import type { TargetingRuleGroup } from '@/lib/guides/types';
-import {
-  createSegment,
-  deleteSegment,
-  evaluateRules,
-  listSegments,
-  updateSegment,
-  type RuleEvaluationResult,
-  type SampleVisitorContext,
-  type TargetingSegment
-} from '@/lib/targeting/api';
+import { createSegment, deleteSegment, evaluateRules, listSegments, updateSegment, type RuleEvaluationResult, type SampleVisitorContext, type TargetingSegment } from '@/lib/targeting/api';
 
 const errorMessage = (error: unknown, fallback: string): string =>
   typeof error === 'object' && error !== null && 'message' in error && typeof (error as { message: unknown }).message === 'string'
@@ -221,8 +212,7 @@ function SegmentEditorModal({
       <div className="grid gap-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Name">
-            <input
-              className={inputClass}
+            <Input
               maxLength={100}
               onChange={(event) => setName(event.target.value)}
               placeholder="e.g. Pro plan admins"
@@ -230,8 +220,7 @@ function SegmentEditorModal({
             />
           </Field>
           <Field label="Description">
-            <input
-              className={inputClass}
+            <Input
               maxLength={300}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Optional"
@@ -255,8 +244,7 @@ function SegmentTestModal({ segment, onClose }: { segment: TargetingSegment; onC
 
   const field = (key: keyof SampleVisitorContext, label: string, placeholder: string) => (
     <Field label={label}>
-      <input
-        className={inputClass}
+      <Input
         onChange={(event) => setContext((current) => ({ ...current, [key]: event.target.value }))}
         placeholder={placeholder}
         value={context[key] ?? ''}

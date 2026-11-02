@@ -5,7 +5,7 @@ import type { ProjectMember } from '@/types/project';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import Modal from '@/components/Modal';
-import { Badge, Button, cn, Field, selectClass, textareaClass, type BadgeTone } from '@/components/ui';
+import { Badge, Button, cn, Field, selectClass, textareaClass, type BadgeTone, Select, Checkbox } from '@/components/ui';
 
 const STATUS_TONE: Record<string, BadgeTone> = {
   APPROVED: 'success',
@@ -166,7 +166,7 @@ export default function ApprovalSection({ projectId, taskId, members }: Approval
         <Modal onClose={() => setRequestModalOpen(false)} title="Request Approval">
           <div className="grid gap-4">
             <Field label="Action Type">
-              <select
+              <Select
                 value={action}
                 onChange={(e) => setAction(e.target.value as ApprovalAction)}
                 className={selectClass}
@@ -174,7 +174,7 @@ export default function ApprovalSection({ projectId, taskId, members }: Approval
                 {Object.entries(ACTION_LABELS).map(([key, label]) => (
                   <option key={key} value={key}>{label}</option>
                 ))}
-              </select>
+              </Select>
             </Field>
 
             <Field label="Reason">
@@ -191,11 +191,9 @@ export default function ApprovalSection({ projectId, taskId, members }: Approval
               <div className="max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white custom-scrollbar">
                 {members.map(member => (
                   <label key={member.userId} className="flex cursor-pointer items-center gap-3 border-b border-slate-100 px-3 py-2.5 last:border-0 hover:bg-slate-50">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={selectedApprovers.includes(member.userId)}
                       onChange={() => toggleApprover(member.userId)}
-                      className="h-4 w-4 rounded border-slate-300 accent-emerald-600"
                     />
                     <span className="min-w-0 flex-1 truncate text-sm text-slate-800">{member.user.name || member.user.email}</span>
                     {selectedApprovers.includes(member.userId) ? (

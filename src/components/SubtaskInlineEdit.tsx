@@ -3,7 +3,7 @@ import { Check, X } from 'lucide-react';
 import { Subtask } from '@/types/task';
 import type { ProjectMember } from '@/types/project';
 import UserAvatar from './UserAvatar';
-import { Button, cn, inputClass, selectClass, textareaClass } from '@/components/ui';
+import { Button, cn, selectClass, textareaClass, Select, Input } from '@/components/ui';
 
 interface SubtaskInlineEditProps {
   subtask: Subtask;
@@ -35,9 +35,8 @@ export default function SubtaskInlineEdit({ subtask, onSave, onCancel, isSaving,
     <div className="mt-3 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
       <label className="grid gap-1.5">
         <span className={labelCls}>Subtask Title</span>
-        <input
+        <Input
           autoFocus
-          className={inputClass}
           onChange={(e) => setTitle(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSave()}
           placeholder="What needs to be done?"
@@ -71,7 +70,7 @@ export default function SubtaskInlineEdit({ subtask, onSave, onCancel, isSaving,
       <label className="grid gap-1.5">
         <span className={labelCls}>Assignee</span>
         <div className="flex items-center gap-3">
-          <select
+          <Select
             className={selectClass}
             onChange={(e) => setAssignedToUserId(e.target.value || null)}
             value={assignedToUserId || ''}
@@ -82,7 +81,7 @@ export default function SubtaskInlineEdit({ subtask, onSave, onCancel, isSaving,
                 {member.user.name || member.user.email}
               </option>
             ))}
-          </select>
+          </Select>
           {assignedToUserId && (
             <UserAvatar 
               name={members.find(m => m.userId === assignedToUserId)?.user.name || null}

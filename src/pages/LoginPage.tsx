@@ -7,7 +7,7 @@ import { QRScanner } from '@/features/settings/components/QRScanner';
 import api from '@/services/api';
 import logoImg from '@/assets/logo.png';
 import GoogleLogo from '@/components/GoogleLogo';
-import { buttonClass, cn, inputClass } from '@/components/ui';
+import { buttonClass, cn, inputClass, Checkbox } from '@/components/ui';
 
 /** 40px-tall controls for the auth forms. */
 const inputCls = inputClass.replace('h-9', 'h-10');
@@ -601,11 +601,9 @@ function LoginPage(): JSX.Element {
               </div>
 
               <label className="flex w-fit cursor-pointer select-none items-center gap-2 text-sm text-slate-600">
-                <input
+                <Checkbox
                   checked={rememberMe}
-                  className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-slate-900"
                   onChange={(event) => setRememberMe(event.target.checked)}
-                  type="checkbox"
                 />
                 Remember me
               </label>

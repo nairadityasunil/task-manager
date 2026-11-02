@@ -12,6 +12,7 @@ import {
 } from '@/lib/engagement/api';
 import type { EngagementEventName, Guide, GuideStep } from '@/lib/guides/types';
 
+import { Select, Input } from '@/components/ui';
 interface GuideRuntimeProviderProps {
   children: ReactNode;
 }
@@ -888,9 +889,8 @@ function SurveyQuestionField({
             className="mt-3"
           >
             <label className="text-xs text-slate-700 font-semibold mb-1 block">Your Email</label>
-            <input
+            <Input
               type="email"
-              className={inputClass}
               placeholder="name@example.com"
               value={activeVal.email || ''}
               onChange={(e) => triggerChange({ consented: 'Yes', email: e.target.value })}
@@ -966,7 +966,7 @@ function SurveyQuestionField({
         {question.description && <p className="text-xs text-slate-500 m-0 font-normal">{question.description}</p>}
         
         {question.type === 'DROPDOWN' ? (
-          <select
+          <Select
             className={inputClass}
             onChange={(event) => triggerChange(event.target.value)}
             value={activeVal}
@@ -975,7 +975,7 @@ function SurveyQuestionField({
             {(question.options ?? []).map((option) => (
               <option key={option} value={option}>{option}</option>
             ))}
-          </select>
+          </Select>
         ) : (
           <div className="grid gap-2 mt-2">
             {(question.options ?? []).map((option) => {

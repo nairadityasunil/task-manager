@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { X, Rocket, ShieldCheck, Flame, GitBranch, ArrowRight, Code } from "lucide-react";
+import Modal from '@/components/Modal';
+import { ShieldCheck, Flame, GitBranch, ArrowRight, Code } from "lucide-react";
 import { buttonClass, inputClass } from "@/components/ui";
 import { PromptVersion, PromptItem } from "@/services/prompts";
 
@@ -54,33 +55,13 @@ export const DeployModal: React.FC<DeployModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm animate-in fade-in duration-200 sm:p-5" role="dialog" aria-modal="true">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-xl">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600">
-              <Rocket className="h-[18px] w-[18px]" />
-            </div>
-            <div>
-              <h3 className="m-0 text-base font-semibold text-slate-900">
-                Deploy Prompt Version v{targetVersionNum}
-              </h3>
-              <p className="m-0 text-[13px] text-slate-500">
-                Current Production: <strong className="font-mono text-slate-800">v{prodVersionNum}</strong>
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
+    <Modal
+      description={<>Current production: <strong className="font-mono text-slate-800">v{prodVersionNum}</strong></>}
+      maxWidth="max-w-lg"
+      onClose={onClose}
+      title={`Deploy prompt version v${targetVersionNum}`}
+    >
+      <div className="-m-4">
         {/* Modal Body */}
         <form onSubmit={handleSubmit} className="space-y-5 p-5">
           {isTargetAlreadyProd ? (
@@ -230,6 +211,6 @@ export const DeployModal: React.FC<DeployModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 };

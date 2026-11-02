@@ -4,6 +4,7 @@ import api from '@/services/api';
 import { useConfirm } from '@/context/ConfirmationContext';
 import Modal from './Modal';
 
+import { Select, Input } from '@/components/ui';
 interface CompanionDevice {
   id: string;
   deviceName: string;
@@ -182,15 +183,15 @@ function ManageDevicesModal({ onClose, onDevicesChanged }: ManageDevicesModalPro
                   <div className="grid grid-cols-2 gap-2.5">
                     <div className="flex flex-col gap-1">
                       <label className="text-sm font-medium text-slate-700 pl-0.5">Name</label>
-                      <input
-                        className="bg-white border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-slate-500"
+                      <Input
+                        className="!h-8 !text-[12px]"
                         value={draft.deviceName}
                         onChange={e => handleDraftChange(device.id, 'deviceName', e.target.value)}
                       />
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-sm font-medium text-slate-700 pl-0.5">Category</label>
-                      <select
+                      <Select
                         className="bg-white border border-slate-200 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:outline-none focus:border-slate-500"
                         value={draft.deviceType}
                         onChange={e => handleDraftChange(device.id, 'deviceType', e.target.value)}
@@ -199,7 +200,7 @@ function ManageDevicesModal({ onClose, onDevicesChanged }: ManageDevicesModalPro
                         <option value="tablet">Tablet</option>
                         <option value="desktop">Desktop</option>
                         <option value="assistant">Assistant</option>
-                      </select>
+                      </Select>
                     </div>
                   </div>
 

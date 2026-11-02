@@ -9,7 +9,7 @@ import {
   type TaskWorkflowStatus,
   type TaskPriority
 } from '@/types/task';
-import { StatusIcon, cn, type BadgeTone } from '@/components/ui';
+import { StatusIcon, cn, type BadgeTone, Checkbox } from '@/components/ui';
 import UserAvatar from './UserAvatar';
 import SlaIndicator from './SlaIndicator';
 
@@ -132,16 +132,14 @@ function TaskCard({
   const isDone = task.status === 'DONE';
 
   const checkbox = onToggleSelection ? (
-    <input
+    <Checkbox
       aria-label={`Select ${task.title}`}
-      checked={isMultiSelected}
-      className="h-4 w-4 shrink-0 cursor-pointer rounded border-slate-300 accent-brand-600"
+      checked={isMultiSelected} className="shrink-0"
       onChange={(e) => {
         e.stopPropagation();
         onToggleSelection(task.id);
       }}
       onClick={(e) => e.stopPropagation()}
-      type="checkbox"
     />
   ) : null;
 

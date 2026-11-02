@@ -3,7 +3,7 @@ import { ArrowDown, ArrowUp, Check, Pencil, Plus, Trash2, Workflow, X } from 'lu
 
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
-import { Badge, Button, inputClass, selectClass } from '@/components/ui';
+import { Badge, Button, inputClass, selectClass, Select, ColorInput, Input } from '@/components/ui';
 import projectStateService, { type ProjectState } from '@/services/projectStates';
 
 type StateCategory = ProjectState['category'];
@@ -304,11 +304,9 @@ function StateFields({
   return (
     <div className="grid gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <input
+        <ColorInput
           aria-label="State color"
-          className="h-9 w-10 shrink-0 cursor-pointer rounded-lg border border-slate-300 bg-white p-1 shadow-sm"
           onChange={(event) => onChange({ ...draft, color: event.target.value.toUpperCase() })}
-          type="color"
           value={draft.color}
         />
         <input
@@ -319,7 +317,7 @@ function StateFields({
           placeholder="State name"
           value={draft.name}
         />
-        <select
+        <Select
           aria-label="State category"
           className={`${selectClass} !w-auto`}
           onChange={(event) => onChange({ ...draft, category: event.target.value as StateCategory })}
@@ -328,12 +326,11 @@ function StateFields({
           {CATEGORIES.map((category) => (
             <option key={category.value} value={category.value}>{category.label}</option>
           ))}
-        </select>
+        </Select>
         {actions}
       </div>
-      <input
+      <Input
         aria-label="State description"
-        className={inputClass}
         maxLength={200}
         onChange={(event) => onChange({ ...draft, description: event.target.value })}
         placeholder="Description (optional)"

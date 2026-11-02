@@ -89,7 +89,7 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   ];
 
   return (
-    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 font-sans lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-6">
+    <div className="grid w-full grid-cols-1 gap-4 font-sans lg:grid-cols-[200px_minmax(0,1fr)] lg:gap-6">
       <h2 className="sr-only">System & Account Settings</h2>
       {/* Section navigation: scrolling tabs on phones/tablets, left rail on desktop */}
       <nav aria-label="Settings sections" className="-mx-3 border-b border-slate-200 px-3 sm:mx-0 sm:px-0 lg:border-b-0">

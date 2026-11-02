@@ -7,7 +7,7 @@ import { flattenProjectOptions } from '@/utils/projectTree';
 import AssigneeSelector from './AssigneeSelector';
 import { useAuth } from '@/context/AuthContext';
 import { AlertTriangle } from 'lucide-react';
-import { Button, Field, inputClass, selectClass, textareaClass } from '@/components/ui';
+import { Button, Field, selectClass, textareaClass, Select, Input } from '@/components/ui';
 
 interface AddTaskFormProps {
   epics: Epic[];
@@ -116,9 +116,8 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
   return (
     <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
       <Field label="Task title">
-        <input
+        <Input
           autoFocus
-          className={inputClass}
           onChange={(event) => setTitle(event.target.value)}
           placeholder="What needs to be done?"
           required
@@ -139,7 +138,7 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Priority">
-          <select
+          <Select
             className={selectClass}
             onChange={(event) => setPriority(event.target.value as TaskPriority)}
             value={priority}
@@ -148,11 +147,11 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
             <option value="MEDIUM">Medium</option>
             <option value="HIGH">High</option>
             <option value="CRITICAL">Critical</option>
-          </select>
+          </Select>
         </Field>
 
         <Field label="Initial status">
-          <select
+          <Select
             className={selectClass}
             onChange={(event) => setStatus(event.target.value as TaskWorkflowStatus)}
             value={status}
@@ -162,7 +161,7 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
                 {option.label}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       </div>
 
@@ -177,7 +176,7 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
 
       {!initialProjectId && (
         <Field label="Project">
-          <select
+          <Select
             className={selectClass}
             onChange={(event) => {
               setProjectId(event.target.value);
@@ -191,20 +190,20 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
                 {project.label}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       )}
 
       {(!initialEpicId && (projectId || initialProjectId)) && (
         <Field label="Epic">
-          <select className={selectClass} onChange={(event) => setEpicId(event.target.value)} value={epicId}>
+          <Select className={selectClass} onChange={(event) => setEpicId(event.target.value)} value={epicId}>
             <option value="">No epic</option>
             {visibleEpics.map((epic) => (
               <option key={epic.id} value={epic.id}>
                 {epic.name}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       )}
 

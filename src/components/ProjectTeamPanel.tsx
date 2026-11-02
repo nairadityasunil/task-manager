@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { LogOut, Shield, Trash2, UserPlus, Mail, RotateCcw } from 'lucide-react';
-import { Badge, Button, inputClass, selectClass } from '@/components/ui';
+import { Badge, Button, inputClass, selectClass, Select } from '@/components/ui';
 import type { ProjectMember } from '@/types/project';
 import { getProjectInvitations, revokeInvitation, type ProjectInvitation } from '@/services/invitations';
 
@@ -219,7 +219,7 @@ function ProjectTeamPanel({
               type="email"
               value={inviteEmail}
             />
-            <select
+            <Select
               aria-label="Role"
               className={`${selectClass} sm:w-32`}
               value={inviteRole}
@@ -227,7 +227,7 @@ function ProjectTeamPanel({
             >
               <option value="MEMBER">Member</option>
               <option value="ADMIN">Admin</option>
-            </select>
+            </Select>
             <Button disabled={isMutating} icon={UserPlus} loading={inviteLoading} type="submit" variant="primary">
               Send Invite
             </Button>

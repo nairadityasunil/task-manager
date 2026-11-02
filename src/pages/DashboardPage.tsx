@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AddTaskForm from '@/components/AddTaskForm';
 import { WorkspaceSwitcher } from '@/features/workspaces';
 import EditTaskForm from '@/components/EditTaskForm';
 import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
-import { Badge, Button, IconTile, buttonClass, cn, tagColor, type BadgeTone } from '@/components/ui';
+import { Badge, Button, Menu, Select, IconTile, buttonClass, cn, tagColor, type BadgeTone } from '@/components/ui';
 import Modal from '@/components/Modal';
 import EpicForm from '@/components/EpicForm';
 import NoteModal from '@/components/NoteModal';
@@ -39,30 +39,7 @@ import AssigneeSelector from '@/components/AssigneeSelector';
 import SlaDashboard from '@/components/SlaDashboard';
 import DashboardOverview from '@/features/dashboard/components/DashboardOverview';
 import { TaskInspector } from '@/features/tasks';
-import {
-  Layers3,
-  ChevronDown,
-  Edit3,
-  FileText,
-  Folder,
-  Layout,
-  List,
-  MessageCircle,
-  MessageSquare,
-  Plus,
-  Users,
-  Trash2,
-  History,
-  RefreshCw,
-  Calculator,
-  Zap,
-  Bot,
-  MoreHorizontal,
-  Workflow,
-  Settings,
-  BookOpen,
-  type LucideIcon
-} from 'lucide-react';
+import { Layers3, Edit3, FileText, Folder, Layout, List, MessageCircle, MessageSquare, Plus, Users, Trash2, History, RefreshCw, Calculator, Zap, Bot, MoreHorizontal, Workflow, Settings, BookOpen, type LucideIcon } from 'lucide-react';
 import { Note } from '@/types/note';
 import { useDashboard, ALL_PROJECTS_VALUE } from '@/features/dashboard';
 
@@ -96,61 +73,17 @@ interface MoreMenuItem {
 }
 
 function ProjectMoreMenu({ items }: { items: MoreMenuItem[] }): JSX.Element {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointer = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false);
-    };
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', onPointer);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onPointer);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
-
   return (
-    <div className="relative" ref={ref}>
-      <button
-        aria-expanded={open}
-        aria-haspopup="menu"
-        className={headerButtonCls}
-        onClick={() => setOpen((value) => !value)}
-        type="button"
-      >
-        <MoreHorizontal size={16} />
-        <HeaderLabel>More</HeaderLabel>
-      </button>
-      {open && (
-        <div
-          className="absolute right-0 top-full z-40 mt-1.5 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
-          role="menu"
-        >
-          {items.map(({ label, icon: Icon, onSelect, disabled }) => (
-            <button
-              className="flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-[13px] font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
-              disabled={disabled}
-              key={label}
-              onClick={() => {
-                setOpen(false);
-                onSelect();
-              }}
-              role="menuitem"
-              type="button"
-            >
-              <Icon className="shrink-0 text-slate-400" size={16} />
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <Menu
+      items={items.map(({ label, icon, onSelect, disabled }) => ({ id: label, label, icon, onSelect, disabled }))}
+      label="More project actions"
+      trigger={
+        <button className={headerButtonCls} type="button">
+          <MoreHorizontal size={16} />
+          <HeaderLabel>More</HeaderLabel>
+        </button>
+      }
+    />
   );
 }
 
@@ -510,27 +443,13 @@ export function DashboardPage(): JSX.Element {
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                   <div className="flex min-w-0 items-center gap-3">
                     <IconTile className="hidden sm:inline-flex" icon={Folder} size="md" tone="sky" />
-                    <div className="relative flex min-w-0 items-center">
-                      <select
-                        aria-label="Switch project"
-                        className="m-0 max-w-[60vw] cursor-pointer appearance-none truncate rounded-md border-none bg-transparent p-0 pr-6 text-lg font-semibold tracking-tight text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/30 sm:max-w-none"
-                        onChange={(e) => dash.handleProjectSelect(e.target.value)}
-                        value={dash.activeProject.id}
-                      >
-                        {dash.projects.map((project) => (
-                          <option
-                            className="bg-white text-base font-normal text-slate-900"
-                            key={project.id}
-                            value={project.id}
-                          >
-                            {project.name}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center">
-                        <ChevronDown className="text-slate-400" size={16} />
-                      </div>
-                    </div>
+                    <Select
+                      aria-label="Switch project"
+                      onValueChange={dash.handleProjectSelect}
+                      options={dash.projects.map((project) => ({ value: project.id, label: project.name }))}
+                      triggerClassName="h-8 max-w-[60vw] rounded-md pl-1.5 -ml-1.5 text-lg font-semibold tracking-tight text-slate-900 hover:bg-slate-100 sm:max-w-none"
+                      value={dash.activeProject.id}
+                    />
                   </div>
                   <div className="flex items-center gap-1.5 sm:gap-2">
                     <button

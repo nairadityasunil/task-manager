@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 import { conditionLabels, conditionPlaceholders, conditionTypes } from '@/features/engagement/hooks/useEngagement';
 import type { TargetingCondition, TargetingConditionType, TargetingRuleGroup } from '@/lib/guides/types';
 import { listSegments, type TargetingSegment } from '@/lib/targeting/api';
-import { Button, cn, inputClass, selectClass } from '@/components/ui';
+import { Button, cn, inputClass, selectClass, Select } from '@/components/ui';
 
 function SectionTitle({ icon: Icon, title, description }: { icon: LucideIcon; title: string; description?: string }): JSX.Element {
   return (
@@ -52,7 +52,7 @@ export function SegmentPicker({ onApply }: { onApply: (rules: TargetingRuleGroup
     <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/70 p-3">
       <Bookmark size={15} className="text-slate-400" />
       <span className="text-sm font-medium text-slate-700">Saved segment</span>
-      <select
+      <Select
         aria-label="Saved segment"
         className={cn(selectClass, 'w-auto min-w-[180px] flex-1')}
         onChange={(event) => setSelectedId(event.target.value)}
@@ -62,7 +62,7 @@ export function SegmentPicker({ onApply }: { onApply: (rules: TargetingRuleGroup
         {segments.map((segment) => (
           <option key={segment.id} value={segment.id}>{segment.name}</option>
         ))}
-      </select>
+      </Select>
       <Button
         disabled={!selected}
         onClick={() => selected && onApply({ ...cloneRules(selected.rules), id: crypto.randomUUID() })}
@@ -109,7 +109,7 @@ export function UrlTargeting({ rules, onChange }: { rules: TargetingRuleGroup; o
       <div className="grid gap-2">
         {urlConditions.map((condition) => (
           <div className="flex items-center gap-2" key={condition.id}>
-            <select
+            <Select
               aria-label="URL match"
               className={cn(selectClass, 'shrink-0 basis-[128px]')}
               value={condition.type}
@@ -117,7 +117,7 @@ export function UrlTargeting({ rules, onChange }: { rules: TargetingRuleGroup; o
             >
               <option value="URL_CONTAINS">contains</option>
               <option value="URL_EQUALS">equals</option>
-            </select>
+            </Select>
             <input
               className={cn(inputClass, 'min-w-0 flex-1')}
               placeholder="e.g. /dashboard or https://app.example.com/settings"
@@ -160,10 +160,10 @@ export function RuleBuilder({ rules, onChange }: { rules: TargetingRuleGroup; on
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
         <SectionTitle icon={Target} title="Audience Rules" />
         <div className="flex items-center gap-2">
-          <select aria-label="Match" className={cn(selectClass, 'shrink-0 basis-[136px]')} onChange={(event) => onChange({ ...rules, operator: event.target.value as 'AND' | 'OR' })} value={rules.operator}>
+          <Select aria-label="Match" className={cn(selectClass, 'shrink-0 basis-[136px]')} onChange={(event) => onChange({ ...rules, operator: event.target.value as 'AND' | 'OR' })} value={rules.operator}>
             <option value="AND">Match ALL</option>
             <option value="OR">Match ANY</option>
-          </select>
+          </Select>
           <Button icon={Plus} onClick={addCondition}>
             Add Rule
           </Button>
@@ -172,7 +172,7 @@ export function RuleBuilder({ rules, onChange }: { rules: TargetingRuleGroup; on
       <div className="grid gap-2">
         {nonUrlConditions.map((condition) => (
           <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap" key={condition.id}>
-            <select
+            <Select
               aria-label="Rule type"
               className={cn(selectClass, 'w-full sm:w-56 sm:shrink-0')}
               value={condition.type}
@@ -181,7 +181,7 @@ export function RuleBuilder({ rules, onChange }: { rules: TargetingRuleGroup; on
               {conditionTypes
                 .filter((t) => t !== 'URL_CONTAINS' && t !== 'URL_EQUALS')
                 .map((t) => <option key={t} value={t}>{conditionLabels[t]}</option>)}
-            </select>
+            </Select>
             {!noValueTypes.includes(condition.type) && (
               <input
                 className={cn(inputClass, 'min-w-0 flex-1')}

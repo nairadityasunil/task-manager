@@ -21,6 +21,7 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 import { LoadingProvider } from '@/context/LoadingContext';
 import GlobalLoadingSpinner from '@/components/GlobalLoadingSpinner';
 import { ToastProvider } from '@/context/ToastContext';
+import { TooltipLayer } from '@/components/ui';
 
 function App(): JSX.Element {
   return (
@@ -74,6 +75,7 @@ function App(): JSX.Element {
                 </GuideRuntimeProvider>
               </BrowserRouter>
               <GlobalLoadingSpinner />
+              <TooltipLayer />
             </ConfirmationProvider>
           </ChatProvider>
           </WorkspaceProvider>

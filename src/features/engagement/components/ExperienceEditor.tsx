@@ -1,3 +1,4 @@
+import Modal from '@/components/Modal';
 import {
   AppWindow,
   ArrowDown,
@@ -17,7 +18,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import type { GuideStep, GuideType, SurveyQuestionType } from '@/lib/guides/types';
-import { Button, cn, inputClass, selectClass, textareaClass } from '@/components/ui';
+import { Button, cn, inputClass, selectClass, textareaClass, Select, Checkbox } from '@/components/ui';
 
 export type EditorKind = 'guide' | 'survey' | 'checklist';
 
@@ -42,28 +43,19 @@ export function EditorDialog({
   bodyClassName?: string;
 }): JSX.Element {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm sm:p-5">
-      <div aria-modal="true" className={cn('flex max-h-[calc(100dvh-24px)] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl sm:max-h-[calc(100dvh-40px)]', maxWidth)} role="dialog">
-        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-slate-200 px-4 py-3.5 sm:px-6 sm:py-4">
-          <div className="min-w-0">
-            <h3 className="m-0 truncate text-base font-semibold text-slate-900">{title}</h3>
-            {description && <p className="m-0 mt-0.5 text-[13px] text-slate-500">{description}</p>}
-          </div>
-          <button
-            aria-label={closeLabel}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
-            onClick={onClose}
-            type="button"
-          >
-            <X size={16} />
-          </button>
-        </div>
-        <div className={cn('min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6', bodyClassName)}>{children}</div>
-        {footer && (
-          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 border-t border-slate-200 bg-slate-50/70 px-4 py-3 sm:px-6">{footer}</div>
-        )}
-      </div>
-    </div>
+    <Modal
+      bodyClassName="py-5 sm:px-6"
+      closeLabel={closeLabel}
+      description={description}
+      dismissOnBackdrop={false}
+      footer={footer}
+      maxWidth={maxWidth}
+      onClose={onClose}
+      panelClassName="max-h-[calc(100dvh-24px)] sm:max-h-[calc(100dvh-40px)]"
+      title={title}
+    >
+      <div className={cn('min-w-0', bodyClassName)}>{children}</div>
+    </Modal>
   );
 }
 
@@ -445,7 +437,7 @@ function QuestionFields({ question, onChange }: { question: GuideStep; onChange:
       <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
         <label className={labelCls}>
           Answer type
-          <select className={cn(selectClass, 'min-w-0')} onChange={(event) => changeType(event.target.value as SurveyQuestionType)} value={question.type ?? 'TEXTAREA'}>
+          <Select className={cn(selectClass, 'min-w-0')} onChange={(event) => changeType(event.target.value as SurveyQuestionType)} value={question.type ?? 'TEXTAREA'}>
             {groups.map((group) => (
               <optgroup key={group} label={group}>
                 {QUESTION_TYPES.filter((entry) => entry.group === group).map((entry) => (
@@ -453,10 +445,10 @@ function QuestionFields({ question, onChange }: { question: GuideStep; onChange:
                 ))}
               </optgroup>
             ))}
-          </select>
+          </Select>
         </label>
         <label className="flex h-9 items-center gap-2 self-end text-sm text-slate-700">
-          <input checked={Boolean(question.required)} className="h-4 w-4 rounded border-slate-300 accent-emerald-600" onChange={(event) => onChange({ required: event.target.checked })} type="checkbox" />
+          <Checkbox checked={Boolean(question.required)} onChange={(event) => onChange({ required: event.target.checked })} />
           Required
         </label>
       </div>

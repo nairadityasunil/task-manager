@@ -2,29 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Ban, ClipboardCheck, Download, FileCheck2, Gauge, History, Plug, ShieldCheck, ShieldMinus, Trash2, Upload, X } from 'lucide-react';
 
-import { Badge, Button, Field, Tabs, cn, inputClass, selectClass, textareaClass, type BadgeTone } from '@/components/ui';
+import { Badge, Button, Field, Tabs, cn, selectClass, type BadgeTone, Select, Checkbox, DateInput, FileInput, Input, Textarea } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
 import { workspaceService } from '@/features/workspaces/services/workspaceService';
 import type { WorkspaceMember } from '@/features/workspaces/types/workspace';
 import { timeAgo, userLabel } from '@/services/agents';
-import {
-  EVIDENCE_ACCEPT,
-  EVIDENCE_KIND_LABELS,
-  SOURCE_LABELS,
-  TIER_LABELS,
-  VENDOR_CATEGORY_LABELS,
-  VENDOR_STATUS_EFFECTS,
-  VENDOR_STATUS_LABELS,
-  formatBytes,
-  saveBlob,
-  vendorsApi,
-  type EvidenceKind,
-  type VendorCategory,
-  type VendorDetail,
-  type VendorStatus,
-  type VendorTier
-} from '@/services/vendors';
+import { EVIDENCE_ACCEPT, EVIDENCE_KIND_LABELS, SOURCE_LABELS, TIER_LABELS, VENDOR_CATEGORY_LABELS, VENDOR_STATUS_EFFECTS, VENDOR_STATUS_LABELS, formatBytes, saveBlob, vendorsApi, type EvidenceKind, type VendorCategory, type VendorDetail, type VendorStatus, type VendorTier } from '@/services/vendors';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 import { KindLabel, RiskBadge, StatusBadge } from './shared';
 
@@ -291,9 +275,8 @@ export function VendorDrawer({ vendorId, workspaceId, onClose, onChanged }: Vend
                     {reasonFor ? (
                       <div className="grid gap-2 rounded-lg bg-slate-50 p-2.5">
                         <Field label={`Why ${reasonFor === 'blocked' ? 'block' : 'restrict'} ${vendor.name}?`}>
-                          <input
+                          <Input
                             autoFocus
-                            className={inputClass}
                             maxLength={500}
                             onChange={(e) => setReason(e.target.value)}
                             placeholder="e.g. Trains on customer data; no DPA"
@@ -365,25 +348,24 @@ export function VendorDrawer({ vendorId, workspaceId, onClose, onChanged }: Vend
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Field className="sm:col-span-2" label="What it does for you">
-                      <input
-                        className={inputClass}
+                      <Input
                         maxLength={300}
                         onChange={(e) => setForm({ ...form, purpose: e.target.value })}
                         value={form.purpose}
                       />
                     </Field>
                     <Field label="Owner">
-                      <select className={selectClass} onChange={(e) => setForm({ ...form, ownerUserId: e.target.value })} value={form.ownerUserId}>
+                      <Select className={selectClass} onChange={(e) => setForm({ ...form, ownerUserId: e.target.value })} value={form.ownerUserId}>
                         <option value="">No owner</option>
                         {members.map((m) => (
                           <option key={m.userId} value={m.userId}>
                             {m.name || m.email}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </Field>
                     <Field hint={`Reassessed every ${form.tier === 1 ? 12 : form.tier === 2 ? 24 : 36} months`} label="Criticality">
-                      <select
+                      <Select
                         className={selectClass}
                         onChange={(e) => setForm({ ...form, tier: Number(e.target.value) as VendorTier })}
                         value={form.tier}
@@ -393,10 +375,10 @@ export function VendorDrawer({ vendorId, workspaceId, onClose, onChanged }: Vend
                             {TIER_LABELS[t]}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </Field>
                     <Field label="Category">
-                      <select
+                      <Select
                         className={selectClass}
                         onChange={(e) => setForm({ ...form, category: e.target.value as VendorCategory })}
                         value={form.category}
@@ -406,11 +388,10 @@ export function VendorDrawer({ vendorId, workspaceId, onClose, onChanged }: Vend
                             {VENDOR_CATEGORY_LABELS[c]}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </Field>
                     <Field label="Where it keeps data">
-                      <input
-                        className={inputClass}
+                      <Input
                         maxLength={200}
                         onChange={(e) => setForm({ ...form, dataLocation: e.target.value })}
                         placeholder="e.g. EU (Ireland)"
@@ -418,8 +399,7 @@ export function VendorDrawer({ vendorId, workspaceId, onClose, onChanged }: Vend
                       />
                     </Field>
                     <Field label="Website">
-                      <input
-                        className={inputClass}
+                      <Input
                         maxLength={300}
                         onChange={(e) => setForm({ ...form, website: e.target.value })}
                         placeholder="https://"
@@ -427,24 +407,19 @@ export function VendorDrawer({ vendorId, workspaceId, onClose, onChanged }: Vend
                       />
                     </Field>
                     <Field error={isPast(vendor.dpaExpiresAt) ? 'Expired' : undefined} label="DPA expires">
-                      <input
-                        className={inputClass}
+                      <DateInput
                         onChange={(e) => setForm({ ...form, dpaExpiresAt: e.target.value })}
-                        type="date"
                         value={form.dpaExpiresAt}
                       />
                     </Field>
                     <Field label="Contract renews">
-                      <input
-                        className={inputClass}
+                      <DateInput
                         onChange={(e) => setForm({ ...form, contractRenewalAt: e.target.value })}
-                        type="date"
                         value={form.contractRenewalAt}
                       />
                     </Field>
                     <Field className="sm:col-span-2" label="Notes">
-                      <textarea
-                        className={textareaClass}
+                      <Textarea
                         maxLength={4000}
                         onChange={(e) => setForm({ ...form, notes: e.target.value })}
                         rows={3}
@@ -452,11 +427,9 @@ export function VendorDrawer({ vendorId, workspaceId, onClose, onChanged }: Vend
                       />
                     </Field>
                     <label className="flex items-start gap-2 text-[13px] text-slate-700 sm:col-span-2">
-                      <input
-                        checked={form.includeInSubprocessors}
-                        className="mt-0.5"
+                      <Checkbox
+                        checked={form.includeInSubprocessors} className="mt-0.5"
                         onChange={(e) => setForm({ ...form, includeInSubprocessors: e.target.checked })}
-                        type="checkbox"
                       />
                       <span>
                         List as a sub-processor
@@ -526,23 +499,20 @@ export function VendorDrawer({ vendorId, workspaceId, onClose, onChanged }: Vend
                               {q.required ? <span className="text-red-500"> *</span> : null}
                             </label>
                             {q.type === 'text' ? (
-                              <input
-                                className={inputClass}
+                              <Input
                                 id={`q-${q.id}`}
                                 maxLength={500}
                                 onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
                                 value={answers[q.id] ?? ''}
                               />
                             ) : q.type === 'date' ? (
-                              <input
-                                className={inputClass}
+                              <DateInput
                                 id={`q-${q.id}`}
                                 onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
-                                type="date"
                                 value={answers[q.id] ?? ''}
                               />
                             ) : (
-                              <select
+                              <Select
                                 className={selectClass}
                                 id={`q-${q.id}`}
                                 onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
@@ -560,7 +530,7 @@ export function VendorDrawer({ vendorId, workspaceId, onClose, onChanged }: Vend
                                     {option.label}
                                   </option>
                                 ))}
-                              </select>
+                              </Select>
                             )}
                             <span className="text-xs text-slate-400">
                               {q.hint ? `${q.hint} · ` : ''}
@@ -594,26 +564,27 @@ export function VendorDrawer({ vendorId, workspaceId, onClose, onChanged }: Vend
                 <>
                   <div className="space-y-3 rounded-xl border border-slate-200 p-3">
                     <div className="text-[13px] font-medium text-slate-700">Add a file</div>
-                    <input
+                    <FileInput
                       accept={EVIDENCE_ACCEPT}
                       aria-label="Evidence file"
-                      className="block w-full text-[13px] text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-[13px] file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+                      emptyText="PDF, image or document"
+                      file={file}
                       onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                      onClear={() => setFile(null)}
                       ref={fileInput}
-                      type="file"
                     />
                     <div className="grid gap-3 sm:grid-cols-2">
                       <Field label="Kind">
-                        <select className={selectClass} onChange={(e) => setEvidenceKind(e.target.value as EvidenceKind)} value={evidenceKind}>
+                        <Select className={selectClass} onChange={(e) => setEvidenceKind(e.target.value as EvidenceKind)} value={evidenceKind}>
                           {(Object.keys(EVIDENCE_KIND_LABELS) as EvidenceKind[]).map((k) => (
                             <option key={k} value={k}>
                               {EVIDENCE_KIND_LABELS[k]}
                             </option>
                           ))}
-                        </select>
+                        </Select>
                       </Field>
                       <Field hint="You are reminded 30 days before" label="Valid until">
-                        <input className={inputClass} onChange={(e) => setEvidenceExpiry(e.target.value)} type="date" value={evidenceExpiry} />
+                        <DateInput onChange={(e) => setEvidenceExpiry(e.target.value)} value={evidenceExpiry} />
                       </Field>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">

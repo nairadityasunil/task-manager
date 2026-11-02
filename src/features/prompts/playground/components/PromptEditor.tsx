@@ -3,6 +3,7 @@ import { AlignLeft, Code, Plus, Trash2 } from "lucide-react";
 import { IPromptMessage } from "@/services/prompts";
 import { selectClass, textareaClass } from "@/components/ui";
 
+import { Select } from '@/components/ui';
 interface PromptEditorProps {
   editorMode: "blocks" | "raw";
   setEditorMode: (mode: "blocks" | "raw") => void;
@@ -73,7 +74,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
           {messages.map((msg, index) => (
             <div key={index} className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
               <div className="flex items-center justify-between">
-                <select
+                <Select
                   value={msg.role}
                   onChange={(e) => handleMessageChange(index, "role", e.target.value as "system" | "user" | "assistant")}
                   className={`${selectClass} h-8 w-auto text-xs font-medium`}
@@ -82,7 +83,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
                   <option value="system">SYSTEM</option>
                   <option value="user">USER</option>
                   <option value="assistant">ASSISTANT</option>
-                </select>
+                </Select>
                 {messages.length > 1 && isEditingPromptContent && (
                   <button
                     type="button"

@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from "react";
-import {
-  Key,
-  QrCode,
-  Copy,
-  Check,
-  AlertTriangle,
-  X,
-  ShieldAlert,
-} from "lucide-react";
+import Modal from '@/components/Modal';
+import { Key, QrCode, Copy, Check, AlertTriangle, ShieldAlert } from "lucide-react";
 import type { CompanionDevice } from "../hooks/useSettings";
 import { QRCodeDisplay } from "./QRCodeDisplay";
 import api from "@/services/api";
-import { buttonClass, inputClass, selectClass } from "@/components/ui";
+import { buttonClass, selectClass } from "@/components/ui";
 import socketService from "@/services/socket";
 
+import { Select, Input } from '@/components/ui';
 interface CompanionDeviceModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -150,17 +144,8 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/40 p-3 font-sans backdrop-blur-sm sm:p-5" role="dialog" aria-modal="true">
-      <div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-6">
-        <button
-          type="button"
-          onClick={handleClose}
-          aria-label="Close"
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-900"
-        >
-          <X className="w-4 h-4" />
-        </button>
-
+    <Modal maxWidth="max-w-md" onClose={handleClose} title="Companion device">
+      <div>
         {error && (
           <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-[13px] text-red-700">
             <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -228,12 +213,11 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Device Name
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="e.g. My iPhone, Personal Tablet"
                   value={deviceName}
                   onChange={(e) => setDeviceName(e.target.value)}
-                  className={inputClass}
                 />
               </div>
 
@@ -241,7 +225,7 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Device Type
                 </label>
-                <select
+                <Select
                   value={deviceType}
                   onChange={(e) => setDeviceType(e.target.value)}
                   className={selectClass}
@@ -250,7 +234,7 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
                   <option value="tablet">Tablet</option>
                   <option value="desktop">Desktop</option>
                   <option value="assistant">Voice Assistant</option>
-                </select>
+                </Select>
               </div>
             </div>
 
@@ -362,6 +346,6 @@ export const CompanionDeviceModal: React.FC<CompanionDeviceModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </Modal>
   );
 };

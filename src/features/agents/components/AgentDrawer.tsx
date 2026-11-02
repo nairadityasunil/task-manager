@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Ban, EyeOff, Gauge, History, KeyRound, Network, Pause, Play, RotateCw, ShieldCheck, X } from 'lucide-react';
 
-import { Badge, Button, Tabs, cn, inputClass, selectClass } from '@/components/ui';
+import { Badge, Button, Tabs, cn, inputClass, selectClass, Select } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
@@ -377,13 +377,13 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                   {agent.kind === 'api_key' ? (
                     <label className="grid gap-1">
                       <span className="text-[13px] font-medium text-slate-700">Expiry</span>
-                      <select className={selectClass} onChange={(e) => setExpiry(e.target.value)} value={expiry}>
+                      <Select className={selectClass} onChange={(e) => setExpiry(e.target.value)} value={expiry}>
                         <option value="keep">Keep ({agent.expiresAt ? new Date(agent.expiresAt).toLocaleDateString() : 'never'})</option>
                         <option value="30">30 days from now</option>
                         <option value="90">90 days from now</option>
                         <option value="365">1 year from now</option>
                         <option value="never">Never</option>
-                      </select>
+                      </Select>
                     </label>
                   ) : null}
                   <label className="grid gap-1">

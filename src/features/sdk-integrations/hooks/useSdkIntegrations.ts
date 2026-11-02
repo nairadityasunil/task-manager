@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useConfirm } from '@/context/ConfirmationContext';
 import type { SdkIntegration } from '@/lib/sdk-integrations/api';
 import {
   listIntegrations,
@@ -9,6 +10,7 @@ import {
 } from '@/lib/sdk-integrations/api';
 
 export function useSdkIntegrations() {
+  const confirm = useConfirm();
   const [integrations, setIntegrations] = useState<SdkIntegration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +50,7 @@ export function useSdkIntegrations() {
   };
 
   const handleRegenKey = async (id: string) => {
-    if (!window.confirm('Regenerating this key will immediately invalidate the current SDK key. Continue?')) return;
+    if (!(await confirm({ title: 'Regenerate SDK key?', message: 'The current key stops working immediately. Update your app with the new key.', confirmText: 'Regenerate', type: 'danger' }))) return;
     try {
       const { sdkKey } = await regenerateKey(id);
       setCreatedKey(sdkKey);
@@ -59,7 +61,7 @@ export function useSdkIntegrations() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Permanently delete this integration? This action cannot be undone.')) return;
+    if (!(await confirm({ title: 'Delete integration?', message: 'This permanently deletes the integration. This cannot be undone.', confirmText: 'Delete', type: 'danger' }))) return;
     try {
       await deleteIntegration(id);
       await fetchList();

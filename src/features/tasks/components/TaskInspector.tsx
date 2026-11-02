@@ -28,7 +28,7 @@ import ApprovalSection from '@/components/ApprovalSection';
 import CommentSection from '@/components/CommentSection';
 import SubtaskInlineEdit from '@/components/SubtaskInlineEdit';
 import { PRIORITY_META, PriorityIcon, TASK_STATUS_TONE, taskDateInfo, taskStatusLabel } from '@/components/TaskCard';
-import { Badge, Button, cn, selectClass } from '@/components/ui';
+import { Badge, Button, cn, selectClass, Select, Checkbox } from '@/components/ui';
 
 export interface TaskInspectorProps {
   isOpen: boolean;
@@ -232,7 +232,7 @@ export function TaskInspector({
                       />
                     </PropertyRow>
                     <PropertyRow label="Priority">
-                      <select
+                      <Select
                         aria-label="Priority"
                         value={task.priority || 'MEDIUM'}
                         onChange={(e) => {
@@ -246,7 +246,7 @@ export function TaskInspector({
                         <option value="MEDIUM">Medium</option>
                         <option value="HIGH">High</option>
                         <option value="CRITICAL">Critical</option>
-                      </select>
+                      </Select>
                     </PropertyRow>
                     {dateInfo && (
                       <PropertyRow label="Date">
@@ -307,10 +307,9 @@ export function TaskInspector({
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div className="flex min-w-0 flex-1 items-start gap-3">
-                                  <input
+                                  <Checkbox
                                     aria-label={`Mark ${subtask.title} as ${subtask.status === 'DONE' ? 'not done' : 'done'}`}
-                                    checked={subtask.status === 'DONE'}
-                                    className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded accent-emerald-600"
+                                    checked={subtask.status === 'DONE'} className="mt-0.5 shrink-0"
                                     disabled={!task.permissions.canUpdate}
                                     onChange={() =>
                                       void handleUpdateSubtaskStatus(
@@ -319,7 +318,6 @@ export function TaskInspector({
                                         subtask.status === 'DONE' ? 'TODO' : 'DONE',
                                       )
                                     }
-                                    type="checkbox"
                                   />
                                   <div className="flex min-w-0 flex-col gap-1">
                                     <span

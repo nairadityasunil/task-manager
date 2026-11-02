@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { usePrompt } from '@/context/ConfirmationContext';
 import { CheckCircle, FileText, Loader2, Plus, Send, Sparkles, XCircle, Bot, Shield } from 'lucide-react';
 
 import type { Project } from '@/types/project';
@@ -18,6 +19,7 @@ import {
 import { toDisplayErrorMessage } from '@/utils/apiError';
 import { useAuth } from '@/context/AuthContext';
 
+import { Select, Switch } from '@/components/ui';
 const PROVIDER_PRESETS = {
   openai: {
     models: ['GPT-5', 'GPT-5 Mini']
@@ -39,6 +41,7 @@ interface AiPlanningWorkspaceProps {
 }
 
 function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings }: AiPlanningWorkspaceProps): JSX.Element {
+  const askText = usePrompt();
   const { user } = useAuth();
   const [context, setContext] = useState<AiPlanningContext | null>(null);
   const [sessions, setSessions] = useState<Awaited<ReturnType<typeof listAiPlanningSessions>>>([]);
@@ -146,7 +149,7 @@ function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings 
   };
 
   const handleReject = async (draft: AiPlanningDraft): Promise<void> => {
-    const reason = window.prompt('Optional rejection reason');
+    const reason = await askText({ title: 'Reject this draft?', label: 'Reason (optional)', placeholder: 'What should change', confirmText: 'Reject' });
     if (reason === null) return;
     setLoading(true);
     setError(null);
@@ -209,13 +212,13 @@ function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings 
             <p className="m-0 mt-0.5 text-[13px] text-slate-500">AI asks scope questions. Draft stays review-only until admin approval.</p>
           </div>
           <div className="flex gap-2">
-            <select
+            <Select
               className="h-9 max-w-[220px] rounded-lg border border-slate-300 bg-white pl-2.5 pr-8 text-[13px] shadow-sm"
               onChange={(event) => void loadSession(event.target.value)}
               value={workspace?.session.id ?? ''}
             >
               {sessions.map((session) => <option key={session.id} value={session.id}>{session.title}</option>)}
-            </select>
+            </Select>
             <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50" onClick={() => void handleNewSession()} title="New session" type="button">
               <Plus size={16} />
             </button>
@@ -229,23 +232,17 @@ function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings 
                 <Bot size={15} className="text-slate-600" />
                 <span className="text-[13px] font-medium text-slate-900">Enable AI Planning Workspace</span>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
+              <Switch aria-label="Use AI for this project"
                   checked={aiConfig.enabled}
                   disabled={!isAdmin || updatingModel}
-                  onChange={(e) => void handleConfigChange({ enabled: e.target.checked })}
-                />
-                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
-              </label>
+                  onChange={(e) => void handleConfigChange({ enabled: e.target.checked })} />
             </div>
 
             <div className="mt-1 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1">
                 <span className="font-medium text-slate-700">AI Provider</span>
                 {isAdmin ? (
-                  <select
+                  <Select
                     className="h-8 cursor-pointer rounded-lg border border-slate-300 bg-white px-2 text-[13px] text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/15 disabled:opacity-50"
                     value={aiConfig.provider}
                     disabled={updatingModel}
@@ -254,7 +251,7 @@ function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings 
                     <option value="gemini">Google Gemini</option>
                     <option value="openai">OpenAI</option>
                     <option value="anthropic">Anthropic Claude</option>
-                  </select>
+                  </Select>
                 ) : (
                   <span className="rounded-lg border border-slate-200 bg-white px-2 py-1 font-medium text-slate-800">
                     {aiConfig.provider === 'openai' ? 'OpenAI' : aiConfig.provider === 'gemini' ? 'Google Gemini' : 'Anthropic Claude'}
@@ -265,7 +262,7 @@ function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings 
               <div className="flex flex-col gap-1">
                 <span className="font-medium text-slate-700">Model Preset</span>
                 {isAdmin ? (
-                  <select
+                  <Select
                     className="h-8 cursor-pointer rounded-lg border border-slate-300 bg-white px-2 text-[13px] text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-500/15 disabled:opacity-50"
                     value={aiConfig.modelName}
                     disabled={updatingModel}
@@ -274,7 +271,7 @@ function AiPlanningWorkspacePanel({ project, onArtifactsCreated, onGoToSettings 
                     {PROVIDER_PRESETS[aiConfig.provider as ProviderKey]?.models.map((m) => (
                       <option key={m} value={m}>{m}</option>
                     ))}
-                  </select>
+                  </Select>
                 ) : (
                   <span className="rounded-lg border border-slate-200 bg-white px-2 py-1 font-medium text-slate-800">
                     {aiConfig.modelName}

@@ -3,21 +3,10 @@ import { FlaskConical, Pencil, Plus, ScrollText, Trash2 } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
 import Modal from '@/components/Modal';
-import { Badge, Button, Card, CardHeader, Field, cn, inputClass, selectClass, textareaClass } from '@/components/ui';
+import { Badge, Button, Card, CardHeader, Field, cn, selectClass, Select, Checkbox, Input, Textarea } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
-import {
-  agentsApi,
-  EFFECT_LABELS,
-  KIND_LABELS,
-  RISK_LEVEL_LABELS,
-  type AgentKind,
-  type AgentPolicy,
-  type PolicyEffect,
-  type PolicyTemplate,
-  type RiskLevel,
-  type ToolCatalog
-} from '@/services/agents';
+import { agentsApi, EFFECT_LABELS, KIND_LABELS, RISK_LEVEL_LABELS, type AgentKind, type AgentPolicy, type PolicyEffect, type PolicyTemplate, type RiskLevel, type ToolCatalog } from '@/services/agents';
 import type { Project } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 import { EffectBadge } from './shared';
@@ -108,11 +97,10 @@ function PolicyEditor({
       <div className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-[1fr_120px]">
           <Field label="Name">
-            <input className={inputClass} onChange={(e) => set({ name: e.target.value })} value={draft.name} />
+            <Input onChange={(e) => set({ name: e.target.value })} value={draft.name} />
           </Field>
           <Field hint="Higher runs first" label="Priority">
-            <input
-              className={inputClass}
+            <Input
               max={1000}
               min={0}
               onChange={(e) => set({ priority: Number(e.target.value) })}
@@ -122,24 +110,24 @@ function PolicyEditor({
           </Field>
         </div>
         <Field label="Description">
-          <textarea className={textareaClass} onChange={(e) => set({ description: e.target.value })} rows={2} value={draft.description ?? ''} />
+          <Textarea onChange={(e) => set({ description: e.target.value })} rows={2} value={draft.description ?? ''} />
         </Field>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Then">
-            <select className={selectClass} onChange={(e) => set({ effect: e.target.value as PolicyEffect })} value={draft.effect}>
+            <Select className={selectClass} onChange={(e) => set({ effect: e.target.value as PolicyEffect })} value={draft.effect}>
               {(Object.keys(EFFECT_LABELS) as PolicyEffect[]).map((effect) => (
                 <option key={effect} value={effect}>
                   {EFFECT_LABELS[effect]}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Field hint={draft.mode === 'advisory' ? 'Logs what would happen without blocking.' : 'Applied to every matching call.'} label="Mode">
-            <select className={selectClass} onChange={(e) => set({ mode: e.target.value as Draft['mode'] })} value={draft.mode}>
+            <Select className={selectClass} onChange={(e) => set({ mode: e.target.value as Draft['mode'] })} value={draft.mode}>
               <option value="advisory">Advisory (log only)</option>
               <option value="enforce">Enforce</option>
-            </select>
+            </Select>
           </Field>
         </div>
 
@@ -171,7 +159,7 @@ function PolicyEditor({
             </div>
           </div>
           <Field hint='Comma separated; * is a wildcard, e.g. "task:*" or "*:delete".' label="Actions">
-            <input className={inputClass} list="agent-tool-names" onChange={(e) => setToolsText(e.target.value)} placeholder="Any action" value={toolsText} />
+            <Input list="agent-tool-names" onChange={(e) => setToolsText(e.target.value)} placeholder="Any action" value={toolsText} />
             <datalist id="agent-tool-names">
               {toolSuggestions.map((name) => (
                 <option key={name} value={name} />
@@ -180,7 +168,7 @@ function PolicyEditor({
           </Field>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Minimum risk">
-              <select
+              <Select
                 className={selectClass}
                 onChange={(e) => setMatch({ minRisk: (e.target.value || undefined) as RiskLevel | undefined })}
                 value={draft.match.minRisk ?? ''}
@@ -191,10 +179,10 @@ function PolicyEditor({
                     {RISK_LEVEL_LABELS[risk]} or riskier
                   </option>
                 ))}
-              </select>
+              </Select>
             </Field>
             <Field label="Project">
-              <select
+              <Select
                 className={selectClass}
                 onChange={(e) => setMatch({ projectIds: e.target.value ? [e.target.value] : undefined })}
                 value={draft.match.projectIds?.[0] ?? ''}
@@ -205,13 +193,12 @@ function PolicyEditor({
                     {project.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </Field>
           </div>
           <label className="flex items-center gap-2 text-[13px] text-slate-700">
-            <input
+            <Checkbox
               checked={Boolean(tw)}
-              className="h-4 w-4 accent-emerald-600"
               onChange={(e) =>
                 setMatch({
                   timeWindow: e.target.checked
@@ -219,29 +206,26 @@ function PolicyEditor({
                     : undefined
                 })
               }
-              type="checkbox"
             />
             Limit to a time window
           </label>
           {tw ? (
             <div className="grid gap-2 rounded-lg bg-slate-50 p-2.5 sm:grid-cols-2">
-              <select
+              <Select
                 className={selectClass}
                 onChange={(e) => setMatch({ timeWindow: { ...tw, outside: e.target.value === 'outside' } })}
                 value={tw.outside ? 'outside' : 'inside'}
               >
                 <option value="outside">Outside these hours</option>
                 <option value="inside">During these hours</option>
-              </select>
-              <input
-                className={inputClass}
+              </Select>
+              <Input
                 onChange={(e) => setMatch({ timeWindow: { ...tw, timezone: e.target.value } })}
                 placeholder="UTC"
                 value={tw.timezone ?? 'UTC'}
               />
               <div className="flex items-center gap-2 text-[13px] text-slate-600">
-                <input
-                  className={inputClass}
+                <Input
                   max={24}
                   min={0}
                   onChange={(e) => setMatch({ timeWindow: { ...tw, startHour: Number(e.target.value) } })}
@@ -249,8 +233,7 @@ function PolicyEditor({
                   value={tw.startHour ?? 0}
                 />
                 to
-                <input
-                  className={inputClass}
+                <Input
                   max={24}
                   min={0}
                   onChange={(e) => setMatch({ timeWindow: { ...tw, endHour: Number(e.target.value) } })}
@@ -305,19 +288,19 @@ function DryRun({ catalog, workspaceId }: { catalog: ToolCatalog | null; workspa
       <CardHeader description="Check what would happen to a call right now, without running it." icon={<FlaskConical className="h-4 w-4 text-slate-400" />} title="Test policies" />
       <div className="grid gap-3 p-4 sm:grid-cols-[1fr_180px_auto] sm:items-end">
         <Field label="Action">
-          <input className={inputClass} list="agent-tool-names-test" onChange={(e) => setAction(e.target.value)} value={action} />
+          <Input list="agent-tool-names-test" onChange={(e) => setAction(e.target.value)} value={action} />
           <datalist id="agent-tool-names-test">
             {catalog?.tools.map((tool) => <option key={tool.name} value={tool.name} />)}
           </datalist>
         </Field>
         <Field label="Agent type">
-          <select className={selectClass} onChange={(e) => setKind(e.target.value as AgentKind)} value={kind}>
+          <Select className={selectClass} onChange={(e) => setKind(e.target.value as AgentKind)} value={kind}>
             {KINDS.map((k) => (
               <option key={k} value={k}>
                 {KIND_LABELS[k]}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
         <Button icon={FlaskConical} onClick={() => void run()} variant="dark">
           Test
@@ -424,10 +407,9 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
                 </div>
                 <div className="flex items-center gap-1.5">
                   <label className="flex items-center gap-1.5 text-xs text-slate-600">
-                    <input
+                    <Checkbox
                       aria-label={`Enable ${policy.name}`}
                       checked={policy.enabled}
-                      className="h-4 w-4 accent-emerald-600"
                       onChange={async (e) => {
                         const enabled = e.target.checked;
                         setPolicies((current) => current?.map((p) => (p.id === policy.id ? { ...p, enabled } : p)) ?? current);
@@ -438,7 +420,6 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
                           await load();
                         }
                       }}
-                      type="checkbox"
                     />
                     On
                   </label>
