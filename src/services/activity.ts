@@ -30,9 +30,23 @@ export interface ActivityLogResponse {
 
 export async function getProjectActivities(
   projectId: string,
-  params?: { page?: number; limit?: number; entityType?: string }
+  params?: {
+    page?: number;
+    limit?: number;
+    entityType?: string;
+    entityIds?: string[];
+    userId?: string;
+    actor?: 'agent' | 'person';
+    since?: string;
+    until?: string;
+  }
 ): Promise<ActivityLogResponse> {
   const query = new URLSearchParams();
+  if (params?.entityIds?.length) query.set('entityIds', params.entityIds.join(','));
+  if (params?.userId) query.set('userId', params.userId);
+  if (params?.actor) query.set('actor', params.actor);
+  if (params?.since) query.set('since', params.since);
+  if (params?.until) query.set('until', params.until);
   if (params?.page) query.set('page', params.page.toString());
   if (params?.limit) query.set('limit', params.limit.toString());
   if (params?.entityType) query.set('entityType', params.entityType);

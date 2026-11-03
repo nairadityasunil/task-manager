@@ -374,6 +374,9 @@ export const agentsApi = {
       api.post('/agents/policies/test', { ...body, ...ws(workspaceId) })
     ),
 
+  /** AI spend for a project, or for your own calls since a time (one plan, one breakdown). */
+  costSummary: (params: { projectId?: string; since?: string }) =>
+    unwrap<{ usd: number; tokens: number; calls: number }>(api.get('/agents/costs/summary', { params, silent: true })),
   approvals: (status?: ApprovalStatus) =>
     unwrap<AgentApproval[]>(api.get('/agents/approvals', { params: status ? { status } : {} })),
   approve: (approvalId: string, note?: string) => unwrap<AgentApproval>(api.post(`/agents/approvals/${approvalId}/approve`, { note })),

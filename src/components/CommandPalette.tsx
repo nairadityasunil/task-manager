@@ -198,6 +198,7 @@ export function buildPaletteItems(input: {
   const projectName = new Map(input.projects.map((p) => [p.id, p.name]));
   const pages: Array<[string, string]> = [
     ['Home', '/dashboard'],
+    ['Activity timeline', '/activity'],
     ['Intelligence', '/intelligence'],
     ['Prompt library', '/prompts'],
     ['Prompt playground', '/playground'],

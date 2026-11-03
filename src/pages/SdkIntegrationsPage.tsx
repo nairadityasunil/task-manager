@@ -1,3 +1,4 @@
+import { toDisplayErrorMessage } from '@/utils/apiError';
 import Modal from '@/components/Modal';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useConfirm } from '@/context/ConfirmationContext';
@@ -64,6 +65,16 @@ function DialogShell({ title, description, onClose, onBackdrop, children, footer
   );
 }
 
+/** True for a full http(s) URL with a host, e.g. https://app.example.com or http://localhost:5173. */
+const isHttpUrl = (value: string): boolean => {
+  try {
+    const url = new URL(value);
+    return (url.protocol === 'https:' || url.protocol === 'http:') && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
+};
+
 // ---------- Create modal ----------
 function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (key: string) => void }) {
   const [name, setName] = useState('');
@@ -73,9 +84,25 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
   const [desc, setDesc] = useState('');
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [touched, setTouched] = useState(false);
+
+  // Checked as you type (shown after the first submit or once a field is filled in).
+  const nameError = !name.trim() ? 'Give the integration a name.' : null;
+  const domainError = !domain.trim()
+    ? 'Enter the URL of the app the SDK runs in.'
+    : !isHttpUrl(domain.trim())
+      ? 'Use a full URL starting with https:// (or http://localhost for local testing).'
+      : null;
+  const badOrigin = origins
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean)
+    .find((origin) => !isHttpUrl(origin));
+  const originsError = badOrigin ? `"${badOrigin}" is not a valid origin. Use a full URL like https://example.com.` : null;
 
   const submit = async () => {
-    if (!name.trim() || !domain.trim()) { setErr('Name and domain are required.'); return; }
+    setTouched(true);
+    if (nameError || domainError || originsError) return;
     setLoading(true); setErr(null);
     try {
       const allowedOrigins = origins
@@ -90,7 +117,9 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
         description: desc,
       });
       onCreated(sdkKey);
-    } catch { setErr('Failed to create integration.'); } finally { setLoading(false); }
+    } catch (error) {
+      setErr(`Could not create the integration: ${toDisplayErrorMessage(error)}`);
+    } finally { setLoading(false); }
   };
 
   return (
@@ -101,7 +130,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
       footer={
         <>
           <Button onClick={onClose} variant="secondary">Cancel</Button>
-          <Button onClick={() => void submit()} loading={loading} variant="primary">Create Integration</Button>
+          <Button disabled={touched && Boolean(nameError || domainError || originsError)} onClick={() => void submit()} loading={loading} variant="primary">Create Integration</Button>
         </>
       }
     >
@@ -111,7 +140,7 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
             <AlertCircle size={15} className="shrink-0" />{err}
           </div>
         )}
-        <Field label="Integration name">
+        <Field error={touched || name ? nameError : null} label="Integration name">
           <Input placeholder="e.g. Production Website" value={name} onChange={e => setName(e.target.value)} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-[1fr_1.4fr]">
@@ -122,11 +151,11 @@ function CreateModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
               <option value="development">Development</option>
             </Select>
           </Field>
-          <Field label="Application URL">
+          <Field error={touched || domain ? domainError : null} label="Application URL">
             <Input placeholder="https://app.company.com" value={domain} onChange={e => setDomain(e.target.value)} />
           </Field>
         </div>
-        <Field label="Additional allowed origins" hint="Optional. Separate multiple origins with commas.">
+        <Field error={originsError} label="Additional allowed origins" hint="Optional. Separate multiple origins with commas.">
           <Input placeholder="https://origin2.com, http://localhost:5173" value={origins} onChange={e => setOrigins(e.target.value)} />
         </Field>
         <Field label="Description" hint="Optional.">

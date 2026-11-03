@@ -1,3 +1,4 @@
+import { TaskActivity } from './TaskActivity';
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -478,6 +479,15 @@ export function TaskInspector({
                   >
                     Manage Work Notes
                   </Button>
+
+                  {/* Who changed it, including AI agents */}
+                  {task.projectId ? (
+                    <TaskActivity
+                      entityIds={[task.id, ...task.subtasks.map((subtask) => subtask.id)]}
+                      projectId={task.projectId}
+                      refreshKey={`${task.status}-${task.title}-${task.subtasks.map((subtask) => subtask.status).join()}`}
+                    />
+                  ) : null}
 
                   {/* Approvals */}
                   <ApprovalSection

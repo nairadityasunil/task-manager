@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   AlertTriangle,
   BellRing,
@@ -358,6 +358,16 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
   const [agents, setAgents] = useState<Agent[] | null>(null);
   const [alerts, setAlerts] = useState<AgentAlert[]>([]);
   const [openAgent, setOpenAgent] = useState<string | null>(null);
+  // Links from elsewhere (e.g. a task's activity) open an agent directly: ?agent=<id>.
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const linked = searchParams.get('agent');
+    if (!linked) return;
+    setOpenAgent(linked);
+    const next = new URLSearchParams(searchParams);
+    next.delete('agent');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
   const [vendors, setVendors] = useState<VendorListItem[] | null>(null);
   const [openVendor, setOpenVendor] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);

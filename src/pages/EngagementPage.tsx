@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Modal from '@/components/Modal';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { BarChart3, CheckSquare, Eye, Layers3, Radio, Save, Sparkles, UsersRound, PencilLine } from 'lucide-react';
 
 import { createChecklist, createGuide, createSurvey, deleteChecklist, deleteGuide, deleteSurvey, getGuideAnalyticsSummary, listChecklists, listGuides, listSurveys, updateChecklist, updateGuide, updateGuideStatus, updateSurvey, listSurveyResponses, type GuideAnalyticsSummary, type SurveyResponse, type GuidePayload, type SurveyPayload, type ChecklistPayload } from '@/lib/engagement/api';
@@ -68,6 +68,19 @@ function EngagementPage({ sdkIntegrationId: propSdkIntegrationId, defaultTab, hi
   const [analytics, setAnalytics] = useState<GuideAnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  // A link from a task (?analytics=<id>) reopens the analytics it was created from.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const analyticsParam = searchParams.get('analytics');
+  useEffect(() => {
+    if (!analyticsParam) return;
+    const match = [...guides, ...surveys].find((experience) => experience.id === analyticsParam);
+    if (!match) return;
+    setAnalyticsExperience(match);
+    const next = new URLSearchParams(searchParams);
+    next.delete('analytics');
+    setSearchParams(next, { replace: true });
+  }, [analyticsParam, guides, surveys, searchParams, setSearchParams]);
+
   // Action results surface as toasts rather than a banner that never clears.
   useEffect(() => {
     if (message) {

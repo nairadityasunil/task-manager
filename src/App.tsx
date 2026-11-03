@@ -59,6 +59,7 @@ function App(): JSX.Element {
                     <Route path="/prompts" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/playground" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/event-tracking" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+                    <Route path="/activity" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/engagement" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/sdk-integrations" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/sdk-integrations/:integrationId" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />

@@ -246,6 +246,8 @@ export function useDashboard() {
       setActiveView('sdk-docs');
     } else if (path === '/settings') {
       setActiveView('settings');
+    } else if (path === '/activity') {
+      setActiveView('activity');
     } else if (path === '/agents' || path.startsWith('/agents/')) {
       setActiveView('agents');
     } else if (path.startsWith('/projects/')) {
@@ -265,8 +267,9 @@ export function useDashboard() {
     }
   }, [location.pathname, projectId, epicId, integrationId]);
 
-  const loadDashboard = useCallback(async (): Promise<void> => {
-    setLoading(true);
+  /** Reloads tasks and projects. `quiet` refreshes in the background without the loading state (after an optimistic change). */
+  const loadDashboard = useCallback(async (options?: { quiet?: boolean }): Promise<void> => {
+    if (!options?.quiet) setLoading(true);
     setError(null);
     try {
       const [taskList, projectData] = await Promise.all([
@@ -864,34 +867,52 @@ export function useDashboard() {
     }
   };
 
+  /**
+   * Changes a task's status at once (optimistic) and saves in the background; reverts if saving fails.
+   * Only marking a task done while sub-tasks are still open asks first, because that also closes them.
+   */
   const handleUpdateTaskStatus = async (targetTask: Task, status: TaskWorkflowStatus, skipConfirm = false) => {
-    if (!skipConfirm) {
+    if (status === targetTask.status) return;
+    const openSubtasks = targetTask.subtasks.filter((subtask) => subtask.status !== 'DONE').length;
+    if (!skipConfirm && status === 'DONE' && openSubtasks > 0) {
       const isConfirmed = await confirm({
-        title: 'Update Task Status',
-        message: `Update the status for "${targetTask.title}" to "${status.replace('_', ' ')}"?`,
-        confirmText: 'Update Status',
+        title: 'Mark task done?',
+        message: `"${targetTask.title}" has ${openSubtasks} open sub-task${openSubtasks === 1 ? '' : 's'}. They will be marked done too.`,
+        confirmText: 'Mark done',
         type: 'info'
       });
       if (!isConfirmed) return;
     }
-    setActionTaskId(targetTask.id);
+    const nowIso = new Date().toISOString();
+    const nextSubtasks =
+      status === 'DONE'
+        ? targetTask.subtasks.map((subtask) => ({
+            ...subtask,
+            status: 'DONE' as const,
+            completed: true,
+            completedAt: subtask.completedAt ?? nowIso
+          }))
+        : targetTask.subtasks;
+    const previousTasks = tasks;
+    setTasks((prev) => prev.map((t) => (t.id === targetTask.id ? { ...t, status, subtasks: nextSubtasks } : t)));
     try {
-      const updates = status === 'DONE' ? {
-        status,
-        subtasks: targetTask.subtasks.map((subtask) => ({
-          title: subtask.title,
-          note: subtask.note,
-          status: 'DONE' as const,
-          completedAt: subtask.completedAt ?? new Date().toISOString()
-        }))
-      } : { status };
+      const updates =
+        status === 'DONE'
+          ? {
+              status,
+              subtasks: nextSubtasks.map((subtask) => ({
+                title: subtask.title,
+                note: subtask.note,
+                status: 'DONE' as const,
+                completedAt: subtask.completedAt ?? nowIso
+              }))
+            }
+          : { status };
       await updateTask(targetTask.id, updates);
-      await loadDashboard();
-      setTaskMutationSuccess('Task status updated.');
+      void loadDashboard({ quiet: true });
     } catch {
+      setTasks(previousTasks);
       setTaskMutationError('Unable to update the task status.');
-    } finally {
-      setActionTaskId(null);
     }
   };
 
@@ -899,7 +920,7 @@ export function useDashboard() {
     setActionTaskId(targetTask.id);
     try {
       await updateTask(targetTask.id, { projectId: targetTask.projectId, epicId: targetEpicId });
-      await loadDashboard();
+      void loadDashboard({ quiet: true });
       setTaskMutationSuccess(targetEpicId ? 'Task epic updated.' : 'Task moved to No Epic.');
     } catch {
       setTaskMutationError('Unable to update the task epic.');
@@ -919,7 +940,7 @@ export function useDashboard() {
     setActionTaskId(targetTaskId);
     try {
       await deleteTask(targetTaskId);
-      await loadDashboard();
+      void loadDashboard({ quiet: true });
       setTaskMutationSuccess('Task deleted.');
     } catch {
       setTaskMutationError('Unable to delete the task.');
@@ -951,7 +972,7 @@ export function useDashboard() {
     setTasks((prev) => prev.map((t) => t.id === targetTask.id ? updatedTask : t));
     try {
       await updateTask(targetTask.id, { status: updatedTask.status, subtasks: updatedSubtasks });
-      await loadDashboard();
+      void loadDashboard({ quiet: true });
       setTaskMutationSuccess('Subtask updated.');
     } catch (err) {
       setTasks(previousTasks);

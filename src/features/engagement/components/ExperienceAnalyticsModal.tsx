@@ -1,3 +1,4 @@
+import { CreateTaskButton, type Insight } from '@/features/tasks/components/CreateTaskFromInsight';
 import { useEffect, useState } from 'react';
 import { BarChart3, X } from 'lucide-react';
 
@@ -49,8 +50,15 @@ function ExperienceAnalyticsModal({ experience, sdkIntegrationId, onClose }: Exp
     };
   }, [experience.id, isSurvey, sdkIntegrationId]);
 
+  // Where a task created from this panel links back to.
+  const insightBase = {
+    name: experience.title,
+    source: `${isSurvey ? 'Survey' : 'Guide'} · ${experience.title}`,
+    link: `/sdk-integrations/${sdkIntegrationId}/${isSurvey ? 'surveys' : 'guides'}?analytics=${experience.id}`
+  };
+
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
+    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && !document.querySelector('[role="dialog"][aria-modal="true"]') && onClose();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
@@ -83,8 +91,8 @@ function ExperienceAnalyticsModal({ experience, sdkIntegrationId, onClose }: Exp
             </div>
           )}
           {!loading && error && <p className="m-0 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
-          {!loading && !error && guideData && <GuideAnalyticsView data={guideData} />}
-          {!loading && !error && surveyData && <SurveyAnalyticsView data={surveyData} />}
+          {!loading && !error && guideData && <GuideAnalyticsView base={insightBase} data={guideData} />}
+          {!loading && !error && surveyData && <SurveyAnalyticsView base={insightBase} data={surveyData} />}
         </div>
       </aside>
     </div>
@@ -127,7 +135,9 @@ function RateBar({ label, rate, tone }: { label: string; rate: number; tone: 'po
   );
 }
 
-function GuideAnalyticsView({ data }: { data: GuideExperienceAnalytics }): JSX.Element {
+type InsightBase = { name: string; source: string; link: string };
+
+function GuideAnalyticsView({ data, base }: { data: GuideExperienceAnalytics; base: InsightBase }): JSX.Element {
   if (data.impressions === 0 && data.uniqueUsers === 0) {
     return <EmptyAnalytics message="No one has seen this guide yet. Data appears here once it is live and shown to users." />;
   }
@@ -145,11 +155,12 @@ function GuideAnalyticsView({ data }: { data: GuideExperienceAnalytics }): JSX.E
           <RateBar label="Dismissal rate" rate={data.dismissalRate} tone="negative" />
         </div>
       </Panel>
+      {data.steps && data.steps.length > 0 ? <StepFunnelPanel base={base} steps={data.steps} /> : null}
     </>
   );
 }
 
-function SurveyAnalyticsView({ data }: { data: SurveyExperienceAnalytics }): JSX.Element {
+function SurveyAnalyticsView({ data, base }: { data: SurveyExperienceAnalytics; base: InsightBase }): JSX.Element {
   if (data.responses === 0 && data.impressions === 0) {
     return <EmptyAnalytics message="No responses yet. Results appear here as soon as users answer this survey." />;
   }
@@ -163,6 +174,25 @@ function SurveyAnalyticsView({ data }: { data: SurveyExperienceAnalytics }): JSX
         <StatTile label="Avg. time" value={formatDuration(data.averageCompletionTime)} />
       </div>
 
+      {data.starts > 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3" data-testid="survey-insight-actions">
+          <p className="m-0 text-[13px] text-slate-600">
+            {formatPercent(data.dropOffRate)} of people who started this survey left before finishing
+            {hasNps ? ` · NPS ${Math.round(data.nps)}` : ''}.
+          </p>
+          <CreateTaskButton
+            insight={{
+              title: hasNps && data.nps < 30 ? `Improve NPS for "${base.name}"` : `Reduce drop-off in "${base.name}"`,
+              summary: `${formatPercent(data.dropOffRate)} of ${formatNumber(data.starts)} people who started the survey left before finishing.${
+                hasNps ? ` NPS is ${Math.round(data.nps)} (${data.promoters} promoters, ${data.passives} passives, ${data.detractors} detractors).` : ''
+              } ${formatNumber(data.responses)} responses so far.`,
+              source: base.source,
+              link: base.link,
+              priority: data.dropOffRate >= 40 || (hasNps && data.nps < 0) ? 'HIGH' : 'MEDIUM'
+            }}
+          />
+        </div>
+      ) : null}
       {hasNps && <NpsPanel data={data} />}
       {data.weeklyTrends.length > 1 && <TrendPanel trends={data.weeklyTrends} />}
 
@@ -291,3 +321,42 @@ function EmptyAnalytics({ message }: { message: string }): JSX.Element {
 }
 
 export default ExperienceAnalyticsModal;
+
+/** Where people stop in the guide; the step that loses the most people gets a "Create task" button. */
+function StepFunnelPanel({ steps, base }: { steps: NonNullable<GuideExperienceAnalytics['steps']>; base: InsightBase }): JSX.Element {
+  const top = Math.max(steps[0]?.reached ?? 0, 1);
+  const worst = steps.reduce((a, b) => (b.dropped > a.dropped ? b : a), steps[0]);
+  return (
+    <Panel subtitle="People who reached each step, and how many stopped there" title="Step drop-off">
+      <ol className="m-0 grid list-none gap-3 p-0" data-testid="guide-step-funnel">
+        {steps.map((step) => {
+          const insight: Insight = {
+            title: `Fix drop-off at step ${step.index + 1} of "${base.name}"`,
+            summary: `${Math.round(step.dropOffRate * 100)}% of the ${step.reached} people who reached step ${step.index + 1} ("${step.title}") stopped there.`,
+            source: base.source,
+            link: base.link,
+            priority: step.dropOffRate >= 0.4 ? 'HIGH' : 'MEDIUM'
+          };
+          return (
+            <li className="grid gap-1.5" data-testid="guide-step" key={step.stepId}>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[13px]">
+                <span className="min-w-0 truncate text-slate-800">
+                  <span className="mr-1.5 font-mono text-xs text-slate-500">{step.index + 1}</span>
+                  {step.title}
+                </span>
+                <span className="flex items-center gap-2 tabular-nums text-slate-600">
+                  {step.reached} reached
+                  {step.dropped > 0 ? <span className="text-red-700">· {Math.round(step.dropOffRate * 100)}% stopped</span> : null}
+                  {step.dropped > 0 && step.stepId === worst.stepId ? <CreateTaskButton insight={insight} /> : null}
+                </span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full rounded-full bg-brand-600" style={{ width: `${(step.reached / top) * 100}%` }} />
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </Panel>
+  );
+}

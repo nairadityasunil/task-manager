@@ -17,6 +17,7 @@ import { createPortal } from 'react-dom';
 import { Check, ChevronDown, Search } from 'lucide-react';
 
 import { cn } from './cn';
+import { useFieldLabelId } from './Field';
 import { popoverPanelClass, usePopover } from './usePopover';
 
 export interface SelectOption {
@@ -143,6 +144,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
   const { triggerRef, panelRef, style } = usePopover<HTMLButtonElement, HTMLDivElement>({ open, onClose: close, matchWidth: true });
   useImperativeHandle(ref, () => triggerRef.current as HTMLButtonElement);
   const listId = useId();
+  const fieldLabelId = useFieldLabelId();
   const searchRef = useRef<HTMLInputElement>(null);
   const typeahead = useRef({ text: '', at: 0 });
   const showSearch = searchable ?? options.length > 10;
@@ -217,6 +219,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
   return (
     <>
       <button
+        aria-labelledby={aria['aria-labelledby'] ?? (aria['aria-label'] ? undefined : fieldLabelId)}
         aria-controls={open ? listId : undefined}
         aria-expanded={open}
         aria-haspopup="listbox"

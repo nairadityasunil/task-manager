@@ -1,5 +1,7 @@
+import { AiSpend } from "@/features/agents/components/AiSpend";
+import { buildDemoPlan } from "@/features/projects/demoPlan";
 import Modal from '@/components/Modal';
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { centralizedAiService, AIProjectPlanResponse, AIPlanModificationResponse, WorkspaceSessionItem } from "@/services/centralizedAi";
 import { Sparkles, Check, X, Plus, Edit3, BookOpen, MessageSquare, History, Copy, AlertCircle, FolderPlus, Trash2, Loader2 } from "lucide-react";
 import { Badge, Button, buttonClass, cn, Field, inputClass, selectClass } from "@/components/ui";
@@ -44,6 +46,8 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
   const [error, setError] = useState("");
 
   const [generatedPlan, setGeneratedPlan] = useState<AIProjectPlanResponse | null>(null);
+  /** When the current plan's generation started; its AI cost is the spend since then. */
+  const [planCostSince, setPlanCostSince] = useState<string | null>(null);
   const [changeRequest, setChangeRequest] = useState("");
   const [lastDelta, setLastDelta] = useState<AIPlanModificationResponse["delta"] | null>(null);
 
@@ -67,8 +71,12 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
   const [keyMissing, setKeyMissing] = useState(false);
   const needsKey = !providerReady || keyMissing;
 
+  /** Set once the person loads a plan themselves, so the background session load does not replace it. */
+  const planChosenRef = useRef(false);
+
   useEffect(() => {
     if (isOpen) {
+      planChosenRef.current = false;
       void loadSessionsAndWorkspacePlans();
     }
   }, [isOpen, workspaceId]);
@@ -88,18 +96,19 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
           createdAt: s.createdAt ? new Date(s.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recent",
         }));
         setSessions(formattedSessions);
-        // Load the most recent session
-        void handleSelectSession(formattedSessions[0]);
+        // Load the most recent session, unless a plan was already chosen while this loaded.
+        if (planChosenRef.current) setActiveSessionId((current) => current ?? formattedSessions[0].id);
+        else void handleSelectSession(formattedSessions[0]);
       } else {
         // Only if user has zero sessions, create the initial session
-        void startNewSession();
+        void startNewSession(planChosenRef.current);
       }
     } catch (err) {
       console.error("Failed to load workspace AI sessions/plans", err);
     }
   };
 
-  const startNewSession = async () => {
+  const startNewSession = async (keepPlan = false) => {
     const defaultTitle = "New Planning Session";
     setError("");
 
@@ -113,6 +122,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
         };
         setSessions((prev) => [newSessItem, ...prev.filter((s) => s.id !== backendSession.id)]);
         setActiveSessionId(backendSession.id);
+        if (keepPlan) return;
         setChatMessages([]);
         setGeneratedPlan(null);
         setLastDelta(null);
@@ -174,6 +184,20 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
     }
   };
 
+  /** Loads a ready-made plan so people can see the whole flow (review, approve, create) without an AI key. */
+  const handleTryDemo = () => {
+    const plan = buildDemoPlan();
+    planChosenRef.current = true;
+    setPlanCostSince(null);
+    setError("");
+    setGeneratedPlan(plan);
+    setLastDelta(null);
+    setChatMessages((prev) => [
+      ...prev,
+      { role: "ai", content: `Loaded a demo plan: **${plan.name}**. Review it, then choose Approve to create it as a real project. No AI key was used.`, plan }
+    ]);
+  };
+
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) return;
@@ -182,6 +206,8 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
     const userMsg = prompt;
     setChatMessages((prev) => [...prev, { role: "user", content: userMsg }]);
+    // Spend from here on is this plan's cost, shown under the plan.
+    const startedAt = new Date(Date.now() - 1000).toISOString();
 
     try {
       const plan = await centralizedAiService.generateProjectPlan(
@@ -195,6 +221,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
       setGeneratedPlan(plan);
       setLastDelta(null);
       setKeyMissing(false);
+      setPlanCostSince(startedAt);
 
       // Auto-title session
       const title = plan.name || prompt.slice(0, 32);
@@ -518,10 +545,23 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                     </div>
                   )}
 
-                  <div className="flex justify-end pt-1">
+                  <div className="grid gap-2 pt-1">
                     <Button className="h-10 w-full" disabled={loading || needsKey} icon={Sparkles} type="submit" variant="primary">
                       {loading ? "Synthesizing Architecture..." : "Synthesize Technical Plan & PRD"}
                     </Button>
+                    <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[13px] text-slate-500">
+                      <span>{needsKey ? "No AI key yet?" : "Just exploring?"}</span>
+                      <button
+                        className="font-medium text-brand-600 hover:text-brand-700"
+                        data-testid="try-demo-plan"
+                        disabled={loading}
+                        onClick={handleTryDemo}
+                        type="button"
+                      >
+                        Try with a demo plan
+                      </button>
+                      <span>· no AI key or cost</span>
+                    </div>
                   </div>
                 </form>
               ) : (
@@ -533,12 +573,13 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
                       <div className="flex flex-wrap items-center gap-2">
                         <h4 className="m-0 text-[15px] font-semibold text-slate-900">{generatedPlan.name}</h4>
                         <Badge dot tone="success">Blueprint synthesized</Badge>
+                        {planCostSince ? <AiSpend className="-ml-1" label="This plan cost" since={planCostSince} /> : null}
                       </div>
                       <p className="m-0 text-[13px] text-slate-500 line-clamp-1">{generatedPlan.description}</p>
                     </div>
 
                     <Button className="shrink-0" icon={FolderPlus} onClick={() => setShowApprovalDialog(true)} variant="accent">
-                      Materialize Project Structure
+                      Approve &amp; create project
                     </Button>
                   </div>
 

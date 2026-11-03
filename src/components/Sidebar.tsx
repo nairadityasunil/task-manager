@@ -35,7 +35,8 @@ export type SidebarView =
   | 'engagement'
   | 'sdk-integrations'
   | 'sdk-integration-detail'
-  | 'agents';
+  | 'agents'
+  | 'activity';
 
 interface SidebarProps {
   activeView: SidebarView;
@@ -270,6 +271,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   label="Home"
                   onClick={() => onProjectSelect(allProjectsValue)}
                 />
+                <NavItem icon={Activity} isActive={activeView === 'activity'} label="Activity" onClick={() => onViewChange('activity')} />
               </NavGroup>
 
               <NavGroup label="AI">
