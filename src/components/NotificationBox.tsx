@@ -1,4 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+
+import { ApprovalRequestItem } from '@/features/agents/components/ApprovalRequest';
+import type { AgentApproval } from '@/services/agents';
 import { Bell, MessageCircle, UserPlus, X, ChevronRight } from 'lucide-react';
 
 export interface Notification {
@@ -18,6 +22,10 @@ interface NotificationBoxProps {
   onMarkAsRead: (id: string) => void;
   onClearAll: () => void;
   onNotificationClick: (notification: Notification) => void;
+  /** Agent actions waiting for this person's decision. */
+  approvals?: AgentApproval[];
+  approvalBusyId?: string | null;
+  onDecideApproval?: (approval: AgentApproval, approve: boolean) => void;
 }
 
 const NotificationBox: React.FC<NotificationBoxProps> = ({
@@ -26,6 +34,9 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
   onMarkAsRead,
   onClearAll,
   onNotificationClick,
+  approvals = [],
+  approvalBusyId = null,
+  onDecideApproval,
 }) => {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -67,7 +78,26 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
 
       {/* List */}
       <div className="custom-scrollbar max-h-[min(480px,70vh)] overflow-y-auto">
-        {notifications.length === 0 ? (
+        {approvals.length > 0 && (
+          <section aria-label="Agent approvals" className="border-b border-slate-200" data-testid="inbox-approvals">
+            <div className="flex items-center justify-between px-4 pb-1 pt-3">
+              <span className="text-xs font-medium text-slate-500">Agent approvals · {approvals.length}</span>
+              <Link className="text-xs font-medium text-brand-600 hover:text-brand-700" onClick={onClose} to="/agents/approvals">
+                Open all
+              </Link>
+            </div>
+            {approvals.slice(0, 5).map((approval) => (
+              <ApprovalRequestItem
+                approval={approval}
+                busy={approvalBusyId === approval.id}
+                className="border-t border-slate-100 px-4 py-3 first-of-type:border-t-0"
+                key={approval.id}
+                onDecide={(approve) => onDecideApproval?.(approval, approve)}
+              />
+            ))}
+          </section>
+        )}
+        {notifications.length === 0 && approvals.length > 0 ? null : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-6 py-10 text-center">
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-400">
               <Bell className="h-[18px] w-[18px]" />

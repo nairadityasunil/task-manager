@@ -1,5 +1,7 @@
+import ActivityTimelinePage from '@/pages/ActivityTimelinePage';
+import { AiSpend } from '@/features/agents/components/AiSpend';
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import AddTaskForm from '@/components/AddTaskForm';
 import { WorkspaceSwitcher } from '@/features/workspaces';
 import EditTaskForm from '@/components/EditTaskForm';
@@ -94,6 +96,16 @@ export function DashboardPage(): JSX.Element {
   // With no epic chosen, the project's tasks show grouped by epic.
   const columnTasks = dash.selectedEpicId ? dash.activeEpicTasks : dash.visibleTasks;
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  // Links from the activity timeline or elsewhere open a task directly: /projects/:id?task=<taskId>.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const linkedTaskId = searchParams.get('task');
+  useEffect(() => {
+    if (!linkedTaskId) return;
+    dash.setSelectedTaskId(linkedTaskId);
+    const next = new URLSearchParams(searchParams);
+    next.delete('task');
+    setSearchParams(next, { replace: true });
+  }, [linkedTaskId, searchParams, setSearchParams]);
   const closePalette = useCallback(() => setIsPaletteOpen(false), []);
 
   // ⌘K / Ctrl+K opens the command palette from anywhere in the app.
@@ -189,6 +201,7 @@ export function DashboardPage(): JSX.Element {
           } else if (view === 'sdk-docs') navigate('/sdk-docs');
           else if (view === 'settings') navigate('/settings');
           else if (view === 'agents') navigate('/agents');
+          else if (view === 'activity') navigate('/activity');
         }}
         onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
         onOpenSearch={() => setIsPaletteOpen(true)}
@@ -231,6 +244,8 @@ export function DashboardPage(): JSX.Element {
           title={
             dash.activeView === 'settings'
               ? 'Settings'
+              : dash.activeView === 'activity'
+              ? 'Activity'
               : dash.activeView === 'agents'
               ? 'Agent Governance'
               : dash.activeView === 'sdk-docs'
@@ -275,6 +290,8 @@ export function DashboardPage(): JSX.Element {
 
               {dash.activeView === 'settings' ? (
                 <span className={crumbCurrentCls}>Settings</span>
+              ) : dash.activeView === 'activity' ? (
+                <span className={crumbCurrentCls}>Activity</span>
               ) : dash.activeView === 'agents' ? (
                 <span className={crumbCurrentCls}>Agent Governance</span>
               ) : dash.activeView === 'sdk-docs' ? (
@@ -355,6 +372,10 @@ export function DashboardPage(): JSX.Element {
             </div>
           ) : dash.activeView === 'agents' ? (
             <AgentsPage projects={dash.projects} />
+          ) : dash.activeView === 'activity' ? (
+            <div className="h-full overflow-y-auto">
+              <ActivityTimelinePage projects={dash.projects} />
+            </div>
           ) : dash.activeView === 'event-tracking' ? (
             <div className="h-full overflow-y-auto">
               <EventTrackingPage onOpenDocs={() => navigate('/sdk-docs')} />
@@ -452,6 +473,7 @@ export function DashboardPage(): JSX.Element {
                     />
                   </div>
                   <div className="flex items-center gap-1.5 sm:gap-2">
+                    <AiSpend className="hidden md:inline-flex" projectId={dash.activeProject.id} />
                     <button
                       className={headerButtonCls}
                       onClick={() => dash.setIsProjectTeamModalOpen(true)}

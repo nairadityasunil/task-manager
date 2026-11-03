@@ -32,6 +32,39 @@ const summarizeRules = (rules: TargetingRuleGroup): string => {
     .join(joiner) + (conditions.length > 3 ? ` +${conditions.length - 3} more` : '');
 };
 
+/** Every tracked event the rules depend on, with its threshold, e.g. "checkout_completed · at least 2 times in 7 days". */
+const collectEventConditions = (group: TargetingRuleGroup): Array<{ eventName: string; detail: string }> => [
+  ...(group.conditions ?? [])
+    .filter((condition) => condition.eventName)
+    .map((condition) => {
+      const times = condition.count ?? (typeof condition.value === 'number' ? condition.value : undefined);
+      const parts = [
+        times != null ? `${condition.operator === 'lt' || condition.operator === 'less_than' ? 'fewer than' : 'at least'} ${times} time${times === 1 ? '' : 's'}` : 'at least once',
+        condition.windowDays ? `in the last ${condition.windowDays} day${condition.windowDays === 1 ? '' : 's'}` : 'ever'
+      ];
+      const label = conditionLabels[condition.type] ?? condition.type;
+      return { eventName: condition.eventName as string, detail: `${label}: ${parts.join(' ')}` };
+    }),
+  ...(group.groups ?? []).flatMap(collectEventConditions)
+];
+
+/** Plain-language list of the user events a segment targets on. */
+export function SegmentEventExplanation({ rules }: { rules: TargetingRuleGroup }): JSX.Element | null {
+  const events = collectEventConditions(rules);
+  if (events.length === 0) return null;
+  return (
+    <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-slate-600" data-testid="segment-events">
+      <span className="text-slate-500">Based on events:</span>
+      {events.map((event, index) => (
+        <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5" key={`${event.eventName}-${index}`} title={event.detail}>
+          <code className="font-mono text-[11px] text-slate-900">{event.eventName}</code>
+          <span className="text-slate-500">{event.detail.split(': ')[1]}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function SegmentsPanel(): JSX.Element {
   const confirm = useConfirm();
   const { showToast } = useToast();
@@ -136,6 +169,7 @@ function SegmentsPanel(): JSX.Element {
                 </div>
                 {segment.description && <p className="m-0 mt-1 truncate text-[13px] text-slate-500">{segment.description}</p>}
                 <p className="m-0 mt-1 truncate text-xs text-slate-500">{summarizeRules(segment.rules)}</p>
+                <SegmentEventExplanation rules={segment.rules} />
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Button icon={FlaskConical} onClick={() => setTesting(segment)} size="sm">Test</Button>
@@ -230,6 +264,7 @@ function SegmentEditorModal({
         </div>
         <UrlTargeting rules={rules} onChange={setRules} />
         <RuleBuilder rules={rules} onChange={setRules} />
+        <SegmentEventExplanation rules={rules} />
         {error && <p className="m-0 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
       </div>
     </EditorDialog>

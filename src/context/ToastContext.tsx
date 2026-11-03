@@ -8,10 +8,17 @@ interface ToastItem {
   variant: ToastVariant;
   message: string;
   dedupeKey: string;
+  action?: ToastAction;
+}
+
+/** Optional button on a toast, e.g. "Open" the thing that was just created. */
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
 }
 
 interface ToastContextValue {
-  showToast: (input: { variant: ToastVariant; message: string; dedupeKey?: string }) => void;
+  showToast: (input: { variant: ToastVariant; message: string; dedupeKey?: string; action?: ToastAction }) => void;
   dismissToast: (id: string) => void;
 }
 
@@ -49,6 +56,18 @@ const ToastViewport: React.FC<{
           {toast.variant === 'success' ? <CheckCircle2 size={18} /> : <CircleAlert size={18} />}
         </span>
         <p className="m-0 flex-1 text-sm leading-6">{toast.message}</p>
+        {toast.action ? (
+          <button
+            className="shrink-0 rounded-md px-2 py-1 text-[13px] font-semibold underline-offset-2 hover:underline"
+            onClick={() => {
+              toast.action?.onClick();
+              onDismiss(toast.id);
+            }}
+            type="button"
+          >
+            {toast.action.label}
+          </button>
+        ) : null}
         <button
           aria-label="Dismiss notification"
           className="shrink-0 rounded-full p-1 transition-colors hover:bg-black/5"
@@ -72,11 +91,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const showToast = ({
     variant,
     message,
-    dedupeKey
+    dedupeKey,
+    action
   }: {
     variant: ToastVariant;
     message: string;
     dedupeKey?: string;
+    action?: ToastAction;
   }) => {
     const normalizedMessage = message.trim();
 
@@ -97,7 +118,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           id: crypto.randomUUID(),
           variant,
           message: normalizedMessage,
-          dedupeKey: normalizedDedupeKey
+          dedupeKey: normalizedDedupeKey,
+          action
         }
       ];
     });

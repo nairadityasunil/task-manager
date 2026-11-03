@@ -2,6 +2,7 @@ import React from 'react';
 import { Bell, Menu } from 'lucide-react';
 import UserAvatar from './UserAvatar';
 import NotificationBox, { Notification } from './NotificationBox';
+import { usePendingApprovals } from '@/features/agents/components/ApprovalRequest';
 
 interface TopbarProps {
   title: string;
@@ -33,7 +34,10 @@ const Topbar: React.FC<TopbarProps> = ({
   rightContent,
   onMenuClick
 }) => {
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  // Agent approvals land in the same inbox as everything else, refreshed every 30 seconds.
+  const pending = usePendingApprovals(30_000);
+  const approvalCount = pending.approvals?.length ?? 0;
+  const unreadCount = notifications.filter(n => !n.isRead).length + approvalCount;
 
   return (
     <header className="relative z-50 flex h-12 shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-3 sm:px-5 lg:px-6">
@@ -66,7 +70,7 @@ const Topbar: React.FC<TopbarProps> = ({
         <div className="relative">
           <button
             aria-expanded={isNotificationsOpen}
-            aria-label="Notifications"
+            aria-label={approvalCount ? `Notifications, ${approvalCount} approval${approvalCount === 1 ? '' : 's'} waiting` : 'Notifications'}
             className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
               isNotificationsOpen ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
             }`}
@@ -84,6 +88,9 @@ const Topbar: React.FC<TopbarProps> = ({
           {isNotificationsOpen && (
             <NotificationBox
               notifications={notifications}
+              approvals={pending.approvals ?? []}
+              approvalBusyId={pending.busy}
+              onDecideApproval={(approval, approve) => void pending.decide(approval, approve)}
               onClose={onNotificationsClose}
               onMarkAsRead={onMarkAsRead}
               onClearAll={onClearAll}

@@ -220,6 +220,8 @@ export interface GuideExperienceAnalytics {
   completionRate: number;
   /** 0–1 */
   dismissalRate: number;
+  /** Funnel per step, from each user's furthest step. */
+  steps?: Array<{ stepId: string; title: string; index: number; reached: number; dropped: number; /** 0–1 */ dropOffRate: number }>;
 }
 
 export interface SurveyQuestionAnalytics {

@@ -10,6 +10,7 @@ import DataTable from '@/components/DataTable';
 import EmptyState from '@/components/EmptyState';
 import PageHeader from '@/components/PageHeader';
 import { Badge, Button, Field, DateInput, Input } from '@/components/ui';
+import { EventInsights } from '@/features/events/EventInsights';
 
 const columnHelper = createColumnHelper<RawEvent>();
 
@@ -456,6 +457,7 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
   const filterCount = appliedFilters.eventNames.length + (appliedFilters.startDate ? 1 : 0) + (appliedFilters.endDate ? 1 : 0);
 
   const summaryBar = (sdkIntegrationId || selectedKeyId) ? (
+    <>
     <EventSummaryBar
       activeEventNames={appliedFilters.eventNames}
       availableEvents={availableEvents}
@@ -474,6 +476,15 @@ const EventTrackingPage: React.FC<EventTrackingPageProps> = ({ onOpenDocs, sdkIn
       refreshing={refreshing}
       showControls={hideHeader}
     />
+      <EventInsights
+        apiKeyId={selectedKeyId || undefined}
+        filters={appliedFilters}
+        linkBack={sdkIntegrationId ? `/sdk-integrations/${sdkIntegrationId}/events` : '/event-tracking'}
+        onApplyView={(view) => applyFilters(view)}
+        scope={sdkIntegrationId || selectedKeyId}
+        sdkIntegrationId={sdkIntegrationId}
+      />
+    </>
   ) : null;
 
   const content = (!selectedKeyId && !sdkIntegrationId) ? (
