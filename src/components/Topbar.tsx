@@ -2,7 +2,7 @@ import React from 'react';
 import { Bell, Menu } from 'lucide-react';
 import UserAvatar from './UserAvatar';
 import NotificationBox, { Notification } from './NotificationBox';
-import { usePendingApprovals } from '@/features/agents/components/ApprovalRequest';
+import { usePendingApprovals, useSecurityInbox } from '@/features/agents/components/ApprovalRequest';
 
 interface TopbarProps {
   title: string;
@@ -37,7 +37,9 @@ const Topbar: React.FC<TopbarProps> = ({
   // Agent approvals land in the same inbox as everything else, refreshed every 30 seconds.
   const pending = usePendingApprovals(30_000);
   const approvalCount = pending.approvals?.length ?? 0;
-  const unreadCount = notifications.filter(n => !n.isRead).length + approvalCount;
+  // Shadow AI, threats, DLP, drift and open incidents land in the same inbox.
+  const security = useSecurityInbox();
+  const unreadCount = notifications.filter(n => !n.isRead).length + approvalCount + security.length;
 
   return (
     <header className="relative z-50 flex h-12 shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white/95 px-3 sm:px-5 lg:px-6">
@@ -89,8 +91,9 @@ const Topbar: React.FC<TopbarProps> = ({
             <NotificationBox
               notifications={notifications}
               approvals={pending.approvals ?? []}
+              security={security}
               approvalBusyId={pending.busy}
-              onDecideApproval={(approval, approve) => void pending.decide(approval, approve)}
+              onDecideApproval={(approval, decision) => void pending.decide(approval, decision)}
               onClose={onNotificationsClose}
               onMarkAsRead={onMarkAsRead}
               onClearAll={onClearAll}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, Bot, CircleUser, ListChecks, MousePointerClick, RefreshCw, ShieldCheck } from 'lucide-react';
+import { Activity, Bot, CircleUser, Cpu, ListChecks, MousePointerClick, Radar, RefreshCw, ShieldCheck, Siren } from 'lucide-react';
 
 import { Button, cn, DateInput, Field, Select } from '@/components/ui';
 import { useWorkspace } from '@/features/workspaces';
@@ -8,7 +8,7 @@ import { workspaceService } from '@/features/workspaces/services/workspaceServic
 import api from '@/services/api';
 import { timeAgo } from '@/services/agents';
 
-type Kind = 'work' | 'agent' | 'approval' | 'event';
+type Kind = 'work' | 'agent' | 'approval' | 'event' | 'detection' | 'incident' | 'system';
 
 interface TimelineItem {
   id: string;
@@ -19,21 +19,33 @@ interface TimelineItem {
   actor: { type: 'person' | 'agent' | 'end_user'; id?: string; name: string };
   projectId?: string | null;
   link?: string;
+  decidedBy?: 'policy' | 'system' | 'person' | null;
+  outcome?: string | null;
+  tier?: string | null;
+  severity?: string | null;
 }
 
 const KINDS: Array<{ id: Kind; label: string; icon: typeof Activity }> = [
   { id: 'work', label: 'Task changes', icon: ListChecks },
   { id: 'agent', label: 'Agent actions', icon: Bot },
   { id: 'approval', label: 'Approvals', icon: ShieldCheck },
-  { id: 'event', label: 'User events', icon: MousePointerClick }
+  { id: 'event', label: 'User events', icon: MousePointerClick },
+  { id: 'detection', label: 'Detections', icon: Radar },
+  { id: 'incident', label: 'Incidents', icon: Siren },
+  { id: 'system', label: 'System actions', icon: Cpu }
 ];
 
 const KIND_TONE: Record<Kind, string> = {
   work: 'bg-slate-100 text-slate-700',
   agent: 'bg-violet-50 text-violet-700',
   approval: 'bg-orange-50 text-orange-700',
-  event: 'bg-sky-50 text-sky-700'
+  event: 'bg-sky-50 text-sky-700',
+  detection: 'bg-amber-50 text-amber-800',
+  incident: 'bg-red-50 text-red-700',
+  system: 'bg-slate-100 text-slate-700'
 };
+
+const DECIDED_LABEL = { system: 'System decided', person: 'Person decided', policy: 'Policy' } as const;
 
 const dayLabel = (iso: string) => {
   const date = new Date(iso);
@@ -47,7 +59,10 @@ const dayLabel = (iso: string) => {
 /** One list for everything that happened: task changes, agent actions, approvals and user events. */
 export default function ActivityTimelinePage({ projects }: { projects: Array<{ id: string; name: string }> }): JSX.Element {
   const { activeWorkspace } = useWorkspace();
-  const [kinds, setKinds] = useState<Kind[]>(['work', 'agent', 'approval', 'event']);
+  const [kinds, setKinds] = useState<Kind[]>(['work', 'agent', 'approval', 'event', 'detection', 'incident', 'system']);
+  const [tier, setTier] = useState('');
+  const [decidedBy, setDecidedBy] = useState('');
+  const [outcome, setOutcome] = useState('');
   const [projectId, setProjectId] = useState('');
   const [personId, setPersonId] = useState('');
   const [agentId, setAgentId] = useState('');
@@ -80,6 +95,9 @@ export default function ActivityTimelinePage({ projects }: { projects: Array<{ i
           projectId: projectId || undefined,
           userId: personId || undefined,
           agentId: agentId || undefined,
+          tiers: tier || undefined,
+          decidedBy: decidedBy || undefined,
+          outcome: outcome || undefined,
           since: since ? `${since}T00:00:00` : undefined,
           until: until ? `${until}T23:59:59` : undefined,
           limit: 120
@@ -88,7 +106,7 @@ export default function ActivityTimelinePage({ projects }: { projects: Array<{ i
       .then((response) => setItems((response.data as { data: TimelineItem[] }).data ?? []))
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  }, [kinds, projectId, personId, agentId, since, until]);
+  }, [kinds, projectId, personId, agentId, since, until, tier, decidedBy, outcome]);
 
   useEffect(load, [load]);
 
@@ -138,7 +156,7 @@ export default function ActivityTimelinePage({ projects }: { projects: Array<{ i
             );
           })}
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
           <Field label="Project">
             <Select onValueChange={setProjectId} options={[{ value: '', label: 'All projects' }, ...projects.map((p) => ({ value: p.id, label: p.name }))]} value={projectId} />
           </Field>
@@ -147,6 +165,43 @@ export default function ActivityTimelinePage({ projects }: { projects: Array<{ i
           </Field>
           <Field label="Agent">
             <Select onValueChange={setAgentId} options={[{ value: '', label: 'Any agent' }, ...agents.map((a) => ({ value: a.id, label: a.name }))]} value={agentId} />
+          </Field>
+          <Field label="Risk">
+            <Select
+              onValueChange={setTier}
+              options={[
+                { value: '', label: 'Any risk' },
+                { value: 'low', label: 'Low' },
+                { value: 'medium', label: 'Medium' },
+                { value: 'high', label: 'High' },
+                { value: 'critical', label: 'Critical' }
+              ]}
+              value={tier}
+            />
+          </Field>
+          <Field label="Decided by">
+            <Select
+              onValueChange={setDecidedBy}
+              options={[
+                { value: '', label: 'Anyone' },
+                { value: 'system', label: 'System decided' },
+                { value: 'person', label: 'A person' },
+                { value: 'policy', label: 'A policy' }
+              ]}
+              value={decidedBy}
+            />
+          </Field>
+          <Field label="Outcome">
+            <Select
+              onValueChange={setOutcome}
+              options={[
+                { value: '', label: 'Any outcome' },
+                { value: 'allowed', label: 'Allowed' },
+                { value: 'blocked', label: 'Blocked' },
+                { value: 'pending_approval', label: 'Held for approval' }
+              ]}
+              value={outcome}
+            />
           </Field>
           <Field label="From">
             <DateInput onValueChange={setSince} value={since} />
@@ -183,6 +238,19 @@ export default function ActivityTimelinePage({ projects }: { projects: Array<{ i
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-[13px] text-slate-900">{item.title}</div>
                         <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs text-slate-500">
+                          {item.decidedBy ? (
+                            <span
+                              className={cn(
+                                'rounded px-1.5 py-px text-[11px] font-medium',
+                                item.decidedBy === 'system' ? 'bg-slate-900 text-white' : item.decidedBy === 'person' ? 'bg-brand-50 text-brand-700' : 'bg-slate-100 text-slate-700'
+                              )}
+                              data-testid="decided-by"
+                            >
+                              {DECIDED_LABEL[item.decidedBy]}
+                            </span>
+                          ) : null}
+                          {item.tier ? <span className="rounded bg-slate-100 px-1.5 py-px text-[11px] text-slate-700">{item.tier} risk</span> : null}
+                          {item.severity === 'critical' ? <span className="rounded bg-red-50 px-1.5 py-px text-[11px] font-medium text-red-700">critical</span> : null}
                           <ActorIcon size={12} />
                           <span>{item.actor.name}</span>
                           {item.detail ? <span>· {item.detail}</span> : null}

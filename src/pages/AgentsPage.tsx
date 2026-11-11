@@ -1,3 +1,4 @@
+import { IncidentsPanel } from '@/features/agents/components/IncidentsPanel';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -10,6 +11,7 @@ import {
   FileCheck2,
   Gauge,
   History,
+  Siren,
   Inbox,
   KeyRound,
   OctagonX,
@@ -51,8 +53,8 @@ import { vendorsApi, type VendorListItem } from '@/services/vendors';
 import type { Project } from '@/types/project';
 import { isAgentForbidden, toDisplayErrorMessage } from '@/utils/apiError';
 
-export type AgentsTab = 'overview' | 'inventory' | 'vendors' | 'approvals' | 'policies' | 'activity' | 'costs' | 'notifications' | 'compliance';
-const TABS: AgentsTab[] = ['overview', 'inventory', 'vendors', 'approvals', 'policies', 'activity', 'costs', 'notifications', 'compliance'];
+export type AgentsTab = 'overview' | 'inventory' | 'vendors' | 'approvals' | 'policies' | 'activity' | 'incidents' | 'costs' | 'notifications' | 'compliance';
+const TABS: AgentsTab[] = ['overview', 'inventory', 'vendors', 'approvals', 'policies', 'activity', 'incidents', 'costs', 'notifications', 'compliance'];
 
 const SEVERITY_TONE = { info: 'info', warning: 'warning', critical: 'danger' } as const;
 
@@ -352,6 +354,17 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
   const [agents, setAgents] = useState<Agent[] | null>(null);
   const [alerts, setAlerts] = useState<AgentAlert[]>([]);
   const [openAgent, setOpenAgent] = useState<string | null>(null);
+  const [openIncidents, setOpenIncidents] = useState(0);
+  const refreshIncidents = useCallback(async () => {
+    try {
+      setOpenIncidents((await agentsApi.incidents('open')).length);
+    } catch {
+      setOpenIncidents(0);
+    }
+  }, []);
+  useEffect(() => {
+    void refreshIncidents();
+  }, [refreshIncidents]);
   // Links from elsewhere (e.g. a task's activity) open an agent directly: ?agent=<id>.
   const [searchParams, setSearchParams] = useSearchParams();
   useEffect(() => {
@@ -455,7 +468,15 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
         { value: 'approvals', label: 'Approvals', icon: Inbox, count: pending || undefined }
       ]
     },
-    { id: 'activity', label: 'Activity', pages: [{ value: 'activity', label: 'Activity', icon: History }] },
+    {
+      id: 'activity',
+      label: 'Activity',
+      count: openIncidents || undefined,
+      pages: [
+        { value: 'activity', label: 'Activity', icon: History },
+        { value: 'incidents', label: 'Incidents', icon: Siren, count: openIncidents || undefined }
+      ]
+    },
     {
       id: 'settings',
       label: 'Settings',
@@ -698,6 +719,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
         {tab === 'approvals' ? <ApprovalsInbox onChanged={() => void refresh()} /> : null}
         {tab === 'policies' ? <PoliciesPanel canAdmin={canAdmin} projects={projects} workspaceId={workspaceId} /> : null}
         {tab === 'activity' ? <ActivityLog canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
+        {tab === 'incidents' ? <IncidentsPanel onChanged={() => void refreshIncidents()} /> : null}
         {tab === 'costs' ? <CostsPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'notifications' ? <NotificationsPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'compliance' ? <CompliancePanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}

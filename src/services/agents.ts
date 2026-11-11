@@ -59,6 +59,10 @@ export interface Agent {
   riskFactors: RiskFactor[];
   riskEvaluatedAt?: string | null;
   createdAt: string;
+  /** Suspended automatically (critical risk, threat or incident); the owner or an admin can resume it. */
+  suspendedBySystem?: boolean;
+  /** After an incident: the next change needs a person's approval. */
+  reapprovalRequired?: boolean;
 }
 
 export interface AgentUsage {
@@ -148,6 +152,10 @@ export interface AgentApproval {
   error?: string | null;
   expiresAt: string;
   createdAt: string;
+  tier?: 'low' | 'medium' | 'high' | 'critical' | null;
+  recommendation?: { decision: 'approve' | 'reject'; reasons: string[] } | null;
+  dlp?: DlpFinding[];
+  decidedBySystem?: boolean;
 }
 
 export interface AgentActivity {
@@ -171,6 +179,10 @@ export interface AgentActivity {
   undoable: boolean;
   undoneAt?: string | null;
   undo: { entityType: 'task' | 'epic'; entityId: string } | null;
+  decidedBy?: 'policy' | 'system' | 'person' | null;
+  rule?: string | null;
+  tier?: string | null;
+  dlp?: DlpFinding[];
   createdAt: string;
 }
 
@@ -213,6 +225,9 @@ export interface ComplianceReport {
     expiresAt: string | null;
   }>;
   disclaimer: string;
+  /** Score history, one point per day. */
+  trend?: Array<{ date: string; score: number }>;
+  lastEvidencePack?: { at: string; title: string } | null;
 }
 
 export interface GovernanceSettings {
@@ -230,6 +245,59 @@ export interface GovernanceSettings {
   /** Vendors under review may only read until approved. */
   approvedVendorsOnly: boolean;
   activityRetentionDays: number;
+  governance: HybridGovernance;
+}
+
+/** Hybrid governance: what runs on its own and what waits for a person. */
+export interface HybridGovernance {
+  mode: 'advisory' | 'auto_low_risk' | 'full_enforce';
+  autoApproveRepeatDays: number;
+  criticalAutoSuspend: boolean;
+  dlpMode: 'off' | 'monitor' | 'enforce';
+  threatDetection: boolean;
+  incidentAutoContain: boolean;
+  keyMaxAgeDays: number;
+  complianceEnforce: boolean;
+  complianceReportSchedule: 'off' | 'weekly' | 'monthly';
+  allowedDataRegions: string[];
+}
+
+export interface DlpFinding {
+  type: string;
+  label: string;
+  confidence: 'high' | 'medium';
+  count: number;
+}
+
+export interface IncidentEntry {
+  at: string;
+  actor: 'system' | 'person';
+  action: string;
+  detail: string;
+}
+
+export interface AgentIncident {
+  id: string;
+  title: string;
+  severity: 'warning' | 'critical';
+  trigger: string;
+  status: 'open' | 'contained' | 'resolved';
+  action: string | null;
+  summary: string;
+  agents: Array<{ id: string; name: string; status: AgentStatus; kind: AgentKind; riskLevel: AgentRiskLevel | null }>;
+  timeline: IncidentEntry[];
+  suggestions: string[];
+  windowFrom: string;
+  windowTo: string | null;
+  resolution: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+}
+
+export interface AgentIncidentDetail extends AgentIncident {
+  activity: AgentActivity[];
+  alerts: AgentAlert[];
+  relatedAgents: Array<{ id: string; name: string; status: AgentStatus; kind: AgentKind; riskLevel: AgentRiskLevel | null }>;
 }
 
 export interface CostRow {
@@ -394,6 +462,7 @@ export const agentsApi = {
     unwrap<CostReport>(api.get('/agents/costs', { params: { ...ws(workspaceId), month } })),
   updateSettings: (
     body: {
+      governance?: Partial<HybridGovernance>;
       aiDataMasking?: boolean;
       requireAgentKeys?: boolean;
       approvedVendorsOnly?: boolean;
@@ -403,6 +472,32 @@ export const agentsApi = {
     },
     workspaceId?: string | null) =>
     unwrap<GovernanceSettings>(api.patch('/agents/settings', { ...body, ...ws(workspaceId) })),
+  complianceCheck: () => unwrap<{ score: number; drifted: Array<{ id: string; title: string; status: string }>; trend: Array<{ date: string; score: number }> }>(api.post('/agents/compliance/check')),
+  /** Evidence pack ZIP for a date range, downloaded as a file. */
+  downloadEvidencePack: async (from?: string, to?: string) => {
+    const response = await api.get('/agents/compliance/evidence', { params: { from, to }, responseType: 'blob' });
+    const name = /filename="([^"]+)"/.exec(String(response.headers['content-disposition'] ?? ''))?.[1] ?? 'compliance-evidence.zip';
+    const url = URL.createObjectURL(response.data as Blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  },
+  scopeDown: (approvalId: string) => unwrap<{ removedScope: string }>(api.post(`/agents/approvals/${approvalId}/scope-down`)),
+  incidents: (status?: 'open' | 'resolved') => unwrap<AgentIncident[]>(api.get('/agents/incidents', { params: status ? { status } : {} })),
+  incident: (id: string) => unwrap<AgentIncidentDetail>(api.get(`/agents/incidents/${id}`)),
+  incidentAction: (id: string, action: 'resume' | 'revoke' | 'resolve' | 'expand' | 'notify', body: Record<string, unknown> = {}) =>
+    unwrap<AgentIncident>(api.post(`/agents/incidents/${id}/${action}`, body)),
+  downloadIncidentEvidence: async (id: string) => {
+    const response = await api.get(`/agents/incidents/${id}/evidence`, { responseType: 'blob' });
+    const url = URL.createObjectURL(response.data as Blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `incident-${id}.json`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  },
   promptChecks: (body: { body?: string; messages?: Array<{ role: string; content: string }>; parameters?: { maxTokens?: number } }) =>
     unwrap<{ findings: PromptFinding[]; blocking: boolean }>(api.post('/agents/prompt-checks', body, { silent: true }))
 };

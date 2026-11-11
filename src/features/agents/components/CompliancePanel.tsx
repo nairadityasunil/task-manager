@@ -6,6 +6,7 @@ import { Badge, Button, Card, CardHeader, cn, selectClass, Select } from '@/comp
 import { useToast } from '@/context/ToastContext';
 import { agentsApi, type ComplianceReport, type GovernanceSettings } from '@/services/agents';
 import { toDisplayErrorMessage } from '@/utils/apiError';
+import { ComplianceMonitorCard, HybridGovernanceCard } from './HybridGovernance';
 
 const STATUS = {
   met: { icon: CheckCircle2, label: 'Met', tone: 'success' as const, color: 'text-emerald-600' },
@@ -105,6 +106,8 @@ export function CompliancePanel({ workspaceId, canAdmin }: { workspaceId: string
 
   return (
     <div className="space-y-4">
+      <ComplianceMonitorCard onRefresh={load} report={report} workspaceId={workspaceId} />
+      <HybridGovernanceCard onChange={setSettings} settings={settings} workspaceId={workspaceId} />
       <div className="grid items-start gap-4 lg:grid-cols-[280px_1fr]">
         <Card className="flex flex-col items-center justify-center gap-2 p-5 text-center">
           <div className="relative h-28 w-28">

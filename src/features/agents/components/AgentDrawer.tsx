@@ -205,6 +205,16 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                       </p>
                     </div>
                   ) : null}
+                  {agent.suspendedBySystem && agent.status === 'suspended' ? (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-[13px] text-red-900" data-testid="system-suspended">
+                      <span className="font-medium">System decided:</span> {agent.statusReason ?? 'suspended automatically'}. Resume it below if this was a false positive.
+                    </div>
+                  ) : null}
+                  {agent.reapprovalRequired && agent.status === 'active' ? (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-[13px] text-amber-900" data-testid="reapproval-required">
+                      After an incident, this agent's next change waits for a person's approval.
+                    </div>
+                  ) : null}
                   {agent.reviewDue && !revoked && !unregistered ? (
                     <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-sky-200 bg-sky-50 p-2.5" data-testid="review-due">
                       <span className="text-[13px] text-sky-900">Access review due: does this agent still need its access?</span>
