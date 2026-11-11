@@ -84,6 +84,8 @@ export interface AgentOverview {
   } | null;
   pendingApprovals: number;
   myAgents: number;
+  /** Set when the viewer is an agent: its changes here are held for a person. */
+  viewerAgent?: { id: string; name: string; kind: AgentKind } | null;
 }
 
 export interface PolicyMatch {
