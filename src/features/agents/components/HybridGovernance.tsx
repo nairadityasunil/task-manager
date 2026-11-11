@@ -271,7 +271,7 @@ export function ComplianceMonitorCard({
       <div className="grid gap-4 border-t border-slate-100 p-4 md:grid-cols-[200px_minmax(0,1fr)]">
         <div>
           <div className="text-xs text-slate-500">Compliance score</div>
-          <div className="font-mono text-3xl font-semibold text-slate-900" data-testid="compliance-score">
+          <div className="font-mono text-3xl font-semibold text-slate-900" data-testid="compliance-monitor-score">
             {report.score}
           </div>
           <svg aria-label="Score trend" className="mt-1 h-10 w-full" preserveAspectRatio="none" role="img" viewBox="0 0 100 36">
