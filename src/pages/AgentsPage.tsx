@@ -1,4 +1,5 @@
 import { IncidentsPanel } from '@/features/agents/components/IncidentsPanel';
+import { PlaybooksPanel } from '@/features/agents/components/AdvancedGovernance';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -19,7 +20,8 @@ import {
   Search,
   ShieldCheck,
   ShieldHalf,
-  Webhook
+  Webhook,
+  Workflow
 } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
@@ -53,8 +55,8 @@ import { vendorsApi, type VendorListItem } from '@/services/vendors';
 import type { Project } from '@/types/project';
 import { isAgentForbidden, toDisplayErrorMessage } from '@/utils/apiError';
 
-export type AgentsTab = 'overview' | 'inventory' | 'vendors' | 'approvals' | 'policies' | 'activity' | 'incidents' | 'costs' | 'notifications' | 'compliance';
-const TABS: AgentsTab[] = ['overview', 'inventory', 'vendors', 'approvals', 'policies', 'activity', 'incidents', 'costs', 'notifications', 'compliance'];
+export type AgentsTab = 'overview' | 'inventory' | 'vendors' | 'approvals' | 'policies' | 'activity' | 'incidents' | 'playbooks' | 'costs' | 'notifications' | 'compliance';
+const TABS: AgentsTab[] = ['overview', 'inventory', 'vendors', 'approvals', 'policies', 'activity', 'incidents', 'playbooks', 'costs', 'notifications', 'compliance'];
 
 const SEVERITY_TONE = { info: 'info', warning: 'warning', critical: 'danger' } as const;
 
@@ -474,7 +476,8 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
       count: openIncidents || undefined,
       pages: [
         { value: 'activity', label: 'Activity', icon: History },
-        { value: 'incidents', label: 'Incidents', icon: Siren, count: openIncidents || undefined }
+        { value: 'incidents', label: 'Incidents', icon: Siren, count: openIncidents || undefined },
+        ...(canAdmin ? [{ value: 'playbooks' as const, label: 'Playbooks', icon: Workflow }] : [])
       ]
     },
     {
@@ -720,6 +723,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
         {tab === 'policies' ? <PoliciesPanel canAdmin={canAdmin} projects={projects} workspaceId={workspaceId} /> : null}
         {tab === 'activity' ? <ActivityLog canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'incidents' ? <IncidentsPanel onChanged={() => void refreshIncidents()} /> : null}
+        {tab === 'playbooks' ? <PlaybooksPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'costs' ? <CostsPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'notifications' ? <NotificationsPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'compliance' ? <CompliancePanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}

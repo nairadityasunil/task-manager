@@ -8,6 +8,7 @@ import { agentName, agentsApi, timeAgo, userLabel, type AgentApproval, type Appr
 import { toDisplayErrorMessage } from '@/utils/apiError';
 import { ActionRiskBadge, ApprovalBadge } from './shared';
 import { ApprovalInsight } from './ApprovalRequest';
+import { AccessRequests } from './AdvancedGovernance';
 
 const FILTERS: Array<{ value: ApprovalStatus | 'all'; label: string }> = [
   { value: 'pending', label: 'Waiting' },
@@ -87,6 +88,8 @@ export function ApprovalsInbox({ onChanged }: { onChanged?: () => void }): JSX.E
           </button>
         ))}
       </div>
+
+      {filter === 'pending' ? <AccessRequests onChanged={onChanged} /> : null}
 
       {items == null ? (
         <div className="h-28 animate-pulse rounded-xl bg-slate-100" />

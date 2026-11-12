@@ -169,6 +169,91 @@ export function HybridGovernanceCard({
         />
       )}
       {row(
+        'Behaviour baselines',
+        "Learn each agent's normal volume, actions and projects over 7 to 14 days; hold changes far outside it (e.g. \"Volume is 8× baseline\").",
+        <Switch aria-label="Behaviour baselines" checked={g.anomalyDetection} disabled={saving} onChange={() => void save({ anomalyDetection: !g.anomalyDetection }, 'Saved')} />
+      )}
+      {row(
+        'Cross-agent correlation',
+        'Several agents listing people, exporting or deleting within minutes become one incident instead of many alerts.',
+        <Switch aria-label="Cross-agent correlation" checked={g.correlation} disabled={saving} onChange={() => void save({ correlation: !g.correlation }, 'Saved')} />
+      )}
+      {row(
+        'Session risk',
+        'A new network address or country, or a recent password change, raises the risk of sensitive actions.',
+        <Switch aria-label="Session risk" checked={g.sessionRisk} disabled={saving} onChange={() => void save({ sessionRisk: !g.sessionRisk }, 'Saved')} />
+      )}
+      {row(
+        'Data labels',
+        'Confidential projects and tasks: agent changes need a person and personal data never goes to AI models. Restricted: never sent to AI models or exported.',
+        <Switch aria-label="Data labels" checked={g.classificationEnforce} disabled={saving} onChange={() => void save({ classificationEnforce: !g.classificationEnforce }, 'Saved')} />
+      )}
+      {row(
+        'Just-in-time access',
+        'Agents ask for extra scopes for a limited time; the grant ends on its own.',
+        <div className="flex flex-wrap items-center gap-2">
+          <Select
+            aria-label="Longest just-in-time grant"
+            className="w-36"
+            disabled={saving || !g.jitEnabled}
+            onValueChange={(value) => void save({ jitMaxMinutes: Number(value) }, `Grants last at most ${value} minutes`)}
+            options={[15, 30, 60, 120, 240, 480].map((m) => ({ value: String(m), label: m < 60 ? `Up to ${m} min` : `Up to ${m / 60} h` }))}
+            value={String(g.jitMaxMinutes)}
+          />
+          <Switch aria-label="Just-in-time access" checked={g.jitEnabled} disabled={saving} onChange={() => void save({ jitEnabled: !g.jitEnabled }, 'Saved')} />
+        </div>
+      )}
+      {g.jitEnabled
+        ? row(
+            'Grant read-only requests automatically',
+            'Read scopes are granted at once ("System decided"); write scopes always wait for a person. Third parties always wait.',
+            <Switch aria-label="Grant read-only requests automatically" checked={g.jitAutoGrantLowRisk} disabled={saving} onChange={() => void save({ jitAutoGrantLowRisk: !g.jitAutoGrantLowRisk }, 'Saved')} />
+          )
+        : null}
+      {row(
+        'Key rotation',
+        'Near the maximum key age: warn the owner, or rotate low-risk keys automatically with an overlap. High-risk and third-party keys always need a person.',
+        <div className="flex flex-wrap items-center gap-2">
+          <Select
+            aria-label="Key rotation"
+            className="w-44"
+            disabled={saving}
+            onValueChange={(value) => void save({ keyRotation: value as HybridGovernance['keyRotation'] }, 'Saved')}
+            options={[
+              { value: 'off', label: 'Off' },
+              { value: 'notify', label: 'Warn the owner' },
+              { value: 'auto', label: 'Rotate low-risk keys' }
+            ]}
+            value={g.keyRotation}
+          />
+          <Select
+            aria-label="Old key keeps working for"
+            className="w-40"
+            disabled={saving || g.keyRotation === 'off'}
+            onValueChange={(value) => void save({ keyGraceHours: Number(value) }, 'Saved')}
+            options={[0, 24, 48, 72, 168].map((h) => ({ value: String(h), label: h ? `Overlap ${h < 72 ? `${h} h` : `${h / 24} days`}` : 'No overlap' }))}
+            value={String(g.keyGraceHours)}
+          />
+        </div>
+      )}
+      {row(
+        'Third-party keys',
+        'Keys for vendors are limited to projects, every change waits for a person, and they expire within this time.',
+        <Select
+          aria-label="Third-party keys expire within"
+          className="w-40"
+          disabled={saving}
+          onValueChange={(value) => void save({ vendorKeyMaxDays: Number(value) }, 'Saved')}
+          options={[7, 14, 30, 60, 90].map((d) => ({ value: String(d), label: `${d} days` }))}
+          value={String(g.vendorKeyMaxDays)}
+        />
+      )}
+      {row(
+        'Policy changes need a second admin',
+        'Edits to policies are proposed, reviewed with a diff, then applied. Every version is kept for rollback.',
+        <Switch aria-label="Policy changes need a second admin" checked={g.policyChangeApproval} disabled={saving} onChange={() => void save({ policyChangeApproval: !g.policyChangeApproval }, 'Saved')} />
+      )}
+      {row(
         'Allowed data regions',
         'Vendors that process data elsewhere fail the data residency control. Comma separated, e.g. EU, United States.',
         <Input

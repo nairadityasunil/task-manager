@@ -12,6 +12,7 @@ import Modal from '@/components/Modal';
 import EpicForm from '@/components/EpicForm';
 import NoteModal from '@/components/NoteModal';
 import ProjectForm from '@/components/ProjectForm';
+import { ClassificationSelect } from '@/features/agents/components/AdvancedGovernance';
 import ProjectNotes from '@/components/ProjectNotes';
 import ProjectPanel from '@/components/ProjectPanel';
 import ProjectTeamPanel from '@/components/ProjectTeamPanel';
@@ -885,6 +886,11 @@ export function DashboardPage(): JSX.Element {
       {dash.editingProject && (
         <Modal onClose={() => dash.setEditingProject(null)} title="Update Project">
           <ProjectForm initialDescription={dash.editingProject.description} initialName={dash.editingProject.name} onSubmit={dash.handleUpdateProject} submitLabel="Update project" />
+          <div className="mt-4 border-t border-slate-100 pt-4" data-testid="project-data-label">
+            <div className="mb-1.5 text-[13px] font-medium text-slate-700">Data label</div>
+            <ClassificationSelect projectId={dash.editingProject.id} />
+            <p className="m-0 mt-1.5 text-xs text-slate-500">Decides how strictly agents are governed here; saved as soon as you pick it. Tasks use it unless they have their own label.</p>
+          </div>
         </Modal>
       )}
       {dash.isEpicCreateModalOpen && dash.activeProject && (

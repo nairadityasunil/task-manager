@@ -8,6 +8,7 @@ import { agentName, agentsApi, timeAgo, type AgentApproval } from '@/services/ag
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
 import { ActionRiskBadge } from './shared';
+import { ClassificationBadge } from './AdvancedGovernance';
 
 export type ApprovalDecision = 'approve' | 'reject' | 'scope_down';
 
@@ -82,7 +83,7 @@ const TIER_TONE: Record<string, string> = {
 /** The system's recommendation for a held action, its reasons, the risk tier and any DLP findings. */
 export function ApprovalInsight({ approval, className }: { approval: AgentApproval; className?: string }): JSX.Element | null {
   const rec = approval.recommendation;
-  if (!rec && !approval.tier && !(approval.dlp ?? []).length) return null;
+  if (!rec && !approval.tier && !(approval.dlp ?? []).length && !approval.classification) return null;
   return (
     <div className={cn('rounded-md border border-slate-200 bg-slate-50/70 p-2 text-xs', className)} data-testid="approval-insight">
       <div className="flex flex-wrap items-center gap-1.5">
@@ -99,6 +100,7 @@ export function ApprovalInsight({ approval, className }: { approval: AgentApprov
           </span>
         ) : null}
         {approval.tier ? <span className={cn('rounded px-1.5 py-0.5 font-medium', TIER_TONE[approval.tier])}>{approval.tier} risk</span> : null}
+        <ClassificationBadge value={approval.classification} />
         {(approval.dlp ?? []).map((finding) => (
           <span className="rounded bg-violet-50 px-1.5 py-0.5 font-medium text-violet-800" key={finding.type}>
             DLP: {finding.label.toLowerCase()}

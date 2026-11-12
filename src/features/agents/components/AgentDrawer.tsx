@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Ban, EyeOff, Gauge, History, KeyRound, Network, Pause, Play, RotateCw, ShieldCheck, X } from 'lucide-react';
 
-import { Badge, Button, Tabs, cn, inputClass, selectClass, Select } from '@/components/ui';
+import { Badge, Button, Switch, Tabs, cn, inputClass, selectClass, Select } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
@@ -19,6 +19,7 @@ import type { Project } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 import { CreateKeyModal, ProjectPicker, ScopePicker } from './CreateKeyModal';
 import { ReachPanel } from './ReachPanel';
+import { AccessRequests, AgentBaselineCard, KeyLifecycleCard } from './AdvancedGovernance';
 import { ActionRiskBadge, KindLabel, OutcomeBadge, RiskBadge, SecretReveal, StatusBadge } from './shared';
 
 type DrawerTab = 'overview' | 'permissions' | 'reach' | 'activity' | 'risk';
@@ -47,6 +48,14 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
   const [replacing, setReplacing] = useState(false);
   /** Calls per minute as typed; empty means no limit. */
   const [rateLimit, setRateLimit] = useState('');
+  const [keyMaxAgeDays, setKeyMaxAgeDays] = useState<number | undefined>(undefined);
+  useEffect(() => {
+    if (!canAdmin) return;
+    agentsApi
+      .settings()
+      .then((settings) => setKeyMaxAgeDays(settings.governance.keyMaxAgeDays || undefined))
+      .catch(() => undefined);
+  }, [canAdmin]);
 
   const load = useCallback(
     async (refresh = false) => {
@@ -161,6 +170,7 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                     <StatusBadge status={agent.status} />
                     <RiskBadge level={agent.riskLevel} score={agent.riskScore} />
                     {agent.legacy ? <Badge tone="orange">Legacy key</Badge> : null}
+                    {agent.operatedBy === 'vendor' ? <Badge tone="violet">Third party</Badge> : null}
                   </div>
                 </div>
                 <Button aria-label="Close" icon={X} onClick={onClose} size="icon-sm" variant="ghost" />
@@ -291,6 +301,46 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                   </div>
 
                   {!revoked ? (
+                    <>
+                      <KeyLifecycleCard
+                        agent={agent}
+                        isOwner={isOwner}
+                        maxAgeDays={keyMaxAgeDays}
+                        onKey={setNewKey}
+                        onRotated={() => void load(true).then(onChanged)}
+                      />
+                      {agent.kind !== 'ai_provider' ? <AgentBaselineCard agentId={agentId} /> : null}
+                      {agent.kind !== 'ai_provider' && !unregistered ? (
+                        <div className="rounded-lg border border-slate-200 p-3" data-testid="agent-jit">
+                          <div className="mb-2 text-[13px] font-medium text-slate-900">Just-in-time access</div>
+                          <AccessRequests agentId={agentId} compact onChanged={() => void load(true)} />
+                        </div>
+                      ) : null}
+                      {agent.kind === 'api_key' && (isOwner || canAdmin) ? (
+                        <label className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 p-3" data-testid="vendor-toggle">
+                          <span>
+                            <span className="block text-[13px] font-medium text-slate-900">Used by a third party</span>
+                            <span className="block text-xs text-slate-500">
+                              Stricter rules: limited to its projects, every change waits for a person, short key life, no automatic access grants.
+                            </span>
+                          </span>
+                          <Switch
+                            aria-label="Used by a third party"
+                            checked={agent.operatedBy === 'vendor'}
+                            disabled={busy || (agent.operatedBy === 'vendor' && !canAdmin)}
+                            onChange={() =>
+                              void act(
+                                () => agentsApi.update(agentId, { operatedBy: agent.operatedBy === 'vendor' ? 'internal' : 'vendor' }),
+                                agent.operatedBy === 'vendor' ? 'Marked as our own agent' : 'Marked as a third party agent'
+                              )
+                            }
+                          />
+                        </label>
+                      ) : null}
+                    </>
+                  ) : null}
+
+                  {!revoked ? (
                     <div className="flex flex-wrap gap-2">
                       {agent.status === 'active' ? (
                         <Button
@@ -317,23 +367,6 @@ export function AgentDrawer({ agentId, projects, canAdmin, onClose, onChanged }:
                       {unregistered && isOwner ? (
                         <Button icon={KeyRound} loading={busy} onClick={() => setReplacing(true)} variant="primary">
                           Give it its own key
-                        </Button>
-                      ) : null}
-                      {agent.kind === 'api_key' && isOwner && agent.status === 'active' ? (
-                        <Button
-                          icon={RotateCw}
-                          loading={busy}
-                          onClick={async () => {
-                            const ok = await confirm({
-                              title: 'Rotate key?',
-                              message: 'The current key stops working immediately. Update the client with the new key.',
-                              confirmText: 'Rotate'
-                            });
-                            if (!ok) return;
-                            await act(async () => setNewKey((await agentsApi.rotate(agentId)).key), 'Key rotated');
-                          }}
-                        >
-                          Rotate key
                         </Button>
                       ) : null}
                       <Button

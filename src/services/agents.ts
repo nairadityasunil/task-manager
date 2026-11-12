@@ -5,7 +5,9 @@ export type AgentStatus = 'active' | 'suspended' | 'revoked';
 export type AgentRiskLevel = 'low' | 'medium' | 'high' | 'critical';
 export type RiskLevel = 'read' | 'write' | 'sensitive_write' | 'destructive' | 'security_critical';
 export type PolicyEffect = 'allow' | 'deny' | 'require_approval';
-export type PolicyMode = 'enforce' | 'advisory';
+/** 'simulation': a draft that is never enforced, only replayed against recent activity. */
+export type PolicyMode = 'enforce' | 'advisory' | 'simulation';
+export type Classification = 'public' | 'internal' | 'confidential' | 'restricted';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'expired' | 'executed' | 'failed';
 export type ActivityOutcome = 'allowed' | 'blocked' | 'pending_approval' | 'error';
 
@@ -63,6 +65,15 @@ export interface Agent {
   suspendedBySystem?: boolean;
   /** After an incident: the next change needs a person's approval. */
   reapprovalRequired?: boolean;
+  /** "vendor": the key is used by a third party (stricter rules). */
+  operatedBy?: 'internal' | 'vendor';
+  keyIssuedAt?: string | null;
+  /** The key before the last rotation keeps working until then. */
+  previousKeyExpiresAt?: string | null;
+  /** A key the system rotated is waiting for its owner to collect (once). */
+  hasPendingKey?: boolean;
+  pendingKeyIssuedAt?: string | null;
+  knownIps?: Array<{ ip: string; country?: string | null; firstSeen: string; lastSeen: string }>;
 }
 
 export interface AgentUsage {
@@ -99,6 +110,8 @@ export interface PolicyMatch {
   domains?: string[];
   minRisk?: RiskLevel;
   projectIds?: string[];
+  classifications?: Classification[];
+  operatedBy?: Array<'internal' | 'vendor'>;
   timeWindow?: {
     days?: number[];
     startHour?: number;
@@ -119,6 +132,10 @@ export interface AgentPolicy {
   match: PolicyMatch;
   createdAt?: string;
   updatedAt?: string;
+  /** Current version number; every change is kept. */
+  version?: number;
+  /** Proposed changes waiting for a second admin. */
+  pendingChanges?: number;
 }
 
 export interface PolicyTemplate extends Omit<AgentPolicy, 'enabled' | 'createdAt' | 'updatedAt'> {
@@ -156,6 +173,8 @@ export interface AgentApproval {
   recommendation?: { decision: 'approve' | 'reject'; reasons: string[] } | null;
   dlp?: DlpFinding[];
   decidedBySystem?: boolean;
+  classification?: Classification | null;
+  signals?: string[];
 }
 
 export interface AgentActivity {
@@ -260,6 +279,118 @@ export interface HybridGovernance {
   complianceEnforce: boolean;
   complianceReportSchedule: 'off' | 'weekly' | 'monthly';
   allowedDataRegions: string[];
+  anomalyDetection: boolean;
+  correlation: boolean;
+  sessionRisk: boolean;
+  classificationEnforce: boolean;
+  jitEnabled: boolean;
+  jitMaxMinutes: number;
+  jitAutoGrantLowRisk: boolean;
+  keyRotation: 'off' | 'notify' | 'auto';
+  keyGraceHours: number;
+  vendorKeyMaxDays: number;
+  policyChangeApproval: boolean;
+}
+
+export interface AgentBaseline {
+  days: number;
+  sample: number;
+  hourlyP50: number;
+  hourlyP95: number;
+  dailyP50: number;
+  dailyP95: number;
+  actions: string[];
+  projects: string[];
+  errorRate: number;
+  ready: boolean;
+  computedAt: string;
+}
+
+export interface AgentElevation {
+  id: string;
+  agentId: AgentRef | string;
+  scopes: string[];
+  reason: string;
+  durationMinutes: number;
+  status: 'pending' | 'active' | 'rejected' | 'expired' | 'revoked';
+  tier: 'low' | 'medium' | 'high';
+  decidedBy?: UserRef | string | null;
+  decidedBySystem: boolean;
+  decidedAt?: string | null;
+  grantedAt?: string | null;
+  expiresAt: string;
+  endedAt?: string | null;
+  usedCount: number;
+  lastUsedAt?: string | null;
+  createdAt: string;
+}
+
+export interface PolicyChange {
+  field: string;
+  before: unknown;
+  after: unknown;
+}
+
+export interface PolicyVersion {
+  id: string;
+  policyId: string;
+  version: number;
+  action: 'created' | 'updated' | 'deleted' | 'rolled_back';
+  status: 'applied' | 'proposed' | 'rejected' | 'withdrawn';
+  snapshot: Omit<AgentPolicy, 'id'> | null;
+  previous: Omit<AgentPolicy, 'id'> | null;
+  changedBy: UserRef | string;
+  reviewedBy?: UserRef | string | null;
+  note?: string | null;
+  createdAt: string;
+  changes: PolicyChange[];
+  /** Proposals: whether this viewer may approve it (not their own). */
+  canDecide?: boolean;
+}
+
+export interface SimulationResult {
+  days: number;
+  since: string;
+  capped: boolean;
+  total: number;
+  current: Record<PolicyEffect, number>;
+  proposed: Record<PolicyEffect, number>;
+  changed: Record<string, number>;
+  samples: Array<{ at: string; agentId: string; agentName: string; action: string; risk: RiskLevel; before: PolicyEffect; after: PolicyEffect; policy: string | null }>;
+  note: string;
+}
+
+export type PlaybookStepType = 'suspend_agent' | 'require_reapproval' | 'create_incident' | 'notify' | 'wait_for_approval' | 'revoke_agent';
+
+export interface Playbook {
+  id: string;
+  name: string;
+  description?: string;
+  enabled: boolean;
+  trigger: { types: string[]; minSeverity: 'info' | 'warning' | 'critical' };
+  steps: Array<{ type: PlaybookStepType; label?: string }>;
+  lastRunAt?: string | null;
+  runCount: number;
+  createdAt: string;
+}
+
+export interface PlaybookTemplates {
+  templates: Array<{ key: string; name: string; description: string; trigger: Playbook['trigger']; steps: Array<{ type: PlaybookStepType; label: string }> }>;
+  triggers: string[];
+  steps: Array<{ type: PlaybookStepType; label: string }>;
+}
+
+export interface PlaybookRun {
+  id: string;
+  playbookId: string;
+  playbookName: string;
+  agentId?: AgentRef | string | null;
+  trigger: { type: string; severity: string; title: string; detail: string };
+  status: 'running' | 'waiting' | 'completed' | 'cancelled' | 'failed';
+  steps: Array<{ type: PlaybookStepType; label: string; status: 'pending' | 'done' | 'skipped' | 'failed' | 'waiting'; actor?: 'system' | 'person' | null; detail?: string; at?: string | null }>;
+  incidentId?: string | null;
+  decidedBy?: UserRef | string | null;
+  createdAt: string;
 }
 
 export interface DlpFinding {
@@ -392,11 +523,57 @@ export const agentsApi = {
     unwrap<Agent[]>(api.get('/agents', { params: { ...params, workspaceId: params.workspaceId ?? undefined } })),
   get: (agentId: string, refresh = false) =>
     unwrap<AgentDetail>(api.get(`/agents/${agentId}`, { params: refresh ? { refresh: '1' } : {} })),
-  createKey: (body: { name: string; scopes?: string[]; projectIds?: string[]; expiresAt?: string | null; workspaceId?: string | null }) =>
+  createKey: (body: { name: string; scopes?: string[]; projectIds?: string[]; expiresAt?: string | null; workspaceId?: string | null; operatedBy?: 'internal' | 'vendor'; vendorId?: string | null }) =>
     unwrap<{ agent: Agent; key: string }>(api.post('/agents/keys', body)),
-  update: (agentId: string, body: Partial<Pick<Agent, 'name' | 'scopes' | 'projectIds' | 'rateLimitPerMinute'>> & { expiresAt?: string | null }) =>
+  update: (agentId: string, body: Partial<Pick<Agent, 'name' | 'scopes' | 'projectIds' | 'rateLimitPerMinute' | 'operatedBy'>> & { expiresAt?: string | null }) =>
     unwrap<Agent>(api.patch(`/agents/${agentId}`, body)),
-  rotate: (agentId: string) => unwrap<{ agent: Agent; key: string }>(api.post(`/agents/${agentId}/rotate`)),
+  /** New key; with graceHours the old one keeps working that long. */
+  rotate: (agentId: string, graceHours = 0) => unwrap<{ agent: Agent; key: string }>(api.post(`/agents/${agentId}/rotate`, { graceHours })),
+  /** The owner collects a key the system rotated (shown once). */
+  revealPendingKey: (agentId: string) => unwrap<{ key: string; previousKeyExpiresAt: string | null }>(api.post(`/agents/${agentId}/pending-key/reveal`)),
+  baseline: (agentId: string, refresh = false) =>
+    unwrap<{ baseline: AgentBaseline | null; current: { changesLastHour: number; ratio: number | null } }>(
+      api.get(`/agents/${agentId}/baseline`, { params: refresh ? { refresh: '1' } : {}, silent: true })
+    ),
+  elevations: (params: { status?: string; agentId?: string } = {}) =>
+    unwrap<AgentElevation[]>(api.get('/agents/elevations', { params, silent: true })),
+  approveElevation: (id: string, durationMinutes?: number) => unwrap<AgentElevation>(api.post(`/agents/elevations/${id}/approve`, { durationMinutes })),
+  rejectElevation: (id: string, note?: string) => unwrap<AgentElevation>(api.post(`/agents/elevations/${id}/reject`, { note })),
+  revokeElevation: (id: string) => unwrap<AgentElevation>(api.post(`/agents/elevations/${id}/revoke`)),
+  classification: (params: { projectIds?: string[]; taskIds?: string[] }) =>
+    unwrap<{ labels: Classification[]; projects: Record<string, Classification | null>; tasks: Record<string, Classification | null> }>(
+      api.get('/agents/classification', { params: { projectIds: params.projectIds?.join(','), taskIds: params.taskIds?.join(',') }, silent: true })
+    ),
+  setClassification: (body: { projectId?: string; taskId?: string; classification: Classification | null }) =>
+    unwrap<{ projectId: string | null; taskId: string | null; classification: Classification | null }>(api.put('/agents/classification', body)),
+  runKeyLifecycle: (workspaceId?: string | null) =>
+    unwrap<{ notified: number; rotated: number; confirm: number; retired: number }>(api.post('/agents/key-lifecycle/run', ws(workspaceId))),
+  simulatePolicy: (body: { policy?: Omit<AgentPolicy, 'id'>; policyId?: string; remove?: boolean; days?: number }, workspaceId?: string | null) =>
+    unwrap<SimulationResult>(api.post('/agents/policies/simulate', { ...body, ...ws(workspaceId) })),
+  policyVersions: (policyId: string) => unwrap<PolicyVersion[]>(api.get(`/agents/policies/${policyId}/versions`)),
+  rollbackPolicy: (policyId: string, version: number) =>
+    unwrap<{ policy: AgentPolicy | null; version: PolicyVersion }>(api.post(`/agents/policies/${policyId}/rollback`, { version })),
+  policyProposals: () => unwrap<PolicyVersion[]>(api.get('/agents/policies/proposals', { silent: true })),
+  approveProposal: (versionId: string) => unwrap<{ version: PolicyVersion }>(api.post(`/agents/policies/proposals/${versionId}/approve`)),
+  rejectProposal: (versionId: string, note?: string) => unwrap<PolicyVersion>(api.post(`/agents/policies/proposals/${versionId}/reject`, { note })),
+  exportPolicies: async (workspaceId?: string | null) => {
+    const response = await api.get('/agents/policies/export', { params: ws(workspaceId), responseType: 'blob' });
+    const url = URL.createObjectURL(response.data as Blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `agent-policies-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  },
+  playbooks: (workspaceId?: string | null) => unwrap<Playbook[]>(api.get('/agents/playbooks', { params: ws(workspaceId) })),
+  playbookTemplates: () => unwrap<PlaybookTemplates>(api.get('/agents/playbooks/templates', { silent: true })),
+  createPlaybook: (body: Partial<Omit<Playbook, 'id' | 'steps'>> & { template?: string; steps?: PlaybookStepType[] }, workspaceId?: string | null) =>
+    unwrap<Playbook>(api.post('/agents/playbooks', { ...body, ...ws(workspaceId) })),
+  updatePlaybook: (id: string, body: Partial<Omit<Playbook, 'id' | 'steps'>> & { steps?: PlaybookStepType[] }) => unwrap<Playbook>(api.patch(`/agents/playbooks/${id}`, body)),
+  deletePlaybook: (id: string) => unwrap<{ deleted: boolean }>(api.delete(`/agents/playbooks/${id}`)),
+  playbookRuns: (status?: string) => unwrap<PlaybookRun[]>(api.get('/agents/playbook-runs', { params: status ? { status } : {}, silent: true })),
+  continueRun: (id: string) => unwrap<PlaybookRun>(api.post(`/agents/playbook-runs/${id}/continue`)),
+  cancelRun: (id: string, note?: string) => unwrap<PlaybookRun>(api.post(`/agents/playbook-runs/${id}/cancel`, { note })),
   reach: (agentId: string) => unwrap<AgentReach>(api.get(`/agents/${agentId}/reach`)),
   webhooks: (workspaceId?: string | null) => unwrap<AgentWebhook[]>(api.get('/agents/webhooks', { params: ws(workspaceId) })),
   createWebhook: (body: WebhookInput, workspaceId?: string | null) =>
@@ -503,6 +680,13 @@ export const agentsApi = {
 };
 
 /* -------------------------------- Labels -------------------------------- */
+
+export const CLASSIFICATION_LABELS: Record<Classification, { label: string; detail: string; tone: string }> = {
+  public: { label: 'Public', detail: 'No extra rules.', tone: 'bg-slate-100 text-slate-700' },
+  internal: { label: 'Internal', detail: 'The default.', tone: 'bg-slate-100 text-slate-700' },
+  confidential: { label: 'Confidential', detail: "Agents' changes need a person; personal data in it never goes to AI models.", tone: 'bg-amber-50 text-amber-800' },
+  restricted: { label: 'Restricted', detail: 'Never sent to AI models or exported; agent changes are high risk.', tone: 'bg-red-50 text-red-700' }
+};
 
 export const KIND_LABELS: Record<AgentKind, string> = {
   api_key: 'API key',
