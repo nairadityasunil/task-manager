@@ -20,7 +20,7 @@ export function WaitingOnYou(): JSX.Element {
           <ul className="m-0 list-none p-0">
             {approvals.slice(0, 4).map((approval) => (
               <li className="border-b border-slate-100 px-3.5 py-3 last:border-b-0" key={approval.id}>
-                <ApprovalRequestItem approval={approval} busy={busy === approval.id} onDecide={(approve) => void decide(approval, approve)} />
+                <ApprovalRequestItem approval={approval} busy={busy === approval.id} onDecide={(decision) => void decide(approval, decision)} />
               </li>
             ))}
           </ul>

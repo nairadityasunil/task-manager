@@ -72,5 +72,12 @@ export const isAgentForbidden = (error: unknown): boolean =>
   isRecord(error.response.data) &&
   error.response.data.error === 'agent_forbidden';
 
+/** An agent's change that was held for a person's approval (not a failure). */
+export const isHeldForApproval = (error: unknown): boolean =>
+  axios.isAxiosError(error) &&
+  error.response?.status === 202 &&
+  isRecord(error.response.data) &&
+  error.response.data.error === 'approval_required';
+
 export const toDisplayErrorMessage = (error: unknown): string =>
   normalizeApiError(error).message;

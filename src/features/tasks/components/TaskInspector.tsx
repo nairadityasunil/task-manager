@@ -26,6 +26,7 @@ import UserAvatar from '@/components/UserAvatar';
 import SlaIndicator from '@/components/SlaIndicator';
 import SourceBadge from '@/components/SourceBadge';
 import ApprovalSection from '@/components/ApprovalSection';
+import { ClassificationSelect } from '@/features/agents/components/AdvancedGovernance';
 import CommentSection from '@/components/CommentSection';
 import SubtaskInlineEdit from '@/components/SubtaskInlineEdit';
 import { PRIORITY_META, PriorityIcon, TASK_STATUS_TONE, taskDateInfo, taskStatusLabel } from '@/components/TaskCard';
@@ -260,6 +261,11 @@ export function TaskInspector({
                     <PropertyRow label="Source">
                       <SourceBadge source={task.source} />
                     </PropertyRow>
+                    {task.projectId ? (
+                      <PropertyRow label="Data label">
+                        <ClassificationSelect compact inherit taskId={task.id} />
+                      </PropertyRow>
+                    ) : null}
                   </dl>
 
                   {task.description && (

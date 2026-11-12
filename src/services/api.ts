@@ -106,6 +106,14 @@ const clearAuthStorage = () => {
 api.interceptors.response.use(
   (response) => {
     finishTracking(response.config);
+    // An agent's change held for a person's approval (HTTP 202): nothing changed yet, so callers must not treat it
+    // as done. Say so once (pages that also report the error share the dedupe key) and reject.
+    const held = response.data as { error?: string; message?: string } | undefined;
+    if (response.status === 202 && held?.error === 'approval_required') {
+      const message = held.message || 'Sent for approval. It runs once a person approves it.';
+      showGlobalToast({ variant: 'info', message, dedupeKey: `error:${message.trim()}` });
+      return Promise.reject(new AxiosError(message, 'APPROVAL_REQUIRED', response.config, response.request, response));
+    }
     return response;
   },
   async (error: AxiosError) => {

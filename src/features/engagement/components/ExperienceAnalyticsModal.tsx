@@ -1,5 +1,5 @@
 import { CreateTaskButton, type Insight } from '@/features/tasks/components/CreateTaskFromInsight';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BarChart3, X } from 'lucide-react';
 
 import {
@@ -32,6 +32,7 @@ function ExperienceAnalyticsModal({ experience, sdkIntegrationId, onClose }: Exp
   const isSurvey = experience.type === 'SURVEY';
   const [guideData, setGuideData] = useState<GuideExperienceAnalytics | null>(null);
   const [surveyData, setSurveyData] = useState<SurveyExperienceAnalytics | null>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,7 +59,12 @@ function ExperienceAnalyticsModal({ experience, sdkIntegrationId, onClose }: Exp
   };
 
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && !document.querySelector('[role="dialog"][aria-modal="true"]') && onClose();
+    // Close on Escape unless another dialog (opened from this panel) is on top.
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      const others = [...document.querySelectorAll('[role="dialog"][aria-modal="true"]')].filter((el) => el !== panelRef.current);
+      if (!others.length) onClose();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
@@ -66,6 +72,7 @@ function ExperienceAnalyticsModal({ experience, sdkIntegrationId, onClose }: Exp
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 backdrop-blur-[2px]" onClick={onClose} role="presentation">
       <aside
+        ref={panelRef}
         aria-label={`${experience.title} analytics`}
         aria-modal="true"
         className="flex h-full w-full max-w-2xl flex-col bg-slate-50 shadow-xl"

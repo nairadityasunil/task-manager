@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, CircleAlert, X } from 'lucide-react';
+import { CheckCircle2, CircleAlert, Hourglass, X } from 'lucide-react';
 
-export type ToastVariant = 'success' | 'error';
+export type ToastVariant = 'success' | 'error' | 'info';
 
 interface ToastItem {
   id: string;
@@ -49,11 +49,13 @@ const ToastViewport: React.FC<{
           'flex items-start gap-3 rounded-2xl border px-4 py-3 shadow-[0_18px_50px_rgba(15,23,42,0.16)] backdrop-blur-sm',
           toast.variant === 'success'
             ? 'border-emerald-200 bg-emerald-50/95 text-emerald-950'
-            : 'border-red-200 bg-red-50/95 text-red-950'
+            : toast.variant === 'info'
+              ? 'border-amber-200 bg-amber-50/95 text-amber-950'
+              : 'border-red-200 bg-red-50/95 text-red-950'
         ].join(' ')}
       >
         <span className="mt-0.5 shrink-0">
-          {toast.variant === 'success' ? <CheckCircle2 size={18} /> : <CircleAlert size={18} />}
+          {toast.variant === 'success' ? <CheckCircle2 size={18} /> : toast.variant === 'info' ? <Hourglass size={18} /> : <CircleAlert size={18} />}
         </span>
         <p className="m-0 flex-1 text-sm leading-6">{toast.message}</p>
         {toast.action ? (

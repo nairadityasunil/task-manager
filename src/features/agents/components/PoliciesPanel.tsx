@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FlaskConical, Pencil, Plus, ScrollText, Trash2 } from 'lucide-react';
+import { Download, FlaskConical, History, Pencil, Plus, ScrollText, Trash2 } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
 import Modal from '@/components/Modal';
 import { Badge, Button, Card, CardHeader, Field, cn, selectClass, Select, Checkbox, Input, Textarea } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
-import { agentsApi, EFFECT_LABELS, KIND_LABELS, RISK_LEVEL_LABELS, type AgentKind, type AgentPolicy, type PolicyEffect, type PolicyTemplate, type RiskLevel, type ToolCatalog } from '@/services/agents';
+import { agentsApi, CLASSIFICATION_LABELS, EFFECT_LABELS, KIND_LABELS, RISK_LEVEL_LABELS, type AgentKind, type AgentPolicy, type Classification, type PolicyEffect, type PolicyTemplate, type RiskLevel, type SimulationResult, type ToolCatalog } from '@/services/agents';
 import type { Project } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 import { EffectBadge } from './shared';
+import { PolicyHistoryModal, PolicyProposals, SimulationResultView } from './AdvancedGovernance';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const KINDS = Object.keys(KIND_LABELS) as AgentKind[];
@@ -38,6 +39,8 @@ export function describeMatch(policy: Pick<AgentPolicy, 'match'>, projects: Proj
     const names = m.projectIds.map((id) => projects.find((p) => p.id === id)?.name ?? 'a project');
     parts.push(`in ${names.join(', ')}`);
   }
+  if (m.classifications?.length) parts.push(`${m.classifications.map((c) => CLASSIFICATION_LABELS[c].label.toLowerCase()).join(' or ')} data`);
+  if (m.operatedBy?.length) parts.push(m.operatedBy.includes('vendor') ? 'third-party agents' : 'own agents');
   if (m.timeWindow) {
     const w = m.timeWindow;
     const days = w.days?.length ? w.days.map((d) => DAYS[d]).join(' ') : 'every day';
@@ -48,12 +51,16 @@ export function describeMatch(policy: Pick<AgentPolicy, 'match'>, projects: Proj
 
 function PolicyEditor({
   initial,
+  policyId,
+  workspaceId,
   catalog,
   projects,
   onClose,
   onSave
 }: {
   initial: Draft;
+  policyId: string | null;
+  workspaceId: string | null;
   catalog: ToolCatalog | null;
   projects: Project[];
   onClose: () => void;
@@ -62,6 +69,27 @@ function PolicyEditor({
   const [draft, setDraft] = useState<Draft>(initial);
   const [toolsText, setToolsText] = useState((initial.match.tools ?? []).join(', '));
   const [saving, setSaving] = useState(false);
+  const [simulating, setSimulating] = useState(false);
+  const [simulation, setSimulation] = useState<SimulationResult | null>(null);
+  const [simError, setSimError] = useState<string | null>(null);
+  const current = (): Draft => {
+    const tools = toolsText
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
+    return { ...draft, match: { ...draft.match, tools: tools.length ? tools : undefined } };
+  };
+  const simulate = async () => {
+    setSimulating(true);
+    setSimError(null);
+    try {
+      setSimulation(await agentsApi.simulatePolicy({ policy: current(), policyId: policyId ?? undefined, days: 7 }, workspaceId));
+    } catch (error) {
+      setSimError(toDisplayErrorMessage(error));
+    } finally {
+      setSimulating(false);
+    }
+  };
   const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
   const setMatch = (patch: Partial<Draft['match']>) => setDraft((d) => ({ ...d, match: { ...d.match, ...patch } }));
   const tw = draft.match.timeWindow;
@@ -70,11 +98,7 @@ function PolicyEditor({
   const save = async () => {
     setSaving(true);
     try {
-      const tools = toolsText
-        .split(',')
-        .map((t) => t.trim())
-        .filter(Boolean);
-      await onSave({ ...draft, match: { ...draft.match, tools: tools.length ? tools : undefined } });
+      await onSave(current());
     } finally {
       setSaving(false);
     }
@@ -85,6 +109,9 @@ function PolicyEditor({
       footer={
         <>
           <Button onClick={onClose}>Cancel</Button>
+          <Button icon={FlaskConical} loading={simulating} onClick={() => void simulate()} title="Replay the last 7 days of agent activity against this policy">
+            Simulate on last 7 days
+          </Button>
           <Button disabled={!draft.name.trim()} loading={saving} onClick={() => void save()} variant="primary">
             Save policy
           </Button>
@@ -123,8 +150,18 @@ function PolicyEditor({
               ))}
             </Select>
           </Field>
-          <Field hint={draft.mode === 'advisory' ? 'Logs what would happen without blocking.' : 'Applied to every matching call.'} label="Mode">
+          <Field
+            hint={
+              draft.mode === 'advisory'
+                ? 'Logs what would happen without blocking.'
+                : draft.mode === 'simulation'
+                  ? 'A draft: never applied; replay it with Simulate.'
+                  : 'Applied to every matching call.'
+            }
+            label="Mode"
+          >
             <Select className={selectClass} onChange={(e) => set({ mode: e.target.value as Draft['mode'] })} value={draft.mode}>
+              <option value="simulation">Draft (simulation only)</option>
               <option value="advisory">Advisory (log only)</option>
               <option value="enforce">Enforce</option>
             </Select>
@@ -196,6 +233,45 @@ function PolicyEditor({
               </Select>
             </Field>
           </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-1.5">
+              <span className="text-xs font-medium text-slate-600">Data labels (none selected means any)</span>
+              <div className="flex flex-wrap gap-1.5">
+                {(['public', 'internal', 'confidential', 'restricted'] as Classification[]).map((label) => {
+                  const on = draft.match.classifications?.includes(label) ?? false;
+                  return (
+                    <button
+                      aria-pressed={on}
+                      className={cn(
+                        'h-7 rounded-full border px-2.5 text-xs font-medium',
+                        on ? 'border-emerald-300 bg-emerald-50 text-emerald-800' : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      )}
+                      key={label}
+                      onClick={() => {
+                        const list = draft.match.classifications ?? [];
+                        const next = on ? list.filter((l) => l !== label) : [...list, label];
+                        setMatch({ classifications: next.length ? next : undefined });
+                      }}
+                      type="button"
+                    >
+                      {CLASSIFICATION_LABELS[label].label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <Field label="Operated by">
+              <Select
+                className={selectClass}
+                onChange={(e) => setMatch({ operatedBy: e.target.value ? [e.target.value as 'internal' | 'vendor'] : undefined })}
+                value={draft.match.operatedBy?.[0] ?? ''}
+              >
+                <option value="">Anyone</option>
+                <option value="internal">Our own agents</option>
+                <option value="vendor">Third parties (vendors)</option>
+              </Select>
+            </Field>
+          </div>
           <label className="flex items-center gap-2 text-[13px] text-slate-700">
             <Checkbox
               checked={Boolean(tw)}
@@ -263,6 +339,12 @@ function PolicyEditor({
             </div>
           ) : null}
         </fieldset>
+        {simulation ? (
+          <div ref={(el) => el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })}>
+            <SimulationResultView result={simulation} />
+          </div>
+        ) : null}
+        {simError ? <p className="m-0 text-[13px] text-red-600">{simError}</p> : null}
       </div>
     </Modal>
   );
@@ -334,6 +416,8 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
   const [templates, setTemplates] = useState<PolicyTemplate[]>([]);
   const [catalog, setCatalog] = useState<ToolCatalog | null>(null);
   const [editing, setEditing] = useState<{ id: string | null; draft: Draft } | null>(null);
+  const [history, setHistory] = useState<AgentPolicy | null>(null);
+  const [proposalsKey, setProposalsKey] = useState(0);
 
   const load = async () => {
     try {
@@ -355,13 +439,19 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
     return <EmptyState description="Workspace owners and admins set agent policies." icon={ScrollText} title="Policies are managed by admins" />;
   }
 
+  /** With change approval on, saves come back as proposals for another admin. */
+  const proposed = (result: unknown) => Boolean(result && typeof result === 'object' && 'proposal' in result);
+  const changed = async (result: unknown, message: string) => {
+    showToast({ variant: 'success', message: proposed(result) ? 'Proposed: another admin must approve it before it applies' : message });
+    setProposalsKey((k) => k + 1);
+    await load();
+  };
+
   const save = async (draft: Draft) => {
     try {
-      if (editing?.id) await agentsApi.updatePolicy(editing.id, draft);
-      else await agentsApi.createPolicy(draft, workspaceId);
-      showToast({ variant: 'success', message: 'Policy saved' });
+      const result = editing?.id ? await agentsApi.updatePolicy(editing.id, draft) : await agentsApi.createPolicy(draft, workspaceId);
       setEditing(null);
-      await load();
+      await changed(result, 'Policy saved');
     } catch (error) {
       showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
     }
@@ -371,12 +461,18 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
 
   return (
     <div className="space-y-4">
+      <PolicyProposals key={proposalsKey} onChanged={() => void load()} />
       <Card>
         <CardHeader
           actions={
-            <Button icon={Plus} onClick={() => setEditing({ id: null, draft: emptyDraft() })} size="sm" variant="primary">
-              New policy
-            </Button>
+            <div className="flex gap-2">
+              <Button icon={Download} onClick={() => void agentsApi.exportPolicies(workspaceId).catch((error) => showToast({ variant: 'error', message: toDisplayErrorMessage(error) }))} size="sm" title="Every policy as JSON, with its version">
+                Export
+              </Button>
+              <Button icon={Plus} onClick={() => setEditing({ id: null, draft: emptyDraft() })} size="sm" variant="primary">
+                New policy
+              </Button>
+            </div>
           }
           description="Highest priority first. The first enforced match decides; advisory policies only log."
           icon={<ScrollText className="h-4 w-4 text-slate-400" />}
@@ -399,9 +495,14 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[13px] font-medium text-slate-900">{policy.name}</span>
                     <EffectBadge effect={policy.effect} />
-                    <Badge tone={policy.mode === 'enforce' ? 'dark' : 'neutral'}>{policy.mode === 'enforce' ? 'Enforced' : 'Advisory'}</Badge>
+                    <Badge tone={policy.mode === 'enforce' ? 'dark' : policy.mode === 'simulation' ? 'violet' : 'neutral'}>
+                      {policy.mode === 'enforce' ? 'Enforced' : policy.mode === 'simulation' ? 'Draft' : 'Advisory'}
+                    </Badge>
                     {!policy.enabled ? <Badge>Off</Badge> : null}
-                    <span className="text-xs tabular-nums text-slate-400">#{policy.priority}</span>
+                    {policy.pendingChanges ? <Badge tone="warning">Change waiting for approval</Badge> : null}
+                    <span className="text-xs tabular-nums text-slate-400">
+                      #{policy.priority} · v{policy.version ?? 1}
+                    </span>
                   </div>
                   <p className="m-0 truncate text-xs text-slate-500">{describeMatch(policy, projects)}</p>
                 </div>
@@ -414,7 +515,8 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
                         const enabled = e.target.checked;
                         setPolicies((current) => current?.map((p) => (p.id === policy.id ? { ...p, enabled } : p)) ?? current);
                         try {
-                          await agentsApi.updatePolicy(policy.id, { enabled });
+                          const result = await agentsApi.updatePolicy(policy.id, { enabled });
+                          if (proposed(result)) await changed(result, '');
                         } catch (error) {
                           showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
                           await load();
@@ -427,9 +529,7 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
                     <Button
                       onClick={async () => {
                         try {
-                          await agentsApi.updatePolicy(policy.id, { mode: 'enforce' });
-                          showToast({ variant: 'success', message: `"${policy.name}" is now enforced` });
-                          await load();
+                          await changed(await agentsApi.updatePolicy(policy.id, { mode: 'enforce' }), `"${policy.name}" is now enforced`);
                         } catch (error) {
                           showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
                         }
@@ -439,6 +539,7 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
                       Enforce
                     </Button>
                   ) : null}
+                  <Button aria-label={`History of ${policy.name}`} icon={History} onClick={() => setHistory(policy)} size="icon-sm" title="Versions and rollback" variant="ghost" />
                   <Button
                     aria-label={`Edit ${policy.name}`}
                     icon={Pencil}
@@ -453,9 +554,7 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
                       const ok = await confirm({ title: 'Delete policy?', message: `"${policy.name}" stops applying immediately.`, confirmText: 'Delete', type: 'danger' });
                       if (!ok) return;
                       try {
-                        await agentsApi.deletePolicy(policy.id);
-                        showToast({ variant: 'success', message: 'Policy deleted' });
-                        await load();
+                        await changed(await agentsApi.deletePolicy(policy.id), 'Policy deleted');
                       } catch (error) {
                         showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
                       }
@@ -500,8 +599,17 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
       <DryRun catalog={catalog} workspaceId={workspaceId} />
 
       {editing ? (
-        <PolicyEditor catalog={catalog} initial={editing.draft} onClose={() => setEditing(null)} onSave={save} projects={projects} />
+        <PolicyEditor
+          catalog={catalog}
+          initial={editing.draft}
+          onClose={() => setEditing(null)}
+          onSave={save}
+          policyId={editing.id}
+          projects={projects}
+          workspaceId={workspaceId}
+        />
       ) : null}
+      {history ? <PolicyHistoryModal onClose={() => setHistory(null)} onRolledBack={() => void load()} policy={history} /> : null}
     </div>
   );
 }

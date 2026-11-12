@@ -1,3 +1,5 @@
+import { IncidentsPanel } from '@/features/agents/components/IncidentsPanel';
+import { PlaybooksPanel } from '@/features/agents/components/AdvancedGovernance';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -10,6 +12,7 @@ import {
   FileCheck2,
   Gauge,
   History,
+  Siren,
   Inbox,
   KeyRound,
   OctagonX,
@@ -17,7 +20,8 @@ import {
   Search,
   ShieldCheck,
   ShieldHalf,
-  Webhook
+  Webhook,
+  Workflow
 } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
@@ -51,8 +55,8 @@ import { vendorsApi, type VendorListItem } from '@/services/vendors';
 import type { Project } from '@/types/project';
 import { isAgentForbidden, toDisplayErrorMessage } from '@/utils/apiError';
 
-export type AgentsTab = 'overview' | 'inventory' | 'vendors' | 'approvals' | 'policies' | 'activity' | 'costs' | 'notifications' | 'compliance';
-const TABS: AgentsTab[] = ['overview', 'inventory', 'vendors', 'approvals', 'policies', 'activity', 'costs', 'notifications', 'compliance'];
+export type AgentsTab = 'overview' | 'inventory' | 'vendors' | 'approvals' | 'policies' | 'activity' | 'incidents' | 'playbooks' | 'costs' | 'notifications' | 'compliance';
+const TABS: AgentsTab[] = ['overview', 'inventory', 'vendors', 'approvals', 'policies', 'activity', 'incidents', 'playbooks', 'costs', 'notifications', 'compliance'];
 
 const SEVERITY_TONE = { info: 'info', warning: 'warning', critical: 'danger' } as const;
 
@@ -103,26 +107,20 @@ function AlertsCard({
   );
 }
 
-/** Shown when this session is an automated browser: governance is for people only. */
-function AgentSessionNotice(): JSX.Element {
+/** Shown when an agent (for example an automated browser on someone's login) is using this page. */
+function AgentSessionNotice({ agentName }: { agentName?: string | null }): JSX.Element {
   return (
     <Card className="border-amber-200" data-testid="agent-session-notice">
       <CardHeader
-        description="This browser identifies itself as automated (for example headless Chrome, Playwright or Selenium), so it is treated as an agent using your login."
+        description={`${agentName ? `This session is the agent "${agentName}"` : 'This session is an agent'} (an automated browser or script). Everything it does here is governed like any other agent action.`}
         icon={<EyeOff className="h-4 w-4 text-amber-500" />}
-        title="Agent Governance is for people"
+        title="You are using Agent Governance as an agent"
       />
-      <div className="space-y-2 p-4 text-[13px] text-slate-600">
-        <p className="m-0">
-          Agents cannot see or change agent governance, sign-in or credentials, so an agent cannot approve or unblock itself. The rest of the
-          workspace works as usual, under your agent policies.
-        </p>
-        <ul className="m-0 list-disc space-y-1 pl-5">
-          <li>Open this page in your normal browser to manage agents, vendors and policies.</li>
-          <li>For automated access, give the tool its own agent key under Agent Governance instead of your login.</li>
-          <li>This session is listed under Agents as an unregistered agent, where an admin can review or block it.</li>
-        </ul>
-      </div>
+      <ul className="m-0 list-disc space-y-1 p-4 pl-9 text-[13px] text-slate-600">
+        <li>You can view agents, policies, approvals, activity, vendors and settings.</li>
+        <li>Every change you make (policies, suspending agents, vendors, settings) is sent to a person for approval and runs once they approve it.</li>
+        <li>Only a person can approve or reject requests, approve vendors, or create keys and secrets, so an agent can never approve or unblock itself.</li>
+      </ul>
     </Card>
   );
 }
@@ -358,6 +356,17 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
   const [agents, setAgents] = useState<Agent[] | null>(null);
   const [alerts, setAlerts] = useState<AgentAlert[]>([]);
   const [openAgent, setOpenAgent] = useState<string | null>(null);
+  const [openIncidents, setOpenIncidents] = useState(0);
+  const refreshIncidents = useCallback(async () => {
+    try {
+      setOpenIncidents((await agentsApi.incidents('open')).length);
+    } catch {
+      setOpenIncidents(0);
+    }
+  }, []);
+  useEffect(() => {
+    void refreshIncidents();
+  }, [refreshIncidents]);
   // Links from elsewhere (e.g. a task's activity) open an agent directly: ?agent=<id>.
   const [searchParams, setSearchParams] = useSearchParams();
   useEffect(() => {
@@ -404,7 +413,7 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
       setOverview(nextOverview);
       setAgents(nextAgents);
       setAlerts(nextAlerts);
-      setAgentSession(false);
+      setAgentSession(Boolean(nextOverview.viewerAgent));
     } catch (error) {
       if (isAgentForbidden(error)) {
         setAgentSession(true);
@@ -461,7 +470,16 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
         { value: 'approvals', label: 'Approvals', icon: Inbox, count: pending || undefined }
       ]
     },
-    { id: 'activity', label: 'Activity', pages: [{ value: 'activity', label: 'Activity', icon: History }] },
+    {
+      id: 'activity',
+      label: 'Activity',
+      count: openIncidents || undefined,
+      pages: [
+        { value: 'activity', label: 'Activity', icon: History },
+        { value: 'incidents', label: 'Incidents', icon: Siren, count: openIncidents || undefined },
+        ...(canAdmin ? [{ value: 'playbooks' as const, label: 'Playbooks', icon: Workflow }] : [])
+      ]
+    },
     {
       id: 'settings',
       label: 'Settings',
@@ -495,16 +513,18 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
     <div className="h-full overflow-y-auto">
       <PageHeader
         actions={
-          agentSession ? null : (
+          (
           <>
             {canAdmin ? (
               <Button icon={OctagonX} onClick={() => void killSwitch()} size="sm" variant="danger">
                 Stop all agents
               </Button>
             ) : null}
+            {agentSession ? null : (
             <Button icon={KeyRound} onClick={() => setCreating(true)} size="sm" variant="primary">
               New agent key
             </Button>
+            )}
           </>
           )
         }
@@ -547,9 +567,8 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
       ) : null}
 
       <div className="space-y-4 px-3 py-4 sm:px-5 lg:px-6">
-        {agentSession ? <AgentSessionNotice /> : null}
-        {agentSession === null && tab !== 'overview' && tab !== 'inventory' ? <div className="h-64 animate-pulse rounded-xl bg-slate-100" /> : null}
-        {agentSession === false || (agentSession === null && (tab === 'overview' || tab === 'inventory')) ? (
+        {agentSession ? <AgentSessionNotice agentName={overview?.viewerAgent?.name} /> : null}
+        {/* Agents see the page too: their changes are held for a person (see the notice). */}
         <>
         {tab === 'overview' ? (
           <>
@@ -703,11 +722,12 @@ export default function AgentsPage({ projects }: AgentsPageProps): JSX.Element {
         {tab === 'approvals' ? <ApprovalsInbox onChanged={() => void refresh()} /> : null}
         {tab === 'policies' ? <PoliciesPanel canAdmin={canAdmin} projects={projects} workspaceId={workspaceId} /> : null}
         {tab === 'activity' ? <ActivityLog canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
+        {tab === 'incidents' ? <IncidentsPanel onChanged={() => void refreshIncidents()} /> : null}
+        {tab === 'playbooks' ? <PlaybooksPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'costs' ? <CostsPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'notifications' ? <NotificationsPanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         {tab === 'compliance' ? <CompliancePanel canAdmin={canAdmin} workspaceId={workspaceId} /> : null}
         </>
-        ) : null}
       </div>
 
       {openAgent ? (

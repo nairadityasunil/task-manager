@@ -7,6 +7,8 @@ import { useToast } from '@/context/ToastContext';
 import { agentName, agentsApi, timeAgo, userLabel, type AgentApproval, type ApprovalStatus } from '@/services/agents';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 import { ActionRiskBadge, ApprovalBadge } from './shared';
+import { ApprovalInsight } from './ApprovalRequest';
+import { AccessRequests } from './AdvancedGovernance';
 
 const FILTERS: Array<{ value: ApprovalStatus | 'all'; label: string }> = [
   { value: 'pending', label: 'Waiting' },
@@ -36,9 +38,17 @@ export function ApprovalsInbox({ onChanged }: { onChanged?: () => void }): JSX.E
     void load();
   }, [filter]);
 
-  const decide = async (approval: AgentApproval, decision: 'approve' | 'reject') => {
+  const decide = async (approval: AgentApproval, decision: 'approve' | 'reject' | 'scope_down') => {
     setBusy(approval.id);
     try {
+      if (decision === 'scope_down') {
+        const removed = await agentsApi.scopeDown(approval.id);
+        showToast({ variant: 'success', message: `Rejected, and ${agentName(approval.agentId)} lost the "${removed.removedScope}" scope` });
+        await load();
+        onChanged?.();
+        window.dispatchEvent(new Event('pristine:approvals-changed'));
+        return;
+      }
       const result =
         decision === 'approve'
           ? await agentsApi.approve(approval.id, notes[approval.id])
@@ -79,6 +89,8 @@ export function ApprovalsInbox({ onChanged }: { onChanged?: () => void }): JSX.E
         ))}
       </div>
 
+      {filter === 'pending' ? <AccessRequests onChanged={onChanged} /> : null}
+
       {items == null ? (
         <div className="h-28 animate-pulse rounded-xl bg-slate-100" />
       ) : items.length === 0 ? (
@@ -114,6 +126,8 @@ export function ApprovalsInbox({ onChanged }: { onChanged?: () => void }): JSX.E
                     </span>
                   ) : null}
                 </div>
+                <ApprovalInsight approval={approval} className="mt-3" />
+                {approval.decidedBySystem ? <p className="m-0 mt-2 text-xs font-medium text-slate-600">System decided: auto-approved repeat</p> : null}
                 <pre className="m-0 mt-3 max-h-40 overflow-auto rounded-lg bg-slate-50 p-2.5 font-mono text-xs text-slate-700">
                   {JSON.stringify(approval.inputPreview, null, 2)}
                 </pre>
@@ -130,6 +144,15 @@ export function ApprovalsInbox({ onChanged }: { onChanged?: () => void }): JSX.E
                     />
                     <Button disabled={busy === approval.id} icon={X} onClick={() => void decide(approval, 'reject')} size="sm" variant="danger">
                       Reject
+                    </Button>
+                    <Button
+                      disabled={busy === approval.id}
+                      onClick={() => void decide(approval, 'scope_down')}
+                      size="sm"
+                      title="Reject, and remove the permission this action needs from the agent"
+                      variant="secondary"
+                    >
+                      Scope down
                     </Button>
                     <Button icon={Check} loading={busy === approval.id} onClick={() => void decide(approval, 'approve')} size="sm" variant="primary">
                       Approve and run

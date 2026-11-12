@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-import { ApprovalRequestItem } from '@/features/agents/components/ApprovalRequest';
+import { ApprovalRequestItem, type ApprovalDecision, type SecurityItem } from '@/features/agents/components/ApprovalRequest';
 import type { AgentApproval } from '@/services/agents';
 import { Bell, MessageCircle, UserPlus, X, ChevronRight } from 'lucide-react';
 
@@ -24,8 +24,10 @@ interface NotificationBoxProps {
   onNotificationClick: (notification: Notification) => void;
   /** Agent actions waiting for this person's decision. */
   approvals?: AgentApproval[];
+  /** Shadow AI, threat, DLP and drift alerts and open incidents. */
+  security?: SecurityItem[];
   approvalBusyId?: string | null;
-  onDecideApproval?: (approval: AgentApproval, approve: boolean) => void;
+  onDecideApproval?: (approval: AgentApproval, decision: ApprovalDecision) => void;
 }
 
 const NotificationBox: React.FC<NotificationBoxProps> = ({
@@ -35,6 +37,7 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
   onClearAll,
   onNotificationClick,
   approvals = [],
+  security = [],
   approvalBusyId = null,
   onDecideApproval,
 }) => {
@@ -92,12 +95,31 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
                 busy={approvalBusyId === approval.id}
                 className="border-t border-slate-100 px-4 py-3 first-of-type:border-t-0"
                 key={approval.id}
-                onDecide={(approve) => onDecideApproval?.(approval, approve)}
+                onDecide={(decision) => onDecideApproval?.(approval, decision)}
               />
             ))}
           </section>
         )}
-        {notifications.length === 0 && approvals.length > 0 ? null : notifications.length === 0 ? (
+        {security.length > 0 && (
+          <section aria-label="Security" className="border-b border-slate-200" data-testid="inbox-security">
+            <div className="px-4 pb-1 pt-3 text-xs font-medium text-slate-500">Security · {security.length}</div>
+            {security.map((item) => (
+              <Link
+                className="block border-t border-slate-100 px-4 py-2.5 first-of-type:border-t-0 hover:bg-slate-50"
+                key={item.id}
+                onClick={onClose}
+                to={item.link}
+              >
+                <div className="flex items-center gap-2 text-[13px] font-medium text-slate-900">
+                  <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${item.severity === 'critical' ? 'bg-red-500' : item.severity === 'warning' ? 'bg-amber-500' : 'bg-slate-400'}`} />
+                  <span className="truncate">{item.title}</span>
+                </div>
+                <div className="mt-0.5 line-clamp-2 pl-3.5 text-xs text-slate-500">{item.detail}</div>
+              </Link>
+            ))}
+          </section>
+        )}
+        {notifications.length === 0 && (approvals.length > 0 || security.length > 0) ? null : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-6 py-10 text-center">
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-400">
               <Bell className="h-[18px] w-[18px]" />

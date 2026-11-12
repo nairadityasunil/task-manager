@@ -209,19 +209,23 @@ export function CreateKeyModal({
   const [projectIds, setProjectIds] = useState<string[]>(replaceAgent?.projectIds.map(String) ?? []);
   const [restricted, setRestricted] = useState(Boolean(replaceAgent?.projectIds.length));
   const [expiry, setExpiry] = useState('90');
+  /** A key for a third party: limited to projects, short-lived, every change held. */
+  const [forVendor, setForVendor] = useState(false);
   const [saving, setSaving] = useState(false);
   const [created, setCreated] = useState<{ agent: Agent; key: string } | null>(null);
-  const canSubmit = Boolean(name.trim()) && !(restricted && projectIds.length === 0);
+  const canSubmit = Boolean(name.trim()) && !(restricted && projectIds.length === 0) && !(forVendor && projectIds.length === 0);
 
   const submit = async () => {
     if (!canSubmit) return;
     setSaving(true);
     try {
-      const expiresAt = expiry === 'never' ? null : new Date(Date.now() + Number(expiry) * 86400000).toISOString();
+      // Third-party keys get the workspace's shortest allowed life unless a shorter one is picked.
+      const days = forVendor ? (expiry === 'never' || Number(expiry) > 30 ? null : Number(expiry)) : expiry === 'never' ? null : Number(expiry);
+      const expiresAt = days == null ? null : new Date(Date.now() + days * 86400000).toISOString();
       const body = { name: name.trim(), scopes, projectIds, expiresAt };
       const result = replaceAgent
         ? await agentsApi.replaceWithKey(replaceAgent.id, body)
-        : await agentsApi.createKey({ ...body, workspaceId });
+        : await agentsApi.createKey({ ...body, workspaceId, ...(forVendor ? { operatedBy: 'vendor' as const, expiresAt: expiresAt ?? undefined } : {}) });
       setCreated(result);
       onCreated(result.agent);
       onKey?.(result.key);
@@ -312,6 +316,26 @@ export function CreateKeyModal({
             value={projectIds}
           />
         </div>
+        {!replaceAgent ? (
+          <label className="flex items-start gap-2.5 rounded-lg border border-slate-200 p-3" data-testid="vendor-key">
+            <Checkbox
+              checked={forVendor}
+              onChange={() => {
+                setForVendor(!forVendor);
+                if (!forVendor) setRestricted(true);
+              }}
+            />
+            <span>
+              <span className="block text-[13px] font-medium text-slate-900">For a third party (vendor)</span>
+              <span className="block text-xs text-slate-500">
+                Limited to the projects above, every change waits for a person, and the key expires within the workspace limit (30 days by default). Never workspace admin.
+              </span>
+            </span>
+          </label>
+        ) : null}
+        {forVendor && projectIds.length === 0 ? (
+          <p className="m-0 rounded-lg bg-amber-50 p-2.5 text-xs text-amber-800">Pick the projects the third party may work in.</p>
+        ) : null}
         <Field label="Expires after">
           <Select className={selectClass} onChange={(e) => setExpiry(e.target.value)} value={expiry}>
             {EXPIRY_OPTIONS.map((option) => (
