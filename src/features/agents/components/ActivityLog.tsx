@@ -146,7 +146,7 @@ export function ActivityLog({ workspaceId, canAdmin }: { workspaceId: string | n
                       {row.error ? <div className="mt-1 max-w-[220px] truncate text-xs text-slate-500">{row.error}</div> : null}
                     </td>
                     <td className="px-3 py-2.5 text-xs text-slate-600">
-                      {row.policyName ?? '—'}
+                      {row.policyName ?? (row.rule ? (row.decidedBy === 'system' ? `System: ${row.rule}` : row.rule) : '—')}
                       {row.advisoryPolicies.length ? <div className="text-slate-400">Advisory: {row.advisoryPolicies.join(', ')}</div> : null}
                     </td>
                     <td className="px-4 py-2.5 text-right">
