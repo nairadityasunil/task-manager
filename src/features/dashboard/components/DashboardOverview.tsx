@@ -144,7 +144,7 @@ export default function DashboardOverview({
           </div>
         </div>
 
-        <SetupChecklist onConnectAi={onOpenAiPlanner} onNewProject={onNewProject} projectCount={projects.length} />
+        <SetupChecklist onNewProject={onNewProject} projectCount={projects.length} />
 
         {/* Today at a glance */}
         <section aria-label="Today at a glance">

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useConfirm } from "@/context/ConfirmationContext";
 import { useToast } from "@/context/ToastContext";
@@ -17,12 +18,25 @@ export interface CompanionDevice {
   revokedAt?: string | null;
 }
 
+type SettingsTab = "profile" | "workspace" | "sla" | "chatgpt" | "companion" | "mcp";
+const SETTINGS_TABS: SettingsTab[] = ["profile", "workspace", "sla", "chatgpt", "companion", "mcp"];
+const tabFromSearch = (search: string): SettingsTab | null => {
+  const tab = new URLSearchParams(search).get("tab");
+  return SETTINGS_TABS.includes(tab as SettingsTab) ? (tab as SettingsTab) : null;
+};
+
 export function useSettings() {
   const { user, refreshUser } = useAuth();
   const confirm = useConfirm();
   const { showToast } = useToast();
 
-  const [activeTab, setActiveTab] = useState<"profile" | "workspace" | "sla" | "chatgpt" | "companion" | "mcp">("profile");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState<SettingsTab>(() => tabFromSearch(location.search) ?? "profile");
+  // Links such as /settings?tab=workspace open that tab (e.g. "Invite" on Home).
+  useEffect(() => {
+    const tab = tabFromSearch(location.search);
+    if (tab) setActiveTab(tab);
+  }, [location.search]);
   const [apiKeyCopied, setApiKeyCopied] = useState(false);
   const [schemaCopied, setSchemaCopied] = useState(false);
   const [instructionsCopied, setInstructionsCopied] = useState(false);

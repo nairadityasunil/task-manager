@@ -21,12 +21,10 @@ const storageKey = (userId?: string) => `pristine.setup.dismissed.${userId ?? 'a
 /** "Finish setting up": four first steps, each checked from real workspace state. */
 export function SetupChecklist({
   projectCount,
-  onNewProject,
-  onConnectAi
+  onNewProject
 }: {
   projectCount: number;
   onNewProject: () => void;
-  onConnectAi: () => void;
 }): JSX.Element | null {
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
@@ -71,7 +69,7 @@ export function SetupChecklist({
       detail: 'Add people to the workspace so you can assign work.',
       done: memberCount > 1,
       action: 'Invite',
-      run: () => navigate('/settings')
+      run: () => navigate('/settings?tab=workspace&invite=1')
     },
     {
       id: 'ai',
@@ -79,7 +77,7 @@ export function SetupChecklist({
       detail: 'Plan projects and break down tasks. Gemini has a free tier.',
       done: aiReady,
       action: 'Connect',
-      run: onConnectAi
+      run: () => navigate('/settings?tab=profile&section=ai')
     },
     {
       id: 'sdk',

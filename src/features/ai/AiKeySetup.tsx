@@ -25,6 +25,9 @@ const SETUP: Record<AiProvider, { name: string; keyUrl: string; hint: string }> 
   }
 };
 
+export const AI_PROVIDERS: AiProvider[] = ['gemini', 'openai', 'anthropic'];
+export const providerHint = (provider: AiProvider): string => SETUP[provider].hint;
+
 export const providerName = (provider: AiProvider): string => SETUP[provider].name;
 
 /** Whether the signed-in person can use this provider: their own key, or the server's. */
@@ -39,11 +42,14 @@ export function useAiProviderReady(provider: AiProvider): boolean {
 export function AiKeySetup({
   provider,
   onSaved,
-  className
+  className,
+  inSettings = false
 }: {
   provider: AiProvider;
   onSaved?: () => void;
   className?: string;
+  /** Shown in Settings itself: no "go to Settings" hint. */
+  inSettings?: boolean;
 }): JSX.Element {
   const { updateProfile } = useAuth();
   const [key, setKey] = useState('');
@@ -105,7 +111,7 @@ export function AiKeySetup({
           Save key
         </Button>
       </div>
-      <p className="m-0 text-xs text-slate-500">You can change or remove keys any time under Settings → Profile.</p>
+      {inSettings ? null : <p className="m-0 text-xs text-slate-500">You can change or remove keys any time under Settings → Profile → AI providers.</p>}
       {result ? (
         <p className={cn('m-0 flex items-start gap-1.5 text-xs', result.ok ? 'text-emerald-700' : 'text-red-700')} role={result.ok ? 'status' : 'alert'}>
           {result.ok ? <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" /> : <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />}

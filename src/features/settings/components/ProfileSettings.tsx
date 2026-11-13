@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import type { AuthProfile } from "@/store/authSlice";
 import { Badge, Button, Card, CardHeader, avatarColor, buttonClass } from "@/components/ui";
 import { SecretReveal } from "@/features/agents/components/shared";
+import { AiProvidersCard } from "@/features/ai/AiProvidersCard";
 
 interface ProfileSettingsProps {
   user: AuthProfile | null;
@@ -85,6 +86,8 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({
           </Button>
         </div>
       </Card>
+
+      <AiProvidersCard />
     </div>
   );
 };

@@ -12,7 +12,7 @@ import Modal from '@/components/Modal';
 import EpicForm from '@/components/EpicForm';
 import NoteModal from '@/components/NoteModal';
 import ProjectForm from '@/components/ProjectForm';
-import { ClassificationSelect } from '@/features/agents/components/AdvancedGovernance';
+import { ClassificationSelect, ProjectLabelChip } from '@/features/agents/components/AdvancedGovernance';
 import ProjectNotes from '@/components/ProjectNotes';
 import ProjectPanel from '@/components/ProjectPanel';
 import ProjectTeamPanel from '@/components/ProjectTeamPanel';
@@ -474,6 +474,12 @@ export function DashboardPage(): JSX.Element {
                     />
                   </div>
                   <div className="flex items-center gap-1.5 sm:gap-2">
+                    <ProjectLabelChip
+                      // Remount after the edit dialog closes so a new label shows at once.
+                      key={`${dash.activeProject.id}:${dash.editingProject ? 'editing' : 'view'}`}
+                      onEdit={dash.canManageActiveProject ? () => dash.setEditingProject(dash.activeProject) : undefined}
+                      projectId={dash.activeProject.id}
+                    />
                     <AiSpend className="hidden md:inline-flex" projectId={dash.activeProject.id} />
                     <button
                       className={headerButtonCls}
