@@ -121,6 +121,39 @@ export interface PolicyMatch {
   };
 }
 
+export type PackItemKind = 'policy' | 'setting' | 'built_in' | 'manual';
+export type PackItemStatus = 'installed' | 'proposed' | 'not_installed' | 'met' | 'not_met' | 'built_in' | 'manual';
+
+export interface RegulationPackItem {
+  id: string;
+  title: string;
+  basis: string;
+  kind: PackItemKind;
+  howCovered: string;
+  optional?: boolean;
+  status: PackItemStatus;
+  policy: { id: string; mode: string; enabled: boolean } | null;
+  missing: Record<string, unknown> | null;
+}
+
+export interface RegulationPack {
+  id: string;
+  name: string;
+  jurisdiction: string;
+  source: string;
+  url: string;
+  scope: string;
+  items: RegulationPackItem[];
+  applied: boolean;
+  progress: { done: number; total: number };
+}
+
+export interface PackApplyResult {
+  policies: { created: number; updated: number; unchanged: number; proposed: number };
+  settingsChanged: string[];
+  manual: string[];
+}
+
 export interface AgentPolicy {
   id: string;
   name: string;
@@ -136,6 +169,8 @@ export interface AgentPolicy {
   version?: number;
   /** Proposed changes waiting for a second admin. */
   pendingChanges?: number;
+  /** Set when a regulation pack installed this policy. */
+  pack?: { id: string; item: string } | null;
 }
 
 export interface PolicyTemplate extends Omit<AgentPolicy, 'enabled' | 'createdAt' | 'updatedAt'> {
@@ -608,6 +643,11 @@ export const agentsApi = {
 
   policies: (workspaceId?: string | null) => unwrap<AgentPolicy[]>(api.get('/agents/policies', { params: ws(workspaceId) })),
   templates: () => unwrap<PolicyTemplate[]>(api.get('/agents/policies/templates', { silent: true })),
+  policyPacks: (workspaceId?: string | null) => unwrap<RegulationPack[]>(api.get('/agents/policy-packs', { params: ws(workspaceId) })),
+  applyPolicyPack: (packId: string, body: { start?: 'recommended' | 'advisory'; itemId?: string }, workspaceId?: string | null) =>
+    unwrap<{ result: PackApplyResult; packs: RegulationPack[] }>(api.post(`/agents/policy-packs/${packId}/apply`, { ...body, ...ws(workspaceId) })),
+  removePolicyPack: (packId: string, workspaceId?: string | null) =>
+    unwrap<{ result: { removed: number; proposed: number }; packs: RegulationPack[] }>(api.post(`/agents/policy-packs/${packId}/remove`, ws(workspaceId))),
   createPolicy: (body: Omit<AgentPolicy, 'id'>, workspaceId?: string | null) =>
     unwrap<AgentPolicy>(api.post('/agents/policies', { ...body, ...ws(workspaceId) })),
   updatePolicy: (policyId: string, body: Partial<Omit<AgentPolicy, 'id'>>) =>

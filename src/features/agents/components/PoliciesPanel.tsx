@@ -11,6 +11,7 @@ import type { Project } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 import { EffectBadge } from './shared';
 import { PolicyHistoryModal, PolicyProposals, SimulationResultView } from './AdvancedGovernance';
+import { packName, RegulationPacks } from './RegulationPacks';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const KINDS = Object.keys(KIND_LABELS) as AgentKind[];
@@ -462,6 +463,13 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
   return (
     <div className="space-y-4">
       <PolicyProposals key={proposalsKey} onChanged={() => void load()} />
+      <RegulationPacks
+        onChanged={() => {
+          setProposalsKey((k) => k + 1);
+          void load();
+        }}
+        workspaceId={workspaceId}
+      />
       <Card>
         <CardHeader
           actions={
@@ -500,6 +508,7 @@ export function PoliciesPanel({ workspaceId, projects, canAdmin }: { workspaceId
                     </Badge>
                     {!policy.enabled ? <Badge>Off</Badge> : null}
                     {policy.pendingChanges ? <Badge tone="warning">Change waiting for approval</Badge> : null}
+                    {policy.pack ? <Badge tone="info">{packName(policy.pack.id)} pack</Badge> : null}
                     <span className="text-xs tabular-nums text-slate-400">
                       #{policy.priority} · v{policy.version ?? 1}
                     </span>
