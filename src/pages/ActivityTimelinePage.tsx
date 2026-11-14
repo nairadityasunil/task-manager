@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Activity, Bot, CircleUser, Cpu, ListChecks, MousePointerClick, Radar, RefreshCw, ShieldCheck, Siren } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Activity, Bot, CircleUser, Cpu, ListChecks, MousePointerClick, Radar, RefreshCw, Route, ShieldCheck, Siren } from 'lucide-react';
 
 import { Button, cn, DateInput, Field, Select } from '@/components/ui';
 import { useWorkspace } from '@/features/workspaces';
@@ -8,7 +8,7 @@ import { workspaceService } from '@/features/workspaces/services/workspaceServic
 import api from '@/services/api';
 import { timeAgo } from '@/services/agents';
 
-type Kind = 'work' | 'agent' | 'approval' | 'event' | 'detection' | 'incident' | 'system';
+type Kind = 'work' | 'agent' | 'approval' | 'event' | 'guide' | 'detection' | 'incident' | 'system';
 
 interface TimelineItem {
   id: string;
@@ -30,6 +30,7 @@ const KINDS: Array<{ id: Kind; label: string; icon: typeof Activity }> = [
   { id: 'agent', label: 'Agent actions', icon: Bot },
   { id: 'approval', label: 'Approvals', icon: ShieldCheck },
   { id: 'event', label: 'User events', icon: MousePointerClick },
+  { id: 'guide', label: 'Guides', icon: Route },
   { id: 'detection', label: 'Detections', icon: Radar },
   { id: 'incident', label: 'Incidents', icon: Siren },
   { id: 'system', label: 'System actions', icon: Cpu }
@@ -40,6 +41,7 @@ const KIND_TONE: Record<Kind, string> = {
   agent: 'bg-violet-50 text-violet-700',
   approval: 'bg-orange-50 text-orange-700',
   event: 'bg-sky-50 text-sky-700',
+  guide: 'bg-teal-50 text-teal-700',
   detection: 'bg-amber-50 text-amber-800',
   incident: 'bg-red-50 text-red-700',
   system: 'bg-slate-100 text-slate-700'
@@ -59,13 +61,15 @@ const dayLabel = (iso: string) => {
 /** One list for everything that happened: task changes, agent actions, approvals and user events. */
 export default function ActivityTimelinePage({ projects }: { projects: Array<{ id: string; name: string }> }): JSX.Element {
   const { activeWorkspace } = useWorkspace();
-  const [kinds, setKinds] = useState<Kind[]>(['work', 'agent', 'approval', 'event', 'detection', 'incident', 'system']);
+  const [kinds, setKinds] = useState<Kind[]>(['work', 'agent', 'approval', 'event', 'guide', 'detection', 'incident', 'system']);
   const [tier, setTier] = useState('');
   const [decidedBy, setDecidedBy] = useState('');
-  const [outcome, setOutcome] = useState('');
+  // Links from elsewhere (e.g. an agent's blocked count in Telemetry) arrive filtered: /activity?agent=…&outcome=blocked.
+  const [searchParams] = useSearchParams();
+  const [outcome, setOutcome] = useState(() => searchParams.get('outcome') ?? '');
   const [projectId, setProjectId] = useState('');
   const [personId, setPersonId] = useState('');
-  const [agentId, setAgentId] = useState('');
+  const [agentId, setAgentId] = useState(() => searchParams.get('agent') ?? '');
   const [since, setSince] = useState('');
   const [until, setUntil] = useState('');
   const [items, setItems] = useState<TimelineItem[] | null>(null);
@@ -86,7 +90,11 @@ export default function ActivityTimelinePage({ projects }: { projects: Array<{ i
       .catch(() => setAgents([]));
   }, [activeWorkspace?.id]);
 
+  // Only the newest request may fill the list: quick filter changes must not let an older, slower answer win.
+  const latestRequest = useRef(0);
   const load = useCallback(() => {
+    const request = (latestRequest.current += 1);
+    const current = () => request === latestRequest.current;
     setLoading(true);
     api
       .get('/agents/timeline', {
@@ -103,9 +111,9 @@ export default function ActivityTimelinePage({ projects }: { projects: Array<{ i
           limit: 120
         }
       })
-      .then((response) => setItems((response.data as { data: TimelineItem[] }).data ?? []))
-      .catch(() => setItems([]))
-      .finally(() => setLoading(false));
+      .then((response) => current() && setItems((response.data as { data: TimelineItem[] }).data ?? []))
+      .catch(() => current() && setItems([]))
+      .finally(() => current() && setLoading(false));
   }, [kinds, projectId, personId, agentId, since, until, tier, decidedBy, outcome]);
 
   useEffect(load, [load]);

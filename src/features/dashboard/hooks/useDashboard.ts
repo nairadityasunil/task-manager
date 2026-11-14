@@ -248,6 +248,8 @@ export function useDashboard() {
       setActiveView('settings');
     } else if (path === '/activity') {
       setActiveView('activity');
+    } else if (path === '/telemetry' || path.startsWith('/telemetry/')) {
+      setActiveView('telemetry');
     } else if (path === '/agents' || path.startsWith('/agents/')) {
       setActiveView('agents');
     } else if (path.startsWith('/projects/')) {

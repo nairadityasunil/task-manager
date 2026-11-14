@@ -28,6 +28,7 @@ import SourceBadge from '@/components/SourceBadge';
 import ApprovalSection from '@/components/ApprovalSection';
 import { ClassificationSelect } from '@/features/agents/components/AdvancedGovernance';
 import CommentSection from '@/components/CommentSection';
+import { TaskAutomationNote } from '@/features/telemetry/TaskAutomationNote';
 import SubtaskInlineEdit from '@/components/SubtaskInlineEdit';
 import { PRIORITY_META, PriorityIcon, TASK_STATUS_TONE, taskDateInfo, taskStatusLabel } from '@/components/TaskCard';
 import { Badge, Button, cn, selectClass, Select, Checkbox } from '@/components/ui';
@@ -268,6 +269,8 @@ export function TaskInspector({
                     ) : null}
                   </dl>
 
+                  {task.source === 'automation' ? <TaskAutomationNote taskId={task.id} /> : null}
+
                   {task.description && (
                     <section>
                       <h4 className="m-0 mb-1.5 text-[13px] font-medium text-slate-500">Description</h4>
@@ -496,11 +499,13 @@ export function TaskInspector({
                   ) : null}
 
                   {/* Approvals */}
-                  <ApprovalSection
-                    projectId={task.projectId || ''}
-                    taskId={task.id}
-                    members={members}
-                  />
+                  {task.projectId ? (
+                    <ApprovalSection
+                      projectId={task.projectId}
+                      taskId={task.id}
+                      members={members}
+                    />
+                  ) : null}
                 </div>
               ) : (
                 <div className="flex min-h-[350px] flex-1 flex-col">

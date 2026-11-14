@@ -8,7 +8,8 @@ const sourceClasses: Record<string, string> = {
   manual:  'bg-slate-50 text-slate-600 ring-slate-200',
   chatgpt: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
   claude:  'bg-amber-50 text-amber-700 ring-amber-200',
-  gemini:  'bg-sky-50 text-sky-700 ring-sky-200'
+  gemini:  'bg-sky-50 text-sky-700 ring-sky-200',
+  automation: 'bg-sky-50 text-sky-800 ring-sky-200'
 };
 
 function SourceBadge({ source = 'manual' }: SourceBadgeProps): JSX.Element {
