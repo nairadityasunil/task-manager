@@ -140,6 +140,7 @@ export interface RegulationPack {
   id: string;
   name: string;
   jurisdiction: string;
+  category: 'ai' | 'privacy';
   source: string;
   url: string;
   scope: string;
