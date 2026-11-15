@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Users, UserPlus, RefreshCw, AlertCircle } from 'lucide-react';
 import { WorkspaceMemberRow } from './WorkspaceMemberRow';
 import { InviteMemberDialog } from './InviteMemberDialog';
@@ -17,8 +18,13 @@ export function WorkspaceMembers({ workspace, currentUserId }: WorkspaceMembersP
   const { members, isLoading, error, refreshMembers, inviteMember, updateMemberRole, removeMember } =
     useWorkspaceMembers(workspace.id);
   const [showInvite, setShowInvite] = useState(false);
+  const location = useLocation();
 
   const canInvite = isAtLeastAdmin(workspace.role);
+  // /settings?tab=workspace&invite=1 (the "Invite" step on Home) opens the invite form.
+  useEffect(() => {
+    if (canInvite && new URLSearchParams(location.search).get('invite') === '1') setShowInvite(true);
+  }, [canInvite, location.search]);
 
   const handleInvite = async (email: string, role: WorkspaceRole) => {
     await inviteMember(email, role);
@@ -44,10 +50,12 @@ export function WorkspaceMembers({ workspace, currentUserId }: WorkspaceMembersP
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
-          {canInvite && (
+          {canInvite ? (
             <Button size="sm" variant="primary" icon={UserPlus} onClick={() => setShowInvite(true)}>
               Invite
             </Button>
+          ) : (
+            <span className="text-xs text-slate-500">Only workspace admins can invite people.</span>
           )}
         </div>
       </div>

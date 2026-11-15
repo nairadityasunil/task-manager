@@ -320,6 +320,39 @@ export function ClassificationBadge({ value, className }: { value?: Classificati
   );
 }
 
+/** The project's data label in its header; opens the label setting for people who manage the project. */
+export function ProjectLabelChip({ projectId, onEdit, className }: { projectId: string; onEdit?: () => void; className?: string }): JSX.Element | null {
+  const [value, setValue] = useState<Classification | null | undefined>(undefined);
+  useEffect(() => {
+    let cancelled = false;
+    agentsApi
+      .classification({ projectIds: [projectId] })
+      .then((r) => !cancelled && setValue(r.projects[projectId] ?? 'internal'))
+      .catch(() => !cancelled && setValue(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId]);
+  if (!value) return null;
+  const info = CLASSIFICATION_LABELS[value];
+  const title = `Data label: ${info.label}. ${info.detail}${onEdit ? ' Click to change.' : ''}`;
+  const body = (
+    <>
+      <Tag size={11} /> {info.label}
+    </>
+  );
+  const cls = cn('inline-flex h-6 select-none items-center gap-1 rounded px-1.5 text-[11px] font-medium', info.tone, className);
+  return onEdit ? (
+    <button aria-label={title} className={cn(cls, 'hover:brightness-95')} data-testid="project-label-chip" onClick={onEdit} title={title} type="button">
+      {body}
+    </button>
+  ) : (
+    <span className={cls} data-testid="project-label-chip" title={title}>
+      {body}
+    </span>
+  );
+}
+
 /** Label a project or a task for agent governance. Tasks can inherit their project's label. */
 export function ClassificationSelect({
   projectId,

@@ -5,6 +5,7 @@ import Skeleton from '@/components/Skeleton';
 import UserAvatar from '@/components/UserAvatar';
 import { Badge, Button, Card, CardHeader, StatusIcon, cn } from '@/components/ui';
 import { SetupChecklist } from './SetupChecklist';
+import { HealthSignals } from '@/features/telemetry/HealthSignals';
 import { WaitingOnYou } from './WaitingOnYou';
 import { GovernanceCard } from '@/features/agents/components/GovernanceCard';
 import type { Epic } from '@/types/epic';
@@ -144,7 +145,9 @@ export default function DashboardOverview({
           </div>
         </div>
 
-        <SetupChecklist onConnectAi={onOpenAiPlanner} onNewProject={onNewProject} projectCount={projects.length} />
+        <SetupChecklist onNewProject={onNewProject} projectCount={projects.length} />
+
+        <HealthSignals />
 
         {/* Today at a glance */}
         <section aria-label="Today at a glance">

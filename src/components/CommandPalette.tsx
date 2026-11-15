@@ -199,6 +199,8 @@ export function buildPaletteItems(input: {
   const pages: Array<[string, string]> = [
     ['Home', '/dashboard'],
     ['Activity timeline', '/activity'],
+    ['Telemetry', '/telemetry'],
+    ['Automation tasks', '/telemetry/automation'],
     ['Intelligence', '/intelligence'],
     ['Prompt library', '/prompts'],
     ['Prompt playground', '/playground'],

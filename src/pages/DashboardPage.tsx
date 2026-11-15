@@ -1,4 +1,6 @@
 import ActivityTimelinePage from '@/pages/ActivityTimelinePage';
+import TelemetryPage from '@/pages/TelemetryPage';
+import { GovernanceReadyBadge } from '@/features/telemetry/TaskAutomationNote';
 import { AiSpend } from '@/features/agents/components/AiSpend';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -12,7 +14,7 @@ import Modal from '@/components/Modal';
 import EpicForm from '@/components/EpicForm';
 import NoteModal from '@/components/NoteModal';
 import ProjectForm from '@/components/ProjectForm';
-import { ClassificationSelect } from '@/features/agents/components/AdvancedGovernance';
+import { ClassificationSelect, ProjectLabelChip } from '@/features/agents/components/AdvancedGovernance';
 import ProjectNotes from '@/components/ProjectNotes';
 import ProjectPanel from '@/components/ProjectPanel';
 import ProjectTeamPanel from '@/components/ProjectTeamPanel';
@@ -140,6 +142,48 @@ export function DashboardPage(): JSX.Element {
     dash.error
   ].filter(Boolean);
 
+  // The task panel: beside the task list in a project, and over Home for tasks that belong to no project.
+  const taskInspector = (
+                <TaskInspector
+                  isOpen={Boolean(dash.selectedTaskId && dash.activeTask)}
+                  onClose={() => dash.setSelectedTaskId(null)}
+                  task={dash.activeTask}
+                  members={dash.activeProjectMembers}
+                  actionTaskId={dash.actionTaskId}
+                  sidePanelTab={dash.sidePanelTab}
+                  setSidePanelTab={dash.setSidePanelTab}
+                  editingSubtask={dash.editingSubtask}
+                  setEditingSubtask={dash.setEditingSubtask}
+                  setSubtaskModalTask={dash.setSubtaskModalTask}
+                  handleUpdateSubtaskStatus={dash.handleUpdateSubtaskStatus}
+                  handleUpdateSubtask={dash.handleUpdateSubtask}
+                  handleDeleteSubtask={dash.handleDeleteSubtask}
+                  handleOpenSubtaskNote={dash.handleOpenSubtaskNote}
+                  handleToggleBlocked={dash.handleToggleBlocked}
+                  handleEvaluatePriority={dash.handleEvaluatePriority}
+                  isEvaluatingPriority={dash.isEvaluatingPriority}
+                  handleOpenTaskNote={dash.handleOpenTaskNote}
+                  handleUpdateTaskField={async (taskId, updates) => {
+                    const task = dash.tasks.find(t => t.id === taskId);
+                    if (task) {
+                      await dash.handleUpdateTask({
+                        title: updates.title ?? task.title,
+                        description: updates.description ?? task.description,
+                        note: updates.note ?? task.note,
+                        date: updates.date ?? task.date,
+                        status: (updates.status ?? (task.status === 'rolled_over' ? 'planned' : task.status)) as TaskWorkflowStatus,
+                        priority: updates.priority ?? task.priority,
+                        isBlocked: updates.isBlocked ?? task.isBlocked,
+                        blockedByTaskId: updates.blockedByTaskId ?? task.blockedByTaskId,
+                        projectId: updates.projectId !== undefined ? updates.projectId : (task.projectId || null),
+                        epicId: updates.epicId !== undefined ? updates.epicId : (task.epicId || null),
+                        assignedTo: updates.assignedTo,
+                      });
+                    }
+                  }}
+                />
+  );
+
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900">
       {/* Toast Notification */}
@@ -203,6 +247,7 @@ export function DashboardPage(): JSX.Element {
           else if (view === 'settings') navigate('/settings');
           else if (view === 'agents') navigate('/agents');
           else if (view === 'activity') navigate('/activity');
+          else if (view === 'telemetry') navigate('/telemetry');
         }}
         onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
         onOpenSearch={() => setIsPaletteOpen(true)}
@@ -247,6 +292,8 @@ export function DashboardPage(): JSX.Element {
               ? 'Settings'
               : dash.activeView === 'activity'
               ? 'Activity'
+              : dash.activeView === 'telemetry'
+              ? 'Telemetry'
               : dash.activeView === 'agents'
               ? 'Agent Governance'
               : dash.activeView === 'sdk-docs'
@@ -293,6 +340,8 @@ export function DashboardPage(): JSX.Element {
                 <span className={crumbCurrentCls}>Settings</span>
               ) : dash.activeView === 'activity' ? (
                 <span className={crumbCurrentCls}>Activity</span>
+              ) : dash.activeView === 'telemetry' ? (
+                <span className={crumbCurrentCls}>Telemetry</span>
               ) : dash.activeView === 'agents' ? (
                 <span className={crumbCurrentCls}>Agent Governance</span>
               ) : dash.activeView === 'sdk-docs' ? (
@@ -377,6 +426,10 @@ export function DashboardPage(): JSX.Element {
             <div className="h-full overflow-y-auto">
               <ActivityTimelinePage projects={dash.projects} />
             </div>
+          ) : dash.activeView === 'telemetry' ? (
+            <div className="h-full overflow-y-auto">
+              <TelemetryPage projects={dash.projects} />
+            </div>
           ) : dash.activeView === 'event-tracking' ? (
             <div className="h-full overflow-y-auto">
               <EventTrackingPage onOpenDocs={() => navigate('/sdk-docs')} />
@@ -426,6 +479,7 @@ export function DashboardPage(): JSX.Element {
                 onOpenTask={(task) => {
                   if (task.projectId && task.epicId) navigate(`/projects/${task.projectId}/epics/${task.epicId}`);
                   else if (task.projectId) dash.handleProjectSelect(task.projectId);
+                  else dash.setSelectedTaskId(task.id);
                 }}
                 projects={dash.projects}
                 tasks={dash.tasks}
@@ -457,6 +511,7 @@ export function DashboardPage(): JSX.Element {
                   searchTerm={dash.projectSearchTerm}
                 />
               </DashboardOverview>
+              {taskInspector}
             </div>
           ) : (
             /* 3-column workspace */
@@ -474,6 +529,13 @@ export function DashboardPage(): JSX.Element {
                     />
                   </div>
                   <div className="flex items-center gap-1.5 sm:gap-2">
+                    <GovernanceReadyBadge projectId={dash.activeProject.id} refreshKey={dash.selectedTaskId} />
+                    <ProjectLabelChip
+                      // Remount after the edit dialog closes so a new label shows at once.
+                      key={`${dash.activeProject.id}:${dash.editingProject ? 'editing' : 'view'}`}
+                      onEdit={dash.canManageActiveProject ? () => dash.setEditingProject(dash.activeProject) : undefined}
+                      projectId={dash.activeProject.id}
+                    />
                     <AiSpend className="hidden md:inline-flex" projectId={dash.activeProject.id} />
                     <button
                       className={headerButtonCls}
@@ -807,44 +869,7 @@ export function DashboardPage(): JSX.Element {
                 </div>
 
                 {/* Column 3 — Task Inspector */}
-                <TaskInspector
-                  isOpen={Boolean(dash.selectedTaskId && dash.activeTask)}
-                  onClose={() => dash.setSelectedTaskId(null)}
-                  task={dash.activeTask}
-                  members={dash.activeProjectMembers}
-                  actionTaskId={dash.actionTaskId}
-                  sidePanelTab={dash.sidePanelTab}
-                  setSidePanelTab={dash.setSidePanelTab}
-                  editingSubtask={dash.editingSubtask}
-                  setEditingSubtask={dash.setEditingSubtask}
-                  setSubtaskModalTask={dash.setSubtaskModalTask}
-                  handleUpdateSubtaskStatus={dash.handleUpdateSubtaskStatus}
-                  handleUpdateSubtask={dash.handleUpdateSubtask}
-                  handleDeleteSubtask={dash.handleDeleteSubtask}
-                  handleOpenSubtaskNote={dash.handleOpenSubtaskNote}
-                  handleToggleBlocked={dash.handleToggleBlocked}
-                  handleEvaluatePriority={dash.handleEvaluatePriority}
-                  isEvaluatingPriority={dash.isEvaluatingPriority}
-                  handleOpenTaskNote={dash.handleOpenTaskNote}
-                  handleUpdateTaskField={async (taskId, updates) => {
-                    const task = dash.tasks.find(t => t.id === taskId);
-                    if (task) {
-                      await dash.handleUpdateTask({
-                        title: updates.title ?? task.title,
-                        description: updates.description ?? task.description,
-                        note: updates.note ?? task.note,
-                        date: updates.date ?? task.date,
-                        status: (updates.status ?? (task.status === 'rolled_over' ? 'planned' : task.status)) as TaskWorkflowStatus,
-                        priority: updates.priority ?? task.priority,
-                        isBlocked: updates.isBlocked ?? task.isBlocked,
-                        blockedByTaskId: updates.blockedByTaskId ?? task.blockedByTaskId,
-                        projectId: updates.projectId !== undefined ? updates.projectId : (task.projectId || null),
-                        epicId: updates.epicId !== undefined ? updates.epicId : (task.epicId || null),
-                        assignedTo: updates.assignedTo,
-                      });
-                    }
-                  }}
-                />
+                {taskInspector}
               </div>
             </div>
           )}

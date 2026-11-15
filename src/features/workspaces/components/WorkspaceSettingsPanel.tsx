@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Settings2, Users, AlertTriangle, Loader2, Building2 } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { WorkspaceGeneralSettings } from './WorkspaceGeneralSettings';
@@ -25,7 +26,9 @@ const TABS: TabDef[] = [
 export function WorkspaceSettingsPanel(): JSX.Element {
   const { activeWorkspace, isLoading } = useWorkspace();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>('general');
+  const location = useLocation();
+  // ?invite=1 (the "Invite" step on Home) opens Members, where the invite form opens.
+  const [activeTab, setActiveTab] = useState<Tab>(() => (new URLSearchParams(location.search).get('invite') === '1' ? 'members' : 'general'));
 
   if (isLoading) {
     return (
