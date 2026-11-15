@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import React, { Suspense, lazy } from 'react';
 
 import AuthProvider from '@/context/AuthContext';
@@ -20,6 +20,7 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 import { LoadingProvider } from '@/context/LoadingContext';
 import GlobalLoadingSpinner from '@/components/GlobalLoadingSpinner';
+import { SessionBlockedNotice } from '@/components/SessionBlockedNotice';
 import { ToastProvider } from '@/context/ToastContext';
 import { TooltipLayer } from '@/components/ui';
 
@@ -56,6 +57,10 @@ function App(): JSX.Element {
                     />
                     <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/intelligence" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+                    {/* The names people type from the menu labels. */}
+                    <Route path="/prompt-library" element={<Navigate replace to="/prompts" />} />
+                    <Route path="/prompt-playground" element={<Navigate replace to="/playground" />} />
+                    <Route path="/agent-governance" element={<Navigate replace to="/agents" />} />
                     <Route path="/prompts" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/playground" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/event-tracking" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
@@ -78,6 +83,7 @@ function App(): JSX.Element {
                 </GuideRuntimeProvider>
               </BrowserRouter>
               <GlobalLoadingSpinner />
+              <SessionBlockedNotice />
               <TooltipLayer />
             </ConfirmationProvider>
           </ChatProvider>

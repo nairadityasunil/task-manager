@@ -533,9 +533,9 @@ export function useDashboard() {
 
   const handleLogout = async () => {
     const isConfirmed = await confirm({
-      title: 'Sign Out',
-      message: 'Are you sure you want to sign out of your account?',
-      confirmText: 'LOGOUT',
+      title: 'Sign out?',
+      message: 'You will need to sign in again to use Pristine on this device.',
+      confirmText: 'Sign out',
       type: 'danger'
     });
     if (isConfirmed) {
@@ -686,8 +686,10 @@ export function useDashboard() {
       await loadDashboard();
       setProjectMutationSuccess('Project created.');
       setIsProjectCreateModalOpen(false);
-    } catch {
+    } catch (error) {
       setProjectMutationError('Unable to create the project.');
+      // The form shows the reason and keeps what was typed.
+      throw error;
     } finally {
       setActionProjectId(null);
     }
@@ -707,8 +709,9 @@ export function useDashboard() {
       await loadDashboard();
       setProjectMutationSuccess('Project updated.');
       setEditingProject(null);
-    } catch {
+    } catch (error) {
       setProjectMutationError('Unable to update the project.');
+      throw error;
     } finally {
       setActionProjectId(null);
     }
