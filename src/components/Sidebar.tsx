@@ -20,7 +20,8 @@ import {
   PanelLeftOpen,
   type LucideIcon,
   Gauge,
-  BarChart3
+  BarChart3,
+  ClipboardCheck
 } from 'lucide-react';
 import { avatarColor, cn, tagColor, type Area } from '@/components/ui';
 
@@ -40,6 +41,7 @@ export type SidebarView =
   | 'agents'
   | 'telemetry'
   | 'insights'
+  | 'ai-governance'
   | 'activity';
 
 interface SidebarProps {
@@ -284,6 +286,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <NavItem area="prompts" icon={Sparkles} isActive={activeView === 'prompts'} label="Prompt Library" onClick={() => onViewChange('prompts')} />
                 <NavItem area="prompts" icon={Play} isActive={activeView === 'playground'} label="Prompt Playground" onClick={() => onViewChange('playground')} />
                 <NavItem area="ai" icon={ShieldHalf} isActive={activeView === 'agents'} label="Agent Governance" onClick={() => onViewChange('agents')} />
+                <NavItem area="ai" icon={ClipboardCheck} isActive={activeView === 'ai-governance'} label="AI Governance" onClick={() => onViewChange('ai-governance')} />
               </NavGroup>
 
               <NavGroup label="Product">

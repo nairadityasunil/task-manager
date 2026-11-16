@@ -50,7 +50,8 @@ export type AutomationRule =
   | 'key_expiry'
   | 'vendor_review'
   | 'project_governance'
-  | 'metric_alert';
+  | 'metric_alert'
+  | 'ai_governance';
 
 export interface AutomationSettings {
   enabled: boolean;
@@ -268,4 +269,5 @@ export const RULE_LABELS: Record<AutomationRule, string> = {
   vendor_review: 'Third-party review',
   project_governance: 'New project',
   metric_alert: 'Metric alert',
+  ai_governance: 'AI governance issue',
 };

@@ -252,6 +252,8 @@ export function useDashboard() {
       setActiveView('telemetry');
     } else if (path === '/insights' || path.startsWith('/insights/')) {
       setActiveView('insights');
+    } else if (path === '/ai-governance' || path.startsWith('/ai-governance/')) {
+      setActiveView('ai-governance');
     } else if (path === '/agents' || path.startsWith('/agents/')) {
       setActiveView('agents');
     } else if (path.startsWith('/projects/')) {
