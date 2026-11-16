@@ -19,7 +19,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   type LucideIcon,
-  Gauge
+  Gauge,
+  BarChart3,
+  ClipboardCheck
 } from 'lucide-react';
 import { avatarColor, cn, tagColor, type Area } from '@/components/ui';
 
@@ -38,6 +40,8 @@ export type SidebarView =
   | 'sdk-integration-detail'
   | 'agents'
   | 'telemetry'
+  | 'insights'
+  | 'ai-governance'
   | 'activity';
 
 interface SidebarProps {
@@ -282,9 +286,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <NavItem area="prompts" icon={Sparkles} isActive={activeView === 'prompts'} label="Prompt Library" onClick={() => onViewChange('prompts')} />
                 <NavItem area="prompts" icon={Play} isActive={activeView === 'playground'} label="Prompt Playground" onClick={() => onViewChange('playground')} />
                 <NavItem area="ai" icon={ShieldHalf} isActive={activeView === 'agents'} label="Agent Governance" onClick={() => onViewChange('agents')} />
+                <NavItem area="ai" icon={ClipboardCheck} isActive={activeView === 'ai-governance'} label="AI Governance" onClick={() => onViewChange('ai-governance')} />
               </NavGroup>
 
               <NavGroup label="Product">
+                <NavItem area="events" icon={BarChart3} isActive={activeView === 'insights'} label="Insights" onClick={() => onViewChange('insights')} />
                 <NavItem area="integrations" icon={Plug} isActive={activeView === 'sdk-integrations'} label="SDK Integrations" onClick={() => onViewChange('sdk-integrations')} />
               </NavGroup>
 
