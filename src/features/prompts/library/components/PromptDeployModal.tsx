@@ -2,11 +2,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle2, FlaskConical, Pause, Play, Rocket, RotateCcw, ShieldCheck, SkipForward, X } from 'lucide-react';
 
 import Modal from '@/components/Modal';
-import { Badge, Button, cn, type BadgeTone } from '@/components/ui';
+import { Badge, Button, Field, Input, Select, cn, type BadgeTone } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
 import { agentsApi, type PromptFinding } from '@/services/agents';
-import { promptService, type PromptCanaryDeployment, type PromptItem, type PromptVersion } from '@/services/prompts';
+import {
+  promptService,
+  type DeploymentAction,
+  type DeploymentEvent,
+  type PromptCanaryDeployment,
+  type PromptItem,
+  type PromptVersion
+} from '@/services/prompts';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
 const ENV_TONE: Record<string, BadgeTone> = {
@@ -15,6 +22,17 @@ const ENV_TONE: Record<string, BadgeTone> = {
   canary: 'warning',
   development: 'neutral'
 };
+
+const ACTION_LABEL: Record<DeploymentAction, string> = {
+  deployed: 'Published',
+  canary_started: 'Canary started',
+  canary_completed: 'Canary completed',
+  canary_rolled_back: 'Canary rolled back',
+  canary_failed: 'Canary failed automatically',
+  canary_cancelled: 'Canary cancelled',
+  rolled_back: 'Production rolled back'
+};
+const PRODUCTION_ACTIONS: DeploymentAction[] = ['deployed', 'canary_completed', 'rolled_back'];
 
 const SEVERITY_TONE: Record<PromptFinding['severity'], BadgeTone> = { high: 'danger', medium: 'warning', low: 'neutral' };
 
@@ -123,17 +141,23 @@ export function PromptDeployModal({ workspaceId, prompt, onClose, onChanged }: P
   const [productionVersion, setProductionVersion] = useState<number | undefined>(prompt.productionVersion);
   const [checks, setChecks] = useState<Record<number, PromptFinding[] | 'loading'>>({});
   const [busy, setBusy] = useState(false);
+  const [history, setHistory] = useState<DeploymentEvent[]>([]);
+  const [rollingBack, setRollingBack] = useState<{ toVersion: string; reason: string } | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const [nextVersions, nextCanary, details] = await Promise.all([
+      const [nextVersions, nextCanary, details, deployments] = await Promise.all([
         promptService.listVersions(workspaceId, prompt._id),
         promptService.getCanaryDeployment(workspaceId, prompt._id).catch(() => null),
-        promptService.getPrompt(workspaceId, prompt._id).catch(() => null)
+        promptService.getPrompt(workspaceId, prompt._id).catch(() => null),
+        promptService.getDeploymentHistory(workspaceId, prompt._id).catch(() => null)
       ]);
       setVersions([...nextVersions].sort((a, b) => b.version - a.version));
       setCanary(nextCanary);
-      if (details) setProductionVersion(details.productionVersion);
+      if (deployments) {
+        setHistory(deployments.history);
+        setProductionVersion(deployments.productionVersion);
+      } else if (details) setProductionVersion(details.productionVersion);
     } catch (error) {
       setVersions([]);
       showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
@@ -266,6 +290,23 @@ export function PromptDeployModal({ workspaceId, prompt, onClose, onChanged }: P
   };
 
   const liveCanary = canary && (canary.status === 'active' || canary.status === 'paused');
+  // Versions that have been in production before, and the one that was there before the current one.
+  const wasProduction = new Set(history.filter((e) => PRODUCTION_ACTIONS.includes(e.action)).map((e) => e.version));
+  const previousProduction = history.find((e) => PRODUCTION_ACTIONS.includes(e.action) && e.version !== productionVersion)?.version;
+  const rollbackChoices = (versions ?? []).filter((v) => v.version !== productionVersion);
+
+  const startRollback = (toVersion?: number) =>
+    setRollingBack({ toVersion: String(toVersion ?? previousProduction ?? rollbackChoices[0]?.version ?? ''), reason: '' });
+
+  const rollBackProduction = async () => {
+    if (!rollingBack) return;
+    const target = Number(rollingBack.toVersion);
+    await act(
+      () => promptService.rollbackProduction(workspaceId, prompt._id, { toVersion: target, reason: rollingBack.reason.trim() || undefined }),
+      `Production is back on v${target}`
+    );
+    setRollingBack(null);
+  };
 
   return (
     <Modal
@@ -282,6 +323,57 @@ export function PromptDeployModal({ workspaceId, prompt, onClose, onChanged }: P
             {productionVersion ? `v${productionVersion}` : 'none yet'}
           </strong>
         </div>
+
+        {productionVersion && rollbackChoices.length > 0 ? (
+          <div className="rounded-xl border border-slate-200 p-3" data-testid="production-rollback">
+            {rollingBack ? (
+              <div className="space-y-3">
+                <p className="m-0 text-[13px] font-semibold text-slate-900">Roll production back</p>
+                <p className="m-0 text-xs text-slate-600">
+                  All traffic goes to the version you choose at once.{liveCanary ? ' The running canary is cancelled.' : ''}
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Go back to">
+                    <Select
+                      aria-label="Roll back to version"
+                      onValueChange={(v) => setRollingBack({ ...rollingBack, toVersion: v })}
+                      options={rollbackChoices.map((v) => ({
+                        value: String(v.version),
+                        label: `v${v.version}${wasProduction.has(v.version) ? ' (was in production)' : ''}`
+                      }))}
+                      value={rollingBack.toVersion}
+                    />
+                  </Field>
+                  <Field hint="Kept in the history." label="Why? (optional)">
+                    <Input
+                      aria-label="Rollback reason"
+                      maxLength={500}
+                      onChange={(e) => setRollingBack({ ...rollingBack, reason: e.target.value })}
+                      value={rollingBack.reason}
+                    />
+                  </Field>
+                </div>
+                <div className="flex gap-2">
+                  <Button disabled={busy || !rollingBack.toVersion} icon={RotateCcw} onClick={() => void rollBackProduction()} size="sm" variant="danger">
+                    Roll back to v{rollingBack.toVersion}
+                  </Button>
+                  <Button disabled={busy} onClick={() => setRollingBack(null)} size="sm" variant="ghost">
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs text-slate-600">
+                  {previousProduction ? `Before v${productionVersion}, v${previousProduction} was in production.` : 'Something wrong with the production version?'}
+                </span>
+                <Button disabled={busy} icon={RotateCcw} onClick={() => startRollback()} size="sm" variant="danger">
+                  Roll back production
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : null}
 
         {canary ? <CanaryCard busy={busy} canary={canary} onAction={(a) => void canaryAction(a)} /> : null}
 
@@ -331,6 +423,11 @@ export function PromptDeployModal({ workspaceId, prompt, onClose, onChanged }: P
                           Start canary
                         </Button>
                       ) : null}
+                      {!isProduction && wasProduction.has(version.version) ? (
+                        <Button disabled={busy} icon={RotateCcw} onClick={() => startRollback(version.version)} size="sm" variant="ghost">
+                          Roll back to this
+                        </Button>
+                      ) : null}
                       {!isProduction ? (
                         <Button
                           disabled={busy || Boolean(liveCanary)}
@@ -372,6 +469,21 @@ export function PromptDeployModal({ workspaceId, prompt, onClose, onChanged }: P
             })}
           </ul>
         )}
+        {history.length > 0 ? (
+          <details className="rounded-xl border border-slate-200 p-3" data-testid="deploy-history">
+            <summary className="cursor-pointer text-[13px] font-medium text-slate-900">Deployment history ({history.length})</summary>
+            <ul className="m-0 mt-2 list-none space-y-1.5 p-0">
+              {history.slice(0, 30).map((e) => (
+                <li className="text-xs text-slate-700" data-testid="deploy-event" key={e.id}>
+                  <span className="font-medium text-slate-900">{ACTION_LABEL[e.action]}</span> v{e.version}
+                  {e.previousVersion && e.action !== 'canary_started' ? ` (was v${e.previousVersion})` : ''} · {e.by} ·{' '}
+                  {new Date(e.at).toLocaleString()}
+                  {e.reason ? <span className="text-slate-500"> · {e.reason}</span> : null}
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
         {!productionVersion && versions && versions.length > 0 ? (
           <p className="m-0 text-xs text-slate-500">Publish a first version before starting a canary: a canary compares a new version with the one in production.</p>
         ) : null}

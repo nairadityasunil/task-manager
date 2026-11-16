@@ -112,6 +112,25 @@ export interface ICanaryMetrics {
   legacyCostTotal: number;
 }
 
+export type DeploymentAction =
+  | 'deployed'
+  | 'canary_started'
+  | 'canary_completed'
+  | 'canary_rolled_back'
+  | 'canary_failed'
+  | 'canary_cancelled'
+  | 'rolled_back';
+
+export interface DeploymentEvent {
+  id: string;
+  action: DeploymentAction;
+  version: number;
+  previousVersion: number | null;
+  reason: string;
+  by: string;
+  at: string;
+}
+
 export interface PromptCanaryDeployment {
   _id: string;
   workspaceId: string;
@@ -364,6 +383,29 @@ export const promptService = {
       versionNumber,
       ...options,
     });
+    return res.data.data;
+  },
+
+  async rollbackProduction(
+    workspaceId: string,
+    promptId: string,
+    options: { toVersion?: number; reason?: string } = {},
+  ): Promise<{ promptId: string; productionVersion: number; rolledBackFrom: number; reason: string }> {
+    const res = await api.post<{
+      status: string;
+      data: { promptId: string; productionVersion: number; rolledBackFrom: number; reason: string };
+    }>(`/workspaces/${workspaceId}/prompts/${promptId}/deploy/rollback`, options);
+    return res.data.data;
+  },
+
+  async getDeploymentHistory(
+    workspaceId: string,
+    promptId: string,
+  ): Promise<{ productionVersion: number; history: DeploymentEvent[] }> {
+    const res = await api.get<{
+      status: string;
+      data: { productionVersion: number; history: DeploymentEvent[] };
+    }>(`/workspaces/${workspaceId}/prompts/${promptId}/deploy/history`);
     return res.data.data;
   },
 

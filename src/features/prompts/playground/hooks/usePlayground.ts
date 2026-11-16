@@ -310,6 +310,7 @@ export function usePlayground(workspaceId: string) {
         await loadPromptDetails(activePrompt._id, selectedVersionNum);
       } catch (err) {
         console.error("Failed to start canary deployment", err);
+      showToast({ variant: "error", message: toDisplayErrorMessage(err) });
       } finally {
         setIsCanaryActionLoading(false);
       }
@@ -326,10 +327,12 @@ export function usePlayground(workspaceId: string) {
       await loadPromptDetails(activePrompt._id, selectedVersionNum);
     } catch (err) {
       console.error("Failed to advance canary deployment", err);
+      showToast({ variant: "error", message: toDisplayErrorMessage(err) });
     } finally {
       setIsCanaryActionLoading(false);
     }
-  }, [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails]);
+  }, [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails, showToast]);
+
 
   const handlePauseCanary = useCallback(async () => {
     if (!activePrompt) return;
@@ -339,10 +342,12 @@ export function usePlayground(workspaceId: string) {
       setActiveCanary(canary);
     } catch (err) {
       console.error("Failed to pause canary deployment", err);
+      showToast({ variant: "error", message: toDisplayErrorMessage(err) });
     } finally {
       setIsCanaryActionLoading(false);
     }
-  }, [workspaceId, activePrompt]);
+  }, [workspaceId, activePrompt, showToast]);
+
 
   const handleResumeCanary = useCallback(async () => {
     if (!activePrompt) return;
@@ -352,10 +357,12 @@ export function usePlayground(workspaceId: string) {
       setActiveCanary(canary);
     } catch (err) {
       console.error("Failed to resume canary deployment", err);
+      showToast({ variant: "error", message: toDisplayErrorMessage(err) });
     } finally {
       setIsCanaryActionLoading(false);
     }
-  }, [workspaceId, activePrompt]);
+  }, [workspaceId, activePrompt, showToast]);
+
 
   const handleRollbackCanary = useCallback(async () => {
     if (!activePrompt) return;
@@ -366,10 +373,12 @@ export function usePlayground(workspaceId: string) {
       await loadPromptDetails(activePrompt._id, selectedVersionNum);
     } catch (err) {
       console.error("Failed to rollback canary deployment", err);
+      showToast({ variant: "error", message: toDisplayErrorMessage(err) });
     } finally {
       setIsCanaryActionLoading(false);
     }
-  }, [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails]);
+  }, [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails, showToast]);
+
 
   const handleCompleteCanary = useCallback(async () => {
     if (!activePrompt) return;
@@ -380,10 +389,12 @@ export function usePlayground(workspaceId: string) {
       await loadPromptDetails(activePrompt._id, selectedVersionNum);
     } catch (err) {
       console.error("Failed to complete canary deployment", err);
+      showToast({ variant: "error", message: toDisplayErrorMessage(err) });
     } finally {
       setIsCanaryActionLoading(false);
     }
-  }, [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails]);
+  }, [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails, showToast]);
+
 
   return {
     folders,
