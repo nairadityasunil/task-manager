@@ -250,6 +250,8 @@ export function useDashboard() {
       setActiveView('activity');
     } else if (path === '/telemetry' || path.startsWith('/telemetry/')) {
       setActiveView('telemetry');
+    } else if (path === '/insights' || path.startsWith('/insights/')) {
+      setActiveView('insights');
     } else if (path === '/agents' || path.startsWith('/agents/')) {
       setActiveView('agents');
     } else if (path.startsWith('/projects/')) {
@@ -1342,6 +1344,15 @@ export function useDashboard() {
     if (!selectedTaskId) return null;
     return tasks.find(t => t.id === selectedTaskId) ?? null;
   }, [selectedTaskId, tasks]);
+
+  // A link can name a task opened after this list loaded (an alert or automation just made it): reload once.
+  const reloadedForTaskRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!selectedTaskId || loading || activeTask) return;
+    if (reloadedForTaskRef.current === selectedTaskId) return;
+    reloadedForTaskRef.current = selectedTaskId;
+    void loadDashboard({ quiet: true });
+  }, [selectedTaskId, loading, activeTask, loadDashboard]);
 
   return {
     user,

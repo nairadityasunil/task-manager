@@ -19,7 +19,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   type LucideIcon,
-  Gauge
+  Gauge,
+  BarChart3
 } from 'lucide-react';
 import { avatarColor, cn, tagColor, type Area } from '@/components/ui';
 
@@ -38,6 +39,7 @@ export type SidebarView =
   | 'sdk-integration-detail'
   | 'agents'
   | 'telemetry'
+  | 'insights'
   | 'activity';
 
 interface SidebarProps {
@@ -285,6 +287,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               </NavGroup>
 
               <NavGroup label="Product">
+                <NavItem area="events" icon={BarChart3} isActive={activeView === 'insights'} label="Insights" onClick={() => onViewChange('insights')} />
                 <NavItem area="integrations" icon={Plug} isActive={activeView === 'sdk-integrations'} label="SDK Integrations" onClick={() => onViewChange('sdk-integrations')} />
               </NavGroup>
 

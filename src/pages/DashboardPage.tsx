@@ -1,5 +1,6 @@
 import ActivityTimelinePage from '@/pages/ActivityTimelinePage';
 import TelemetryPage from '@/pages/TelemetryPage';
+import InsightsPage from '@/pages/InsightsPage';
 import { GovernanceReadyBadge } from '@/features/telemetry/TaskAutomationNote';
 import { AiSpend } from '@/features/agents/components/AiSpend';
 import { useCallback, useEffect, useState } from 'react';
@@ -248,6 +249,7 @@ export function DashboardPage(): JSX.Element {
           else if (view === 'agents') navigate('/agents');
           else if (view === 'activity') navigate('/activity');
           else if (view === 'telemetry') navigate('/telemetry');
+          else if (view === 'insights') navigate('/insights');
         }}
         onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
         onOpenSearch={() => setIsPaletteOpen(true)}
@@ -294,6 +296,8 @@ export function DashboardPage(): JSX.Element {
               ? 'Activity'
               : dash.activeView === 'telemetry'
               ? 'Telemetry'
+              : dash.activeView === 'insights'
+              ? 'Insights'
               : dash.activeView === 'agents'
               ? 'Agent Governance'
               : dash.activeView === 'sdk-docs'
@@ -342,6 +346,8 @@ export function DashboardPage(): JSX.Element {
                 <span className={crumbCurrentCls}>Activity</span>
               ) : dash.activeView === 'telemetry' ? (
                 <span className={crumbCurrentCls}>Telemetry</span>
+              ) : dash.activeView === 'insights' ? (
+                <span className={crumbCurrentCls}>Insights</span>
               ) : dash.activeView === 'agents' ? (
                 <span className={crumbCurrentCls}>Agent Governance</span>
               ) : dash.activeView === 'sdk-docs' ? (
@@ -425,6 +431,10 @@ export function DashboardPage(): JSX.Element {
           ) : dash.activeView === 'activity' ? (
             <div className="h-full overflow-y-auto">
               <ActivityTimelinePage projects={dash.projects} />
+            </div>
+          ) : dash.activeView === 'insights' ? (
+            <div className="h-full overflow-y-auto">
+              <InsightsPage />
             </div>
           ) : dash.activeView === 'telemetry' ? (
             <div className="h-full overflow-y-auto">
