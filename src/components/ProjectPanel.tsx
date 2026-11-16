@@ -140,7 +140,17 @@ function ProjectPanel({
         <div className="flex min-w-0 items-center gap-3">
           <IconTile icon={FolderKanban} size="md" tone={projectTone(info.row.original.id)} />
           <div className="grid min-w-0 gap-0.5">
-            <span className="truncate text-sm font-medium text-slate-900">{info.getValue()}</span>
+            {/* A real control, so the name opens the project by click, keyboard or assistive tech (the row click stays). */}
+            <button
+              className="truncate text-left text-sm font-medium text-slate-900 hover:text-brand-700 focus-visible:outline-none focus-visible:underline"
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenProject(info.row.original.id);
+              }}
+              type="button"
+            >
+              {info.getValue()}
+            </button>
             {info.row.original.description && (
               <span className="max-w-[200px] truncate text-[13px] text-slate-500 sm:max-w-[360px]">
                 {info.row.original.description}

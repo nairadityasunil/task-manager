@@ -3,12 +3,11 @@ import { KeyRound, ShieldAlert } from 'lucide-react';
 
 import Modal from '@/components/Modal';
 import { Button, Field, cn, selectClass, Select, Checkbox, Input } from '@/components/ui';
-import { useToast } from '@/context/ToastContext';
 import { API_BASE_URL } from '@/services/api';
 import { agentsApi, SCOPE_LABELS, type Agent } from '@/services/agents';
 import { getProjects } from '@/services/projects';
 import type { Project } from '@/types/project';
-import { toDisplayErrorMessage } from '@/utils/apiError';
+import { isHeldForApproval, toDisplayErrorMessage } from '@/utils/apiError';
 import { SecretReveal } from './shared';
 
 export const STANDARD_SCOPES = [
@@ -191,7 +190,6 @@ export function CreateKeyModal({
   onKey,
   replaceAgent = null
 }: CreateKeyModalProps): JSX.Element {
-  const { showToast } = useToast();
   const [projects, setProjects] = useState<Project[]>(givenProjects ?? []);
   useEffect(() => {
     if (givenProjects) return;
@@ -212,12 +210,14 @@ export function CreateKeyModal({
   /** A key for a third party: limited to projects, short-lived, every change held. */
   const [forVendor, setForVendor] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
   const [created, setCreated] = useState<{ agent: Agent; key: string } | null>(null);
   const canSubmit = Boolean(name.trim()) && !(restricted && projectIds.length === 0) && !(forVendor && projectIds.length === 0);
 
   const submit = async () => {
     if (!canSubmit) return;
     setSaving(true);
+    setFailure(null);
     try {
       // Third-party keys get the workspace's shortest allowed life unless a shorter one is picked.
       const days = forVendor ? (expiry === 'never' || Number(expiry) > 30 ? null : Number(expiry)) : expiry === 'never' ? null : Number(expiry);
@@ -230,7 +230,8 @@ export function CreateKeyModal({
       onCreated(result.agent);
       onKey?.(result.key);
     } catch (error) {
-      showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+      // Shown in the dialog (it stays open) as well as in the notice the API client raises.
+      setFailure(isHeldForApproval(error) ? `Sent for approval, no key yet. ${toDisplayErrorMessage(error)}` : toDisplayErrorMessage(error));
     } finally {
       setSaving(false);
     }
@@ -299,6 +300,12 @@ export function CreateKeyModal({
       title={replaceAgent ? `Give ${replaceAgent.name} its own key` : 'New agent key'}
     >
       <div className="space-y-4">
+        {failure ? (
+          <p className="m-0 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] text-red-800" data-testid="create-key-error" role="alert">
+            {replaceAgent ? `${replaceAgent.name} still uses your login: no key was created. ` : 'No key was created. '}
+            {failure}
+          </p>
+        ) : null}
         <Field hint="Where the key will be used, e.g. Claude Desktop or Nightly sync." label="Name">
           <Input autoFocus maxLength={120} onChange={(e) => setName(e.target.value)} placeholder="Claude Desktop" value={name} />
         </Field>

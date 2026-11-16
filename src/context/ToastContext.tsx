@@ -9,6 +9,8 @@ interface ToastItem {
   message: string;
   dedupeKey: string;
   action?: ToastAction;
+  /** Stays until dismissed: for outcomes people must not miss (an action refused or sent for approval). */
+  sticky?: boolean;
 }
 
 /** Optional button on a toast, e.g. "Open" the thing that was just created. */
@@ -18,7 +20,7 @@ export interface ToastAction {
 }
 
 interface ToastContextValue {
-  showToast: (input: { variant: ToastVariant; message: string; dedupeKey?: string; action?: ToastAction }) => void;
+  showToast: (input: { variant: ToastVariant; message: string; dedupeKey?: string; action?: ToastAction; sticky?: boolean }) => void;
   dismissToast: (id: string) => void;
 }
 
@@ -26,13 +28,14 @@ const TOAST_DURATION_MS = 5000;
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
 let showGlobalToastFn:
-  | ((input: { variant: ToastVariant; message: string; dedupeKey?: string }) => void)
+  | ((input: { variant: ToastVariant; message: string; dedupeKey?: string; sticky?: boolean }) => void)
   | null = null;
 
 export const showGlobalToast = (input: {
   variant: ToastVariant;
   message: string;
   dedupeKey?: string;
+  sticky?: boolean;
 }): void => {
   showGlobalToastFn?.(input);
 };
@@ -45,6 +48,8 @@ const ToastViewport: React.FC<{
     {toasts.map((toast) => (
       <div
         key={toast.id}
+        data-testid={toast.sticky ? 'sticky-notice' : 'toast'}
+        role={toast.variant === 'error' ? 'alert' : 'status'}
         className={[
           'flex items-start gap-3 rounded-2xl border px-4 py-3 shadow-[0_18px_50px_rgba(15,23,42,0.16)] backdrop-blur-sm',
           toast.variant === 'success'
@@ -94,12 +99,14 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     variant,
     message,
     dedupeKey,
-    action
+    action,
+    sticky
   }: {
     variant: ToastVariant;
     message: string;
     dedupeKey?: string;
     action?: ToastAction;
+    sticky?: boolean;
   }) => {
     const normalizedMessage = message.trim();
 
@@ -121,7 +128,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           variant,
           message: normalizedMessage,
           dedupeKey: normalizedDedupeKey,
-          action
+          action,
+          sticky
         }
       ];
     });
@@ -140,11 +148,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
 
-    const timers = toasts.map((toast) =>
-      window.setTimeout(() => {
-        dismissToast(toast.id);
-      }, TOAST_DURATION_MS)
-    );
+    const timers = toasts
+      .filter((toast) => !toast.sticky)
+      .map((toast) =>
+        window.setTimeout(() => {
+          dismissToast(toast.id);
+        }, TOAST_DURATION_MS)
+      );
 
     return () => {
       timers.forEach((timer) => window.clearTimeout(timer));

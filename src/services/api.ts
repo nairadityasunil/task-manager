@@ -103,6 +103,9 @@ const clearAuthStorage = () => {
   sessionStorage.removeItem('todo_session');
 };
 
+/** Fired when the API says this session's agent is suspended or revoked. */
+export const SESSION_BLOCKED_EVENT = 'pristine:session-blocked';
+
 api.interceptors.response.use(
   (response) => {
     finishTracking(response.config);
@@ -111,7 +114,8 @@ api.interceptors.response.use(
     const held = response.data as { error?: string; message?: string } | undefined;
     if (response.status === 202 && held?.error === 'approval_required') {
       const message = held.message || 'Sent for approval. It runs once a person approves it.';
-      showGlobalToast({ variant: 'info', message, dedupeKey: `error:${message.trim()}` });
+      // Stays on screen: the form it came from is still open, and the outcome must not be missed.
+      showGlobalToast({ variant: 'info', message: `Sent for approval, not done yet. ${message}`, dedupeKey: `error:${message.trim()}`, sticky: true });
       return Promise.reject(new AxiosError(message, 'APPROVAL_REQUIRED', response.config, response.request, response));
     }
     return response;
@@ -206,11 +210,18 @@ api.interceptors.response.use(
     // Pages that load governance data explain an automated-browser refusal
     // themselves; refused actions are still reported.
     const explainedByPage = isAgentForbidden(error) && originalRequest?.method?.toLowerCase() === 'get';
-    if (!originalRequest?.silent && !explainedByPage) {
+    // This session's agent was suspended or revoked: every request is refused. One page-wide notice says so
+    // (see SessionBlockedNotice) instead of an error for each request.
+    const blocked = (error.response?.data as { error?: string } | undefined)?.error === 'agent_blocked';
+    if (blocked) {
+      window.dispatchEvent(new CustomEvent(SESSION_BLOCKED_EVENT, { detail: normalizedError.message }));
+    } else if (!originalRequest?.silent && !explainedByPage) {
       showGlobalToast({
         variant: 'error',
         message: normalizedError.message,
-        dedupeKey: `error:${normalizedError.message.trim()}`
+        dedupeKey: `error:${normalizedError.message.trim()}`,
+        // A change an agent session may not make: keep it visible while the form stays open.
+        sticky: isAgentForbidden(error)
       });
     }
 
@@ -222,4 +233,5 @@ api.interceptors.response.use(
 );
 
 export { TOKEN_STORAGE_KEY };
+
 export default api;

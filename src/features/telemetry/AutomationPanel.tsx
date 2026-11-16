@@ -26,7 +26,7 @@ import {
   type AutomationTask,
 } from '@/services/telemetry';
 import type { Project } from '@/types/project';
-import { toDisplayErrorMessage } from '@/utils/apiError';
+import { isHeldForApproval, toDisplayErrorMessage } from '@/utils/apiError';
 
 const OUTCOME = {
   improved: { label: 'Improved', tone: 'success' as const, icon: TrendingUp },
@@ -311,12 +311,19 @@ export function AutomationPanel({
   const [running, setRunning] = useState(false);
   const [filter, setFilter] = useState<'open' | 'results' | 'all'>('open');
 
+  const [loadError, setLoadError] = useState<string | null>(null);
   const load = useCallback(() => {
     telemetryApi
       .automation()
-      .then(setData)
-      .catch((error) => showToast({ variant: 'error', message: toDisplayErrorMessage(error) }));
-  }, [showToast]);
+      .then((next) => {
+        setData(next);
+        setLoadError(null);
+      })
+      // Never show "0 tasks" when the list simply could not be read.
+      .catch((error) =>
+        setLoadError(toDisplayErrorMessage(error) || 'The task list could not be loaded.'),
+      );
+  }, []);
   useEffect(load, [load]);
 
   const run = async () => {
@@ -324,6 +331,7 @@ export function AutomationPanel({
     try {
       const r = await telemetryApi.run();
       setData((current) => (current ? { ...current, tasks: r.tasks } : current));
+      setLoadError(null);
       showToast({
         variant: 'success',
         message:
@@ -332,7 +340,8 @@ export function AutomationPanel({
             : 'Checked: nothing new',
       });
     } catch (error) {
-      showToast({ variant: 'error', message: toDisplayErrorMessage(error) });
+      // The API client already says why (e.g. an automated session's request was sent for approval); keep what is on screen.
+      if (!isHeldForApproval(error)) setLoadError(toDisplayErrorMessage(error));
     } finally {
       setRunning(false);
     }
@@ -365,7 +374,7 @@ export function AutomationPanel({
           icon={<Workflow className="h-4 w-4 text-slate-400" />}
           title="Tasks opened automatically"
         />
-        <div className="flex gap-1.5 border-b border-slate-100 px-4 py-2">
+        <div className={cn('flex gap-1.5 border-b border-slate-100 px-4 py-2', data == null && 'hidden')}>
           {(
             [
               ['open', `Open · ${open.length}`],
@@ -389,7 +398,19 @@ export function AutomationPanel({
             </button>
           ))}
         </div>
-        {data == null ? (
+        {loadError ? (
+          <div
+            className="flex flex-wrap items-center gap-3 border-b border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-800"
+            data-testid="automation-error"
+            role="alert"
+          >
+            <span className="min-w-0 flex-1">Could not load the tasks: {loadError}</span>
+            <Button onClick={load} size="sm">
+              Try again
+            </Button>
+          </div>
+        ) : null}
+        {loadError && data == null ? null : data == null ? (
           <div className="space-y-2 p-4">
             <div className="h-12 animate-pulse rounded-lg bg-slate-100" />
             <div className="h-12 animate-pulse rounded-lg bg-slate-100" />
