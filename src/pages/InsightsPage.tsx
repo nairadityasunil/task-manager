@@ -8,17 +8,22 @@ import { Badge, Button, Card, Tabs } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { Alerts, Cohorts, type AlertSeed } from '@/features/insights/CohortsAndAlerts';
 import { Dashboards } from '@/features/insights/Dashboards';
+import { Logs } from '@/features/insights/Logs';
+import { Live, Persons } from '@/features/insights/LiveAndPersons';
 import { Explore } from '@/features/insights/Explore';
 import { timeAgo } from '@/services/agents';
 import { KIND_LABELS, insightsApi, type SavedInsight, type Sources } from '@/services/insights';
 
-type Tab = 'explore' | 'saved' | 'dashboards' | 'cohorts' | 'alerts';
+type Tab = 'explore' | 'saved' | 'dashboards' | 'cohorts' | 'alerts' | 'live' | 'persons' | 'logs';
 const TABS: Array<{ value: Tab; label: string }> = [
   { value: 'explore', label: 'Explore' },
   { value: 'saved', label: 'Saved' },
   { value: 'dashboards', label: 'Dashboards' },
   { value: 'cohorts', label: 'Cohorts' },
   { value: 'alerts', label: 'Alerts' },
+  { value: 'live', label: 'Live events' },
+  { value: 'persons', label: 'Persons' },
+  { value: 'logs', label: 'Logs' },
 ];
 
 function SavedList({ onOpen }: { onOpen: (insight: SavedInsight) => void }): JSX.Element {
@@ -164,6 +169,32 @@ export default function InsightsPage(): JSX.Element {
           />
         ) : tab === 'cohorts' ? (
           <Cohorts sources={sources} />
+        ) : tab === 'live' ? (
+          <Live
+            onPerson={(id, integration) =>
+              navigate(`/insights/persons?person=${encodeURIComponent(id)}&app=${integration}`)
+            }
+            sources={sources}
+          />
+        ) : tab === 'persons' ? (
+          <Persons
+            onOpen={(id, integration) => {
+              const next = new URLSearchParams(searchParams);
+              if (id) {
+                next.set('person', id);
+                if (integration) next.set('app', integration);
+              } else {
+                next.delete('person');
+                next.delete('app');
+              }
+              setSearchParams(next);
+            }}
+            openId={searchParams.get('person')}
+            openIntegration={searchParams.get('app')}
+            sources={sources}
+          />
+        ) : tab === 'logs' ? (
+          <Logs sources={sources} />
         ) : (
           <Alerts
             highlight={searchParams.get('alert')}

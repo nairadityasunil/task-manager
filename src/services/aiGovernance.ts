@@ -111,7 +111,7 @@ export interface UseCase extends UseCaseSummary {
     by: string;
   } | null;
   factsheet: Record<string, string>;
-  links: { agentIds: string[]; promptIds: string[]; vendorIds: string[] };
+  links: { agentIds: string[]; promptIds: string[]; vendorIds: string[]; integrationIds?: string[] };
   riskList: Risk[];
   approvals: Approval[];
   gates: Array<{
@@ -243,6 +243,8 @@ export interface RecordRow {
   output: string;
   feedback: 'up' | 'down' | null;
   flags: string[];
+  /** "sdk" when an app's SDK key sent it, "api" when a person or agent did. */
+  source?: 'api' | 'sdk';
 }
 
 const G = '/ai-governance';
@@ -261,6 +263,7 @@ export const aiGovApi = {
       agents: Array<{ id: string; name: string }>;
       prompts: Array<{ id: string; name: string }>;
       vendors: Array<{ id: string; name: string }>;
+      integrations: Array<{ id: string; name: string }>;
     }>(api.get(`${G}/assets`, { silent: true })),
   settings: () => unwrap<GovernanceSettings>(api.get(`${G}/settings`, { silent: true })),
   updateSettings: (body: Partial<Pick<GovernanceSettings, 'approvers' | 'highRiskExtraRoles'>>) =>
