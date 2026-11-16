@@ -623,7 +623,7 @@ function Factsheet({ uc, catalog, onChange }: Props): JSX.Element {
   const [sheet, setSheet] = useState<Record<string, string>>(uc.factsheet);
   const [name, setName] = useState(uc.name);
   const [description, setDescription] = useState(uc.description);
-  const [links, setLinks] = useState(uc.links);
+  const [links, setLinks] = useState({ ...uc.links, integrationIds: uc.links.integrationIds ?? [] });
   const [assets, setAssets] = useState<Awaited<ReturnType<typeof aiGovApi.assets>> | null>(null);
   const action = useAction();
   const { showToast } = useToast();
@@ -632,7 +632,7 @@ function Factsheet({ uc, catalog, onChange }: Props): JSX.Element {
     aiGovApi
       .assets()
       .then(setAssets)
-      .catch(() => setAssets({ agents: [], prompts: [], vendors: [] }));
+      .catch(() => setAssets({ agents: [], prompts: [], vendors: [], integrations: [] }));
   }, []);
   const groups: Array<{
     key: 'agentIds' | 'promptIds' | 'vendorIds';
@@ -750,6 +750,36 @@ function Factsheet({ uc, catalog, onChange }: Props): JSX.Element {
               )}
             </div>
           ))}
+        </div>
+        <div className="border-t border-slate-100 p-4" data-testid="sdk-apps">
+          <p className="m-0 text-xs font-medium text-slate-600">Apps that may send interactions (SDK)</p>
+          <p className="m-0 mb-2 mt-0.5 text-xs text-slate-500">
+            An app&apos;s SDK key is public, so this use case only takes interactions from the apps you tick. None is the default.
+          </p>
+          {assets?.integrations.length ? (
+            <div className="grid gap-1 sm:grid-cols-2">
+              {assets.integrations.map((app) => (
+                <Checkbox
+                  checked={links.integrationIds.includes(app.id)}
+                  disabled={locked}
+                  key={app.id}
+                  label={app.name}
+                  onChange={() =>
+                    setLinks({
+                      ...links,
+                      integrationIds: links.integrationIds.includes(app.id)
+                        ? links.integrationIds.filter((x) => x !== app.id)
+                        : [...links.integrationIds, app.id],
+                    })
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="m-0 text-xs text-slate-500">
+              {assets ? 'No app is connected yet. Add one under SDK Integrations.' : 'Loading…'}
+            </p>
+          )}
         </div>
         {!locked ? (
           <div className="border-t border-slate-100 px-4 py-3">
