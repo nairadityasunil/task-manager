@@ -48,14 +48,19 @@ export default function AiGovernancePage(): JSX.Element {
     ? (searchParams.get('tab') as DetailTab)
     : 'summary';
   const [catalog, setCatalog] = useState<Catalog | null>(null);
+  const [unavailable, setUnavailable] = useState<{ status: number | null } | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [creating, setCreating] = useState<Preset | true | null>(null);
 
   useEffect(() => {
+    setUnavailable(null);
     aiGovApi
       .catalog()
       .then(setCatalog)
-      .catch(() => setCatalog(null));
-  }, []);
+      .catch((e: { response?: { status?: number } }) =>
+        setUnavailable({ status: e?.response?.status ?? null }),
+      );
+  }, [attempt]);
 
   const go = (next: Tab) =>
     navigate(next === 'overview' ? '/ai-governance' : `/ai-governance/${next}`);
@@ -77,7 +82,28 @@ export default function AiGovernancePage(): JSX.Element {
         <Tabs items={TABS} onChange={go} value={detailId ? 'use-cases' : tab} />
       </PageHeader>
       <div className="px-3 py-4 sm:px-5 lg:px-6">
-        {detailId ? (
+        {unavailable ? (
+          <div
+            className="mx-auto max-w-xl rounded-xl border border-amber-200 bg-amber-50 p-6 text-[13px] text-amber-900"
+            data-testid="aigov-unavailable"
+            role="alert"
+          >
+            <p className="m-0 text-sm font-semibold">
+              AI Governance is not available on this server
+            </p>
+            <p className="m-0 mt-1.5">
+              {unavailable.status === 404
+                ? 'The server this portal talks to does not have the AI Governance routes yet. The backend needs to be updated and restarted with the latest release.'
+                : unavailable.status === 401 || unavailable.status === 403
+                  ? 'You do not have access to AI Governance in this workspace.'
+                  : 'The server could not be reached. Check your connection and the API address, then try again.'}
+              {unavailable.status ? ` (HTTP ${unavailable.status})` : ''}
+            </p>
+            <Button className="mt-3" onClick={() => setAttempt((n) => n + 1)}>
+              Try again
+            </Button>
+          </div>
+        ) : detailId ? (
           catalog ? (
             <UseCaseDetail
               catalog={catalog}
