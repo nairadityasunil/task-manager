@@ -5,7 +5,6 @@ import {
   Settings,
   Activity,
   BrainCircuit,
-  LogOut,
   BookOpen,
   Target,
   Plug,
@@ -23,7 +22,7 @@ import {
   BarChart3,
   ClipboardCheck
 } from 'lucide-react';
-import { avatarColor, cn, tagColor, type Area } from '@/components/ui';
+import { cn, tagColor, type Area } from '@/components/ui';
 
 import logoImg from '@/assets/logo.png';
 
@@ -53,15 +52,12 @@ interface SidebarProps {
   onNewProject: () => void;
   onPlanWithAi?: () => void;
   onPlanMyDay?: () => void;
-  onLogout: () => void;
   activeIntegrationId?: string;
   activeIntegrationName?: string;
   activeTab?: string;
   /** Below the lg breakpoint the sidebar is a drawer; these control it. */
   mobileOpen?: boolean;
   onMobileClose?: () => void;
-  /** Shown in the account area at the bottom. */
-  user?: { name: string | null; email: string } | null;
   /** Projects listed under "Projects" (the first few). */
   projects?: Array<{ id: string; name: string }>;
   /** Opens the command palette. */
@@ -140,25 +136,14 @@ const Sidebar: React.FC<SidebarProps> = ({
   onProjectSelect,
   onViewChange,
   onNewProject,
-  onLogout,
   activeIntegrationId,
   activeIntegrationName,
   activeTab,
   mobileOpen = false,
   onMobileClose,
-  user,
   projects = [],
   onOpenSearch,
 }) => {
-  const displayName = user?.name || user?.email || '';
-  const initials = (user?.name || user?.email || 'U')
-    .trim()
-    .split(/\s+/)
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const toggleCollapsed = () =>
     setCollapsed((value) => {
@@ -330,34 +315,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           <NavItem area="settings" icon={Settings} isActive={activeView === 'settings'} label="Settings" onClick={() => onViewChange('settings')} />
         </div>
 
-        <div className={cn('mx-3 mb-1 flex items-center gap-2.5 border-t border-slate-200 px-1 pt-2.5 pb-1', collapsed && 'lg:mx-2 lg:flex-col lg:px-0')}>
-          {user ? (
-            <>
-              <div
-                className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold', avatarColor(user.email || user.name))}
-                title={collapsed ? displayName : undefined}
-              >
-                {initials}
-              </div>
-              <div className={cn('min-w-0 flex-1 leading-tight', collapsed && 'lg:hidden')}>
-                <div className="truncate text-[13px] font-medium text-slate-900">{displayName}</div>
-                {user.name ? <div className="truncate text-xs text-slate-500">{user.email}</div> : null}
-              </div>
-            </>
-          ) : (
-            <div className="flex-1" />
-          )}
-          <button
-            aria-label="Sign out"
-            className="flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-slate-500 transition-colors hover:bg-red-50 hover:text-red-700"
-            onClick={onLogout}
-            title="Sign out"
-            type="button"
-          >
-            <LogOut size={15} strokeWidth={1.9} />
-            <span className={user ? 'sr-only' : ''}>Sign out</span>
-          </button>
-        </div>
         <div className={cn('px-4 pb-2.5 text-[11px] text-slate-400', collapsed && 'lg:hidden')} title={`Built ${__APP_BUILT_AT__}`}>
           Version {__APP_COMMIT__}
         </div>
