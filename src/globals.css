@@ -265,6 +265,37 @@
   .animate-shimmer, .animate-in, .animate-rise-in, .animate-fade-in { animation: none !important; }
 }
 
+/* Loader: the logo is drawn stroke by stroke, filled in, held, then drawn out and started again. */
+.pristine-loader-stroke {
+  stroke: #2a5541;
+  stroke-width: 14;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: loader-draw 3.4s cubic-bezier(0.55, 0.1, 0.3, 1) infinite;
+}
+.pristine-loader-fill {
+  opacity: 0;
+  animation: loader-fill 3.4s ease infinite;
+  animation-delay: 0.35s;
+}
+@keyframes loader-draw {
+  0%        { stroke-dashoffset: 1; }
+  42%, 70%  { stroke-dashoffset: 0; }
+  96%, 100% { stroke-dashoffset: -1; }
+}
+@keyframes loader-fill {
+  0%, 30%  { opacity: 0; }
+  52%, 78% { opacity: 1; }
+  96%, 100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pristine-loader-stroke { display: none; }
+  .pristine-loader-fill { animation: loader-fade 2.4s ease-in-out infinite; opacity: 1; }
+}
+@keyframes loader-fade { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+
 /* Indeterminate top progress bar (GlobalLoadingSpinner) */
 @keyframes top-progress {
   0%   { transform: translateX(-100%); }
