@@ -607,7 +607,7 @@ export function DashboardPage(): JSX.Element {
                     {!dash.isSidebarCollapsed ? (
                       <div className="flex min-w-0 items-center gap-2">
                         <h3 className="m-0 text-sm font-semibold tracking-tight text-slate-900">Epics</h3>
-                        <Badge className="tabular-nums">{dash.epics.length}</Badge>
+                        <Badge className="tabular-nums">{dash.activeProjectEpics.length}</Badge>
                       </div>
                     ) : (
                       <h3 className="m-0 text-[15px] font-semibold text-slate-900 lg:sr-only">Epics</h3>
