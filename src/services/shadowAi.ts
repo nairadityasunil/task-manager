@@ -72,6 +72,7 @@ export interface ShadowTool {
   personalShare: number;
   hasSecret: boolean;
   hasBroadGrant: boolean;
+  sensitive: number;
   riskScore: number;
   riskLevel: RiskLevel;
   domains: string[];
@@ -92,6 +93,7 @@ export interface ShadowToolDetail extends ShadowTool {
     lastAt: string;
     broad: boolean;
     secret: boolean;
+    sensitive: number;
   }>;
 }
 
@@ -153,7 +155,7 @@ export interface ShadowToken {
 
 export interface ShadowConnector {
   id: string;
-  type: 'google_workspace' | 'microsoft_entra';
+  type: 'google_workspace' | 'microsoft_entra' | 'azure_ai' | 'aws_ai';
   name: string;
   account: string;
   lastSyncAt: string | null;

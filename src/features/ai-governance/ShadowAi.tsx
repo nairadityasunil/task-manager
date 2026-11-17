@@ -86,6 +86,8 @@ const bytes = (n: number): string =>
 type Sub = 'overview' | 'tools' | 'sources' | 'policy' | 'requests';
 
 /** Shadow AI: AI tools in use that nobody approved. Admins see everything; members can declare what they use. */
+type ConnectorType = ShadowConnector['type'];
+
 export function ShadowAiHub(): JSX.Element {
   const [overview, setOverview] = useState<ShadowOverview | null>(null);
   const [state, setState] = useState<'loading' | 'admin' | 'member' | 'error'>('loading');
@@ -562,7 +564,11 @@ function ToolModal({
           <section>
             <h3 className="m-0 mb-1 text-[13px] font-semibold text-slate-900">
               Evidence ({tool.users} {tool.users === 1 ? 'person' : 'people'},{' '}
-              {bytes(tool.bytesOut)} sent out, {tool.uploads} upload{tool.uploads === 1 ? '' : 's'})
+              {bytes(tool.bytesOut)} sent out, {tool.uploads} upload{tool.uploads === 1 ? '' : 's'}
+              {tool.sensitive
+                ? `, sensitive data seen ${tool.sensitive} time${tool.sensitive === 1 ? '' : 's'}`
+                : ''}
+              )
             </h3>
             <div className="max-h-48 overflow-auto rounded-lg border border-slate-100">
               <table className="w-full text-left text-xs">
@@ -578,6 +584,7 @@ function ToolModal({
                       <td className="px-2 py-1.5 tabular-nums text-slate-600">{s.count}×</td>
                       <td className="px-2 py-1.5 text-slate-600">
                         {s.secret ? <Badge tone="danger">Key</Badge> : null}
+                        {s.sensitive ? <Badge tone="danger">Sensitive data</Badge> : null}
                         {s.broad ? <Badge tone="warning">Company data</Badge> : null}
                         {s.personal ? <Badge tone="neutral">Personal account</Badge> : null}
                       </td>
@@ -824,6 +831,23 @@ function SourcesView({ onChanged }: { onChanged: () => void }): JSX.Element {
           ) : null}
         </div>
       </Card>
+      <Card className="lg:col-span-2" data-testid="shadow-extension">
+        <CardHeader
+          description="A Chrome or Edge extension that tells staff whether an AI site is approved, blocks the prohibited ones with the reason and the approved alternative, and checks text pasted into AI sites for card numbers, keys and personal data. Only the kinds and counts reach the server, never the text."
+          title="Browser extension"
+        />
+        <div className="grid gap-2 p-4 text-[13px] text-slate-700">
+          <p className="m-0">
+            Build it for your server with{' '}
+            <code className="text-xs">
+              SHADOW_AI_SERVER=https://your-api node extensions/shadow-ai/build.mjs
+            </code>{' '}
+            (in the backend repository), then roll the folder out with your device management, or
+            load it unpacked to try it. Staff open its settings and enter the server address and a
+            token created below. Pasting is checked; typed text is not.
+          </p>
+        </div>
+      </Card>
       <Card className="lg:col-span-2">
         <CardHeader
           description="For a scheduled job that forwards proxy logs, OAuth app lists or cloud inventories. A token can only send shadow AI signals. It is not an SDK key and cannot read anything."
@@ -895,7 +919,7 @@ function SourcesView({ onChanged }: { onChanged: () => void }): JSX.Element {
 
 function ConnectorsCard({ onChanged }: { onChanged: () => void }): JSX.Element {
   const [rows, setRows] = useState<ShadowConnector[] | null>(null);
-  const [adding, setAdding] = useState<'google_workspace' | 'microsoft_entra' | null>(null);
+  const [adding, setAdding] = useState<ConnectorType | null>(null);
   const action = useAction();
   const { showToast } = useToast();
   const load = useCallback(() => {
@@ -937,9 +961,8 @@ function ConnectorsCard({ onChanged }: { onChanged: () => void }): JSX.Element {
                 <span className="min-w-0 flex-1">
                   <span className="font-medium text-slate-900">{c.name}</span>{' '}
                   <span className="text-xs text-slate-500">
-                    {c.name !==
-                    (c.type === 'google_workspace' ? 'Google Workspace' : 'Microsoft Entra')
-                      ? `${c.type === 'google_workspace' ? 'Google Workspace' : 'Microsoft Entra'} · `
+                    {c.name !== CONNECTOR_INFO[c.type].title
+                      ? `${CONNECTOR_INFO[c.type].title} · `
                       : ''}
                     {c.account}
                   </span>
@@ -947,7 +970,7 @@ function ConnectorsCard({ onChanged }: { onChanged: () => void }): JSX.Element {
                     {c.lastStatus === 'never'
                       ? 'Not synced yet'
                       : c.lastStatus === 'ok'
-                        ? `Synced ${day(c.lastSyncAt)} · ${c.lastUsers} ${c.lastUsers === 1 ? 'person' : 'people'}, ${c.lastSignals} ${c.lastSignals === 1 ? 'grant' : 'grants'}${c.lastTruncated ? ' (first 2,000 people only)' : ''}`
+                        ? `Synced ${day(c.lastSyncAt)} · ${c.type === 'azure_ai' || c.type === 'aws_ai' ? '' : `${c.lastUsers} ${c.lastUsers === 1 ? 'person' : 'people'}, `}${c.lastSignals} ${c.type === 'azure_ai' || c.type === 'aws_ai' ? 'AI resource' : 'grant'}${c.lastSignals === 1 ? '' : 's'}${c.lastTruncated ? ' (first 2,000 people only)' : ''}`
                         : null}
                   </span>
                 </span>
@@ -977,6 +1000,8 @@ function ConnectorsCard({ onChanged }: { onChanged: () => void }): JSX.Element {
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => setAdding('google_workspace')}>Connect Google Workspace</Button>
           <Button onClick={() => setAdding('microsoft_entra')}>Connect Microsoft Entra</Button>
+          <Button onClick={() => setAdding('azure_ai')}>Connect Azure AI</Button>
+          <Button onClick={() => setAdding('aws_ai')}>Connect AWS AI</Button>
         </div>
       </div>
       {adding ? (
@@ -994,98 +1019,124 @@ function ConnectorsCard({ onChanged }: { onChanged: () => void }): JSX.Element {
   );
 }
 
+const CONNECTOR_INFO: Record<
+  ConnectorType,
+  {
+    title: string;
+    help: string;
+    fields: Array<{
+      id: string;
+      label: string;
+      secret?: boolean;
+      area?: boolean;
+      optional?: boolean;
+    }>;
+  }
+> = {
+  google_workspace: {
+    title: 'Google Workspace',
+    help: 'Create a service account, turn on domain-wide delegation, and allow the scopes admin.directory.user.readonly and admin.directory.user.security. Then upload its JSON key and name a Workspace admin it can act as.',
+    fields: [
+      { id: 'adminEmail', label: 'Admin email to act as' },
+      { id: 'serviceAccountKey', label: 'Service account key (JSON)', area: true },
+    ],
+  },
+  microsoft_entra: {
+    title: 'Microsoft Entra',
+    help: 'Register an app, grant it the application permissions Directory.Read.All and DelegatedPermissionGrant.Read.All (admin consent), and create a client secret.',
+    fields: [
+      { id: 'tenantId', label: 'Tenant ID or domain' },
+      { id: 'clientId', label: 'Client ID' },
+      { id: 'clientSecret', label: 'Client secret', secret: true },
+    ],
+  },
+  azure_ai: {
+    title: 'Azure AI',
+    help: 'Lists Azure OpenAI and AI Services resources in one subscription. Use an app registration with the Reader role on that subscription. This finds AI that has been set up, not calls made to it.',
+    fields: [
+      { id: 'tenantId', label: 'Tenant ID or domain' },
+      { id: 'subscriptionId', label: 'Subscription ID' },
+      { id: 'clientId', label: 'Client ID' },
+      { id: 'clientSecret', label: 'Client secret', secret: true },
+    ],
+  },
+  aws_ai: {
+    title: 'AWS AI',
+    help: 'Lists Bedrock custom models and provisioned throughput, and SageMaker endpoints, in the regions you give. Use a read-only access key with the List permissions for those services. This finds AI that has been set up, not calls made to it.',
+    fields: [
+      { id: 'accessKeyId', label: 'Access key ID' },
+      { id: 'secretAccessKey', label: 'Secret access key', secret: true },
+      { id: 'regions', label: 'Regions (comma separated, e.g. us-east-1, eu-west-1)' },
+    ],
+  },
+};
+
 function ConnectorModal({
   type,
   onClose,
   onDone,
 }: {
-  type: 'google_workspace' | 'microsoft_entra';
+  type: ConnectorType;
   onClose: () => void;
   onDone: () => void;
 }): JSX.Element {
-  const google = type === 'google_workspace';
+  const info = CONNECTOR_INFO[type];
   const [name, setName] = useState('');
-  const [adminEmail, setAdminEmail] = useState('');
-  const [key, setKey] = useState('');
-  const [tenantId, setTenantId] = useState('');
-  const [clientId, setClientId] = useState('');
-  const [secret, setSecret] = useState('');
+  const [values, setValues] = useState<Record<string, string>>({});
   const action = useAction();
   const { showToast } = useToast();
   const pick = async (file: File | undefined) => {
-    if (file) setKey(await file.text());
+    if (file) setValues((v) => ({ ...v, serviceAccountKey: '' }));
+    if (file) {
+      const text = await file.text();
+      setValues((v) => ({ ...v, serviceAccountKey: text }));
+    }
   };
-  const ready = google
-    ? adminEmail.includes('@') && key.trim().length > 20
-    : tenantId.trim() && clientId.trim() && secret.length >= 8;
+  const ready = info.fields.every((f) => f.optional || (values[f.id] ?? '').trim().length > 0);
   const submit = async () => {
-    const r = await action.run(() =>
-      shadowApi.addConnector(
-        google
-          ? { type, name, adminEmail, serviceAccountKey: key }
-          : { type, name, tenantId, clientId, clientSecret: secret },
-      ),
-    );
+    const r = await action.run(() => shadowApi.addConnector({ type, name, ...values }));
     if (r) {
-      showToast({ variant: 'success', message: `Connected: ${r.lastSignals} grants found` });
+      showToast({
+        variant: 'success',
+        message: `Connected: ${r.lastSignals} ${type === 'azure_ai' || type === 'aws_ai' ? 'AI resources' : 'grants'} found`,
+      });
       onDone();
     }
   };
   return (
-    <Modal
-      onClose={onClose}
-      title={google ? 'Connect Google Workspace' : 'Connect Microsoft Entra'}
-    >
+    <Modal onClose={onClose} title={`Connect ${info.title}`}>
       <div className="grid gap-3" data-testid="shadow-connector-form">
         <p className="m-0 text-[13px] text-slate-600">
-          {google
-            ? 'Create a service account, turn on domain-wide delegation, and allow the scopes admin.directory.user.readonly and admin.directory.user.security. Then upload its JSON key and name a Workspace admin it can act as.'
-            : 'Register an app, grant it the application permissions Directory.Read.All and DelegatedPermissionGrant.Read.All (admin consent), and create a client secret.'}{' '}
-          We test the connection before saving.
+          {info.help} We test the connection before saving.
         </p>
         <ErrorNote message={action.error} />
         <Field label="Name (optional)">
           <Input onChange={(e) => setName(e.target.value)} value={name} />
         </Field>
-        {google ? (
-          <>
-            <Field label="Admin email to act as">
-              <Input
-                onChange={(e) => setAdminEmail(e.target.value)}
-                type="email"
-                value={adminEmail}
-              />
-            </Field>
-            <Field label="Service account key (JSON)">
+        {info.fields.map((f) =>
+          f.area ? (
+            <Field key={f.id} label={f.label}>
               <>
                 <FileInput accept=".json" onChange={(e) => void pick(e.target.files?.[0])} />
                 <Textarea
-                  aria-label="Service account key contents"
+                  aria-label={`${f.label} contents`}
                   className="mt-2"
-                  onChange={(e) => setKey(e.target.value)}
+                  onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))}
                   rows={3}
-                  value={key}
+                  value={values[f.id] ?? ''}
                 />
               </>
             </Field>
-          </>
-        ) : (
-          <>
-            <Field label="Tenant ID or domain">
-              <Input onChange={(e) => setTenantId(e.target.value)} value={tenantId} />
-            </Field>
-            <Field label="Client ID">
-              <Input onChange={(e) => setClientId(e.target.value)} value={clientId} />
-            </Field>
-            <Field label="Client secret">
+          ) : (
+            <Field key={f.id} label={f.label}>
               <Input
                 autoComplete="off"
-                onChange={(e) => setSecret(e.target.value)}
-                type="password"
-                value={secret}
+                onChange={(e) => setValues((v) => ({ ...v, [f.id]: e.target.value }))}
+                type={f.secret ? 'password' : 'text'}
+                value={values[f.id] ?? ''}
               />
             </Field>
-          </>
+          ),
         )}
         <div className="flex justify-end gap-2">
           <Button onClick={onClose}>Cancel</Button>
