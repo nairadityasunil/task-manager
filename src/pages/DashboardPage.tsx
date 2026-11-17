@@ -256,8 +256,6 @@ export function DashboardPage(): JSX.Element {
         onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
         onOpenSearch={() => setIsPaletteOpen(true)}
         projects={dash.projects}
-        onLogout={dash.logout}
-        user={dash.user ? { name: dash.user.name || null, email: dash.user.email || '' } : null}
         activeIntegrationId={dash.activeIntegrationId ?? undefined}
         activeIntegrationName={dash.activeIntegrationName}
         activeTab={tab || 'overview'}
@@ -325,6 +323,7 @@ export function DashboardPage(): JSX.Element {
               : 'Overview'
           }
           user={{ name: dash.user?.name || null, email: dash.user?.email || '' }}
+          onLogout={dash.logout}
           notifications={dash.notifications}
           isNotificationsOpen={dash.isNotificationsOpen}
           onNotificationsToggle={() => dash.setIsNotificationsOpen(!dash.isNotificationsOpen)}

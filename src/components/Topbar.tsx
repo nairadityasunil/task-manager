@@ -1,5 +1,6 @@
 import React from 'react';
-import { Bell, Menu } from 'lucide-react';
+import { Bell, LogOut, Menu } from 'lucide-react';
+import { Menu as DropdownMenu } from '@/components/ui';
 import UserAvatar from './UserAvatar';
 import NotificationBox, { Notification } from './NotificationBox';
 import { usePendingApprovals, useSecurityInbox } from '@/features/agents/components/ApprovalRequest';
@@ -8,6 +9,8 @@ interface TopbarProps {
   title: string;
   breadcrumbs?: React.ReactNode;
   user: { name: string | null; email: string };
+  /** Signs the person out. */
+  onLogout?: () => void;
   notifications: Notification[];
   isNotificationsOpen: boolean;
   onNotificationsToggle: () => void;
@@ -24,6 +27,7 @@ const Topbar: React.FC<TopbarProps> = ({
   title,
   breadcrumbs,
   user,
+  onLogout,
   notifications,
   isNotificationsOpen,
   onNotificationsToggle,
@@ -102,12 +106,34 @@ const Topbar: React.FC<TopbarProps> = ({
           )}
         </div>
 
-        <div className="ml-1 flex items-center gap-2.5 border-l border-slate-200 pl-2.5 sm:ml-1.5 sm:pl-3">
-          <UserAvatar name={user.name} email={user.email} size="md" showTooltip={false} />
-          <div className="hidden min-w-0 flex-col leading-tight xl:flex">
-            <span className="max-w-[160px] truncate text-[13px] font-medium text-slate-900">{user.name || 'User'}</span>
-            <span className="max-w-[160px] truncate text-xs text-slate-500">{user.email}</span>
-          </div>
+        <div className="ml-1 flex items-center border-l border-slate-200 pl-2.5 sm:ml-1.5 sm:pl-3">
+          {onLogout ? (
+            <DropdownMenu
+              items={[{ id: 'sign-out', label: 'Sign out', icon: LogOut, danger: true, onSelect: onLogout }]}
+              label="Account"
+              trigger={
+                <button
+                  aria-label={`Account menu for ${user.name || user.email}`}
+                  className="flex items-center gap-2.5 rounded-md py-0.5 pl-0.5 pr-1.5 text-left transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand-600/20"
+                  type="button"
+                >
+                  <UserAvatar name={user.name} email={user.email} size="md" showTooltip={false} />
+                  <div className="hidden min-w-0 flex-col leading-tight xl:flex">
+                    <span className="max-w-[160px] truncate text-[13px] font-medium text-slate-900">{user.name || 'User'}</span>
+                    <span className="max-w-[160px] truncate text-xs text-slate-500">{user.email}</span>
+                  </div>
+                </button>
+              }
+            />
+          ) : (
+            <div className="flex items-center gap-2.5">
+              <UserAvatar name={user.name} email={user.email} size="md" showTooltip={false} />
+              <div className="hidden min-w-0 flex-col leading-tight xl:flex">
+                <span className="max-w-[160px] truncate text-[13px] font-medium text-slate-900">{user.name || 'User'}</span>
+                <span className="max-w-[160px] truncate text-xs text-slate-500">{user.email}</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>
