@@ -265,43 +265,36 @@
   .animate-shimmer, .animate-in, .animate-rise-in, .animate-fade-in { animation: none !important; }
 }
 
-/* Animated logo loader (Loader): the logo breathes, a light sweeps across it, a soft glow pulses behind. */
-@keyframes loader-breathe {
-  0%, 100% { transform: scale(0.94); }
-  50%      { transform: scale(1.04); }
+/* Loader: the logo is drawn stroke by stroke, filled in, held, then drawn out and started again. */
+.pristine-loader-stroke {
+  stroke: #2a5541;
+  stroke-width: 14;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: loader-draw 3.4s cubic-bezier(0.55, 0.1, 0.3, 1) infinite;
 }
-@keyframes loader-shine {
-  0%   { background-position: 160% 0; }
-  100% { background-position: -60% 0; }
+.pristine-loader-fill {
+  opacity: 0;
+  animation: loader-fill 3.4s ease infinite;
+  animation-delay: 0.35s;
 }
-@keyframes loader-glow {
-  0%, 100% { opacity: 0.25; transform: scale(0.8); }
-  50%      { opacity: 0.55; transform: scale(1.1); }
+@keyframes loader-draw {
+  0%        { stroke-dashoffset: 1; }
+  42%, 70%  { stroke-dashoffset: 0; }
+  96%, 100% { stroke-dashoffset: -1; }
 }
-.pristine-loader-logo { animation: loader-breathe 1.6s ease-in-out infinite; }
-.pristine-loader-shine {
-  background-image: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%);
-  background-size: 250% 100%;
-  background-repeat: no-repeat;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  animation: loader-shine 1.6s ease-in-out infinite;
+@keyframes loader-fill {
+  0%, 30%  { opacity: 0; }
+  52%, 78% { opacity: 1; }
+  96%, 100% { opacity: 0; }
 }
-.pristine-loader-glow {
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, rgba(16, 185, 129, 0) 70%);
-  animation: loader-glow 1.6s ease-in-out infinite;
+@media (prefers-reduced-motion: reduce) {
+  .pristine-loader-stroke { display: none; }
+  .pristine-loader-fill { animation: loader-fade 2.4s ease-in-out infinite; opacity: 1; }
 }
 @keyframes loader-fade { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) {
-  .pristine-loader-logo, .pristine-loader-shine, .pristine-loader-glow { animation: none; }
-  .pristine-loader-shine { display: none; }
-  .pristine-loader-glow { opacity: 0.3; }
-  .pristine-loader-logo { animation: loader-fade 2.4s ease-in-out infinite; }
-}
 
 /* Indeterminate top progress bar (GlobalLoadingSpinner) */
 @keyframes top-progress {
