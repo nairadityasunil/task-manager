@@ -198,7 +198,7 @@ export const PromptVersionCompareModal: React.FC<PromptVersionCompareModalProps>
         </div>
 
         {/* 5-Tab Navigation Header */}
-        <div className="flex shrink-0 gap-5 overflow-x-auto border-b border-slate-200 px-4 text-sm font-medium hide-scrollbar sm:px-6">
+        <div className="flex shrink-0 gap-5 overflow-x-auto overflow-y-hidden border-b border-slate-200 px-4 text-sm font-medium hide-scrollbar sm:px-6">
           <button
             onClick={() => setActiveTab("side-by-side")}
             className={`-mb-px shrink-0 whitespace-nowrap border-b-2 py-3 transition-colors ${

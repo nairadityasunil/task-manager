@@ -19,7 +19,7 @@ interface TabsProps<T extends string> {
 /** Underline tabs that scroll sideways on narrow screens instead of wrapping. */
 export function Tabs<T extends string>({ items, value, onChange, className }: TabsProps<T>): JSX.Element {
   return (
-    <div className={cn('-mb-px flex gap-4 overflow-x-auto hide-scrollbar', className)} role="tablist">
+    <div className={cn('-mb-px flex gap-4 overflow-x-auto overflow-y-hidden hide-scrollbar', className)} role="tablist">
       {items.map(({ value: itemValue, label, icon: Icon, count }) => {
         const active = itemValue === value;
         return (

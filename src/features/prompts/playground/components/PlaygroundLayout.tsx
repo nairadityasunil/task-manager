@@ -249,7 +249,7 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
               }}
             />
 
-            <div className="flex w-full gap-5 overflow-x-auto border-b border-slate-200 hide-scrollbar">
+            <div className="flex w-full gap-5 overflow-x-auto overflow-y-hidden border-b border-slate-200 hide-scrollbar">
               <button
                 type="button"
                 onClick={() => setActiveTab("prompt")}
