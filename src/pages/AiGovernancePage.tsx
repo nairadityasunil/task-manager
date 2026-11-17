@@ -12,14 +12,16 @@ import {
   SettingsPanel,
   UseCaseList,
 } from '@/features/ai-governance/Panels';
+import { ShadowAiHub } from '@/features/ai-governance/ShadowAi';
 import { UseCaseDetail, type DetailTab } from '@/features/ai-governance/UseCaseDetail';
 import { aiGovApi, type AiType, type Catalog } from '@/services/aiGovernance';
 
-type Tab = 'overview' | 'use-cases' | 'discovery' | 'issues' | 'settings';
+type Tab = 'overview' | 'use-cases' | 'discovery' | 'shadow-ai' | 'issues' | 'settings';
 const TABS: Array<{ value: Tab; label: string }> = [
   { value: 'overview', label: 'Overview' },
   { value: 'use-cases', label: 'Use cases' },
   { value: 'discovery', label: 'Discovery' },
+  { value: 'shadow-ai', label: 'Shadow AI' },
   { value: 'issues', label: 'Issues' },
   { value: 'settings', label: 'Settings' },
 ];
@@ -122,6 +124,8 @@ export default function AiGovernancePage(): JSX.Element {
           <UseCaseList onNew={() => setCreating(true)} onOpen={open} />
         ) : tab === 'discovery' ? (
           <Discovery onRegister={(preset) => setCreating(preset)} />
+        ) : tab === 'shadow-ai' ? (
+          <ShadowAiHub />
         ) : tab === 'issues' ? (
           <IssuesPanel />
         ) : (
