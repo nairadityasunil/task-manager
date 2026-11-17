@@ -291,11 +291,12 @@ export function ActivityHistoryPanel({
                               )}
                             </div>
                           )}
+                          {activity.legalHold || activity.retentionUntil ? (
                           <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-                            <span className="font-mono">hash {(activity.immutableHash || 'pending-migration').slice(0, 16)}</span>
                             {activity.legalHold && <span className="font-medium text-red-600">legal hold</span>}
                             {activity.retentionUntil && <span>retains until {new Date(activity.retentionUntil).toLocaleDateString()}</span>}
                           </div>
+                          ) : null}
                         </div>
                       </div>
                     );
