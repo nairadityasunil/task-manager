@@ -115,11 +115,19 @@ export function ShadowAiHub(): JSX.Element {
   };
 
   useEffect(() => {
+    // The catalog is open to every member and says whether this person is an admin, so a member
+    // is not sent to an admin-only endpoint just to be refused.
     shadowApi
-      .overview()
-      .then((o) => {
-        setOverview(o);
-        setState('admin');
+      .catalog()
+      .then((c) => {
+        if (c.isAdmin === false) {
+          setState('member');
+          return undefined;
+        }
+        return shadowApi.overview().then((o) => {
+          setOverview(o);
+          setState('admin');
+        });
       })
       .catch((e: { response?: { status?: number } }) =>
         setState(e?.response?.status === 403 ? 'member' : 'error'),

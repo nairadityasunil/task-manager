@@ -194,9 +194,10 @@ const S = '/shadow-ai';
 
 export const shadowApi = {
   catalog: () =>
-    unwrap<{ tools: Array<{ key: string; name: string; vendor: string; kind: string }> }>(
-      api.get(`${S}/catalog`, { silent: true }),
-    ),
+    unwrap<{
+      isAdmin?: boolean;
+      tools: Array<{ key: string; name: string; vendor: string; kind: string }>;
+    }>(api.get(`${S}/catalog`, { silent: true })),
   overview: () => unwrap<ShadowOverview>(api.get(`${S}/overview`, { silent: true })),
   tools: (params: { status?: string; q?: string }) =>
     unwrap<ShadowTool[]>(api.get(`${S}/tools`, { params, silent: true })),
