@@ -7,7 +7,14 @@ import { RULE_LABELS, telemetryApi, type TaskAutomation } from '@/services/telem
 import { MetricLine } from './AutomationPanel';
 
 /** On a task the system opened: why it exists, where the numbers are, and whether the fix worked. */
-export function TaskAutomationNote({ taskId }: { taskId: string }): JSX.Element | null {
+export function TaskAutomationNote({
+  taskId,
+  onOpenSource,
+}: {
+  taskId: string;
+  /** Called when the source link is followed, so a task panel can close and reveal the page it points to. */
+  onOpenSource?: () => void;
+}): JSX.Element | null {
   const [info, setInfo] = useState<TaskAutomation | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -32,6 +39,7 @@ export function TaskAutomationNote({ taskId }: { taskId: string }): JSX.Element 
         <span className="text-slate-600">· {RULE_LABELS[info.rule] ?? info.rule}</span>
         <Link
           className="ml-auto text-xs font-medium text-brand-600 hover:text-brand-700"
+          onClick={onOpenSource}
           to={info.sourceLink}
         >
           Open the source

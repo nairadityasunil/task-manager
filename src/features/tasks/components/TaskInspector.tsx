@@ -269,12 +269,12 @@ export function TaskInspector({
                     ) : null}
                   </dl>
 
-                  {task.source === 'automation' ? <TaskAutomationNote taskId={task.id} /> : null}
+                  {task.source === 'automation' ? <TaskAutomationNote onOpenSource={onClose} taskId={task.id} /> : null}
 
                   {task.description && (
                     <section>
                       <h4 className="m-0 mb-1.5 text-[13px] font-medium text-slate-500">Description</h4>
-                      <p className="m-0 whitespace-pre-line text-sm leading-relaxed text-slate-700">{task.description}</p>
+                      <p className="m-0 whitespace-pre-line text-sm leading-relaxed text-slate-700">{linkify(task.description)}</p>
                     </section>
                   )}
 
@@ -521,3 +521,22 @@ export function TaskInspector({
 }
 
 export default TaskInspector;
+
+/** Makes web addresses in a description clickable. Only http and https are linked. */
+function linkify(text: string): Array<string | JSX.Element> {
+  return text.split(/(https?:\/\/[^\s<>"']+)/g).map((part, i) =>
+    /^https?:\/\//.test(part) ? (
+      <a
+        className="break-all text-brand-600 underline hover:text-brand-700"
+        href={part}
+        key={i}
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        {part}
+      </a>
+    ) : (
+      part
+    ),
+  );
+}
