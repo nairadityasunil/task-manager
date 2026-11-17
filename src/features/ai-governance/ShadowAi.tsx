@@ -38,6 +38,7 @@ import {
   type ImportResult,
   type RiskLevel,
   type ScanResult,
+  type ShadowConnector,
   type ShadowOverview,
   type ShadowRequest,
   type ShadowSettings,
@@ -93,6 +94,23 @@ export function ShadowAiHub(): JSX.Element {
   const [openTool, setOpenTool] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
+  const [checking, setChecking] = useState(false);
+  const { showToast } = useToast();
+  const runCheck = async () => {
+    setChecking(true);
+    try {
+      const r = await shadowApi.runCheck();
+      showToast({
+        variant: 'success',
+        message: `Check done: ${r.alerts} new alert${r.alerts === 1 ? '' : 's'}, ${r.tasks} new task${r.tasks === 1 ? '' : 's'}`,
+      });
+      refresh();
+    } catch {
+      showToast({ variant: 'error', message: 'The check could not run' });
+    } finally {
+      setChecking(false);
+    }
+  };
 
   useEffect(() => {
     shadowApi
@@ -149,9 +167,14 @@ export function ShadowAiHub(): JSX.Element {
           onChange={(v) => setSub(v as Sub)}
           value={sub}
         />
-        <Button icon={Plus} onClick={() => setDeclaring(true)}>
-          Declare an AI tool
-        </Button>
+        <div className="flex gap-2">
+          <Button disabled={checking} onClick={() => void runCheck()}>
+            {checking ? 'Checking' : 'Run check now'}
+          </Button>
+          <Button icon={Plus} onClick={() => setDeclaring(true)}>
+            Declare an AI tool
+          </Button>
+        </div>
       </div>
       {sub === 'overview' && overview ? (
         <OverviewView onOpen={setOpenTool} onSub={setSub} overview={overview} />
@@ -714,6 +737,7 @@ function SourcesView({ onChanged }: { onChanged: () => void }): JSX.Element {
 
   return (
     <div className="grid gap-4 lg:grid-cols-2" data-testid="shadow-sources">
+      <ConnectorsCard onChanged={onChanged} />
       <Card>
         <CardHeader
           description="Export from your proxy, DNS filter or firewall (Zscaler, Netskope, Squid, Cloudflare, Palo Alto) as CSV with a header row naming the host, user, bytes and time. A plain list of hosts also works."
@@ -864,6 +888,213 @@ function SourcesView({ onChanged }: { onChanged: () => void }): JSX.Element {
         </div>
       </Card>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+
+function ConnectorsCard({ onChanged }: { onChanged: () => void }): JSX.Element {
+  const [rows, setRows] = useState<ShadowConnector[] | null>(null);
+  const [adding, setAdding] = useState<'google_workspace' | 'microsoft_entra' | null>(null);
+  const action = useAction();
+  const { showToast } = useToast();
+  const load = useCallback(() => {
+    shadowApi
+      .connectors()
+      .then(setRows)
+      .catch(() => setRows([]));
+  }, []);
+  useEffect(load, [load]);
+  const sync = async (id: string) => {
+    const r = await action.run(() => shadowApi.syncConnector(id));
+    if (r) {
+      showToast({
+        variant: r.lastStatus === 'ok' ? 'success' : 'error',
+        message: r.lastStatus === 'ok' ? `Synced: ${r.lastSignals} grants` : r.lastError,
+      });
+      load();
+      onChanged();
+    }
+  };
+  const remove = async (id: string) => {
+    if (await action.run(() => shadowApi.removeConnector(id))) {
+      load();
+      onChanged();
+    }
+  };
+  return (
+    <Card className="lg:col-span-2" data-testid="shadow-connectors">
+      <CardHeader
+        description="Connect your identity provider and Pristine reads which apps people have granted access to their work account, every hour. AI apps are found without anyone pasting a log. Credentials are stored encrypted and only read the list of apps."
+        title="Connected accounts"
+      />
+      <div className="grid gap-3 p-4">
+        <ErrorNote message={action.error} />
+        {rows?.length ? (
+          <ul className="m-0 grid list-none divide-y divide-slate-100 p-0 text-[13px]">
+            {rows.map((c) => (
+              <li className="flex flex-wrap items-center gap-3 py-2" key={c.id}>
+                <span className="min-w-0 flex-1">
+                  <span className="font-medium text-slate-900">{c.name}</span>{' '}
+                  <span className="text-xs text-slate-500">
+                    {c.name !==
+                    (c.type === 'google_workspace' ? 'Google Workspace' : 'Microsoft Entra')
+                      ? `${c.type === 'google_workspace' ? 'Google Workspace' : 'Microsoft Entra'} · `
+                      : ''}
+                    {c.account}
+                  </span>
+                  <span className="block text-xs text-slate-500">
+                    {c.lastStatus === 'never'
+                      ? 'Not synced yet'
+                      : c.lastStatus === 'ok'
+                        ? `Synced ${day(c.lastSyncAt)} · ${c.lastUsers} ${c.lastUsers === 1 ? 'person' : 'people'}, ${c.lastSignals} ${c.lastSignals === 1 ? 'grant' : 'grants'}${c.lastTruncated ? ' (first 2,000 people only)' : ''}`
+                        : null}
+                  </span>
+                </span>
+                {c.lastStatus === 'error' ? (
+                  <span className="max-w-md text-xs text-red-700" role="alert">
+                    Last sync failed: {c.lastError}
+                  </span>
+                ) : null}
+                <Button disabled={action.busy} onClick={() => void sync(c.id)} size="sm">
+                  Sync now
+                </Button>
+                <Button
+                  aria-label={`Remove ${c.name}`}
+                  disabled={action.busy}
+                  icon={Trash2}
+                  onClick={() => void remove(c.id)}
+                  size="sm"
+                >
+                  Remove
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : rows ? (
+          <p className="m-0 text-[13px] text-slate-500">No account connected yet.</p>
+        ) : null}
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => setAdding('google_workspace')}>Connect Google Workspace</Button>
+          <Button onClick={() => setAdding('microsoft_entra')}>Connect Microsoft Entra</Button>
+        </div>
+      </div>
+      {adding ? (
+        <ConnectorModal
+          onClose={() => setAdding(null)}
+          onDone={() => {
+            setAdding(null);
+            load();
+            onChanged();
+          }}
+          type={adding}
+        />
+      ) : null}
+    </Card>
+  );
+}
+
+function ConnectorModal({
+  type,
+  onClose,
+  onDone,
+}: {
+  type: 'google_workspace' | 'microsoft_entra';
+  onClose: () => void;
+  onDone: () => void;
+}): JSX.Element {
+  const google = type === 'google_workspace';
+  const [name, setName] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [key, setKey] = useState('');
+  const [tenantId, setTenantId] = useState('');
+  const [clientId, setClientId] = useState('');
+  const [secret, setSecret] = useState('');
+  const action = useAction();
+  const { showToast } = useToast();
+  const pick = async (file: File | undefined) => {
+    if (file) setKey(await file.text());
+  };
+  const ready = google
+    ? adminEmail.includes('@') && key.trim().length > 20
+    : tenantId.trim() && clientId.trim() && secret.length >= 8;
+  const submit = async () => {
+    const r = await action.run(() =>
+      shadowApi.addConnector(
+        google
+          ? { type, name, adminEmail, serviceAccountKey: key }
+          : { type, name, tenantId, clientId, clientSecret: secret },
+      ),
+    );
+    if (r) {
+      showToast({ variant: 'success', message: `Connected: ${r.lastSignals} grants found` });
+      onDone();
+    }
+  };
+  return (
+    <Modal
+      onClose={onClose}
+      title={google ? 'Connect Google Workspace' : 'Connect Microsoft Entra'}
+    >
+      <div className="grid gap-3" data-testid="shadow-connector-form">
+        <p className="m-0 text-[13px] text-slate-600">
+          {google
+            ? 'Create a service account, turn on domain-wide delegation, and allow the scopes admin.directory.user.readonly and admin.directory.user.security. Then upload its JSON key and name a Workspace admin it can act as.'
+            : 'Register an app, grant it the application permissions Directory.Read.All and DelegatedPermissionGrant.Read.All (admin consent), and create a client secret.'}{' '}
+          We test the connection before saving.
+        </p>
+        <ErrorNote message={action.error} />
+        <Field label="Name (optional)">
+          <Input onChange={(e) => setName(e.target.value)} value={name} />
+        </Field>
+        {google ? (
+          <>
+            <Field label="Admin email to act as">
+              <Input
+                onChange={(e) => setAdminEmail(e.target.value)}
+                type="email"
+                value={adminEmail}
+              />
+            </Field>
+            <Field label="Service account key (JSON)">
+              <>
+                <FileInput accept=".json" onChange={(e) => void pick(e.target.files?.[0])} />
+                <Textarea
+                  aria-label="Service account key contents"
+                  className="mt-2"
+                  onChange={(e) => setKey(e.target.value)}
+                  rows={3}
+                  value={key}
+                />
+              </>
+            </Field>
+          </>
+        ) : (
+          <>
+            <Field label="Tenant ID or domain">
+              <Input onChange={(e) => setTenantId(e.target.value)} value={tenantId} />
+            </Field>
+            <Field label="Client ID">
+              <Input onChange={(e) => setClientId(e.target.value)} value={clientId} />
+            </Field>
+            <Field label="Client secret">
+              <Input
+                autoComplete="off"
+                onChange={(e) => setSecret(e.target.value)}
+                type="password"
+                value={secret}
+              />
+            </Field>
+          </>
+        )}
+        <div className="flex justify-end gap-2">
+          <Button onClick={onClose}>Cancel</Button>
+          <Button disabled={action.busy || !ready} onClick={() => void submit()} variant="primary">
+            {action.busy ? 'Testing connection' : 'Connect'}
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 

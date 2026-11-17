@@ -151,6 +151,19 @@ export interface ShadowToken {
   createdAt: string;
 }
 
+export interface ShadowConnector {
+  id: string;
+  type: 'google_workspace' | 'microsoft_entra';
+  name: string;
+  account: string;
+  lastSyncAt: string | null;
+  lastStatus: 'ok' | 'error' | 'never';
+  lastError: string;
+  lastUsers: number;
+  lastSignals: number;
+  lastTruncated: boolean;
+}
+
 export interface ImportResult {
   received: number;
   ignored: number;
@@ -193,6 +206,13 @@ export const shadowApi = {
   importLog: (text: string) => unwrap<ImportResult>(api.post(`${S}/import/log`, { text })),
   scan: (files: Array<{ path: string; content: string }>, repo: string) =>
     unwrap<ScanResult>(api.post(`${S}/scan`, { files, repo })),
+  connectors: () => unwrap<ShadowConnector[]>(api.get(`${S}/connectors`, { silent: true })),
+  addConnector: (body: Record<string, unknown>) =>
+    unwrap<ShadowConnector>(api.post(`${S}/connectors`, body)),
+  syncConnector: (id: string) => unwrap<ShadowConnector>(api.post(`${S}/connectors/${id}/sync`)),
+  removeConnector: (id: string) =>
+    unwrap<{ removed: boolean }>(api.delete(`${S}/connectors/${id}`)),
+  runCheck: () => unwrap<{ alerts: number; tasks: number }>(api.post(`${S}/monitor/run`)),
   settings: () => unwrap<ShadowSettings>(api.get(`${S}/settings`, { silent: true })),
   updateSettings: (
     body: Partial<{ amnestyUntil: string | null; coachMessage: string; reviewDays: number }>,
