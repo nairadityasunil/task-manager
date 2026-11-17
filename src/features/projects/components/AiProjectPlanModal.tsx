@@ -432,7 +432,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
             <div className="mt-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
               {/* Main Tabs: Chat vs Artifacts */}
-              <div className="flex gap-5 overflow-x-auto hide-scrollbar">
+              <div className="flex gap-5 overflow-x-auto overflow-y-hidden hide-scrollbar">
                 <button
                   onClick={() => setActiveMainTab("chat")}
                   className={cn(subTabCls(activeMainTab === "chat"), "flex items-center gap-1.5 normal-case")}
@@ -596,7 +596,7 @@ export const AiProjectPlanModal: React.FC<AiProjectPlanModalProps> = ({
 
                   {/* Sub-Tabs for Blueprint Sections */}
                   <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1 border-b border-slate-200">
-                    <div className="flex gap-5 overflow-x-auto hide-scrollbar">
+                    <div className="flex gap-5 overflow-x-auto overflow-y-hidden hide-scrollbar">
                       {(["blueprint", "features", "risks", "timeline"] as const).map((tab) => (
                         <button
                           key={tab}
