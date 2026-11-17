@@ -5,54 +5,50 @@ interface LoaderProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   center?: boolean;
+  /** Accessible name; the logo is decorative. */
+  label?: string;
 }
 
-const Loader: React.FC<LoaderProps> = ({ size = 'md', className = '', center = false }) => {
-  const outerSizeClasses = {
-    sm: 'w-8 h-8',
-    md: 'w-12 h-12',
-    lg: 'w-16 h-16'
-  };
+/** Pixel sizes. Big enough to be seen on a full page, small enough to sit inside a card (sm). */
+const SIZES = { sm: 44, md: 88, lg: 128 } as const;
 
-  const ringSizeClasses = {
-    sm: 'w-8 h-8 border-2',
-    md: 'w-12 h-12 border-2',
-    lg: 'w-16 h-16 border-2'
-  };
-
-  const logoSizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8'
-  };
-
+/**
+ * The Pristine logo, breathing, with a light sweeping across it. It replaces the small spinning ring.
+ * With reduced motion it only fades slowly.
+ */
+const Loader: React.FC<LoaderProps> = ({
+  size = 'md',
+  className = '',
+  center = false,
+  label = 'Loading',
+}) => {
+  const px = SIZES[size];
   const loader = (
-    <div className={`relative flex items-center justify-center ${outerSizeClasses[size]} ${className}`}>
-      {/* Spinning outer compliance ring */}
-      <div
-        className={`
-          absolute
-          ${ringSizeClasses[size]}
-          border-slate-200
-          border-t-emerald-600
-          rounded-full
-          animate-spin
-        `}
-      />
-      {/* Pristine Logo inside loader */}
-      <img
-        src={logoImg}
-        alt="Pristine Logo"
-        className={`absolute ${logoSizeClasses[size]} object-contain`}
-      />
+    <div
+      aria-label={label}
+      aria-live="polite"
+      className={`pristine-loader relative flex items-center justify-center ${className}`}
+      role="status"
+      style={{ width: px, height: px }}
+    >
+      <span aria-hidden className="pristine-loader-glow absolute inset-0 rounded-full" />
+      <div className="pristine-loader-logo relative h-full w-full">
+        <img alt="" className="h-full w-full object-contain" draggable={false} src={logoImg} />
+        <span
+          aria-hidden
+          className="pristine-loader-shine absolute inset-0"
+          style={{
+            WebkitMaskImage: `url(${logoImg})`,
+            maskImage: `url(${logoImg})`,
+          }}
+        />
+      </div>
     </div>
   );
 
   if (center) {
     return (
-      <div className="flex items-center justify-center w-full h-full min-h-[120px]">
-        {loader}
-      </div>
+      <div className="flex h-full min-h-[200px] w-full items-center justify-center">{loader}</div>
     );
   }
 

@@ -265,6 +265,44 @@
   .animate-shimmer, .animate-in, .animate-rise-in, .animate-fade-in { animation: none !important; }
 }
 
+/* Animated logo loader (Loader): the logo breathes, a light sweeps across it, a soft glow pulses behind. */
+@keyframes loader-breathe {
+  0%, 100% { transform: scale(0.94); }
+  50%      { transform: scale(1.04); }
+}
+@keyframes loader-shine {
+  0%   { background-position: 160% 0; }
+  100% { background-position: -60% 0; }
+}
+@keyframes loader-glow {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50%      { opacity: 0.55; transform: scale(1.1); }
+}
+.pristine-loader-logo { animation: loader-breathe 1.6s ease-in-out infinite; }
+.pristine-loader-shine {
+  background-image: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%);
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  animation: loader-shine 1.6s ease-in-out infinite;
+}
+.pristine-loader-glow {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, rgba(16, 185, 129, 0) 70%);
+  animation: loader-glow 1.6s ease-in-out infinite;
+}
+@keyframes loader-fade { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .pristine-loader-logo, .pristine-loader-shine, .pristine-loader-glow { animation: none; }
+  .pristine-loader-shine { display: none; }
+  .pristine-loader-glow { opacity: 0.3; }
+  .pristine-loader-logo { animation: loader-fade 2.4s ease-in-out infinite; }
+}
+
 /* Indeterminate top progress bar (GlobalLoadingSpinner) */
 @keyframes top-progress {
   0%   { transform: translateX(-100%); }
