@@ -62,9 +62,8 @@ const Loader: React.FC<LoaderProps> = ({
   );
 
   if (center) {
-    return (
-      <div className="flex h-full min-h-[200px] w-full items-center justify-center">{loader}</div>
-    );
+    // Fills the window itself, so it is centred however tall its parent happens to be.
+    return <div className="fixed inset-0 flex items-center justify-center">{loader}</div>;
   }
 
   return loader;
