@@ -212,7 +212,29 @@ export interface SecurityItem {
   link: string;
 }
 
-const SECURITY_ALERT_TYPES = new Set(['unregistered_agent', 'threat', 'dlp', 'compliance_drift', 'critical_risk']);
+const SECURITY_ALERT_TYPES = new Set([
+  'unregistered_agent',
+  'threat',
+  'dlp',
+  'compliance_drift',
+  'critical_risk',
+  // Shadow AI: a prohibited tool still in use, an AI key in code, sensitive data sent to an AI tool.
+  'shadow_ai_prohibited',
+  'shadow_ai_key',
+  'shadow_ai_sensitive',
+  // A serious problem found while monitoring an AI use case.
+  'ai_governance_issue',
+]);
+
+/** Where an alert in the inbox leads. */
+const alertLink = (type: string): string =>
+  type === 'compliance_drift'
+    ? '/agents/compliance'
+    : type.startsWith('shadow_ai_')
+      ? '/ai-governance/shadow-ai'
+      : type === 'ai_governance_issue'
+        ? '/ai-governance/issues'
+        : '/agents';
 
 /** Open incidents and unacknowledged shadow AI, threat, DLP and drift alerts, for the main inbox. */
 export function useSecurityInbox(pollMs = 60_000): SecurityItem[] {
@@ -229,7 +251,7 @@ export function useSecurityInbox(pollMs = 60_000): SecurityItem[] {
           ...alerts
             .filter((a) => SECURITY_ALERT_TYPES.has(a.type) && new Date(a.createdAt).getTime() >= week)
             .slice(0, 8)
-            .map((a) => ({ id: `alert:${a.id ?? a._id}`, kind: 'alert' as const, severity: a.severity, title: a.title, detail: a.detail, at: a.createdAt, link: a.type === 'compliance_drift' ? '/agents/compliance' : '/agents' }))
+            .map((a) => ({ id: `alert:${a.id ?? a._id}`, kind: 'alert' as const, severity: a.severity, title: a.title, detail: a.detail, at: a.createdAt, link: alertLink(a.type) }))
         ]);
       });
     };
