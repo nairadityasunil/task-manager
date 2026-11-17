@@ -874,14 +874,26 @@ export function DashboardPage(): JSX.Element {
                   ) : (
                     <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 text-center">
                       <IconTile className="mb-3" icon={Layers3} size="lg" tone="emerald" />
-                      <h4 className="m-0 text-sm font-semibold text-slate-900">No epics yet</h4>
+                      <h4 className="m-0 text-sm font-semibold text-slate-900">No tasks yet</h4>
                       <p className="m-0 mt-1 max-w-xs text-sm text-slate-500">
-                        Epics group the work in a project. Add one to start planning tasks.
+                        Add your first task now. Epics are optional: use them later to group related work.
                       </p>
-                      {dash.activeProjectEpics.length === 0 && dash.canManageActiveProject ? (
-                        <Button className="mt-4" icon={Plus} onClick={() => dash.setIsEpicCreateModalOpen(true)} variant="primary">
-                          Add epic
-                        </Button>
+                      {dash.canManageActiveProject ? (
+                        <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                          <Button
+                            icon={Plus}
+                            onClick={() => {
+                              dash.setTaskModalProjectId(dash.activeProject?.id ?? null);
+                              dash.setIsTaskCreateModalOpen(true);
+                            }}
+                            variant="primary"
+                          >
+                            Add task
+                          </Button>
+                          <Button icon={Layers3} onClick={() => dash.setIsEpicCreateModalOpen(true)} variant="secondary">
+                            Add epic
+                          </Button>
+                        </div>
                       ) : null}
                     </div>
                   )}
