@@ -170,6 +170,7 @@ export function DashboardPage(): JSX.Element {
                   onNotesChanged={() => void dash.loadDashboard({ quiet: true })}
                   states={dash.activeTask?.projectId && dash.activeProject?.id === dash.activeTask.projectId ? dash.activeProjectStates : []}
                   onMoveToState={(t, stateId) => void dash.handleMoveTaskToState(t, stateId)}
+                  statesLoading={!dash.activeProjectStatesLoaded}
                   handleUpdateTaskField={async (taskId, updates) => {
                     const task = dash.tasks.find((t) => t.id === taskId);
                     if (!task) return;
@@ -900,6 +901,7 @@ export function DashboardPage(): JSX.Element {
                             <KanbanBoard
                               tasks={columnTasks}
                               states={dash.activeProjectStates}
+                              statesLoading={!dash.activeProjectStatesLoaded}
                               onMoveToState={async (taskId, stateId) => {
                                 const task = dash.tasks.find((t) => t.id === taskId);
                                 if (task) await dash.handleMoveTaskToState(task, stateId);

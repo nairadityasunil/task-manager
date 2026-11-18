@@ -52,6 +52,7 @@ export interface TaskInspectorProps {
   /** The task's project workflow states: when there are some, the Status dropdown lists them. */
   states?: ProjectState[];
   onMoveToState?: (task: Task, stateId: string) => void;
+  statesLoading?: boolean;
   handleUpdateTaskField: (taskId: string, updates: UpdateTaskInput) => Promise<void> | void;
 }
 
@@ -95,6 +96,7 @@ export function TaskInspector({
   onNotesChanged,
   states = [],
   onMoveToState,
+  statesLoading = false,
   handleUpdateTaskField,
 }: TaskInspectorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -199,7 +201,11 @@ export function TaskInspector({
                   <dl className="m-0 grid gap-1.5">
                     <PropertyRow label="Status">
                       <div className="w-40" data-testid="drawer-status">
-                        {states.length && onMoveToState ? (
+                        {statesLoading ? (
+                          <Select aria-label="Status" disabled onChange={() => undefined} value="">
+                            <option value="">Loading…</option>
+                          </Select>
+                        ) : states.length && onMoveToState ? (
                           <Select
                             aria-label="Status"
                             onChange={(e) => onMoveToState(task, e.target.value)}

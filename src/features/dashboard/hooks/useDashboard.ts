@@ -490,6 +490,8 @@ export function useDashboard() {
     }
   }, []);
   const activeProjectStates: ProjectState[] = activeProject ? (statesByProject[activeProject.id] ?? []) : [];
+  /** False while the project's states are still loading, so screens wait instead of flashing the built-in statuses. */
+  const activeProjectStatesLoaded = !activeProject || statesByProject[activeProject.id] != null;
   useEffect(() => {
     if (activeProject && statesByProject[activeProject.id] == null) void loadProjectStates(activeProject.id);
   }, [activeProject, statesByProject, loadProjectStates]);
@@ -1620,6 +1622,7 @@ export function useDashboard() {
     handleUpdateTaskFields,
     handleMoveTaskToState,
     activeProjectStates,
+    activeProjectStatesLoaded,
     loadProjectStates,
     handleUpdateTaskEpic,
     handleDeleteTask,

@@ -12,6 +12,8 @@ interface KanbanBoardProps {
   /** The project's own workflow: when it has states they are the columns. */
   states?: ProjectState[];
   onMoveToState?: (taskId: string, stateId: string) => Promise<void> | void;
+  /** The project's states are still loading: show a placeholder rather than the built-in columns. */
+  statesLoading?: boolean;
   onSelectTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
@@ -28,6 +30,7 @@ function KanbanBoard({
   onUpdateStatus,
   states = [],
   onMoveToState,
+  statesLoading = false,
   onSelectTask,
   onDeleteTask,
   onEditTask,
@@ -67,6 +70,16 @@ function KanbanBoard({
     if (useStates) await onMoveToState?.(draggableId, destination.droppableId);
     else await onUpdateStatus(draggableId, destination.droppableId as TaskWorkflowStatus);
   };
+
+  if (statesLoading) {
+    return (
+      <div className="flex h-full gap-3 p-3 sm:p-4" data-testid="board-loading" aria-busy="true">
+        {[0, 1, 2, 3].map((i) => (
+          <div className="h-full min-h-[320px] w-72 shrink-0 animate-pulse rounded-xl border border-slate-200 bg-slate-100" key={i} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-x-auto overscroll-x-contain p-3 sm:p-4 snap-x snap-mandatory scroll-px-3 sm:snap-none custom-scrollbar">
