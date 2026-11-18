@@ -42,6 +42,22 @@ const getProjects = async (params?: ProjectsPaginationParams): Promise<ProjectLi
   return response.data.data;
 };
 
+const getProject = async (projectId: string): Promise<Project> => {
+  const response = await api.get<ProjectResponse>(`/projects/${projectId}`);
+  return response.data.data.project;
+};
+
+/** Every project the person belongs to (the list is paged, so this reads all pages). */
+const getAllProjects = async (search?: string): Promise<Project[]> => {
+  const all: Project[] = [];
+  for (let page = 1; page <= 50; page += 1) {
+    const data = await getProjects({ page, limit: 100, search: search?.trim() || undefined });
+    all.push(...data.projects);
+    if (page >= data.totalPages) break;
+  }
+  return all;
+};
+
 const createProject = async (payload: CreateProjectInput): Promise<Project> => {
   const response = await api.post<ProjectResponse>('/projects', payload);
   return response.data.data.project;
@@ -86,6 +102,8 @@ export {
   createProject,
   deleteProject,
   deleteProjects,
+  getAllProjects,
+  getProject,
   getProjectMembers,
   getProjects,
   leaveProject,
