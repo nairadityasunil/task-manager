@@ -108,6 +108,25 @@ export interface Analytics {
   };
 }
 
+export interface EmailTemplateVariable {
+  key: string;
+  description: string;
+  sample: string;
+}
+
+export interface EmailTemplate {
+  code: string;
+  name: string;
+  description: string;
+  subject: string;
+  html: string;
+  variables: EmailTemplateVariable[];
+  isActive: boolean;
+  /** False for emails people need to sign in: they cannot be switched off. */
+  canDisable: boolean;
+  updatedAt: string | null;
+}
+
 const get = async <T>(path: string, params?: object): Promise<T> => (await api.get<{ data: T }>(`/admin${path}`, { params })).data.data;
 const post = async <T>(path: string, body?: object): Promise<T> => (await api.post<{ data: T }>(`/admin${path}`, body ?? {})).data.data;
 
@@ -128,4 +147,12 @@ export const adminApi = {
   workspaces: (query: { q?: string; page?: number; limit?: number }) => get<{ workspaces: AdminWorkspaceRow[] } & Paged>('/workspaces', query),
   workspace: (id: string) => get<AdminWorkspaceDetail>(`/workspaces/${id}`),
   audit: (query: { q?: string; action?: string; page?: number; limit?: number }) => get<{ entries: AuditEntry[] } & Paged>('/audit', query),
+  emailTemplates: () => get<EmailTemplate[]>('/email-templates'),
+  updateEmailTemplate: async (code: string, body: { name?: string; subject?: string; html?: string; isActive?: boolean }) =>
+    (await api.patch<{ data: { template: EmailTemplate; unknownVariables: string[] } }>(`/admin/email-templates/${code}`, body)).data.data,
+  resetEmailTemplate: (code: string) => post<EmailTemplate>(`/email-templates/${code}/reset`),
+  previewEmailTemplate: (code: string, draft: { subject?: string; html?: string }) =>
+    post<{ subject: string; html: string; unknownVariables: string[] }>(`/email-templates/${code}/preview`, draft),
+  testEmailTemplate: (code: string, body: { to: string; subject?: string; html?: string }) =>
+    post<{ message: string }>(`/email-templates/${code}/test`, body),
 };
