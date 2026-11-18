@@ -51,7 +51,7 @@ import AssigneeSelector from '@/components/AssigneeSelector';
 import SlaDashboard from '@/components/SlaDashboard';
 import DashboardOverview from '@/features/dashboard/components/DashboardOverview';
 import { TaskInspector } from '@/features/tasks';
-import { Clock, SlidersHorizontal, Layers3, Edit3, FileText, Folder, Layout, List, MessageCircle, MessageSquare, Plus, Users, Trash2, History, RefreshCw, Calculator, Zap, Bot, Sparkles, MoreHorizontal, Workflow, Settings, BookOpen, type LucideIcon } from 'lucide-react';
+import { Clock, SlidersHorizontal, Layers3, Edit3, FileText, Folder, Layout, List, MessageCircle, MessageSquare, Plus, Users, Trash2, History, RefreshCw, Calculator, Zap, Bot, Sparkles, MoreHorizontal, Settings, BookOpen, type LucideIcon } from 'lucide-react';
 import { Note } from '@/types/note';
 import { useDashboard, ALL_PROJECTS_VALUE } from '@/features/dashboard';
 
@@ -129,7 +129,6 @@ export function DashboardPage(): JSX.Element {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
-  const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
   const [isRunPromptOpen, setIsRunPromptOpen] = useState(false);
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
   const [viewSubtasksTaskId, setViewSubtasksTaskId] = useState<string | null>(null);
@@ -597,9 +596,6 @@ export function DashboardPage(): JSX.Element {
                     <ProjectMoreMenu
                       items={[
                         { label: 'Project notes', icon: MessageSquare, onSelect: () => dash.handleOpenProjectNotesPanel(dash.activeProject!) },
-                        ...(dash.activePermissions.prompts ? [{ label: 'Run a prompt', icon: Sparkles, onSelect: () => setIsRunPromptOpen(true) }] : []),
-                        { label: 'Project settings', icon: SlidersHorizontal, onSelect: () => setIsProjectSettingsOpen(true) },
-                        { label: 'Workflow states', icon: Workflow, onSelect: () => setIsWorkflowModalOpen(true) },
                         { label: 'Activity history', icon: History, onSelect: () => dash.setIsActivityHistoryOpen(true) },
                         {
                           label: dash.isRecalculatingPriorities ? 'Recalculating priorities…' : 'Recalculate priorities',
@@ -1103,19 +1099,6 @@ export function DashboardPage(): JSX.Element {
               />
             }
             workflowPanel={<ProjectWorkflowStatesPanel canManage={dash.canManageTeam} projectId={dash.activeProject.id} />}
-          />
-        </Modal>
-      )}
-      {isWorkflowModalOpen && dash.activeProject && (
-        <Modal
-          bodyClassName="!p-0"
-          onClose={() => setIsWorkflowModalOpen(false)}
-          panelClassName="!max-w-[720px]"
-          title={`Workflow — ${dash.activeProject.name}`}
-        >
-          <ProjectWorkflowStatesPanel
-            canManage={dash.canManageTeam}
-            projectId={dash.activeProject.id}
           />
         </Modal>
       )}
