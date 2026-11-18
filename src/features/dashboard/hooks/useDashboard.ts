@@ -28,7 +28,7 @@ import { useAuth } from '@/context/AuthContext';
 import socketService, { SocketEvents } from '@/services/socket';
 import type { Epic, EpicStatus } from '@/types/epic';
 import type { Note } from '@/types/note';
-import type { Project, ProjectMember } from '@/types/project';
+import type { Project, ProjectMember, ProjectPermissions } from '@/types/project';
 import type { Task, TaskWorkflowStatus, TaskPriority } from '@/types/task';
 import { findProjectByName } from '@/utils/projectTree';
 import { useConfirm } from '@/context/ConfirmationContext';
@@ -102,7 +102,7 @@ export function useDashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [epics, setEpics] = useState<Epic[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'week'>('list');
   const [error, setError] = useState<string | null>(null);
 
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
@@ -469,6 +469,11 @@ export function useDashboard() {
   const activeProjectMembers = activeProject ? (projectMembersByProject[activeProject.id] ?? []) : [];
   const canManageActiveProject = !!activeProject;
   const canManageTeam = activeProject?.currentUserRole === 'ADMIN';
+  /** What the signed-in person may use in this project; admins have everything, older servers send nothing (all on). */
+  const activePermissions: ProjectPermissions =
+    activeProject?.currentUserRole === 'ADMIN' || !activeProject?.currentUserPermissions
+      ? { team: true, time: true, prompts: true, aiPlanner: true }
+      : activeProject.currentUserPermissions;
 
   const visibleTasks = useMemo(() => {
     let filtered = tasks;
@@ -1487,6 +1492,7 @@ export function useDashboard() {
     activeProjectMembers,
     canManageActiveProject,
     canManageTeam,
+    activePermissions,
     visibleTasks,
     tasksHeading,
     activeProjectEpics,

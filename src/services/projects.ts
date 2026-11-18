@@ -3,6 +3,7 @@ import type {
   CreateProjectInput,
   Project,
   ProjectMember,
+  ProjectPermissions,
   UpdateProjectInput
 } from '@/types/project';
 
@@ -93,6 +94,18 @@ const removeProjectMember = async (projectId: string, userId: string): Promise<v
   await api.delete(`/projects/${projectId}/members/${userId}`);
 };
 
+const updateMemberPermissions = async (
+  projectId: string,
+  userId: string,
+  permissions: Partial<ProjectPermissions>
+): Promise<ProjectMember> => {
+  const response = await api.patch<{ message: string; data: { member: ProjectMember } }>(
+    `/projects/${projectId}/members/${userId}/permissions`,
+    permissions
+  );
+  return response.data.data.member;
+};
+
 const leaveProject = async (projectId: string): Promise<void> => {
   await api.post(`/projects/${projectId}/leave`);
 };
@@ -107,6 +120,7 @@ export {
   getProjectMembers,
   getProjects,
   leaveProject,
+  updateMemberPermissions,
   removeProjectMember,
   updateProject
 };
