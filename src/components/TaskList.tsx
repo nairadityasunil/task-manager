@@ -28,6 +28,7 @@ interface TaskListProps {
   tasks: Task[];
   onSelectTask?: (task: Task) => void;
   onCommentTask?: (task: Task) => void;
+  onViewSubtasks?: (task: Task) => void;
   onToggleBlocked?: (task: Task) => void;
   selectedTaskId?: string | null;
   selectedTaskIds?: string[];
@@ -44,6 +45,7 @@ function TaskList({
   tasks,
   onSelectTask,
   onCommentTask,
+  onViewSubtasks,
   onToggleBlocked,
   selectedTaskId,
   selectedTaskIds = [],
@@ -211,6 +213,7 @@ function TaskList({
                               task={task}
                               onSelect={onSelectTask}
                               onComment={onCommentTask}
+                              onViewSubtasks={onViewSubtasks}
                               onToggleBlocked={onToggleBlocked}
                               isSelected={selectedTaskId === task.id}
                               isMultiSelected={selectedTaskIds.includes(task.id)}
@@ -235,6 +238,7 @@ function TaskList({
                   task={task}
                   onSelect={onSelectTask}
                   onComment={onCommentTask}
+                              onViewSubtasks={onViewSubtasks}
                   onToggleBlocked={onToggleBlocked}
                   isSelected={selectedTaskId === task.id}
                   isMultiSelected={selectedTaskIds.includes(task.id)}

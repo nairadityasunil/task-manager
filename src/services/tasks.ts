@@ -63,6 +63,21 @@ const updateTask = async (taskId: string, payload: UpdateTaskInput): Promise<Tas
   return response.data.data.task;
 };
 
+const addTaskNote = async (taskId: string, text: string): Promise<Task> => {
+  const response = await api.post<TaskResponse>(`/tasks/${taskId}/notes`, { text });
+  return response.data.data.task;
+};
+
+const updateTaskNote = async (taskId: string, noteId: string, text: string): Promise<Task> => {
+  const response = await api.patch<TaskResponse>(`/tasks/${taskId}/notes/${noteId}`, { text });
+  return response.data.data.task;
+};
+
+const deleteTaskNote = async (taskId: string, noteId: string): Promise<Task> => {
+  const response = await api.delete<TaskResponse>(`/tasks/${taskId}/notes/${noteId}`);
+  return response.data.data.task;
+};
+
 const updateTaskStatus = async (taskId: string, status: TaskWorkflowStatus): Promise<Task> => {
   const response = await api.patch<TaskResponse>(`/tasks/${taskId}/status`, { status });
   return response.data.data.task;
@@ -101,7 +116,10 @@ export {
   getTaskSummary,
   getTasks,
   getTasksAssignedToMe,
+  addTaskNote,
+  deleteTaskNote,
   updateTask,
+  updateTaskNote,
   updateTaskStatus,
   markTaskBlocked,
   unblockTask

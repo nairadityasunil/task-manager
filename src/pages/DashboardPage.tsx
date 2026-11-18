@@ -20,6 +20,7 @@ import { ClassificationSelect, ProjectLabelChip } from '@/features/agents/compon
 import ProjectNotes from '@/components/ProjectNotes';
 import ProjectPanel from '@/components/ProjectPanel';
 import ProjectTeamPanel from '@/components/ProjectTeamPanel';
+import { SubtasksModal } from '@/features/tasks/components/SubtasksModal';
 import { ProjectSettings } from '@/features/projects/components/ProjectSettings';
 import { WeeklyTimesheet } from '@/features/projects/components/WeeklyTimesheet';
 import SettingsPanel from '@/components/SettingsPanel';
@@ -131,6 +132,7 @@ export function DashboardPage(): JSX.Element {
   const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
   const [isRunPromptOpen, setIsRunPromptOpen] = useState(false);
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
+  const [viewSubtasksTaskId, setViewSubtasksTaskId] = useState<string | null>(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const epicStatusLabel = (status: string): string => {
@@ -157,37 +159,23 @@ export function DashboardPage(): JSX.Element {
                   onClose={() => dash.setSelectedTaskId(null)}
                   task={dash.activeTask}
                   members={dash.activeProjectMembers}
-                  actionTaskId={dash.actionTaskId}
-                  sidePanelTab={dash.sidePanelTab}
+                                    sidePanelTab={dash.sidePanelTab}
                   setSidePanelTab={dash.setSidePanelTab}
-                  editingSubtask={dash.editingSubtask}
-                  setEditingSubtask={dash.setEditingSubtask}
                   setSubtaskModalTask={dash.setSubtaskModalTask}
                   handleUpdateSubtaskStatus={dash.handleUpdateSubtaskStatus}
-                  handleUpdateSubtask={dash.handleUpdateSubtask}
-                  handleDeleteSubtask={dash.handleDeleteSubtask}
-                  handleOpenSubtaskNote={dash.handleOpenSubtaskNote}
                   handleToggleBlocked={dash.handleToggleBlocked}
                   handleEvaluatePriority={dash.handleEvaluatePriority}
                   isEvaluatingPriority={dash.isEvaluatingPriority}
-                  handleOpenTaskNote={dash.handleOpenTaskNote}
+                  onViewSubtasks={(task) => setViewSubtasksTaskId(task.id)}
+                  onNotesChanged={() => void dash.loadDashboard({ quiet: true })}
                   handleUpdateTaskField={async (taskId, updates) => {
-                    const task = dash.tasks.find(t => t.id === taskId);
-                    if (task) {
-                      await dash.handleUpdateTask({
-                        title: updates.title ?? task.title,
-                        description: updates.description ?? task.description,
-                        note: updates.note ?? task.note,
-                        date: updates.date ?? task.date,
-                        status: (updates.status ?? (task.status === 'rolled_over' ? 'planned' : task.status)) as TaskWorkflowStatus,
-                        priority: updates.priority ?? task.priority,
-                        isBlocked: updates.isBlocked ?? task.isBlocked,
-                        blockedByTaskId: updates.blockedByTaskId ?? task.blockedByTaskId,
-                        projectId: updates.projectId !== undefined ? updates.projectId : (task.projectId || null),
-                        epicId: updates.epicId !== undefined ? updates.epicId : (task.epicId || null),
-                        assignedTo: updates.assignedTo,
-                      });
+                    const task = dash.tasks.find((t) => t.id === taskId);
+                    if (!task) return;
+                    if (updates.status && Object.keys(updates).length === 1) {
+                      await dash.handleUpdateTaskStatus(task, updates.status as TaskWorkflowStatus);
+                      return;
                     }
+                    await dash.handleUpdateTaskFields(taskId, updates);
                   }}
                 />
   );
@@ -886,6 +874,7 @@ export function DashboardPage(): JSX.Element {
                               projects={dash.projects}
                               tasks={columnTasks}
                               onSelectTask={(task) => dash.setSelectedTaskId(task.id)}
+                              onViewSubtasks={(task) => setViewSubtasksTaskId(task.id)}
                               onCommentTask={(task) => {
                                 dash.setSelectedTaskId(task.id);
                                 dash.setSidePanelTab('comments');
@@ -906,6 +895,7 @@ export function DashboardPage(): JSX.Element {
                                 if (task) await dash.handleUpdateTaskStatus(task, status, true);
                               }}
                               onSelectTask={(task) => dash.setSelectedTaskId(task.id)}
+                              onViewSubtasks={(task) => setViewSubtasksTaskId(task.id)}
                               onCommentTask={(task) => {
                                 dash.setSelectedTaskId(task.id);
                                 dash.setSidePanelTab('comments');
@@ -1016,6 +1006,24 @@ export function DashboardPage(): JSX.Element {
           />
         </Modal>
       )}
+      {viewSubtasksTaskId && (() => {
+        const viewed = dash.tasks.find((t) => t.id === viewSubtasksTaskId);
+        return viewed ? (
+          <SubtasksModal
+            editingSubtask={dash.editingSubtask}
+            isUpdating={dash.actionTaskId === viewed.id}
+            members={viewed.projectId ? (dash.projectMembersByProject?.[viewed.projectId] ?? dash.activeProjectMembers) : dash.activeProjectMembers}
+            onAddSubtask={(t) => dash.setSubtaskModalTask(t)}
+            onClose={() => setViewSubtasksTaskId(null)}
+            onDeleteSubtask={dash.handleDeleteSubtask}
+            onOpenSubtaskNote={dash.handleOpenSubtaskNote}
+            onUpdateStatus={dash.handleUpdateSubtaskStatus}
+            onUpdateSubtask={dash.handleUpdateSubtask}
+            setEditingSubtask={dash.setEditingSubtask}
+            task={viewed}
+          />
+        ) : null;
+      })()}
       {isRunPromptOpen && dash.activeProject && dash.activeWorkspaceId && (
         <RunPromptModal
           epics={dash.activeProjectEpics}

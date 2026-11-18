@@ -11,6 +11,7 @@ interface KanbanBoardProps {
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
   onCommentTask?: (task: Task) => void;
+  onViewSubtasks?: (task: Task) => void;
   onToggleBlocked?: (task: Task) => void;
   loading?: boolean;
 }
@@ -24,6 +25,7 @@ function KanbanBoard({
   onDeleteTask,
   onEditTask,
   onCommentTask,
+  onViewSubtasks,
   onToggleBlocked,
   loading = false
 }: KanbanBoardProps): JSX.Element {
@@ -113,6 +115,7 @@ function KanbanBoard({
                                     onEditTask={onEditTask}
                                     onSelect={onSelectTask}
                                     onComment={onCommentTask}
+                                    onViewSubtasks={onViewSubtasks}
                                     onToggleBlocked={onToggleBlocked}
                                     variant="card"
                                   />
