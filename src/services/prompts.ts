@@ -189,6 +189,28 @@ export interface UpdatePromptPayload {
   changeNote?: string;
 }
 
+export interface RunnablePrompt {
+  id: string;
+  rootId: string;
+  name: string;
+  description: string;
+  category: string;
+  tags: string[];
+  deployed: boolean;
+  productionVersion: number;
+  provider?: string;
+  modelName?: string;
+  variables: Array<{
+    name: string;
+    type: 'string' | 'number' | 'json' | 'boolean' | 'enum';
+    description: string;
+    defaultValue: string;
+    required: boolean;
+    options: string[];
+  }>;
+  canary: { status: 'active' | 'paused'; candidateVersion: number; canaryPercent: number } | null;
+}
+
 export const promptService = {
   // Folders
   async listFolders(workspaceId: string): Promise<PromptFolder[]> {
@@ -314,6 +336,17 @@ export const promptService = {
       status: string;
       data: { success: boolean };
     }>(`/workspaces/${workspaceId}/prompts/${promptId}`);
+    return res.data.data;
+  },
+
+  async listRunnable(
+    workspaceId: string,
+    params: { projectId?: string; search?: string; includeUndeployed?: boolean },
+  ): Promise<RunnablePrompt[]> {
+    const res = await api.get<{ status: string; data: RunnablePrompt[] }>(
+      `/workspaces/${workspaceId}/prompts/runnable`,
+      { params },
+    );
     return res.data.data;
   },
 
@@ -499,6 +532,10 @@ export const promptService = {
 
 export interface PlaygroundRunPayload {
   promptId?: string;
+  /** "production" runs what is deployed: the production version, or the canary share of calls. */
+  environment?: 'production';
+  /** The project the run is for. */
+  projectId?: string;
   versionNumber?: number;
   body?: string;
   messages?: IPromptMessage[];
@@ -525,5 +562,8 @@ export interface PlaygroundRunResult {
     timestamp: string;
     promptId?: string;
     versionNumber?: number;
+    environment?: 'production';
+    isCanary?: boolean;
+    costUsd?: number;
   };
 }
