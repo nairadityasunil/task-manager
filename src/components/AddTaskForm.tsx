@@ -5,6 +5,7 @@ import type { Project } from '@/types/project';
 import { TASK_WORKFLOW_STATUS_OPTIONS, type TaskWorkflowStatus, type TaskPriority } from '@/types/task';
 import { flattenProjectOptions } from '@/utils/projectTree';
 import AssigneeSelector from './AssigneeSelector';
+import { DueDateField } from './DueDateField';
 import { useProjectStates } from '@/features/projects/useProjectStates';
 import { useAuth } from '@/context/AuthContext';
 import { AlertTriangle } from 'lucide-react';
@@ -20,6 +21,8 @@ interface AddTaskFormProps {
     note?: string;
     status?: TaskWorkflowStatus;
     stateId?: string | null;
+    /** Due date (YYYY-MM-DD); left out when none is set. */
+    date?: string | null;
     priority?: TaskPriority;
     projectId?: string | null;
     epicId?: string | null;
@@ -36,6 +39,8 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
   const [status, setStatus] = useState<TaskWorkflowStatus>('TODO');
   const [stateId, setStateId] = useState<string>('');
   const [priority, setPriority] = useState<TaskPriority>('MEDIUM');
+  // Off by default: a task only has a due date when one is chosen.
+  const [dueDate, setDueDate] = useState<string | null>(null);
   const [projectId, setProjectId] = useState<string>(initialProjectId ?? '');
   const [epicId, setEpicId] = useState<string>(initialEpicId ?? '');
   const [assignedTo, setAssignedTo] = useState<string>(user?.id ?? '');
@@ -99,6 +104,7 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
         description: description.trim() || undefined,
         note: note.trim() || undefined,
         ...(chosenState ? { stateId: chosenState._id } : { status }),
+        date: dueDate,
         priority,
         projectId: finalProjectId,
         epicId: finalEpicId || null,
@@ -109,6 +115,7 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
       setNote('');
       setStatus('TODO');
       setPriority('MEDIUM');
+      setDueDate(null);
       setProjectId(initialProjectId ?? '');
       setEpicId(initialEpicId ?? '');
     } catch {
@@ -181,6 +188,10 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
           )}
         </Field>
       </div>
+
+      <Field label={<>Due date {optional}</>}>
+        <DueDateField onChange={setDueDate} value={dueDate} />
+      </Field>
 
       <div className="grid gap-1.5">
         <AssigneeSelector
