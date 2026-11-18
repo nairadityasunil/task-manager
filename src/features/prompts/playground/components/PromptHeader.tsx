@@ -1,7 +1,8 @@
-import React from "react";
-import { FileText, Save, Code2, FolderInput, Rocket, CheckCircle2, SlidersHorizontal, Zap } from "lucide-react";
+import React, { useState } from "react";
+import { Pencil, FileText, Save, Code2, FolderInput, Rocket, CheckCircle2, SlidersHorizontal, Zap } from "lucide-react";
 import { PromptItem, PromptCanaryDeployment } from "@/services/prompts";
 import { buttonClass } from "@/components/ui";
+import { PromptTagEditor } from "./PromptTagEditor";
 
 interface PromptHeaderProps {
   activePrompt: PromptItem | null;
@@ -17,6 +18,8 @@ interface PromptHeaderProps {
   onPublishProduction?: (versionNum: number) => void;
   onOpenDeployModal?: () => void;
   onOpenParametersModal?: () => void;
+  allTags?: string[];
+  onUpdateMeta?: (patch: { name?: string; tags?: string[] }) => Promise<void>;
 }
 
 export const PromptHeader: React.FC<PromptHeaderProps> = ({
@@ -33,7 +36,21 @@ export const PromptHeader: React.FC<PromptHeaderProps> = ({
   onPublishProduction,
   onOpenDeployModal,
   onOpenParametersModal,
+  allTags = [],
+  onUpdateMeta,
 }) => {
+  const [renaming, setRenaming] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const commitRename = async () => {
+    const next = nameDraft.trim();
+    setRenaming(false);
+    if (!next || next === activePrompt?.name || !onUpdateMeta) return;
+    try {
+      await onUpdateMeta({ name: next });
+    } catch {
+      /* the toast from the API client explains it */
+    }
+  };
   const isCurrentProduction = activePrompt?.productionVersion === selectedVersionNum && selectedVersionNum > 0;
   const isCanaryCandidate =
     activeCanary &&
@@ -48,9 +65,40 @@ export const PromptHeader: React.FC<PromptHeaderProps> = ({
         </div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5">
-            <h2 className="m-0 mr-1 min-w-0 truncate text-lg font-semibold tracking-tight text-slate-900">
-              {activePrompt?.name || "New Prompt"}
-            </h2>
+            {renaming ? (
+              <input
+                aria-label="Prompt name"
+                autoFocus
+                className="mr-1 h-8 min-w-0 rounded-lg border border-slate-300 bg-white px-2 text-lg font-semibold tracking-tight text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                data-testid="prompt-name-input"
+                maxLength={120}
+                onBlur={() => void commitRename()}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void commitRename();
+                  else if (e.key === "Escape") setRenaming(false);
+                }}
+                value={nameDraft}
+              />
+            ) : (
+              <h2 className="m-0 mr-1 flex min-w-0 items-center gap-1.5 text-lg font-semibold tracking-tight text-slate-900">
+                <span className="truncate" data-testid="prompt-name">{activePrompt?.name || "New Prompt"}</span>
+                {activePrompt && onUpdateMeta ? (
+                  <button
+                    aria-label="Rename prompt"
+                    className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                    data-testid="rename-prompt"
+                    onClick={() => {
+                      setNameDraft(activePrompt.name);
+                      setRenaming(true);
+                    }}
+                    type="button"
+                  >
+                    <Pencil size={13} />
+                  </button>
+                ) : null}
+              </h2>
+            )}
             <span className="rounded-full bg-slate-50 px-2 py-0.5 font-mono text-[11px] font-medium text-slate-600 ring-1 ring-inset ring-slate-200">
               {selectedVersionNum > 0 ? `v${selectedVersionNum}` : "No saved version yet"}
             </span>
@@ -90,6 +138,9 @@ export const PromptHeader: React.FC<PromptHeaderProps> = ({
               </span>
             )}
           </div>
+          {activePrompt && onUpdateMeta ? (
+            <PromptTagEditor allTags={allTags} onChange={(tags) => onUpdateMeta({ tags })} tags={activePrompt.tags ?? []} />
+          ) : null}
           <p className="m-0 mt-1 text-[13px] text-slate-500">
             Provider: <span className="font-mono text-slate-700 font-medium">{activePrompt?.provider || "gemini"}</span> • Model:{" "}
             <span className="font-mono text-slate-700 font-medium">{activePrompt?.modelName || "gemini-3.6-flash"}</span>

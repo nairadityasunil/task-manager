@@ -64,6 +64,8 @@ export const PromptPlaygroundPage: React.FC<PromptPlaygroundPageProps> = ({ work
 
   return (
     <PlaygroundLayout
+      allTags={[...new Set(pg.prompts.flatMap((p) => p.tags ?? []))].sort()}
+      onUpdateMeta={pg.updatePromptMeta}
       workspaceId={workspaceId}
       folders={pg.folders}
       promptsByFolder={pg.promptsByFolder}

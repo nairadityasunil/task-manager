@@ -396,7 +396,19 @@ export function usePlayground(workspaceId: string) {
   }, [workspaceId, activePrompt, selectedVersionNum, loadPromptDetails, showToast]);
 
 
+  /** Rename a prompt or change its tags. Neither creates a new version. */
+  const updatePromptMeta = useCallback(
+    async (patch: { name?: string; tags?: string[] }): Promise<void> => {
+      if (!activePrompt) return;
+      const updated = await promptService.updatePrompt(workspaceId, activePrompt._id, patch);
+      setActivePrompt((current) => (current && current._id === updated._id ? { ...current, name: updated.name, tags: updated.tags } : current));
+      setPrompts((list) => list.map((p) => (p._id === updated._id ? { ...p, name: updated.name, tags: updated.tags } : p)));
+    },
+    [workspaceId, activePrompt]
+  );
+
   return {
+    updatePromptMeta,
     folders,
     prompts,
     searchQuery,
