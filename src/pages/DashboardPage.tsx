@@ -24,6 +24,7 @@ import SettingsPanel from '@/components/SettingsPanel';
 import SubtaskForm from '@/components/SubtaskForm';
 import ChatPanel from '@/components/ChatPanel';
 import { ActivityHistoryPanel } from '@/features/projects';
+import { RunPromptModal } from '@/features/prompts/run/RunPromptModal';
 import { AiProjectPlanModal, ProjectWorkflowStatesPanel } from '@/features/projects';
 import SdkDocsPanel from '@/components/SdkDocsPanel';
 import AgentsPage from '@/pages/AgentsPage';
@@ -46,7 +47,7 @@ import AssigneeSelector from '@/components/AssigneeSelector';
 import SlaDashboard from '@/components/SlaDashboard';
 import DashboardOverview from '@/features/dashboard/components/DashboardOverview';
 import { TaskInspector } from '@/features/tasks';
-import { Layers3, Edit3, FileText, Folder, Layout, List, MessageCircle, MessageSquare, Plus, Users, Trash2, History, RefreshCw, Calculator, Zap, Bot, MoreHorizontal, Workflow, Settings, BookOpen, type LucideIcon } from 'lucide-react';
+import { Layers3, Edit3, FileText, Folder, Layout, List, MessageCircle, MessageSquare, Plus, Users, Trash2, History, RefreshCw, Calculator, Zap, Bot, Sparkles, MoreHorizontal, Workflow, Settings, BookOpen, type LucideIcon } from 'lucide-react';
 import { Note } from '@/types/note';
 import { useDashboard, ALL_PROJECTS_VALUE } from '@/features/dashboard';
 
@@ -125,6 +126,7 @@ export function DashboardPage(): JSX.Element {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
   const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
+  const [isRunPromptOpen, setIsRunPromptOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const epicStatusLabel = (status: string): string => {
@@ -573,9 +575,19 @@ export function DashboardPage(): JSX.Element {
                       <MessageCircle size={16} />
                       <HeaderLabel>Chat</HeaderLabel>
                     </button>
+                    <button
+                      className={headerButtonCls}
+                      data-testid="run-prompt-button"
+                      onClick={() => setIsRunPromptOpen(true)}
+                      type="button"
+                    >
+                      <Sparkles size={16} />
+                      <HeaderLabel>Run prompt</HeaderLabel>
+                    </button>
                     <ProjectMoreMenu
                       items={[
                         { label: 'Project notes', icon: MessageSquare, onSelect: () => dash.handleOpenProjectNotesPanel(dash.activeProject!) },
+                        { label: 'Run a prompt', icon: Sparkles, onSelect: () => setIsRunPromptOpen(true) },
                         { label: 'Workflow states', icon: Workflow, onSelect: () => setIsWorkflowModalOpen(true) },
                         { label: 'Activity history', icon: History, onSelect: () => dash.setIsActivityHistoryOpen(true) },
                         {
@@ -964,6 +976,16 @@ export function DashboardPage(): JSX.Element {
             submitLabel="Update epic"
           />
         </Modal>
+      )}
+      {isRunPromptOpen && dash.activeProject && dash.activeWorkspaceId && (
+        <RunPromptModal
+          epics={dash.activeProjectEpics}
+          onClose={() => setIsRunPromptOpen(false)}
+          onTasksCreated={() => void dash.loadDashboard()}
+          projectId={dash.activeProject.id}
+          projectName={dash.activeProject.name}
+          workspaceId={dash.activeWorkspaceId}
+        />
       )}
       {dash.isTaskCreateModalOpen && (
         <Modal onClose={() => dash.setIsTaskCreateModalOpen(false)} title="Create Task">
