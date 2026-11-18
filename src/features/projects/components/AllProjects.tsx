@@ -50,7 +50,7 @@ export function AllProjects({
   }, [projects, q, sort]);
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-4 px-3 py-4 sm:px-5 lg:px-6" data-testid="all-projects">
+    <div className="grid w-full gap-4 px-3 py-4 sm:px-5 lg:px-6" data-testid="all-projects">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="m-0 text-lg font-semibold tracking-tight text-slate-900">All projects</h1>
@@ -93,7 +93,7 @@ export function AllProjects({
           title={q ? 'No match' : 'No projects yet'}
         />
       ) : (
-        <ul className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2 lg:grid-cols-3" data-testid="all-projects-list">
+        <ul className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4" data-testid="all-projects-list">
           {shown.map((p) => (
             <li key={p.id}>
               <button
