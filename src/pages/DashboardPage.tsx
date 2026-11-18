@@ -1,6 +1,7 @@
 import ActivityTimelinePage from '@/pages/ActivityTimelinePage';
 import TelemetryPage from '@/pages/TelemetryPage';
 import InsightsPage from '@/pages/InsightsPage';
+import { AdminPage } from '@/features/admin/AdminPage';
 import AiGovernancePage from '@/pages/AiGovernancePage';
 import { GovernanceReadyBadge } from '@/features/telemetry/TaskAutomationNote';
 import { AiSpend } from '@/features/agents/components/AiSpend';
@@ -244,6 +245,7 @@ export function DashboardPage(): JSX.Element {
           else if (view === 'agents') navigate('/agents');
           else if (view === 'activity') navigate('/activity');
           else if (view === 'projects') navigate('/projects');
+          else if (view === 'admin') navigate('/admin');
           else if (view === 'telemetry') navigate('/telemetry');
           else if (view === 'insights') navigate('/insights');
           else if (view === 'ai-governance') navigate('/ai-governance');
@@ -293,6 +295,8 @@ export function DashboardPage(): JSX.Element {
               ? 'All projects'
               : dash.activeView === 'telemetry'
               ? 'Telemetry'
+              : dash.activeView === 'admin'
+              ? 'Platform admin'
               : dash.activeView === 'insights'
               ? 'Insights'
               : dash.activeView === 'ai-governance'
@@ -346,6 +350,8 @@ export function DashboardPage(): JSX.Element {
                 <span className={crumbCurrentCls}>Activity</span>
               ) : dash.activeView === 'telemetry' ? (
                 <span className={crumbCurrentCls}>Telemetry</span>
+              ) : dash.activeView === 'admin' ? (
+                <span className={crumbCurrentCls}>Platform admin</span>
               ) : dash.activeView === 'insights' ? (
                 <span className={crumbCurrentCls}>Insights</span>
               ) : dash.activeView === 'ai-governance' ? (
@@ -433,6 +439,10 @@ export function DashboardPage(): JSX.Element {
           ) : dash.activeView === 'activity' ? (
             <div className="h-full overflow-y-auto">
               <ActivityTimelinePage projects={dash.projects} />
+            </div>
+          ) : dash.activeView === 'admin' ? (
+            <div className="h-full overflow-y-auto">
+              <AdminPage />
             </div>
           ) : dash.activeView === 'insights' ? (
             <div className="h-full overflow-y-auto">
