@@ -483,7 +483,7 @@ function ProjectPanel({
   );
 
   const tableView = (
-    <Card className="overflow-hidden">
+    <Card className="relative overflow-hidden">
       <DataTable
         tableClassName="border-collapse table-fixed sm:table-auto"
         table={table}
