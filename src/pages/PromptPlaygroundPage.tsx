@@ -49,6 +49,7 @@ export const PromptPlaygroundPage: React.FC<PromptPlaygroundPageProps> = ({ work
   const handleNewPromptImmediate = async () => {
     try {
       const created = await promptService.createPrompt(workspaceId, {
+        draft: true,
         name: `New Prompt ${Date.now().toString().slice(-4)}`,
         description: "Created in Prompt Playground",
         category: "general",

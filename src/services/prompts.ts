@@ -158,6 +158,8 @@ export interface PromptCanaryDeployment {
 }
 
 export interface CreatePromptPayload {
+  /** A blank starting point: its first save is version 1. */
+  draft?: boolean;
   name: string;
   description?: string;
   category?: string;
