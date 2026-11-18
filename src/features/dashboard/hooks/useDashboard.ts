@@ -12,6 +12,7 @@ import { recalculateDynamicPriorities, evaluateTaskPriority, type PriorityEvalua
 import { createEpic, deleteEpic, getEpics, updateEpic } from '@/services/epics';
 import { createEpicNote, createNote, deleteNote, getEpicNotes, getNote, getProjectNotes, updateNote } from '@/services/notes';
 import {
+  addProjectMember,
   createProject,
   deleteProject,
   deleteProjects,
@@ -408,7 +409,13 @@ export function useDashboard() {
 
   useEffect(() => {
     if (projects.length > 0 && prevProjectsRef.current.length > 0) {
-      const newProjects = projects.filter(p => !prevProjectsRef.current.find(prev => prev.id === p.id));
+      // "Added to Team" is for someone else adding you. A project you made, or one you run as its admin, is not news.
+      const newProjects = projects.filter(
+        (p) =>
+          !prevProjectsRef.current.find((prev) => prev.id === p.id) &&
+          p.currentUserRole !== 'ADMIN' &&
+          p.userId !== user?.id,
+      );
       newProjects.forEach(project => {
         const notification: Notification = {
           id: `team-${project.id}-${Date.now()}`,
@@ -794,6 +801,23 @@ export function useDashboard() {
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { error?: string } } };
       setProjectMutationError(errorObj.response?.data?.error || 'Failed to process request.');
+    } finally {
+      setTeamMutationLoading(false);
+    }
+  };
+
+  const handleAddWorkspaceMemberToProject = async (userId: string): Promise<void> => {
+    if (activeProject == null) return;
+    setTeamMutationLoading(true);
+    setProjectMutationError(null);
+    setProjectMutationSuccess(null);
+    try {
+      await addProjectMember(activeProject.id, userId);
+      await Promise.all([loadDashboard(), loadProjectTeam(activeProject.id)]);
+      setProjectMutationSuccess('Member added to the project.');
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { message?: string; error?: string } } };
+      setProjectMutationError(errorObj.response?.data?.message || errorObj.response?.data?.error || 'Failed to add the member.');
     } finally {
       setTeamMutationLoading(false);
     }
@@ -1545,6 +1569,7 @@ export function useDashboard() {
     handleDeleteProject,
     handleDeleteProjects,
     handleInviteProjectMember,
+    handleAddWorkspaceMemberToProject,
     handleRemoveProjectMember,
     handleLeaveProject,
     handleUpdateTask,

@@ -24,6 +24,8 @@ import EmptyState from "@/components/EmptyState";
 import { Button } from "@/components/ui";
 
 interface PlaygroundLayoutProps {
+  allTags?: string[];
+  onUpdateMeta?: (patch: { name?: string; tags?: string[] }) => Promise<void>;
   workspaceId: string;
   folders: PromptFolder[];
   promptsByFolder: Record<string, PromptItem[]>;
@@ -105,6 +107,8 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
   isLoadingLibrary,
   searchQuery,
   setSearchQuery,
+  allTags,
+  onUpdateMeta,
   activePrompt,
   setActivePrompt,
   versionsList,
@@ -226,6 +230,8 @@ export const PlaygroundLayout: React.FC<PlaygroundLayoutProps> = ({
             )}
 
             <PromptHeader
+              allTags={allTags}
+              onUpdateMeta={onUpdateMeta}
               activePrompt={activePrompt}
               selectedVersionNum={selectedVersionNum}
               hasVersionedConfigurationChanged={hasVersionedConfigurationChanged}
