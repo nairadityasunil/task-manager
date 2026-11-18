@@ -100,7 +100,6 @@ export function useDashboard() {
   const { projectId, epicId, integrationId } = useParams();
   const { activeWorkspaceId } = useWorkspace();
 
-  const [selectedDate, setSelectedDate] = useState<string>(getTodayDate);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [epics, setEpics] = useState<Epic[]>([]);
@@ -289,7 +288,8 @@ export function useDashboard() {
     try {
       const [taskList, projectData] = await Promise.all([
         getTasks(
-          selectedDate,
+          // Every task, whatever day it was made: tasks are not tied to a date or carried from day to day.
+          undefined,
           taskFilters.assigneeId === 'all' ? undefined : taskFilters.assigneeId,
           debouncedTaskSearchTerm.trim() || undefined
         ),
@@ -318,7 +318,7 @@ export function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, projectPage, projectId, debouncedProjectSearchTerm, taskFilters.assigneeId, debouncedTaskSearchTerm]);
+  }, [projectPage, projectId, debouncedProjectSearchTerm, taskFilters.assigneeId, debouncedTaskSearchTerm]);
 
   useEffect(() => {
     void loadDashboard();
@@ -364,7 +364,7 @@ export function useDashboard() {
       title: payload.title.trim(),
       description: payload.description?.trim(),
       note: payload.note?.trim(),
-      date: selectedDate,
+      date: getTodayDate(),
       status: payload.stateId ? undefined : payload.status,
       stateId: payload.stateId ?? undefined,
       priority: payload.priority,
@@ -533,10 +533,10 @@ export function useDashboard() {
 
   const tasksHeading = useMemo(() => {
     if (selectedProjectView === ALL_PROJECTS_VALUE) {
-      return `All tasks for ${selectedDate}`;
+      return 'All tasks';
     }
-    return `${activeProject?.name ?? 'Project'} tasks for ${selectedDate}`;
-  }, [activeProject?.name, selectedDate, selectedProjectView]);
+    return `${activeProject?.name ?? 'Project'} tasks`;
+  }, [activeProject?.name, selectedProjectView]);
 
   const activeProjectEpics = useMemo(
     () =>
@@ -1477,8 +1477,6 @@ export function useDashboard() {
   return {
     user,
     logout: handleLogout,
-    selectedDate,
-    setSelectedDate,
     tasks,
     projects,
     epics,
