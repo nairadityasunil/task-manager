@@ -4,7 +4,8 @@ import { CheckCircle2, AlertTriangle, ArrowRight, Loader2, LogOut } from 'lucide
 import { useAuth } from '@/context/AuthContext';
 import api from '@/services/api';
 import logoImg from '@/assets/logo.png';
-import { Badge, buttonClass } from '@/components/ui';
+import { Badge, Button, Field, Input, buttonClass } from '@/components/ui';
+import { rememberActiveWorkspace } from '@/features/workspaces/context/WorkspaceContext';
 
 const primaryBtn = buttonClass('primary', 'md', 'w-full').replace('h-9', 'h-10');
 const secondaryBtn = buttonClass('secondary', 'md', 'w-full').replace('h-9', 'h-10');
@@ -16,13 +17,18 @@ interface InvitationDetails {
   role: 'ADMIN' | 'MEMBER';
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   isRegistered: boolean;
+  inviterName?: string;
 }
 
 function AcceptInvitationPage(): JSX.Element {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const { user, logout } = useAuth();
+  const { user, logout, register, loading: registering } = useAuth();
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [password, setPassword] = useState('');
+  const [joinedTo, setJoinedTo] = useState<{ projectId: string; projectName: string | null } | null>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,17 +75,40 @@ function AcceptInvitationPage(): JSX.Element {
     setAccepting(true);
     setError(null);
     try {
-      await api.post('/invitations/accept', { token });
+      const res = await api.post<{ data?: { projectId?: string; workspaceId?: string | null; projectName?: string | null } }>('/invitations/accept', { token });
+      const joined = res.data?.data;
+      if (joined?.workspaceId) rememberActiveWorkspace(joined.workspaceId);
+      if (joined?.projectId) setJoinedTo({ projectId: joined.projectId, projectName: joined.projectName ?? null });
       setSuccess(true);
       setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 2000);
+        navigate(joined?.projectId ? `/projects/${joined.projectId}` : '/dashboard', { replace: true });
+      }, 1500);
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { error?: string } } };
       const msg = errorObj.response?.data?.error || 'Failed to accept invitation.';
       setError(msg);
     } finally {
       setAccepting(false);
+    }
+  };
+
+  const handleOnboard = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!token || !details) return;
+    setError(null);
+    try {
+      const { joined } = await register({ email: details.email, password, firstName: firstName.trim(), lastName: lastName.trim(), inviteToken: token });
+      if (joined) {
+        if (joined.workspaceId) rememberActiveWorkspace(joined.workspaceId);
+        setJoinedTo({ projectId: joined.projectId, projectName: joined.projectName });
+        setSuccess(true);
+        setTimeout(() => navigate(`/projects/${joined.projectId}`, { replace: true }), 1500);
+      } else {
+        // The account exists; the logged-in view below finishes the join with one click.
+        setDetails({ ...details, isRegistered: true });
+      }
+    } catch (err: unknown) {
+      setError(typeof err === 'string' ? err : (err as { message?: string })?.message || 'Could not create your account.');
     }
   };
 
@@ -124,7 +153,7 @@ function AcceptInvitationPage(): JSX.Element {
             </span>
             <h1 className="m-0 text-xl font-semibold tracking-tight text-slate-900">Welcome aboard!</h1>
             <p className="m-0 text-sm text-slate-600">
-              You are now a member of <strong className="font-medium text-slate-900">{details?.projectName}</strong>.
+              You are now a member of <strong className="font-medium text-slate-900">{joinedTo?.projectName ?? details?.projectName}</strong>.
             </p>
             <p className="m-0 flex items-center gap-2 text-xs text-slate-500">
               <Loader2 className="animate-spin" size={12} /> Redirecting you to dashboard...
@@ -203,18 +232,28 @@ function AcceptInvitationPage(): JSX.Element {
                     <p className="m-0 text-center text-xs text-slate-500">An account already exists for {details?.email}.</p>
                   </>
                 ) : (
-                  <>
-                    <button
-                      className={primaryBtn}
-                      onClick={() => navigate(`/register?token=${token}&email=${encodeURIComponent(details?.email || '')}`)}
-                      type="button"
-                    >
-                      Create Account to Join <ArrowRight size={16} />
-                    </button>
-                    <p className="m-0 text-center text-xs text-slate-500">
-                      You will be automatically added to the project after registration.
+                  <form className="grid gap-3" data-testid="invite-onboarding" onSubmit={(e) => void handleOnboard(e)}>
+                    <p className="m-0 text-[13px] text-slate-600">
+                      {details?.inviterName ? <strong className="font-medium text-slate-900">{details.inviterName}</strong> : 'A teammate'} invited you. Set up your account and you will be added to the project right away.
                     </p>
-                  </>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="First name">
+                        <Input autoComplete="given-name" name="firstName" onChange={(e) => setFirstName(e.target.value)} placeholder="John" required value={firstName} />
+                      </Field>
+                      <Field label="Last name">
+                        <Input autoComplete="family-name" name="lastName" onChange={(e) => setLastName(e.target.value)} placeholder="Doe" required value={lastName} />
+                      </Field>
+                    </div>
+                    <Field hint="This is the address your invitation was sent to." label="Email">
+                      <Input name="email" readOnly value={details?.email ?? ''} />
+                    </Field>
+                    <Field hint="At least 8 characters." label="Create a password">
+                      <Input autoComplete="new-password" minLength={8} name="password" onChange={(e) => setPassword(e.target.value)} required type="password" value={password} />
+                    </Field>
+                    <Button className="h-10 w-full" disabled={!firstName.trim() || !lastName.trim() || password.length < 8} loading={registering} type="submit" variant="primary">
+                      Create account and join <ArrowRight size={16} />
+                    </Button>
+                  </form>
                 )}
               </div>
             )}
