@@ -41,7 +41,8 @@ export type SidebarView =
   | 'telemetry'
   | 'insights'
   | 'ai-governance'
-  | 'activity';
+  | 'activity'
+  | 'projects';
 
 interface SidebarProps {
   activeView: SidebarView;
@@ -300,9 +301,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </button>
                   );
                 })}
-                {projects.length > MAX_SIDEBAR_PROJECTS ? (
-                  <NavItem icon={Folder} label={`All ${projects.length} projects`} onClick={() => onProjectSelect(allProjectsValue)} tone="muted" />
-                ) : null}
+                <NavItem icon={Folder} isActive={activeView === 'projects'} label="All projects" onClick={() => onViewChange('projects')} tone="muted" />
                 <NavItem area="tasks" icon={Plus} label="New Project" onClick={onNewProject} tone="muted" />
               </NavGroup>
             </>

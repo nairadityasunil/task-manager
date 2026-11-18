@@ -16,6 +16,7 @@ import {
   deleteProject,
   deleteProjects,
   getProjectMembers,
+  getProject,
   getProjects,
   leaveProject,
   removeProjectMember,
@@ -246,6 +247,8 @@ export function useDashboard() {
       setActiveView('sdk-docs');
     } else if (path === '/settings') {
       setActiveView('settings');
+    } else if (path === '/projects') {
+      setActiveView('projects');
     } else if (path === '/activity') {
       setActiveView('activity');
     } else if (path === '/telemetry' || path.startsWith('/telemetry/')) {
@@ -286,7 +289,15 @@ export function useDashboard() {
         ),
         getProjects({ page: projectPage, limit: 10, search: debouncedProjectSearchTerm.trim() })
       ]);
-      const projectList = projectData.projects;
+      const projectList = [...projectData.projects];
+      // A project on a later page (opened from All projects or a link) is still loaded.
+      if (projectId && !projectList.some((p: Project) => p.id === projectId)) {
+        try {
+          projectList.push(await getProject(projectId));
+        } catch {
+          /* not a member or removed: the page shows its own not-found state */
+        }
+      }
 
       const epicResults = await Promise.allSettled(
         projectList.map((project: Project) => getEpics(project.id))
@@ -306,7 +317,7 @@ export function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, projectPage, debouncedProjectSearchTerm, taskFilters.assigneeId, debouncedTaskSearchTerm]);
+  }, [selectedDate, projectPage, projectId, debouncedProjectSearchTerm, taskFilters.assigneeId, debouncedTaskSearchTerm]);
 
   useEffect(() => {
     void loadDashboard();

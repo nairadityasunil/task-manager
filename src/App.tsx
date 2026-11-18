@@ -80,6 +80,7 @@ function App(): JSX.Element {
                     <Route path="/settings" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/agents" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/agents/:tab" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+                    <Route path="/projects" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/projects/:projectId" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/projects/:projectId/epics/:epicId" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="*" element={<NotFoundPage />} />

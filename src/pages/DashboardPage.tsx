@@ -24,6 +24,7 @@ import SettingsPanel from '@/components/SettingsPanel';
 import SubtaskForm from '@/components/SubtaskForm';
 import ChatPanel from '@/components/ChatPanel';
 import { ActivityHistoryPanel } from '@/features/projects';
+import { AllProjects } from '@/features/projects/components/AllProjects';
 import { AiProjectPlanModal, ProjectWorkflowStatesPanel } from '@/features/projects';
 import SdkDocsPanel from '@/components/SdkDocsPanel';
 import AgentsPage from '@/pages/AgentsPage';
@@ -249,6 +250,7 @@ export function DashboardPage(): JSX.Element {
           else if (view === 'settings') navigate('/settings');
           else if (view === 'agents') navigate('/agents');
           else if (view === 'activity') navigate('/activity');
+          else if (view === 'projects') navigate('/projects');
           else if (view === 'telemetry') navigate('/telemetry');
           else if (view === 'insights') navigate('/insights');
           else if (view === 'ai-governance') navigate('/ai-governance');
@@ -294,6 +296,8 @@ export function DashboardPage(): JSX.Element {
               ? 'Settings'
               : dash.activeView === 'activity'
               ? 'Activity'
+              : dash.activeView === 'projects'
+              ? 'All projects'
               : dash.activeView === 'telemetry'
               ? 'Telemetry'
               : dash.activeView === 'insights'
@@ -444,6 +448,10 @@ export function DashboardPage(): JSX.Element {
           ) : dash.activeView === 'ai-governance' ? (
             <div className="h-full overflow-y-auto">
               <AiGovernancePage />
+            </div>
+          ) : dash.activeView === 'projects' ? (
+            <div className="h-full overflow-y-auto">
+              <AllProjects onNewProject={() => dash.setIsProjectCreateModalOpen(true)} onOpen={(id) => navigate(`/projects/${id}`)} reloadKey={dash.projects.length} />
             </div>
           ) : dash.activeView === 'telemetry' ? (
             <div className="h-full overflow-y-auto">
