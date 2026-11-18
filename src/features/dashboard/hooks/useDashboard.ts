@@ -244,8 +244,6 @@ export function useDashboard() {
       setActiveView('settings');
     } else if (path === '/projects') {
       setActiveView('projects');
-    } else if (path === '/admin') {
-      setActiveView('admin');
     } else if (path === '/activity') {
       setActiveView('activity');
     } else if (path === '/telemetry' || path.startsWith('/telemetry/')) {
