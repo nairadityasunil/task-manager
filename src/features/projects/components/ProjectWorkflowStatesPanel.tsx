@@ -18,6 +18,7 @@ const CATEGORIES: { value: StateCategory; label: string }[] = [
 
 const DEFAULT_STATES: { name: string; color: string; category: StateCategory }[] = [
   { name: 'Backlog', color: '#9CA3AF', category: 'BACKLOG' },
+  { name: 'To Do', color: '#64748B', category: 'UNSTARTED' },
   { name: 'In Progress', color: '#3B82F6', category: 'STARTED' },
   { name: 'Review', color: '#8B5CF6', category: 'STARTED' },
   { name: 'Done', color: '#10B981', category: 'COMPLETED' }
@@ -51,9 +52,11 @@ const errorMessage = (error: unknown, fallback: string): string =>
 interface ProjectWorkflowStatesPanelProps {
   projectId: string;
   canManage: boolean;
+  /** Called after the list of states changed, so the board and task lists can use the new stages. */
+  onChanged?: () => void;
 }
 
-function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowStatesPanelProps): JSX.Element {
+function ProjectWorkflowStatesPanel({ projectId, canManage, onChanged }: ProjectWorkflowStatesPanelProps): JSX.Element {
   const confirm = useConfirm();
   const { showToast } = useToast();
   const [states, setStates] = useState<ProjectState[]>([]);
@@ -86,6 +89,7 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
     setBusy(true);
     try {
       await action();
+      onChanged?.();
     } catch {
       // The API client already shows the error toast; resync with the server.
       await load();
@@ -170,9 +174,17 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
 
   return (
     <div className="grid gap-4 p-4">
-      <p className="m-0 text-[13px] text-slate-500">
-        Workflow states describe the stages work moves through in this project. The AI planner uses them when it plans and reports on the project.
-      </p>
+      <div className="grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-[13px] leading-relaxed text-slate-600" data-testid="workflow-explainer">
+        <p className="m-0">
+          <strong className="font-medium text-slate-900">What this is.</strong> The stages a task moves through in this project, for example Backlog, In Progress, Review, Done. Add your own and order them.
+        </p>
+        <p className="m-0">
+          <strong className="font-medium text-slate-900">Where you see it.</strong> Once the project has states, they become the Kanban columns and the Status dropdown, and each task shows its state. With none, tasks use the built-in statuses (Backlog, To Do, In Progress, In Review, Blocked, Done).
+        </p>
+        <p className="m-0">
+          <strong className="font-medium text-slate-900">Type.</strong> Every state has a type (Not started, In progress, Completed, Canceled). The type is how reports, response times and the AI planner know what a state means, so a state called "Shipped" can still count as done.
+        </p>
+      </div>
 
       {loading && (
         <div className="grid gap-2" aria-label="Loading workflow…">
@@ -201,7 +213,7 @@ function ProjectWorkflowStatesPanel({ projectId, canManage }: ProjectWorkflowSta
               onClick={() => void handleAddDefaults()}
               variant="secondary"
             >
-              Add default workflow (Backlog → In Progress → Review → Done)
+              Add default workflow (Backlog → To Do → In Progress → Review → Done)
             </Button>
           ) : (
             <p className="m-0 mt-1 text-sm text-slate-500">A project admin can set up the workflow.</p>

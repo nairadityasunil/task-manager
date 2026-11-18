@@ -3,10 +3,15 @@ import { createPortal } from 'react-dom';
 import { type Task, type TaskWorkflowStatus, TASK_WORKFLOW_STATUS_OPTIONS } from '@/types/task';
 import TaskCard, { TASK_STATUS_DOT } from './TaskCard';
 import Skeleton from './Skeleton';
+import type { ProjectState } from '@/services/projectStates';
+import { sortStates, stateForTask } from '@/features/projects/workflowStates';
 
 interface KanbanBoardProps {
   tasks: Task[];
   onUpdateStatus: (taskId: string, status: TaskWorkflowStatus) => Promise<void>;
+  /** The project's own workflow: when it has states they are the columns. */
+  states?: ProjectState[];
+  onMoveToState?: (taskId: string, stateId: string) => Promise<void> | void;
   onSelectTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
@@ -21,6 +26,8 @@ const COLUMNS: TaskWorkflowStatus[] = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REV
 function KanbanBoard({
   tasks,
   onUpdateStatus,
+  states = [],
+  onMoveToState,
   onSelectTask,
   onDeleteTask,
   onEditTask,
@@ -30,11 +37,19 @@ function KanbanBoard({
   loading = false
 }: KanbanBoardProps): JSX.Element {
 
-  const getTasksByStatus = (status: TaskWorkflowStatus) => {
-    return tasks.filter((task) => task.status === status)
-      .sort((a, b) => (a.order || 0) - (b.order || 0));
-  };
+  const useStates = states.length > 0 && !!onMoveToState;
+  const columns: Array<{ id: string; label: string; dot: string; hex?: string }> = useStates
+    ? sortStates(states).map((st) => ({ id: st._id, label: st.name, dot: '', hex: st.color }))
+    : COLUMNS.map((status) => ({
+        id: status,
+        label: TASK_WORKFLOW_STATUS_OPTIONS.find((opt) => opt.value === status)?.label || status,
+        dot: TASK_STATUS_DOT[status] ?? 'bg-slate-400',
+      }));
 
+  const getTasksByColumn = (columnId: string) =>
+    tasks
+      .filter((task) => (useStates ? stateForTask(task, states)?._id === columnId : task.status === columnId))
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   const onDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
@@ -48,24 +63,25 @@ function KanbanBoard({
       return;
     }
 
-    const newStatus = destination.droppableId as TaskWorkflowStatus;
-    // For now, we only handle status changes. Order within column would need more backend support.
-    await onUpdateStatus(draggableId, newStatus);
+    // Order within a column would need more backend support, so a drop only changes the column.
+    if (useStates) await onMoveToState?.(draggableId, destination.droppableId);
+    else await onUpdateStatus(draggableId, destination.droppableId as TaskWorkflowStatus);
   };
 
   return (
     <div className="h-full overflow-x-auto overscroll-x-contain p-3 sm:p-4 snap-x snap-mandatory scroll-px-3 sm:snap-none custom-scrollbar">
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex h-full min-h-[480px] w-max gap-3">
-          {COLUMNS.map((status) => {
-            const columnTasks = getTasksByStatus(status);
-            const label = TASK_WORKFLOW_STATUS_OPTIONS.find(opt => opt.value === status)?.label || status;
+          {columns.map((column) => {
+            const status = column.id;
+            const columnTasks = getTasksByColumn(column.id);
+            const label = column.label;
 
             return (
               <div key={status} className="flex w-[calc(100vw-4.5rem)] max-w-[300px] shrink-0 snap-start flex-col rounded-xl border border-slate-200 bg-slate-50 sm:w-72">
                 <div className="flex items-center justify-between gap-2 px-3 pb-2 pt-3">
                   <div className="flex min-w-0 items-center gap-2">
-                    <span aria-hidden className={`h-2 w-2 shrink-0 rounded-full ${TASK_STATUS_DOT[status] ?? 'bg-slate-400'}`} />
+                    <span aria-hidden className={`h-2 w-2 shrink-0 rounded-full ${column.dot}`} style={column.hex ? { background: column.hex } : undefined} />
                     <h3 className="m-0 truncate text-[13px] font-semibold text-slate-800">
                       {label}
                     </h3>

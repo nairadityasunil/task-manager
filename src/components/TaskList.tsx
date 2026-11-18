@@ -3,6 +3,8 @@ import Skeleton from '@/components/Skeleton';
 
 import EmptyState from '@/components/EmptyState';
 import TaskCard from '@/components/TaskCard';
+import type { ProjectState } from '@/services/projectStates';
+import { stateForTask } from '@/features/projects/workflowStates';
 import type { Epic } from '@/types/epic';
 import type { Project } from '@/types/project';
 import type { Subtask, Task, TaskWorkflowStatus } from '@/types/task';
@@ -29,6 +31,8 @@ interface TaskListProps {
   onSelectTask?: (task: Task) => void;
   onCommentTask?: (task: Task) => void;
   onViewSubtasks?: (task: Task) => void;
+  /** The active project's workflow states, shown as each task's status. */
+  states?: ProjectState[];
   onToggleBlocked?: (task: Task) => void;
   selectedTaskId?: string | null;
   selectedTaskIds?: string[];
@@ -46,6 +50,7 @@ function TaskList({
   onSelectTask,
   onCommentTask,
   onViewSubtasks,
+  states = [],
   onToggleBlocked,
   selectedTaskId,
   selectedTaskIds = [],
@@ -214,6 +219,7 @@ function TaskList({
                               onSelect={onSelectTask}
                               onComment={onCommentTask}
                               onViewSubtasks={onViewSubtasks}
+                              workflowState={stateForTask(task, states)}
                               onToggleBlocked={onToggleBlocked}
                               isSelected={selectedTaskId === task.id}
                               isMultiSelected={selectedTaskIds.includes(task.id)}
@@ -239,6 +245,7 @@ function TaskList({
                   onSelect={onSelectTask}
                   onComment={onCommentTask}
                               onViewSubtasks={onViewSubtasks}
+                              workflowState={stateForTask(task, states)}
                   onToggleBlocked={onToggleBlocked}
                   isSelected={selectedTaskId === task.id}
                   isMultiSelected={selectedTaskIds.includes(task.id)}

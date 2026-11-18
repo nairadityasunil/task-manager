@@ -35,6 +35,8 @@ interface TaskCardProps {
   onComment?: (task: Task) => void;
   /** Opens every subtask of the task in a floating window. */
   onViewSubtasks?: (task: Task) => void;
+  /** The task's workflow state, when the project has states: shown instead of the built-in status name. */
+  workflowState?: { name: string; color: string } | null;
   onToggleBlocked?: (task: Task) => void;
   isSelected?: boolean;
   isMultiSelected?: boolean;
@@ -122,6 +124,7 @@ function TaskCard({
   onSelect,
   onComment,
   onViewSubtasks,
+  workflowState,
   onToggleBlocked,
   isSelected,
   isMultiSelected,
@@ -254,7 +257,14 @@ function TaskCard({
         <span className="text-[13px] text-amber-800">Blocked</span>
       ) : (
         <span className={cn('text-[13px]', task.status === 'IN_PROGRESS' || task.status === 'IN_REVIEW' ? 'text-brand-700' : 'text-slate-600')}>
-          {taskStatusLabel(task.status)}
+          {workflowState ? (
+            <span className="inline-flex items-center gap-1.5" data-testid="workflow-state-label">
+              <span aria-hidden className="h-2 w-2 rounded-full" style={{ background: workflowState.color }} />
+              {workflowState.name}
+            </span>
+          ) : (
+            taskStatusLabel(task.status)
+          )}
         </span>
       );
     return (
