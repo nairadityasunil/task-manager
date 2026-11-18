@@ -68,7 +68,7 @@ interface SidebarProps {
   onOpenSearch?: () => void;
 }
 
-const MAX_SIDEBAR_PROJECTS = 8;
+const MAX_SIDEBAR_PROJECTS = 5;
 const COLLAPSE_KEY = 'pristine.sidebar.collapsed';
 
 /** True while the desktop sidebar is collapsed to an icon rail (the phone drawer is always full width). */
@@ -232,7 +232,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         ) : null}
 
         {/* Navigation */}
-        <nav aria-label="Main" className={cn('scrollbar-thin flex flex-1 flex-col gap-4 overflow-y-auto px-3 pb-4 pt-2', collapsed && 'lg:px-2')}>
+        <nav aria-label="Main" className={cn('scrollbar-none flex flex-1 flex-col gap-3 overflow-y-auto overscroll-contain px-3 pb-3 pt-2', collapsed && 'lg:px-2')}>
           {activeIntegrationId ? (
             <>
               <div className={cn('rounded-lg border border-slate-200 bg-white p-2.5', collapsed && 'lg:hidden')}>

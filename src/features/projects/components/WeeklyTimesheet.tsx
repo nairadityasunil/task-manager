@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Clock, Plus, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Download, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import Modal from '@/components/Modal';
@@ -7,24 +7,27 @@ import { useToast } from '@/context/ToastContext';
 import { addTimeEntry, deleteTimeEntry, getTimeWeek, type TimeEntry, type TimeWeek } from '@/services/time';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
+import { ExportTimesheetModal } from './ExportTimesheetModal';
 import { dayLabel, formatDuration, parseDuration, shiftDay, todayIso } from './time';
 
 const NO_TASK = '__none__';
 
 interface Props {
   projectId: string;
+  projectName?: string;
   /** Project admins can also look at everyone's time. */
   isAdmin: boolean;
 }
 
 /** A ClickUp-style weekly timesheet: tasks down the side, Monday to Sunday across, hours in the cells. */
-export function WeeklyTimesheet({ projectId, isAdmin }: Props): JSX.Element {
+export function WeeklyTimesheet({ projectId, projectName = 'project', isAdmin }: Props): JSX.Element {
   const { showToast } = useToast();
   const [start, setStart] = useState(todayIso());
   const [scope, setScope] = useState<'me' | 'all'>('me');
   const [week, setWeek] = useState<TimeWeek | null>(null);
   const [error, setError] = useState(false);
   const [extraRows, setExtraRows] = useState<string[]>([]);
+  const [exporting, setExporting] = useState(false);
   const [cell, setCell] = useState<{ taskId: string | null; day: string } | null>(null);
 
   const load = useCallback(async () => {
@@ -68,6 +71,7 @@ export function WeeklyTimesheet({ projectId, isAdmin }: Props): JSX.Element {
 
   return (
     <div className="grid gap-3 p-3 sm:p-4" data-testid="weekly-timesheet">
+      {exporting ? <ExportTimesheetModal initialScope={scope} isAdmin={isAdmin} onClose={() => setExporting(false)} projectId={projectId} projectName={projectName} /> : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <button aria-label="Previous week" className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" onClick={() => setStart(shiftDay(monday, -7))} type="button">
@@ -101,6 +105,9 @@ export function WeeklyTimesheet({ projectId, isAdmin }: Props): JSX.Element {
               ))}
             </div>
           ) : null}
+          <Button data-testid="export-open" onClick={() => setExporting(true)} size="sm" variant="secondary">
+            <Download size={14} /> Export
+          </Button>
           <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[13px] font-medium text-slate-800" data-testid="week-total">
             <Clock size={14} /> {formatDuration(weekTotal) || '0h'} this week
           </span>

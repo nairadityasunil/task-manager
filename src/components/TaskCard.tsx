@@ -153,12 +153,8 @@ function TaskCard({
     <div
       className={cn(
         'flex items-center gap-0.5 transition-opacity',
-        // In the wide single-line row, float the actions over the meta column so they don't steal title space.
-        variant === 'row' &&
-          '@3xl:[@media(hover:hover)]:absolute @3xl:[@media(hover:hover)]:right-12 @3xl:[@media(hover:hover)]:top-1/2 @3xl:[@media(hover:hover)]:-translate-y-1/2 @3xl:[@media(hover:hover)]:rounded-lg @3xl:[@media(hover:hover)]:bg-slate-50 @3xl:[@media(hover:hover)]:pl-2',
-        // Hover-capable devices reveal actions on hover/focus; touch devices always see them.
-        '[@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100',
-        isSelected && '[@media(hover:hover)]:opacity-100'
+        // Always visible, on every device.
+        'shrink-0'
       )}
     >
       {onEditTask && (
