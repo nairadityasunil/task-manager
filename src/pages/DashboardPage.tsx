@@ -1,7 +1,6 @@
 import ActivityTimelinePage from '@/pages/ActivityTimelinePage';
 import TelemetryPage from '@/pages/TelemetryPage';
 import InsightsPage from '@/pages/InsightsPage';
-import { AdminPage } from '@/features/admin/AdminPage';
 import AiGovernancePage from '@/pages/AiGovernancePage';
 import { GovernanceReadyBadge } from '@/features/telemetry/TaskAutomationNote';
 import { AiSpend } from '@/features/agents/components/AiSpend';
@@ -247,7 +246,6 @@ export function DashboardPage(): JSX.Element {
           else if (view === 'agents') navigate('/agents');
           else if (view === 'activity') navigate('/activity');
           else if (view === 'projects') navigate('/projects');
-          else if (view === 'admin') navigate('/admin');
           else if (view === 'telemetry') navigate('/telemetry');
           else if (view === 'insights') navigate('/insights');
           else if (view === 'ai-governance') navigate('/ai-governance');
@@ -297,8 +295,6 @@ export function DashboardPage(): JSX.Element {
               ? 'All projects'
               : dash.activeView === 'telemetry'
               ? 'Telemetry'
-              : dash.activeView === 'admin'
-              ? 'Platform admin'
               : dash.activeView === 'insights'
               ? 'Insights'
               : dash.activeView === 'ai-governance'
@@ -352,8 +348,6 @@ export function DashboardPage(): JSX.Element {
                 <span className={crumbCurrentCls}>Activity</span>
               ) : dash.activeView === 'telemetry' ? (
                 <span className={crumbCurrentCls}>Telemetry</span>
-              ) : dash.activeView === 'admin' ? (
-                <span className={crumbCurrentCls}>Platform admin</span>
               ) : dash.activeView === 'insights' ? (
                 <span className={crumbCurrentCls}>Insights</span>
               ) : dash.activeView === 'ai-governance' ? (
@@ -441,10 +435,6 @@ export function DashboardPage(): JSX.Element {
           ) : dash.activeView === 'activity' ? (
             <div className="h-full overflow-y-auto">
               <ActivityTimelinePage projects={dash.projects} />
-            </div>
-          ) : dash.activeView === 'admin' ? (
-            <div className="h-full overflow-y-auto">
-              <AdminPage />
             </div>
           ) : dash.activeView === 'insights' ? (
             <div className="h-full overflow-y-auto">
@@ -560,7 +550,7 @@ export function DashboardPage(): JSX.Element {
                       value={dash.activeProject.id}
                     />
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
                     <GovernanceReadyBadge projectId={dash.activeProject.id} refreshKey={dash.selectedTaskId} />
                     <ProjectLabelChip
                       // Remount after the edit dialog closes so a new label shows at once.
@@ -636,7 +626,7 @@ export function DashboardPage(): JSX.Element {
                 )}
               >
                 {/* Column 1 — Epics */}
-                <div className={`flex max-h-[45vh] w-full shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[var(--shadow-card)] transition-[width] duration-300 ease-in-out lg:h-full lg:max-h-none ${dash.isSidebarCollapsed ? 'lg:w-14' : 'lg:w-[272px]'}`}>
+                <div className={`flex max-h-[32vh] w-full shrink-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[var(--shadow-card)] transition-[width] duration-300 ease-in-out lg:h-full lg:max-h-none ${dash.isSidebarCollapsed ? 'lg:w-14' : 'lg:w-[272px]'}`}>
                   <div className={`flex items-center justify-between gap-2 border-b border-slate-100 py-2.5 ${dash.isSidebarCollapsed ? 'px-3 lg:flex-col lg:gap-3 lg:px-2' : 'px-4'}`}>
                     {!dash.isSidebarCollapsed ? (
                       <div className="flex min-w-0 items-center gap-2">
@@ -764,7 +754,8 @@ export function DashboardPage(): JSX.Element {
                 </div>
 
                 {/* Column 2 — Tasks */}
-                <div className="flex min-h-[60vh] min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[var(--shadow-card)] lg:h-full lg:min-h-0">
+                {/* On a phone the panel is as tall as its list and the page scrolls; flex-1 here squeezed the list into a strip. */}
+                <div className="flex min-w-0 flex-none flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[var(--shadow-card)] lg:h-full lg:min-h-0 lg:flex-1">
                   {dash.selectedEpicId || dash.activeProjectEpics.length > 0 || dash.visibleTasks.length > 0 || dash.taskFilters.status !== 'all' || dash.taskFilters.assigneeId !== 'all' || dash.taskFilters.search.trim() !== '' ? (
                     <>
                       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-2.5">

@@ -7,7 +7,8 @@ import AssigneeSelector from './AssigneeSelector';
 import { useProjectStates } from '@/features/projects/useProjectStates';
 import { stateForTask } from '@/features/projects/workflowStates';
 import { AlertCircle } from 'lucide-react';
-import { Button, Field, selectClass, textareaClass, Select, DateInput, Input } from '@/components/ui';
+import { Button, Field, selectClass, textareaClass, Select, Input } from '@/components/ui';
+import { DueDateField } from '@/components/DueDateField';
 
 interface EditTaskFormProps {
   epics: Epic[];
@@ -16,7 +17,8 @@ interface EditTaskFormProps {
     title: string;
     description?: string;
     note?: string;
-    date: string;
+    /** Due date (YYYY-MM-DD) or null for none. */
+    date: string | null;
     status: TaskWorkflowStatus;
     stateId?: string | null;
     priority: TaskPriority;
@@ -37,7 +39,7 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description ?? '');
   const [note] = useState(task.note ?? '');
-  const [date, setDate] = useState(task.date);
+  const [date, setDate] = useState<string | null>(task.date ?? null);
   const [status, setStatus] = useState<TaskWorkflowStatus>(initialStatus);
   const [priority, setPriority] = useState<TaskPriority>(task.priority || 'MEDIUM');
   const [isBlocked, setIsBlocked] = useState(task.isBlocked || false);
@@ -85,11 +87,6 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
 
     if (!title.trim()) {
       setErrorMessage('Task title is required.');
-      return;
-    }
-
-    if (!date) {
-      setErrorMessage('Task date is required.');
       return;
     }
 
@@ -217,11 +214,8 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Date">
-          <DateInput
-            onChange={(event) => setDate(event.target.value)}
-            value={date}
-          />
+        <Field label="Due date">
+          <DueDateField onChange={setDate} value={date} />
         </Field>
 
         <div className="grid gap-1.5">

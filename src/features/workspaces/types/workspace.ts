@@ -9,6 +9,8 @@ export interface Workspace {
   memberCount: number;
   projectCount: number;
   createdAt: string;
+  /** When this person last opened the workspace; the switcher lists the most recent first. */
+  lastUsedAt?: string | null;
 }
 
 export interface WorkspaceMember {

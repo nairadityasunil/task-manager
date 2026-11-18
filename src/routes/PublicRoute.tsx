@@ -17,7 +17,7 @@ function PublicRoute({ children, redirectTo = '/' }: PublicRouteProps): JSX.Elem
   }
 
   if (user != null) {
-    return <Navigate replace to={redirectTo} />;
+    return <Navigate replace to={user.isSuperAdmin ? '/admin' : redirectTo} />;
   }
 
   return <>{children}</>;

@@ -2,7 +2,7 @@ import { Copy } from 'lucide-react';
 import { useState } from 'react';
 
 import Modal from '@/components/Modal';
-import { Button, Checkbox, Field, Input } from '@/components/ui';
+import { Button, Field, Input } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
@@ -46,7 +46,6 @@ export function CreateUserModal({ onClose, onCreated }: { onClose: () => void; o
   const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [superAdmin, setSuperAdmin] = useState(false);
   const [busy, setBusy] = useState(false);
   const [created, setCreated] = useState<{ id: string; email: string; password: string } | null>(null);
 
@@ -55,7 +54,7 @@ export function CreateUserModal({ onClose, onCreated }: { onClose: () => void; o
   const submit = async (): Promise<void> => {
     setBusy(true);
     try {
-      const res = await adminApi.createUser({ email: email.trim(), name: name.trim() || undefined, superAdmin });
+      const res = await adminApi.createUser({ email: email.trim(), name: name.trim() || undefined });
       if (res.temporaryPassword) setCreated({ id: res.user.id, email: res.user.email, password: res.temporaryPassword });
       else onCreated(res.user.id);
     } catch (err) {
@@ -82,7 +81,6 @@ export function CreateUserModal({ onClose, onCreated }: { onClose: () => void; o
         <Field label="Name (optional)">
           <Input name="name" onChange={(e) => setName(e.target.value)} placeholder="Full name" value={name} />
         </Field>
-        <Checkbox checked={superAdmin} description="Can open this admin panel and manage everyone" label="Make a super admin" onChange={(e) => setSuperAdmin(e.target.checked)} />
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} type="button" variant="secondary">
             Cancel

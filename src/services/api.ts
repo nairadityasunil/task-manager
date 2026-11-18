@@ -85,6 +85,7 @@ const isAuthEndpoint = (url?: string): boolean => {
   if (!url) return false;
   return (
     url.includes('/auth/login') ||
+    url.includes('/admin/auth/') ||
     url.includes('/auth/register') ||
     url.includes('/auth/refresh') ||
     url.includes('/auth/logout') ||
@@ -158,8 +159,9 @@ api.interceptors.response.use(
         }
         processQueue(error);
         clearAuthStorage();
-        if (window.location.pathname !== '/login') {
-          window.location.assign('/login');
+        const loginPath = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/login';
+        if (window.location.pathname !== loginPath) {
+          window.location.assign(loginPath);
         }
         return Promise.reject(error);
       } finally {

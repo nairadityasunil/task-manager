@@ -23,6 +23,11 @@ function PrivateRoute({ children }: PrivateRouteProps): JSX.Element {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // Platform admins only have the admin console; the everyday app is for everyone else.
+  if (user.isSuperAdmin) {
+    return <Navigate to="/admin" replace />;
+  }
+
   return <>{children}</>;
 }
 

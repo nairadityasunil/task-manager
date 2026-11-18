@@ -27,6 +27,7 @@ import { ClassificationSelect } from '@/features/agents/components/AdvancedGover
 import CommentSection from '@/components/CommentSection';
 import { TaskAutomationNote } from '@/features/telemetry/TaskAutomationNote';
 import { TaskNotes } from './TaskNotes';
+import { DueDateField } from '@/components/DueDateField';
 import { PRIORITY_META, PriorityIcon, taskDateInfo } from '@/components/TaskCard';
 import { Badge, Button, cn, selectClass, Select, Checkbox } from '@/components/ui';
 
@@ -268,11 +269,16 @@ export function TaskInspector({
                         <option value="CRITICAL">Critical</option>
                       </Select>
                     </PropertyRow>
-                    {dateInfo && (
-                      <PropertyRow label="Date">
-                        <span className={cn('text-sm', dateInfo.overdue ? 'text-red-600' : 'text-slate-700')}>{dateInfo.label}</span>
-                      </PropertyRow>
-                    )}
+                    <PropertyRow label="Due date">
+                      <div className="grid gap-1">
+                        {task.permissions.canEdit ? (
+                          <DueDateField onChange={(next) => void handleUpdateTaskField(task.id, { date: next })} value={task.date} />
+                        ) : (
+                          <span className="text-sm text-slate-700">{task.date ?? 'No due date'}</span>
+                        )}
+                        {dateInfo?.overdue ? <span className="text-xs text-red-600">Overdue</span> : null}
+                      </div>
+                    </PropertyRow>
                     <PropertyRow label="SLA">
                       <SlaIndicator task={task} compact />
                     </PropertyRow>

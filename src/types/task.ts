@@ -47,7 +47,8 @@ export interface Task {
   stateId?: string | null;
   /** Every note on the task, oldest first. */
   notes?: TaskNote[];
-  date: string;
+  /** The due date (YYYY-MM-DD), or null when the task has none. */
+  date: string | null;
   status: TaskStatus;
   priority: TaskPriority;
   basePriority: TaskPriority;
@@ -131,7 +132,8 @@ export interface CreateTaskInput {
   title: string;
   description?: string;
   note?: string;
-  date: string;
+  /** The due date (YYYY-MM-DD). Leave it out for a task with no due date. */
+  date?: string | null;
   status?: TaskStatus;
   /** Create the task in a workflow state of its project; the status follows the state's category. */
   stateId?: string | null;
@@ -153,7 +155,7 @@ export interface UpdateTaskInput {
   title?: string;
   description?: string;
   note?: string;
-  date?: string;
+  date?: string | null;
   status?: TaskStatus;
   priority?: TaskPriority;
   isBlocked?: boolean;

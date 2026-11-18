@@ -75,8 +75,8 @@ export function GovernanceReadyBadge({
   useEffect(() => {
     let cancelled = false;
     telemetryApi
-      .projectGovernance([projectId])
-      .then((data) => !cancelled && setState(data[projectId] ?? null))
+      .projectGovernance(projectId)
+      .then((data) => !cancelled && setState(data.state ?? null))
       .catch(() => undefined);
     return () => {
       cancelled = true;

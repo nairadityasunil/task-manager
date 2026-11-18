@@ -224,12 +224,10 @@ export const telemetryApi = {
     unwrap<TaskAutomation | null>(
       api.get(`/telemetry/automation/task/${taskId}`, { silent: true }),
     ),
-  projectGovernance: (projectIds: string[]) =>
-    unwrap<Record<string, 'ready' | 'pending'>>(
-      api.get('/telemetry/projects/governance', {
-        params: { projectIds: projectIds.join(',') },
-        silent: true,
-      }),
+  /** "ready" once a project's governance checklist is done, "pending" while it is open, null if unknown. */
+  projectGovernance: (projectId: string) =>
+    unwrap<{ state: 'ready' | 'pending' | null }>(
+      api.get(`/telemetry/projects/${projectId}/governance`, { silent: true }),
     ),
 };
 

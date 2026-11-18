@@ -34,7 +34,8 @@ export async function getProjectActivities(
     page?: number;
     limit?: number;
     entityType?: string;
-    entityIds?: string[];
+    /** Only the history of one task, epic or project. */
+    entityId?: string;
     userId?: string;
     actor?: 'agent' | 'person';
     since?: string;
@@ -42,7 +43,7 @@ export async function getProjectActivities(
   }
 ): Promise<ActivityLogResponse> {
   const query = new URLSearchParams();
-  if (params?.entityIds?.length) query.set('entityIds', params.entityIds.join(','));
+  if (params?.entityId) query.set('entityId', params.entityId);
   if (params?.userId) query.set('userId', params.userId);
   if (params?.actor) query.set('actor', params.actor);
   if (params?.since) query.set('since', params.since);

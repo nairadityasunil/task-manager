@@ -100,6 +100,33 @@ export const verify2faThunk = createAsyncThunk(
   }
 );
 
+/** Sign-in for the platform admin console: only platform admins are accepted. */
+export const adminLoginThunk = createAsyncThunk(
+  'auth/adminLogin',
+  async (payload: { email: string; password: string }, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/admin/auth/login', { email: payload.email, password: payload.password, rememberMe: false });
+      return { data: response.data.data, rememberMe: false };
+    } catch (err) {
+      const errorObj = err as { message?: string };
+      return rejectWithValue(errorObj.message || 'Sign-in failed');
+    }
+  }
+);
+
+export const adminVerify2faThunk = createAsyncThunk(
+  'auth/adminVerify2fa',
+  async (payload: { email: string; code: string }, { rejectWithValue }) => {
+    try {
+      const response = await api.post('/admin/auth/verify-2fa', { email: payload.email, code: payload.code, rememberMe: false });
+      return { data: response.data.data, rememberMe: false };
+    } catch (err) {
+      const errorObj = err as { message?: string };
+      return rejectWithValue(errorObj.message || 'Code verification failed');
+    }
+  }
+);
+
 export const registerThunk = createAsyncThunk(
   'auth/register',
   async (payload: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }, { rejectWithValue }) => {
@@ -192,6 +219,39 @@ const authSlice = createSlice({
       }
     });
     builder.addCase(loginThunk.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Platform admin sign-in (same handling as a normal sign-in)
+    builder.addCase(adminLoginThunk.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(adminLoginThunk.fulfilled, (state, action) => {
+      state.loading = false;
+      state.rememberMe = false;
+      if (action.payload.data.require2fa) {
+        state.require2fa = true;
+        state.tempEmail2fa = action.payload.data.email;
+      } else {
+        saveSession(state, action.payload.data);
+      }
+    });
+    builder.addCase(adminLoginThunk.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+    builder.addCase(adminVerify2faThunk.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(adminVerify2faThunk.fulfilled, (state, action) => {
+      state.loading = false;
+      state.rememberMe = false;
+      saveSession(state, action.payload.data);
+    });
+    builder.addCase(adminVerify2faThunk.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
     });

@@ -9,7 +9,7 @@ import { Notification } from '@/components/NotificationBox';
 import { useChat } from '@/context/ChatContext';
 import { TaskFilters } from '@/components/TaskFilterBar';
 import { recalculateDynamicPriorities, evaluateTaskPriority, type PriorityEvaluation } from '@/services/priorityEngine';
-import { createEpic, deleteEpic, getEpicsForProjects, updateEpic } from '@/services/epics';
+import { createEpic, deleteEpic, getMyEpics, updateEpic } from '@/services/epics';
 import { createEpicNote, createNote, deleteNote, getEpicNotes, getNote, getProjectNotes, updateNote } from '@/services/notes';
 import {
   addProjectMember,
@@ -60,14 +60,6 @@ export type ActiveNoteEditor =
     task: Task;
   };
 
-const getTodayDate = (): string => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = `${today.getMonth() + 1}`.padStart(2, '0');
-  const day = `${today.getDate()}`.padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
 export const ALL_PROJECTS_VALUE = '__all__';
 
 export const deriveTaskStatusFromSubtasks = (
@@ -100,7 +92,6 @@ export function useDashboard() {
   const { projectId, epicId, integrationId } = useParams();
   const { activeWorkspaceId } = useWorkspace();
 
-  const [selectedDate, setSelectedDate] = useState<string>(getTodayDate);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [epics, setEpics] = useState<Epic[]>([]);
@@ -253,8 +244,6 @@ export function useDashboard() {
       setActiveView('settings');
     } else if (path === '/projects') {
       setActiveView('projects');
-    } else if (path === '/admin') {
-      setActiveView('admin');
     } else if (path === '/activity') {
       setActiveView('activity');
     } else if (path === '/telemetry' || path.startsWith('/telemetry/')) {
@@ -289,7 +278,8 @@ export function useDashboard() {
     try {
       const [taskList, projectData] = await Promise.all([
         getTasks(
-          selectedDate,
+          // Every task, whatever day it was made: tasks are not tied to a date or carried from day to day.
+          undefined,
           taskFilters.assigneeId === 'all' ? undefined : taskFilters.assigneeId,
           debouncedTaskSearchTerm.trim() || undefined
         ),
@@ -305,8 +295,8 @@ export function useDashboard() {
         }
       }
 
-      // One request for the epics of the whole page of projects, not one per project.
-      const allEpics = await getEpicsForProjects(projectList.map((project: Project) => project.id));
+      // One request for the epics of all the person's projects; the server knows which those are.
+      const allEpics = await getMyEpics();
 
       setTasks(taskList);
       setProjects(projectList);
@@ -318,7 +308,7 @@ export function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, projectPage, projectId, debouncedProjectSearchTerm, taskFilters.assigneeId, debouncedTaskSearchTerm]);
+  }, [projectPage, projectId, debouncedProjectSearchTerm, taskFilters.assigneeId, debouncedTaskSearchTerm]);
 
   useEffect(() => {
     void loadDashboard();
@@ -355,6 +345,7 @@ export function useDashboard() {
     note?: string;
     status?: TaskWorkflowStatus;
     stateId?: string | null;
+    date?: string | null;
     priority?: TaskPriority;
     projectId?: string | null;
     epicId?: string | null;
@@ -364,7 +355,8 @@ export function useDashboard() {
       title: payload.title.trim(),
       description: payload.description?.trim(),
       note: payload.note?.trim(),
-      date: selectedDate,
+      // Optional: a task only has a due date when one was chosen.
+      date: payload.date ?? undefined,
       status: payload.stateId ? undefined : payload.status,
       stateId: payload.stateId ?? undefined,
       priority: payload.priority,
@@ -533,10 +525,10 @@ export function useDashboard() {
 
   const tasksHeading = useMemo(() => {
     if (selectedProjectView === ALL_PROJECTS_VALUE) {
-      return `All tasks for ${selectedDate}`;
+      return 'All tasks';
     }
-    return `${activeProject?.name ?? 'Project'} tasks for ${selectedDate}`;
-  }, [activeProject?.name, selectedDate, selectedProjectView]);
+    return `${activeProject?.name ?? 'Project'} tasks`;
+  }, [activeProject?.name, selectedProjectView]);
 
   const activeProjectEpics = useMemo(
     () =>
@@ -905,7 +897,7 @@ export function useDashboard() {
     title: string;
     description?: string;
     note?: string;
-    date: string;
+    date: string | null;
     status: TaskWorkflowStatus;
     stateId?: string | null;
     priority?: TaskPriority;
@@ -1477,8 +1469,6 @@ export function useDashboard() {
   return {
     user,
     logout: handleLogout,
-    selectedDate,
-    setSelectedDate,
     tasks,
     projects,
     epics,
