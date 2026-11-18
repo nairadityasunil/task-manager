@@ -151,7 +151,10 @@ function LoginPage(): JSX.Element {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const emailParam = searchParams.get('email') || '';
-  const tokenParam = searchParams.get('token') || '';
+  // A companion pairing link also has a ?token= (the QR token). It is not an invitation, so it must not send the
+  // freshly paired device to the invitation page, which would report "verification failed".
+  const isCompanionLink = searchParams.get('mode') === 'companion' || searchParams.has('sessionId');
+  const tokenParam = isCompanionLink ? '' : searchParams.get('token') || '';
 
   const {
     login,

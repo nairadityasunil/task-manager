@@ -16,6 +16,7 @@ export interface CompanionDevice {
   createdAt?: string;
   updatedAt?: string;
   revokedAt?: string | null;
+  expiresAt?: string | null;
 }
 
 type SettingsTab = "profile" | "workspace" | "sla" | "chatgpt" | "companion" | "mcp";

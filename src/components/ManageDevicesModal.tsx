@@ -12,6 +12,8 @@ interface CompanionDevice {
   status: 'active' | 'revoked' | 'pending';
   createdAt?: string;
   updatedAt?: string;
+  /** The device is removed automatically on this day (one month after pairing). */
+  expiresAt?: string | null;
 }
 
 interface CompanionDevicesResponse {
@@ -170,6 +172,11 @@ function ManageDevicesModal({ onClose, onDevicesChanged }: ManageDevicesModalPro
                         <p className="text-[11px] text-slate-400 m-0 uppercase tracking-wide font-semibold">
                           {device.deviceType}
                         </p>
+                        {device.status === 'active' && device.expiresAt ? (
+                          <p className="m-0 mt-0.5 text-[11px] text-slate-500">
+                            Signed in until {new Date(device.expiresAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}, then removed automatically
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                     <span className={`text-[11px] font-semibold px-2 py-0.5 rounded uppercase tracking-wide border ${device.status === 'pending'
