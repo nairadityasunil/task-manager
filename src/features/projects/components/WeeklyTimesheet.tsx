@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, Clock, Download, Plus, Trash2 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Modal from '@/components/Modal';
 import { Button, Input, Select, cn } from '@/components/ui';
@@ -30,12 +30,17 @@ export function WeeklyTimesheet({ projectId, projectName = 'project', isAdmin }:
   const [exporting, setExporting] = useState(false);
   const [cell, setCell] = useState<{ taskId: string | null; day: string } | null>(null);
 
+  // Only the newest request may fill the grid, so a slow answer for an earlier week cannot overwrite a later one.
+  const latestLoad = useRef(0);
   const load = useCallback(async () => {
+    const mine = ++latestLoad.current;
     try {
-      setWeek(await getTimeWeek(projectId, { start, scope: scope === 'all' ? 'all' : undefined }));
+      const result = await getTimeWeek(projectId, { start, scope: scope === 'all' ? 'all' : undefined });
+      if (mine !== latestLoad.current) return;
+      setWeek(result);
       setError(false);
     } catch {
-      setError(true);
+      if (mine === latestLoad.current) setError(true);
     }
   }, [projectId, start, scope]);
 
@@ -47,6 +52,8 @@ export function WeeklyTimesheet({ projectId, projectName = 'project', isAdmin }:
   const monday = week?.weekStart ?? start;
   const days = week?.days ?? [];
   const thisWeek = week ? week.days.includes(today) : true;
+  // Weeks can be browsed up to the current one, never into the future.
+  const canGoNext = !thisWeek && shiftDay(monday, 7) <= today;
 
   // Rows: every task with time this week, tasks the person added to the grid, and "No task".
   const rows = useMemo(() => {
@@ -77,7 +84,7 @@ export function WeeklyTimesheet({ projectId, projectName = 'project', isAdmin }:
           <button aria-label="Previous week" className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" onClick={() => setStart(shiftDay(monday, -7))} type="button">
             <ChevronLeft size={16} />
           </button>
-          <button aria-label="Next week" className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" onClick={() => setStart(shiftDay(monday, 7))} type="button">
+          <button aria-label="Next week" className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white" title={canGoNext ? undefined : 'This is the current week'} disabled={!canGoNext} onClick={() => canGoNext && setStart(shiftDay(monday, 7))} type="button">
             <ChevronRight size={16} />
           </button>
           <span className="ml-1 text-sm font-semibold text-slate-900" data-testid="week-range">

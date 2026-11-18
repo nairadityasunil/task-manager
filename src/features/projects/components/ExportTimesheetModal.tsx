@@ -34,7 +34,7 @@ export function ExportTimesheetModal({
   const [scope, setScope] = useState<'me' | 'all'>(isAdmin ? initialScope : 'me');
   const [busy, setBusy] = useState(false);
 
-  const invalid = !from || !to ? 'Choose both dates' : to < from ? 'The end date is before the start' : null;
+  const invalid = !from || !to ? 'Choose both dates' : to < from ? 'The end date is before the start' : to > today || from > today ? 'Dates in the future cannot be exported' : null;
 
   const presets: Array<[string, () => void]> = [
     ['This month', () => { setFrom(monthStart(today)); setTo(today); }],
@@ -80,11 +80,11 @@ export function ExportTimesheetModal({
         <div className="grid grid-cols-2 gap-3">
           <label className="grid gap-1 text-[13px] font-medium text-slate-700">
             From
-            <Input data-testid="export-from" max={to || undefined} onChange={(e) => setFrom(e.target.value)} type="date" value={from} />
+            <Input data-testid="export-from" max={to && to < today ? to : today} onChange={(e) => setFrom(e.target.value)} type="date" value={from} />
           </label>
           <label className="grid gap-1 text-[13px] font-medium text-slate-700">
             To
-            <Input data-testid="export-to" min={from || undefined} onChange={(e) => setTo(e.target.value)} type="date" value={to} />
+            <Input data-testid="export-to" max={today} min={from || undefined} onChange={(e) => setTo(e.target.value)} type="date" value={to} />
           </label>
         </div>
         <div className="flex flex-wrap gap-1.5">
