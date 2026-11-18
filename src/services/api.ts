@@ -5,19 +5,37 @@ import { isAgentForbidden, normalizeApiError } from '@/utils/apiError';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
 const baseURL = API_BASE_URL;
-const TOKEN_STORAGE_KEY = 'todo_token';
 
+/**
+ * Sign-in lives in HttpOnly cookies set by the API, so no script here ever sees a token. Every request sends
+ * them (withCredentials), and X-Auth-Mode keeps tokens out of the API's JSON answers.
+ */
 const api = axios.create({
   baseURL,
+  withCredentials: true,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'X-Auth-Mode': 'cookie'
   }
 });
+
+/** Browser storage used before cookies: removed on load so an old token never lingers. */
+const LEGACY_AUTH_KEYS = ['todo_token', 'todo_refresh_token'];
+export const readLegacyRefreshToken = (): string | null =>
+  localStorage.getItem('todo_refresh_token') ?? sessionStorage.getItem('todo_refresh_token');
+export const purgeLegacyTokens = (): void => {
+  for (const key of LEGACY_AUTH_KEYS) {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  }
+};
 
 declare module 'axios' {
   interface AxiosRequestConfig {
     /** Don't show the global progress bar for this request (e.g. background polling). */
     silent?: boolean;
+    /** On a 401, report it as is: no token refresh, no redirect to the login page (used when the page loads). */
+    noAuthRetry?: boolean;
   }
 }
 
@@ -37,14 +55,6 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     startGlobalLoading();
   }
 
-  const token = localStorage.getItem(TOKEN_STORAGE_KEY) ?? sessionStorage.getItem(TOKEN_STORAGE_KEY);
-
-  // Keep an explicit Authorization header, e.g. verifying a fresh sign-in
-  // token while an older session is still in storage.
-  if (token && config.headers && !config.headers.Authorization) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
   return config;
 });
 
@@ -56,12 +66,12 @@ interface FailedRequest {
 let isRefreshing = false;
 let failedQueue: FailedRequest[] = [];
 
-const processQueue = (error: unknown, token: string | null = null) => {
+const processQueue = (error: unknown) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token);
+      prom.resolve(null);
     }
   });
   failedQueue = [];
@@ -77,30 +87,30 @@ const isAuthEndpoint = (url?: string): boolean => {
     url.includes('/auth/login') ||
     url.includes('/auth/register') ||
     url.includes('/auth/refresh') ||
+    url.includes('/auth/logout') ||
     url.includes('/auth/verify-2fa') ||
     url.includes('/auth/companion-login') ||
     url.includes('/companion/pair/qr')
   );
 };
 
-const readStoredToken = (key: string): string | null => localStorage.getItem(key) ?? sessionStorage.getItem(key);
-
-const bearerOf = (config: InternalAxiosRequestConfig): string | null => {
-  const header = config.headers?.Authorization;
-  return typeof header === 'string' ? header.replace(/^Bearer\s+/i, '') : null;
+/** Forget the signed-in profile kept for a fast first paint (it holds no secrets). */
+const clearAuthStorage = () => {
+  for (const key of ['todo_user', 'todo_session', 'todo_remember_me', 'todo_signed_in']) {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  }
+  purgeLegacyTokens();
 };
 
-const clearAuthStorage = () => {
-  localStorage.removeItem(TOKEN_STORAGE_KEY);
-  localStorage.removeItem('todo_refresh_token');
-  localStorage.removeItem('todo_user');
-  localStorage.removeItem('todo_session');
-  localStorage.removeItem('todo_remember_me');
-
-  sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-  sessionStorage.removeItem('todo_refresh_token');
-  sessionStorage.removeItem('todo_user');
-  sessionStorage.removeItem('todo_session');
+/** Asks the API to renew the cookies. Resolves true when the session continues. */
+export const refreshSessionCookies = async (): Promise<boolean> => {
+  try {
+    await axios.post(`${baseURL}/auth/refresh`, {}, { withCredentials: true, headers: { 'X-Auth-Mode': 'cookie' } });
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 /** Fired when the API says this session's agent is suspended or revoked. */
@@ -129,78 +139,31 @@ api.interceptors.response.use(
       error.response?.status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
+      !originalRequest.noAuthRetry &&
       !isAuthEndpoint(originalRequest.url)
     ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-            }
-            return api(originalRequest);
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
+        }).then(() => api(originalRequest));
       }
 
       originalRequest._retry = true;
-
-      // A newer sign-in (e.g. returning from Google) may have stored a new
-      // token after this request went out with the old one. Retry with the
-      // new token instead of refreshing, or failing, the old session.
-      const latestToken = readStoredToken(TOKEN_STORAGE_KEY);
-      if (latestToken && latestToken !== bearerOf(originalRequest)) {
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${latestToken}`;
-        }
-        return api(originalRequest);
-      }
-
       isRefreshing = true;
-
-      const refreshToken = readStoredToken('todo_refresh_token');
-      if (refreshToken) {
-        try {
-          const res = await axios.post(`${baseURL}/auth/refresh`, { refreshToken });
-          const { token: newAccessToken, refreshToken: newRefreshToken, user, session } = res.data.data;
-          
-          const rememberMe = localStorage.getItem('todo_remember_me') === 'true';
-          const storage = rememberMe ? localStorage : sessionStorage;
-          storage.setItem(TOKEN_STORAGE_KEY, newAccessToken);
-          storage.setItem('todo_refresh_token', newRefreshToken);
-          storage.setItem('todo_user', JSON.stringify(user));
-          if (session) {
-            storage.setItem('todo_session', JSON.stringify(session));
-          }
-
-          processQueue(null, newAccessToken);
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          }
+      try {
+        const renewed = await refreshSessionCookies();
+        if (renewed) {
+          processQueue(null);
           return api(originalRequest);
-        } catch (refreshErr) {
-          processQueue(refreshErr, null);
-          // Only sign out if no newer session replaced this one meanwhile.
-          if (readStoredToken('todo_refresh_token') === refreshToken) {
-            clearAuthStorage();
-            if (window.location.pathname !== '/login') {
-              window.location.assign('/login');
-            }
-          }
-          return Promise.reject(refreshErr);
-        } finally {
-          isRefreshing = false;
         }
-      } else {
-        isRefreshing = false;
-        processQueue(error, null);
+        processQueue(error);
         clearAuthStorage();
         if (window.location.pathname !== '/login') {
           window.location.assign('/login');
         }
+        return Promise.reject(error);
+      } finally {
+        isRefreshing = false;
       }
     }
 
@@ -232,6 +195,5 @@ api.interceptors.response.use(
   }
 );
 
-export { TOKEN_STORAGE_KEY };
 
 export default api;

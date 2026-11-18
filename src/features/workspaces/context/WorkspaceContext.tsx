@@ -42,7 +42,7 @@ interface WorkspaceProviderProps {
 }
 
 export function WorkspaceProvider({ children }: WorkspaceProviderProps): JSX.Element {
-  const { user, token, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState<string>(getPersistedWorkspaceId);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,7 +73,7 @@ export function WorkspaceProvider({ children }: WorkspaceProviderProps): JSX.Ele
   // Load workspaces once sign-in has finished, and again when the user
   // changes. Fetching earlier (e.g. while a Google sign-in is still being
   // confirmed) sends a stale or missing token and gets a 401.
-  const signedInUserId = !authLoading && token ? user?.id ?? null : null;
+  const signedInUserId = !authLoading && isAuthenticated ? user?.id ?? null : null;
   useEffect(() => {
     if (!signedInUserId) {
       setWorkspaces([]);

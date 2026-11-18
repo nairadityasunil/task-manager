@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import api from '@/services/api';
+import api, { purgeLegacyTokens, readLegacyRefreshToken, refreshSessionCookies } from '@/services/api';
 import { RootState, AppDispatch } from '@/store';
 import {
   AuthProfile,
@@ -15,8 +15,9 @@ import {
   logout as logoutAction,
   clearError as clearErrorAction,
   setError as setErrorAction,
-  setTokens,
-  setRememberMe
+  setSession,
+  setRememberMe,
+  SIGNED_IN_FLAG
 } from '@/store/authSlice';
 
 export interface JoinedProject {
@@ -29,7 +30,8 @@ export interface JoinedProject {
 interface AuthContextValue {
   user: AuthProfile | null;
   session: AuthSession | null;
-  token: string | null;
+  /** True once the API has confirmed a signed-in person (sign-in is an HttpOnly cookie, never readable here). */
+  isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
   require2fa: boolean;
@@ -37,7 +39,6 @@ interface AuthContextValue {
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   loginWithCompanionKey: (key: string) => Promise<void>;
   loginWithCompanionQr: (payload: { sessionId: string; token: string; device?: Record<string, unknown> }) => Promise<void>;
-  authenticateWithToken: (token: string) => Promise<void>;
   /** With `inviteToken`, the new account also joins the invited project and workspace; `joined` says where. */
   register: (payload: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) => Promise<{ joined: JoinedProject | null }>;
   logout: () => void;
@@ -56,8 +57,6 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 interface AuthResponseData {
-  token: string;
-  refreshToken?: string;
   user: AuthProfile;
   session?: AuthSession;
 }
@@ -71,78 +70,80 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-interface UrlAuthTokens {
-  token: string;
-  refreshToken: string | null;
-}
-
 /**
- * Reads Google sign-in tokens from the URL and removes them from the address
- * bar. This runs once when the module loads, before React renders: route
- * guards are children of AuthProvider, so their redirects (e.g. a protected
- * page sending a signed-out visitor to /login) run before AuthProvider's
- * effects and would otherwise discard the tokens.
+ * The page may have just come back from Google sign-in (the API set the cookies and added #signin=1), or the
+ * person signed in earlier (flag), or still holds a pre-cookie token in browser storage that is moved into
+ * cookies once. Any of these means: ask the API who this is. Anonymous visitors cause no request.
  */
-const consumeUrlAuthTokens = (): UrlAuthTokens | null => {
-  if (typeof window === 'undefined') return null;
+const consumeSignInMarker = (): boolean => {
+  if (typeof window === 'undefined') return false;
   const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-  const urlParams = new URLSearchParams(window.location.search);
-  const hashToken = hashParams.get('token');
-  // Older backends sent ?token=; pages like /accept-invitation and /login use
-  // ?token= for their own purpose, so the query form is ignored there.
-  const pageOwnsTokenParam = ['/accept-invitation', '/login'].includes(window.location.pathname);
-  const token = hashToken ?? (pageOwnsTokenParam ? null : urlParams.get('token'));
-  if (!token) return null;
-
-  const url = new URL(window.location.href);
-  // A sign-in that returns to the public landing page should open the app.
-  if (url.pathname === '/') url.pathname = '/dashboard';
-  if (hashToken) {
+  let fromRedirect = false;
+  if (hashParams.get('signin') === '1') {
+    fromRedirect = true;
+    const url = new URL(window.location.href);
+    // A sign-in that returns to the public landing page should open the app.
+    if (url.pathname === '/') url.pathname = '/dashboard';
     url.hash = '';
-  } else {
-    url.searchParams.delete('token');
+    window.history.replaceState(window.history.state, '', url.toString());
   }
-  window.history.replaceState(window.history.state, '', url.toString());
-  return { token, refreshToken: hashParams.get('refreshToken') };
+  let flagged: boolean;
+  try {
+    flagged = localStorage.getItem(SIGNED_IN_FLAG) === '1';
+  } catch {
+    flagged = false;
+  }
+  return fromRedirect || flagged || readLegacyRefreshToken() != null;
 };
 
-const initialUrlTokens = consumeUrlAuthTokens();
-// StrictMode runs effects twice in development; sign in from the URL once.
-let urlLoginStarted = false;
+const shouldBootstrap = consumeSignInMarker();
+// StrictMode runs effects twice in development; bootstrap once.
+let bootstrapStarted = false;
 
 function AuthProvider({ children }: AuthProviderProps): JSX.Element {
   const dispatch = useDispatch<AppDispatch>();
-  const { user, session, token, loading, error, require2fa, tempEmail2fa } = useSelector(
+  const { user, session, loading, error, require2fa, tempEmail2fa } = useSelector(
     (state: RootState) => state.auth
   );
 
-  const [isCompletingUrlLogin, setIsCompletingUrlLogin] = useState(initialUrlTokens != null);
+  const [isBootstrapping, setIsBootstrapping] = useState(shouldBootstrap);
 
   useEffect(() => {
-    if (!initialUrlTokens || urlLoginStarted) return;
-    urlLoginStarted = true;
-    const { token: tokenFromUrl, refreshToken: refreshTokenFromUrl } = initialUrlTokens;
-
-    // Treat redirect login as rememberMe = true
-    api.get('/auth/me', {
-      headers: { Authorization: `Bearer ${tokenFromUrl}` }
-    })
-      .then((res) => {
-        dispatch(setTokens({
-          token: tokenFromUrl,
-          refreshToken: refreshTokenFromUrl ?? tokenFromUrl,
-          user: res.data.data.user,
-          session: res.data.data.session,
-          rememberMe: true
-        }));
-      })
-      .catch(() => {
-        // The API client already reports the failure; the user stays signed out.
-      })
-      .finally(() => setIsCompletingUrlLogin(false));
+    if (!shouldBootstrap || bootstrapStarted) return;
+    bootstrapStarted = true;
+    void (async () => {
+      try {
+        // Move a pre-cookie sign-in into cookies once, then forget the old token.
+        const legacy = readLegacyRefreshToken();
+        if (legacy) {
+          try {
+            await api.post('/auth/refresh', { refreshToken: legacy });
+          } catch {
+            // the old session is gone: fall through to a signed-out start
+          }
+          purgeLegacyTokens();
+        }
+        let res;
+        try {
+          res = await api.get('/auth/me', { silent: true, noAuthRetry: true });
+        } catch {
+          // the short-lived cookie may have run out while the long one is still good: renew once and ask again
+          if (!(await refreshSessionCookies())) throw new Error('signed out');
+          res = await api.get('/auth/me', { silent: true, noAuthRetry: true });
+        }
+        dispatch(setSession({ user: res.data.data.user, session: res.data.data.session, rememberMe: true }));
+      } catch {
+        // not signed in (or signed out elsewhere): the flag is cleared and the person sees the login page
+        localStorage.removeItem(SIGNED_IN_FLAG);
+      } finally {
+        setIsBootstrapping(false);
+      }
+    })();
   }, [dispatch]);
 
   const logout = useCallback((): void => {
+    // Ends the session on the server (and clears the cookies), then forgets the person here.
+    void api.post('/auth/logout', {}, { silent: true }).catch(() => undefined);
     dispatch(logoutAction());
   }, [dispatch]);
 
@@ -179,9 +180,7 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     try {
       await dispatch(setRememberMe(false));
       const response = await api.post<AuthResponse>('/auth/companion-login', { key });
-      dispatch(setTokens({
-        token: response.data.data.token,
-        refreshToken: response.data.data.refreshToken ?? response.data.data.token,
+      dispatch(setSession({
         user: response.data.data.user,
         session: response.data.data.session,
         rememberMe: false
@@ -198,9 +197,7 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     try {
       await dispatch(setRememberMe(false));
       const response = await api.post<AuthResponse>('/companion/pair/qr', payload);
-      dispatch(setTokens({
-        token: response.data.data.token,
-        refreshToken: response.data.data.refreshToken ?? response.data.data.token,
+      dispatch(setSession({
         user: response.data.data.user,
         session: response.data.data.session,
         rememberMe: false
@@ -213,23 +210,6 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     }
   };
 
-  const authenticateWithToken = useCallback(
-    async (newToken: string): Promise<void> => {
-      // Direct token injection
-      const response = await api.get('/auth/me', {
-        headers: { Authorization: `Bearer ${newToken}` }
-      });
-      dispatch(setTokens({
-        token: newToken,
-        refreshToken: newToken,
-        user: response.data.data.user,
-        session: response.data.data.session,
-        rememberMe: false
-      }));
-    },
-    [dispatch]
-  );
-
   const clearError = useCallback((): void => {
     dispatch(clearErrorAction());
   }, [dispatch]);
@@ -238,8 +218,8 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     () => ({
       user,
       session,
-      token,
-      loading: loading || isCompletingUrlLogin,
+      isAuthenticated: user != null,
+      loading: loading || isBootstrapping,
       error,
       require2fa,
       tempEmail2fa,
@@ -249,12 +229,11 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       register,
       logout,
       refreshUser,
-      authenticateWithToken,
       updateProfile,
       verify2fa,
       clearError
     }),
-    [user, session, token, loading, isCompletingUrlLogin, error, require2fa, tempEmail2fa, logout, refreshUser, authenticateWithToken, clearError]
+    [user, session, loading, isBootstrapping, error, require2fa, tempEmail2fa, logout, refreshUser, clearError]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -11,7 +11,7 @@ import { SESSION_BLOCKED_EVENT } from '@/services/api';
  * and forms would seem to do nothing.
  */
 export function SessionBlockedNotice(): JSX.Element | null {
-  const { logout, token } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,10 +25,10 @@ export function SessionBlockedNotice(): JSX.Element | null {
 
   // Signed out, or signed in again from somewhere that is not blocked.
   useEffect(() => {
-    if (!token) setMessage(null);
-  }, [token]);
+    if (!isAuthenticated) setMessage(null);
+  }, [isAuthenticated]);
 
-  if (!message || !token) return null;
+  if (!message || !isAuthenticated) return null;
   return (
     <div
       aria-labelledby="blocked-title"

@@ -32,8 +32,6 @@ export interface AuthSession {
 export interface AuthState {
   user: AuthProfile | null;
   session: AuthSession | null;
-  token: string | null;
-  refreshToken: string | null;
   loading: boolean;
   error: string | null;
   require2fa: boolean;
@@ -41,31 +39,25 @@ export interface AuthState {
   rememberMe: boolean;
 }
 
-const getPersistedItem = (key: string): string | null => {
-  return localStorage.getItem(key) ?? sessionStorage.getItem(key);
-};
-
-const getPersistedJson = <T>(key: string): T | null => {
-  const val = getPersistedItem(key);
-  if (!val) return null;
+/**
+ * Sign-in itself is an HttpOnly cookie the API sets, so no token is kept here or in browser storage. The only thing
+ * remembered is this non-secret flag, which says "ask the API who I am" when the page loads.
+ */
+export const SIGNED_IN_FLAG = 'todo_signed_in';
+const setSignedInFlag = (on: boolean): void => {
   try {
-    return JSON.parse(val) as T;
+    if (on) localStorage.setItem(SIGNED_IN_FLAG, '1');
+    else localStorage.removeItem(SIGNED_IN_FLAG);
   } catch {
-    return null;
+    // storage unavailable: the page just asks the API each time
   }
 };
 
-const initialToken = getPersistedItem('todo_token');
-const initialRefreshToken = getPersistedItem('todo_refresh_token');
-const initialUser = getPersistedJson<AuthProfile>('todo_user');
-const initialSession = getPersistedJson<AuthSession>('todo_session');
 const initialRememberMe = localStorage.getItem('todo_remember_me') === 'true';
 
 const initialState: AuthState = {
-  user: initialUser,
-  session: initialSession,
-  token: initialToken,
-  refreshToken: initialRefreshToken,
+  user: null,
+  session: null,
   loading: false,
   error: null,
   require2fa: false,
@@ -81,6 +73,7 @@ export const loginThunk = createAsyncThunk(
       const response = await api.post('/auth/login', {
         email: payload.email,
         password: payload.password,
+        rememberMe: payload.rememberMe,
       });
       return { data: response.data.data, rememberMe: payload.rememberMe };
     } catch (err) {
@@ -97,6 +90,7 @@ export const verify2faThunk = createAsyncThunk(
       const response = await api.post('/auth/verify-2fa', {
         email: payload.email,
         code: payload.code,
+        rememberMe: payload.rememberMe,
       });
       return { data: response.data.data, rememberMe: payload.rememberMe };
     } catch (err) {
@@ -167,9 +161,10 @@ const authSlice = createSlice({
     setError(state, action: PayloadAction<string>) {
       state.error = action.payload;
     },
-    setTokens(state, action: PayloadAction<{ token: string; refreshToken: string; user: AuthProfile; session?: AuthSession; rememberMe: boolean }>) {
-      state.rememberMe = action.payload.rememberMe;
-      saveTokens(state, action.payload);
+    /** Signed in (the cookies are already set by the API): keep who it is. */
+    setSession(state, action: PayloadAction<{ user: AuthProfile; session?: AuthSession | null; rememberMe?: boolean }>) {
+      if (action.payload.rememberMe !== undefined) state.rememberMe = action.payload.rememberMe;
+      saveSession(state, action.payload);
     },
     setRememberMe(state, action: PayloadAction<boolean>) {
       state.rememberMe = action.payload;
@@ -193,7 +188,7 @@ const authSlice = createSlice({
         state.require2fa = true;
         state.tempEmail2fa = action.payload.data.email;
       } else {
-        saveTokens(state, action.payload.data);
+        saveSession(state, action.payload.data);
       }
     });
     builder.addCase(loginThunk.rejected, (state, action) => {
@@ -209,7 +204,7 @@ const authSlice = createSlice({
     builder.addCase(verify2faThunk.fulfilled, (state, action) => {
       state.loading = false;
       state.rememberMe = action.payload.rememberMe;
-      saveTokens(state, action.payload.data);
+      saveSession(state, action.payload.data);
     });
     builder.addCase(verify2faThunk.rejected, (state, action) => {
       state.loading = false;
@@ -223,7 +218,7 @@ const authSlice = createSlice({
     });
     builder.addCase(registerThunk.fulfilled, (state, action) => {
       state.loading = false;
-      saveTokens(state, action.payload);
+      saveSession(state, action.payload);
     });
     builder.addCase(registerThunk.rejected, (state, action) => {
       state.loading = false;
@@ -234,11 +229,7 @@ const authSlice = createSlice({
     builder.addCase(refreshUserThunk.fulfilled, (state, action) => {
       state.user = action.payload.user;
       state.session = action.payload.session ?? null;
-      const storage = state.rememberMe ? localStorage : sessionStorage;
-      storage.setItem('todo_user', JSON.stringify(action.payload.user));
-      if (action.payload.session) {
-        storage.setItem('todo_session', JSON.stringify(action.payload.session));
-      }
+      setSignedInFlag(true);
     });
     builder.addCase(refreshUserThunk.rejected, (state) => {
       clearTokens(state);
@@ -252,8 +243,6 @@ const authSlice = createSlice({
     builder.addCase(updateProfileThunk.fulfilled, (state, action) => {
       state.loading = false;
       state.user = action.payload;
-      const storage = state.rememberMe ? localStorage : sessionStorage;
-      storage.setItem('todo_user', JSON.stringify(action.payload));
     });
     builder.addCase(updateProfileThunk.rejected, (state, action) => {
       state.loading = false;
@@ -262,48 +251,25 @@ const authSlice = createSlice({
   },
 });
 
-function saveTokens(state: AuthState, payload: { token: string; refreshToken: string; user: AuthProfile; session?: AuthSession }) {
-  state.token = payload.token;
-  state.refreshToken = payload.refreshToken;
+function saveSession(state: AuthState, payload: { user: AuthProfile; session?: AuthSession | null }) {
   state.user = payload.user;
   state.session = payload.session ?? null;
   state.require2fa = false;
   state.tempEmail2fa = null;
-
-  const storage = state.rememberMe ? localStorage : sessionStorage;
-  storage.setItem('todo_token', payload.token);
-  storage.setItem('todo_refresh_token', payload.refreshToken);
-  storage.setItem('todo_user', JSON.stringify(payload.user));
-  if (payload.session) {
-    storage.setItem('todo_session', JSON.stringify(payload.session));
-  }
-  
-  if (state.rememberMe) {
-    localStorage.setItem('todo_remember_me', 'true');
-  } else {
-    localStorage.removeItem('todo_remember_me');
-  }
+  setSignedInFlag(true);
 }
 
 function clearTokens(state: AuthState) {
-  state.token = null;
-  state.refreshToken = null;
   state.user = null;
   state.session = null;
   state.require2fa = false;
   state.tempEmail2fa = null;
-
-  localStorage.removeItem('todo_token');
-  localStorage.removeItem('todo_refresh_token');
-  localStorage.removeItem('todo_user');
-  localStorage.removeItem('todo_session');
-  localStorage.removeItem('todo_remember_me');
-
-  sessionStorage.removeItem('todo_token');
-  sessionStorage.removeItem('todo_refresh_token');
-  sessionStorage.removeItem('todo_user');
-  sessionStorage.removeItem('todo_session');
+  setSignedInFlag(false);
+  for (const key of ['todo_user', 'todo_session', 'todo_token', 'todo_refresh_token']) {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  }
 }
 
-export const { logout, clearError, setError, setTokens, setRememberMe } = authSlice.actions;
+export const { logout, clearError, setError, setSession, setRememberMe } = authSlice.actions;
 export default authSlice.reducer;
