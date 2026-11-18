@@ -20,6 +20,8 @@ import { ClassificationSelect, ProjectLabelChip } from '@/features/agents/compon
 import ProjectNotes from '@/components/ProjectNotes';
 import ProjectPanel from '@/components/ProjectPanel';
 import ProjectTeamPanel from '@/components/ProjectTeamPanel';
+import { ProjectSettings } from '@/features/projects/components/ProjectSettings';
+import { WeeklyTimesheet } from '@/features/projects/components/WeeklyTimesheet';
 import SettingsPanel from '@/components/SettingsPanel';
 import SubtaskForm from '@/components/SubtaskForm';
 import ChatPanel from '@/components/ChatPanel';
@@ -48,7 +50,7 @@ import AssigneeSelector from '@/components/AssigneeSelector';
 import SlaDashboard from '@/components/SlaDashboard';
 import DashboardOverview from '@/features/dashboard/components/DashboardOverview';
 import { TaskInspector } from '@/features/tasks';
-import { Layers3, Edit3, FileText, Folder, Layout, List, MessageCircle, MessageSquare, Plus, Users, Trash2, History, RefreshCw, Calculator, Zap, Bot, Sparkles, MoreHorizontal, Workflow, Settings, BookOpen, type LucideIcon } from 'lucide-react';
+import { Clock, SlidersHorizontal, Layers3, Edit3, FileText, Folder, Layout, List, MessageCircle, MessageSquare, Plus, Users, Trash2, History, RefreshCw, Calculator, Zap, Bot, Sparkles, MoreHorizontal, Workflow, Settings, BookOpen, type LucideIcon } from 'lucide-react';
 import { Note } from '@/types/note';
 import { useDashboard, ALL_PROJECTS_VALUE } from '@/features/dashboard';
 
@@ -128,6 +130,7 @@ export function DashboardPage(): JSX.Element {
   }, []);
   const [isWorkflowModalOpen, setIsWorkflowModalOpen] = useState(false);
   const [isRunPromptOpen, setIsRunPromptOpen] = useState(false);
+  const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const epicStatusLabel = (status: string): string => {
@@ -583,19 +586,31 @@ export function DashboardPage(): JSX.Element {
                       <MessageCircle size={16} />
                       <HeaderLabel>Chat</HeaderLabel>
                     </button>
+                    {dash.activePermissions.prompts ? (
+                      <button
+                        className={headerButtonCls}
+                        data-testid="run-prompt-button"
+                        onClick={() => setIsRunPromptOpen(true)}
+                        type="button"
+                      >
+                        <Sparkles size={16} />
+                        <HeaderLabel>Run prompt</HeaderLabel>
+                      </button>
+                    ) : null}
                     <button
                       className={headerButtonCls}
-                      data-testid="run-prompt-button"
-                      onClick={() => setIsRunPromptOpen(true)}
+                      data-testid="project-settings-button"
+                      onClick={() => setIsProjectSettingsOpen(true)}
                       type="button"
                     >
-                      <Sparkles size={16} />
-                      <HeaderLabel>Run prompt</HeaderLabel>
+                      <SlidersHorizontal size={16} />
+                      <HeaderLabel>Settings</HeaderLabel>
                     </button>
                     <ProjectMoreMenu
                       items={[
                         { label: 'Project notes', icon: MessageSquare, onSelect: () => dash.handleOpenProjectNotesPanel(dash.activeProject!) },
-                        { label: 'Run a prompt', icon: Sparkles, onSelect: () => setIsRunPromptOpen(true) },
+                        ...(dash.activePermissions.prompts ? [{ label: 'Run a prompt', icon: Sparkles, onSelect: () => setIsRunPromptOpen(true) }] : []),
+                        { label: 'Project settings', icon: SlidersHorizontal, onSelect: () => setIsProjectSettingsOpen(true) },
                         { label: 'Workflow states', icon: Workflow, onSelect: () => setIsWorkflowModalOpen(true) },
                         { label: 'Activity history', icon: History, onSelect: () => dash.setIsActivityHistoryOpen(true) },
                         {
@@ -608,9 +623,11 @@ export function DashboardPage(): JSX.Element {
                         { label: 'Refresh', icon: RefreshCw, onSelect: () => void dash.loadDashboard() }
                       ]}
                     />
-                    <Button icon={Zap} onClick={() => dash.setIsAiPlanningWorkspaceOpen(true)} variant="primary">
-                      AI Planner
-                    </Button>
+                    {dash.activePermissions.aiPlanner ? (
+                      <Button icon={Zap} onClick={() => dash.setIsAiPlanningWorkspaceOpen(true)} variant="primary">
+                        AI Planner
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -786,6 +803,18 @@ export function DashboardPage(): JSX.Element {
                             >
                               <Layout size={16} />
                             </button>
+                            {dash.activePermissions.time ? (
+                              <button
+                                aria-pressed={dash.viewMode === 'week'}
+                                onClick={() => dash.setViewMode('week')}
+                                className={`flex h-7 w-8 items-center justify-center rounded-md transition-colors ${dash.viewMode === 'week' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                                data-testid="week-view-button"
+                                title="Weekly time"
+                                type="button"
+                              >
+                                <Clock size={16} />
+                              </button>
+                            ) : null}
                           </div>
                           <Button
                             disabled={!dash.canManageActiveProject}
@@ -840,7 +869,9 @@ export function DashboardPage(): JSX.Element {
                       )}
 
                       <div className="custom-scrollbar flex-1 overflow-auto">
-                        {dash.viewMode === 'list' ? (
+                        {dash.viewMode === 'week' && dash.activePermissions.time && dash.activeProject ? (
+                          <WeeklyTimesheet isAdmin={dash.canManageTeam} key={dash.activeProject.id} projectId={dash.activeProject.id} />
+                        ) : dash.viewMode === 'list' || dash.viewMode === 'week' ? (
                           <div className="p-3 sm:p-4">
                             <TaskList
                               actionTaskId={dash.actionTaskId}
@@ -1014,7 +1045,7 @@ export function DashboardPage(): JSX.Element {
           title={`Team for ${dash.activeProject.name}`}
         >
           <ProjectTeamPanel
-            canManageTeam={dash.canManageTeam}
+            canManageTeam={dash.activePermissions.team}
             currentUserId={dash.user?.id ?? null}
             isMutating={dash.teamMutationLoading}
             members={dash.activeProjectMembers}
@@ -1022,6 +1053,44 @@ export function DashboardPage(): JSX.Element {
             onInviteMember={dash.handleInviteProjectMember}
             onRemoveMember={dash.handleRemoveProjectMember}
             onLeaveProject={dash.handleLeaveProject}
+          />
+        </Modal>
+      )}
+      {isProjectSettingsOpen && dash.activeProject && (
+        <Modal
+          bodyClassName="!p-0"
+          onClose={() => setIsProjectSettingsOpen(false)}
+          panelClassName="!max-w-[860px]"
+          title={`Settings: ${dash.activeProject.name}`}
+        >
+          <ProjectSettings
+            currentUserId={dash.user?.id ?? null}
+            isAdmin={dash.canManageTeam}
+            members={dash.activeProjectMembers}
+            myPermissions={dash.activePermissions}
+            onChanged={() => void Promise.all([dash.loadProjectTeam(dash.activeProject!.id), dash.loadDashboard({ quiet: true })])}
+            onEditDetails={() => {
+              setIsProjectSettingsOpen(false);
+              dash.setEditingProject(dash.activeProject);
+            }}
+            onOpenAiSettings={() => {
+              setIsProjectSettingsOpen(false);
+              dash.setActiveView('settings');
+            }}
+            project={dash.activeProject}
+            teamPanel={
+              <ProjectTeamPanel
+                canManageTeam={dash.activePermissions.team}
+                currentUserId={dash.user?.id ?? null}
+                isMutating={dash.teamMutationLoading}
+                members={dash.activeProjectMembers}
+                onInviteMember={dash.handleInviteProjectMember}
+                onLeaveProject={dash.handleLeaveProject}
+                onRemoveMember={dash.handleRemoveProjectMember}
+                projectId={dash.activeProject.id}
+              />
+            }
+            workflowPanel={<ProjectWorkflowStatesPanel canManage={dash.canManageTeam} projectId={dash.activeProject.id} />}
           />
         </Modal>
       )}
