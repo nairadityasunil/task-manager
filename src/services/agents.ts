@@ -576,9 +576,15 @@ export const agentsApi = {
   approveElevation: (id: string, durationMinutes?: number) => unwrap<AgentElevation>(api.post(`/agents/elevations/${id}/approve`, { durationMinutes })),
   rejectElevation: (id: string, note?: string) => unwrap<AgentElevation>(api.post(`/agents/elevations/${id}/reject`, { note })),
   revokeElevation: (id: string) => unwrap<AgentElevation>(api.post(`/agents/elevations/${id}/revoke`)),
-  classification: (params: { projectIds?: string[]; taskIds?: string[] }) =>
-    unwrap<{ labels: Classification[]; projects: Record<string, Classification | null>; tasks: Record<string, Classification | null> }>(
-      api.get('/agents/classification', { params: { projectIds: params.projectIds?.join(','), taskIds: params.taskIds?.join(',') }, silent: true })
+  /** The data label of one project (null: not set). */
+  projectClassification: (projectId: string) =>
+    unwrap<{ labels: Classification[]; classification: Classification | null }>(
+      api.get(`/agents/classification/projects/${projectId}`, { silent: true })
+    ),
+  /** The data label of one task (null: it uses its project's). */
+  taskClassification: (taskId: string) =>
+    unwrap<{ labels: Classification[]; classification: Classification | null }>(
+      api.get(`/agents/classification/tasks/${taskId}`, { silent: true })
     ),
   setClassification: (body: { projectId?: string; taskId?: string; classification: Classification | null }) =>
     unwrap<{ projectId: string | null; taskId: string | null; classification: Classification | null }>(api.put('/agents/classification', body)),
