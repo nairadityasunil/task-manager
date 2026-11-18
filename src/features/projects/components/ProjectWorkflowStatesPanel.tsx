@@ -18,7 +18,6 @@ const CATEGORIES: { value: StateCategory; label: string }[] = [
 
 const DEFAULT_STATES: { name: string; color: string; category: StateCategory }[] = [
   { name: 'Backlog', color: '#9CA3AF', category: 'BACKLOG' },
-  { name: 'To Do', color: '#64748B', category: 'UNSTARTED' },
   { name: 'In Progress', color: '#3B82F6', category: 'STARTED' },
   { name: 'Review', color: '#8B5CF6', category: 'STARTED' },
   { name: 'Done', color: '#10B981', category: 'COMPLETED' }
@@ -213,7 +212,7 @@ function ProjectWorkflowStatesPanel({ projectId, canManage, onChanged }: Project
               onClick={() => void handleAddDefaults()}
               variant="secondary"
             >
-              Add default workflow (Backlog → To Do → In Progress → Review → Done)
+              Add default workflow (Backlog → In Progress → Review → Done)
             </Button>
           ) : (
             <p className="m-0 mt-1 text-sm text-slate-500">A project admin can set up the workflow.</p>
