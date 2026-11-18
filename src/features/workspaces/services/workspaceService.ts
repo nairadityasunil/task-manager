@@ -7,6 +7,11 @@ export const workspaceService = {
     return res.data.workspaces;
   },
 
+  /** Records that the person just opened this workspace (for the recent list). */
+  async markUsed(id: string): Promise<void> {
+    await api.post(`/workspaces/${id}/use`, {}, { silent: true });
+  },
+
   async createWorkspace(name: string, slug?: string): Promise<Workspace> {
     const res = await api.post<{ workspace: Workspace }>('/workspaces', { name, slug });
     return res.data.workspace;
