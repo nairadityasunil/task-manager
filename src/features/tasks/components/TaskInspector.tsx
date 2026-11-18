@@ -9,6 +9,8 @@ import {
   Clock,
 } from 'lucide-react';
 import { TASK_WORKFLOW_STATUS_OPTIONS } from '@/types/task';
+import type { ProjectState } from '@/services/projectStates';
+import { stateForTask } from '@/features/projects/workflowStates';
 import type {
   Task,
   Subtask,
@@ -47,6 +49,9 @@ export interface TaskInspectorProps {
   isEvaluatingPriority: boolean;
   onViewSubtasks: (task: Task) => void;
   onNotesChanged: () => void;
+  /** The task's project workflow states: when there are some, the Status dropdown lists them. */
+  states?: ProjectState[];
+  onMoveToState?: (task: Task, stateId: string) => void;
   handleUpdateTaskField: (taskId: string, updates: UpdateTaskInput) => Promise<void> | void;
 }
 
@@ -88,6 +93,8 @@ export function TaskInspector({
   isEvaluatingPriority,
   onViewSubtasks,
   onNotesChanged,
+  states = [],
+  onMoveToState,
   handleUpdateTaskField,
 }: TaskInspectorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -192,17 +199,29 @@ export function TaskInspector({
                   <dl className="m-0 grid gap-1.5">
                     <PropertyRow label="Status">
                       <div className="w-40" data-testid="drawer-status">
-                        <Select
-                          aria-label="Status"
-                          onChange={(e) => {
-                            void handleUpdateTaskField(task.id, { status: e.target.value as TaskWorkflowStatus });
-                          }}
-                          value={task.status === 'rolled_over' ? 'TODO' : task.status}
-                        >
-                          {TASK_WORKFLOW_STATUS_OPTIONS.map((o) => (
-                            <option key={o.value} value={o.value}>{o.label}</option>
-                          ))}
-                        </Select>
+                        {states.length && onMoveToState ? (
+                          <Select
+                            aria-label="Status"
+                            onChange={(e) => onMoveToState(task, e.target.value)}
+                            value={stateForTask(task, states)?._id ?? ''}
+                          >
+                            {states.map((st) => (
+                              <option key={st._id} value={st._id}>{st.name}</option>
+                            ))}
+                          </Select>
+                        ) : (
+                          <Select
+                            aria-label="Status"
+                            onChange={(e) => {
+                              void handleUpdateTaskField(task.id, { status: e.target.value as TaskWorkflowStatus });
+                            }}
+                            value={task.status === 'rolled_over' ? 'TODO' : task.status}
+                          >
+                            {TASK_WORKFLOW_STATUS_OPTIONS.map((o) => (
+                              <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                          </Select>
+                        )}
                       </div>
                       <button
                         type="button"

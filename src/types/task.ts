@@ -43,6 +43,8 @@ export interface Task {
   title: string;
   description?: string;
   note?: string;
+  /** The project workflow state the task is in, when the project has states. */
+  stateId?: string | null;
   /** Every note on the task, oldest first. */
   notes?: TaskNote[];
   date: string;
@@ -155,6 +157,8 @@ export interface UpdateTaskInput {
   isBlocked?: boolean;
   blockedByTaskId?: string | null;
   order?: number;
+  /** Move the task to a workflow state; the status follows the state's category. */
+  stateId?: string | null;
   projectId?: string | null;
   epicId?: string | null;
   assignedTo?: string;

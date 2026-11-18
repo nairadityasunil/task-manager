@@ -30,6 +30,8 @@ import socketService, { SocketEvents } from '@/services/socket';
 import type { Epic, EpicStatus } from '@/types/epic';
 import type { Note } from '@/types/note';
 import type { Project, ProjectMember, ProjectPermissions } from '@/types/project';
+import projectStateService, { type ProjectState } from '@/services/projectStates';
+import { sortStates, statusOfCategory } from '@/features/projects/workflowStates';
 import type { Task, TaskWorkflowStatus, TaskPriority } from '@/types/task';
 import { findProjectByName } from '@/utils/projectTree';
 import { useConfirm } from '@/context/ConfirmationContext';
@@ -186,6 +188,7 @@ export function useDashboard() {
   const [projectNotes, setProjectNotes] = useState<Record<string, Note[]>>({});
   const [epicNotes, setEpicNotes] = useState<Record<string, Note[]>>({});
   const [projectMembersByProject, setProjectMembersByProject] = useState<Record<string, ProjectMember[]>>({});
+  const [statesByProject, setStatesByProject] = useState<Record<string, ProjectState[]>>({});
   const [notesLoadingKey, setNotesLoadingKey] = useState<string | null>(null);
   const [projectPage, setProjectPage] = useState(1);
   const [projectTotalPages, setProjectTotalPages] = useState<number>(1);
@@ -476,6 +479,20 @@ export function useDashboard() {
   };
 
   const activeProjectMembers = activeProject ? (projectMembersByProject[activeProject.id] ?? []) : [];
+
+  /** The project's own workflow stages. Empty until the project defines some, and then tasks use the built-in statuses. */
+  const loadProjectStates = useCallback(async (projectId: string): Promise<void> => {
+    try {
+      const list = await projectStateService.getProjectStates(projectId);
+      setStatesByProject((current) => ({ ...current, [projectId]: sortStates(list) }));
+    } catch {
+      setStatesByProject((current) => ({ ...current, [projectId]: current[projectId] ?? [] }));
+    }
+  }, []);
+  const activeProjectStates: ProjectState[] = activeProject ? (statesByProject[activeProject.id] ?? []) : [];
+  useEffect(() => {
+    if (activeProject && statesByProject[activeProject.id] == null) void loadProjectStates(activeProject.id);
+  }, [activeProject, statesByProject, loadProjectStates]);
   const canManageActiveProject = !!activeProject;
   const canManageTeam = activeProject?.currentUserRole === 'ADMIN';
   /** What the signed-in person may use in this project; admins have everything, older servers send nothing (all on). */
@@ -930,13 +947,20 @@ export function useDashboard() {
     setActionTaskId(taskId);
     // Show simple changes at once; the quiet reload then confirms them (and undoes them if the save failed).
     const before = tasks;
-    if (patch.priority || patch.status || patch.title) {
+    if (patch.priority || patch.status || patch.title || patch.stateId !== undefined) {
       setTasks((current) =>
-        current.map((t) =>
-          t.id === taskId
-            ? { ...t, ...(patch.priority ? { priority: patch.priority } : {}), ...(patch.status ? { status: patch.status as Task['status'] } : {}), ...(patch.title ? { title: patch.title } : {}) }
-            : t
-        )
+        current.map((t) => {
+          if (t.id !== taskId) return t;
+          const state = patch.stateId ? (statesByProject[t.projectId ?? ''] ?? []).find((x) => x._id === patch.stateId) : undefined;
+          return {
+            ...t,
+            ...(patch.priority ? { priority: patch.priority } : {}),
+            ...(patch.status ? { status: patch.status as Task['status'] } : {}),
+            ...(patch.title ? { title: patch.title } : {}),
+            ...(patch.stateId !== undefined ? { stateId: patch.stateId } : {}),
+            ...(state ? { status: statusOfCategory(state.category) } : {}),
+          };
+        })
       );
     }
     try {
@@ -948,6 +972,23 @@ export function useDashboard() {
     } finally {
       setActionTaskId(null);
     }
+  };
+
+  /** Moves a task to one of its project's workflow states (the status follows the state's category). */
+  const handleMoveTaskToState = async (targetTask: Task, stateId: string): Promise<void> => {
+    const state = (statesByProject[targetTask.projectId ?? ''] ?? []).find((x) => x._id === stateId);
+    if (!state || targetTask.stateId === stateId) return;
+    const openSubtasks = targetTask.subtasks.filter((subtask) => subtask.status !== 'DONE').length;
+    if (statusOfCategory(state.category) === 'DONE' && openSubtasks > 0) {
+      const isConfirmed = await confirm({
+        title: 'Mark task done?',
+        message: `"${targetTask.title}" has ${openSubtasks} open sub-task${openSubtasks === 1 ? '' : 's'}. They will be marked done too.`,
+        confirmText: 'Mark done',
+        type: 'info'
+      });
+      if (!isConfirmed) return;
+    }
+    await handleUpdateTaskFields(targetTask.id, { stateId });
   };
 
   const handleUpdateTaskStatus = async (targetTask: Task, status: TaskWorkflowStatus, skipConfirm = false) => {
@@ -1577,6 +1618,9 @@ export function useDashboard() {
     handleUpdateTask,
     handleUpdateTaskStatus,
     handleUpdateTaskFields,
+    handleMoveTaskToState,
+    activeProjectStates,
+    loadProjectStates,
     handleUpdateTaskEpic,
     handleDeleteTask,
     handleUpdateSubtaskStatus,

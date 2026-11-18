@@ -168,6 +168,8 @@ export function DashboardPage(): JSX.Element {
                   isEvaluatingPriority={dash.isEvaluatingPriority}
                   onViewSubtasks={(task) => setViewSubtasksTaskId(task.id)}
                   onNotesChanged={() => void dash.loadDashboard({ quiet: true })}
+                  states={dash.activeTask?.projectId && dash.activeProject?.id === dash.activeTask.projectId ? dash.activeProjectStates : []}
+                  onMoveToState={(t, stateId) => void dash.handleMoveTaskToState(t, stateId)}
                   handleUpdateTaskField={async (taskId, updates) => {
                     const task = dash.tasks.find((t) => t.id === taskId);
                     if (!task) return;
@@ -869,6 +871,7 @@ export function DashboardPage(): JSX.Element {
                           <div className="p-3 sm:p-4">
                             <TaskList
                               actionTaskId={dash.actionTaskId}
+                              states={dash.activeProjectStates}
                               epics={dash.epics}
                               onDelete={(taskId) => {
                                 const task = dash.tasks.find(t => t.id === taskId);
@@ -896,6 +899,11 @@ export function DashboardPage(): JSX.Element {
                           <div className="h-full">
                             <KanbanBoard
                               tasks={columnTasks}
+                              states={dash.activeProjectStates}
+                              onMoveToState={async (taskId, stateId) => {
+                                const task = dash.tasks.find((t) => t.id === taskId);
+                                if (task) await dash.handleMoveTaskToState(task, stateId);
+                              }}
                               onUpdateStatus={async (taskId, status) => {
                                 const task = dash.tasks.find(t => t.id === taskId);
                                 if (task) await dash.handleUpdateTaskStatus(task, status, true);
@@ -1108,7 +1116,7 @@ export function DashboardPage(): JSX.Element {
                 workspaceId={dash.activeWorkspaceId ?? null}
               />
             }
-            workflowPanel={<ProjectWorkflowStatesPanel canManage={dash.canManageTeam} projectId={dash.activeProject.id} />}
+            workflowPanel={<ProjectWorkflowStatesPanel canManage={dash.canManageTeam} onChanged={() => void dash.loadProjectStates(dash.activeProject!.id)} projectId={dash.activeProject.id} />}
           />
         </Modal>
       )}
