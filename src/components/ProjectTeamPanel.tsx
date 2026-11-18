@@ -3,6 +3,8 @@ import { LogOut, Shield, Trash2, UserPlus, Mail, RotateCcw } from 'lucide-react'
 import { Badge, Button, inputClass, selectClass, Select } from '@/components/ui';
 import type { ProjectMember } from '@/types/project';
 import { getProjectInvitations, revokeInvitation, type ProjectInvitation } from '@/services/invitations';
+import { workspaceService } from '@/features/workspaces/services/workspaceService';
+import type { WorkspaceMember } from '@/features/workspaces/types/workspace';
 
 interface ProjectTeamPanelProps {
   canManageTeam: boolean;
@@ -11,6 +13,9 @@ interface ProjectTeamPanelProps {
   members: ProjectMember[];
   projectId: string;
   onInviteMember: (email: string, role: 'ADMIN' | 'MEMBER') => Promise<void>;
+  /** The workspace the project belongs to; its members can be added directly. */
+  workspaceId?: string | null;
+  onAddWorkspaceMember?: (userId: string) => Promise<void>;
   onRemoveMember: (userId: string) => Promise<void>;
   onLeaveProject: () => Promise<void>;
 }
@@ -32,12 +37,28 @@ function ProjectTeamPanel({
   members,
   projectId,
   onInviteMember,
+  workspaceId = null,
+  onAddWorkspaceMember,
   onRemoveMember,
   onLeaveProject
 }: ProjectTeamPanelProps): JSX.Element {
   const [inviteEmail, setInviteEmail] = useState<string>('');
   const [inviteRole, setInviteRole] = useState<'ADMIN' | 'MEMBER'>('MEMBER');
   const [inviteLoading, setInviteLoading] = useState<boolean>(false);
+  const [workspaceMembers, setWorkspaceMembers] = useState<WorkspaceMember[]>([]);
+  const [pickedUserId, setPickedUserId] = useState<string>('');
+  useEffect(() => {
+    if (!workspaceId || !canManageTeam) return;
+    let cancelled = false;
+    workspaceService
+      .listMembers(workspaceId)
+      .then((list) => !cancelled && setWorkspaceMembers(list))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [workspaceId, canManageTeam, members.length]);
+  const candidates = workspaceMembers.filter((w) => !members.some((m) => m.userId === w.userId));
   const [pendingInvitations, setPendingInvitations] = useState<ProjectInvitation[]>([]);
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
@@ -201,11 +222,47 @@ function ProjectTeamPanel({
 
       {/* Invite */}
       {canManageTeam ? (
-        <form onSubmit={handleSendInvite} className="grid gap-3 border-t border-slate-200 bg-slate-50/70 p-4">
+        <div className="grid gap-3 border-t border-slate-200 bg-slate-50/70 p-4">
+          {onAddWorkspaceMember ? (
+            <div className="grid gap-2" data-testid="team-add-from-workspace">
+              <div>
+                <h3 className="m-0 text-[15px] font-semibold text-slate-900">Add from your workspace</h3>
+                <p className="m-0 mt-0.5 text-[13px] text-slate-500">People already in this workspace join the project right away.</p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Select
+                  aria-label="Workspace member"
+                  className={`${selectClass} sm:flex-1`}
+                  value={pickedUserId}
+                  onChange={(e) => setPickedUserId(e.target.value)}
+                >
+                  <option value="">{candidates.length ? 'Choose a person' : 'Everyone in the workspace is already here'}</option>
+                  {candidates.map((w) => (
+                    <option key={w.userId} value={w.userId}>
+                      {w.name || w.email}
+                      {w.name ? ` (${w.email})` : ''}
+                    </option>
+                  ))}
+                </Select>
+                <Button
+                  disabled={isMutating || !pickedUserId}
+                  icon={UserPlus}
+                  onClick={() => {
+                    void onAddWorkspaceMember(pickedUserId).then(() => setPickedUserId(''));
+                  }}
+                  type="button"
+                  variant="primary"
+                >
+                  Add to project
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        <form onSubmit={handleSendInvite} className="grid gap-3">
           <div>
-            <h3 className="m-0 text-[15px] font-semibold text-slate-900">Add team member</h3>
+            <h3 className="m-0 text-[15px] font-semibold text-slate-900">Not in the workspace? Invite by email</h3>
             <p className="m-0 mt-0.5 text-[13px] text-slate-500">
-              Registered users get an in-app invitation; anyone else gets an email to sign up and join.
+              They get an email. When they accept, they join the workspace and this project.
             </p>
           </div>
 
@@ -233,6 +290,7 @@ function ProjectTeamPanel({
             </Button>
           </div>
         </form>
+        </div>
       ) : (
         <div className="border-t border-slate-200 bg-slate-50/70 px-4 py-3 text-[13px] text-slate-500 sm:px-5">
           You can view the team here. Admins manage membership changes.

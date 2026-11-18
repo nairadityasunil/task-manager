@@ -1051,6 +1051,8 @@ export function DashboardPage(): JSX.Element {
             members={dash.activeProjectMembers}
             projectId={dash.activeProject.id}
             onInviteMember={dash.handleInviteProjectMember}
+            workspaceId={dash.activeWorkspaceId ?? null}
+            onAddWorkspaceMember={dash.handleAddWorkspaceMemberToProject}
             onRemoveMember={dash.handleRemoveProjectMember}
             onLeaveProject={dash.handleLeaveProject}
           />
@@ -1084,10 +1086,12 @@ export function DashboardPage(): JSX.Element {
                 currentUserId={dash.user?.id ?? null}
                 isMutating={dash.teamMutationLoading}
                 members={dash.activeProjectMembers}
+                onAddWorkspaceMember={dash.handleAddWorkspaceMemberToProject}
                 onInviteMember={dash.handleInviteProjectMember}
                 onLeaveProject={dash.handleLeaveProject}
                 onRemoveMember={dash.handleRemoveProjectMember}
                 projectId={dash.activeProject.id}
+                workspaceId={dash.activeWorkspaceId ?? null}
               />
             }
             workflowPanel={<ProjectWorkflowStatesPanel canManage={dash.canManageTeam} projectId={dash.activeProject.id} />}
