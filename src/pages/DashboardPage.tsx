@@ -869,7 +869,7 @@ export function DashboardPage(): JSX.Element {
 
                       <div className="custom-scrollbar flex-1 overflow-auto">
                         {dash.viewMode === 'week' && dash.activePermissions.time && dash.activeProject ? (
-                          <WeeklyTimesheet isAdmin={dash.canManageTeam} key={dash.activeProject.id} projectId={dash.activeProject.id} />
+                          <WeeklyTimesheet isAdmin={dash.canManageTeam} key={dash.activeProject.id} projectId={dash.activeProject.id} projectName={dash.activeProject.name} />
                         ) : dash.viewMode === 'list' || dash.viewMode === 'week' ? (
                           <div className="p-3 sm:p-4">
                             <TaskList

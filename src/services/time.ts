@@ -41,3 +41,11 @@ export const updateTimeEntry = async (projectId: string, entryId: string, patch:
 export const deleteTimeEntry = async (projectId: string, entryId: string): Promise<void> => {
   await api.delete(`/projects/${projectId}/time/entries/${entryId}`);
 };
+
+export const getTimeRange = async (
+  projectId: string,
+  params: { from: string; to: string; scope?: 'all' },
+): Promise<{ from: string; to: string; scope: 'me' | 'all'; entries: TimeEntry[] }> => {
+  const res = await api.get<Envelope<{ from: string; to: string; scope: 'me' | 'all'; entries: TimeEntry[] }>>(`/projects/${projectId}/time/range`, { params });
+  return res.data.data;
+};
