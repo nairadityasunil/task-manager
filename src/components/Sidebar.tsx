@@ -263,6 +263,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   label="Home"
                   onClick={() => onProjectSelect(allProjectsValue)}
                 />
+                <NavItem icon={Folder} isActive={activeView === 'projects'} label="All projects" onClick={() => onViewChange('projects')} />
                 <NavItem icon={Activity} isActive={activeView === 'activity'} label="Activity" onClick={() => onViewChange('activity')} />
                 <NavItem icon={Gauge} isActive={activeView === 'telemetry'} label="Telemetry" onClick={() => onViewChange('telemetry')} />
               </NavGroup>
@@ -301,7 +302,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </button>
                   );
                 })}
-                <NavItem icon={Folder} isActive={activeView === 'projects'} label="All projects" onClick={() => onViewChange('projects')} tone="muted" />
                 <NavItem area="tasks" icon={Plus} label="New Project" onClick={onNewProject} tone="muted" />
               </NavGroup>
             </>

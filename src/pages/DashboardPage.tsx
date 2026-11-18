@@ -412,7 +412,7 @@ export function DashboardPage(): JSX.Element {
                   )}
                 </>
               ) : (
-                <span className={crumbCurrentCls}>Overview</span>
+                <span className={crumbCurrentCls}>{dash.activeView === 'projects' ? 'All projects' : 'Overview'}</span>
               )}
             </>
           }
