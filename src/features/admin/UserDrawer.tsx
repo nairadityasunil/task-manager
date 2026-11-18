@@ -104,17 +104,6 @@ export function UserDrawer({ userId, currentUserId, onClose, onChanged }: { user
     if (await confirm({ title: 'Sign out everywhere?', message: `Every device of ${user.email} is signed out. They can sign in again.`, confirmText: 'Sign out', type: 'info' }))
       await act('signout', () => adminApi.signOut(user.id), 'Signed out everywhere');
   };
-  const toggleAdmin = async (): Promise<void> => {
-    if (!user) return;
-    const on = !user.isSuperAdmin;
-    const ok = await confirm({
-      title: on ? 'Make a super admin?' : 'Remove super admin?',
-      message: on ? `${user.email} will be able to see and manage everyone on the platform.` : `${user.email} loses access to this panel.`,
-      confirmText: on ? 'Make super admin' : 'Remove access',
-      type: on ? 'danger' : 'info',
-    });
-    if (ok) await act('admin', () => (on ? adminApi.makeSuperAdmin(user.id) : adminApi.removeSuperAdmin(user.id)), on ? 'Now a super admin' : 'Super admin removed');
-  };
   const remove = async (): Promise<void> => {
     if (!user) return;
     const typed = await ask({
@@ -219,17 +208,6 @@ export function UserDrawer({ userId, currentUserId, onClose, onChanged }: { user
                         Turn off 2-step
                       </Button>
                     ) : null}
-                    <Button
-                      disabled={isSelf || user.superAdminSource === 'settings'}
-                      icon={ShieldCheck}
-                      loading={busy === 'admin'}
-                      onClick={() => void toggleAdmin()}
-                      size="sm"
-                      title={user.superAdminSource === 'settings' ? 'Set by the server settings (SUPER_ADMIN_EMAILS)' : isSelf ? 'You cannot change your own access' : undefined}
-                      variant="secondary"
-                    >
-                      {user.isSuperAdmin ? 'Remove super admin' : 'Make super admin'}
-                    </Button>
                     <Button disabled={isSelf} icon={Trash2} loading={busy === 'delete'} onClick={() => void remove()} size="sm" variant="danger">
                       Delete
                     </Button>

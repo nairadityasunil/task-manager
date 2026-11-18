@@ -75,6 +75,7 @@ const isAuthEndpoint = (url?: string): boolean => {
   if (!url) return false;
   return (
     url.includes('/auth/login') ||
+    url.includes('/admin/auth/') ||
     url.includes('/auth/register') ||
     url.includes('/auth/refresh') ||
     url.includes('/auth/verify-2fa') ||
@@ -186,8 +187,9 @@ api.interceptors.response.use(
           // Only sign out if no newer session replaced this one meanwhile.
           if (readStoredToken('todo_refresh_token') === refreshToken) {
             clearAuthStorage();
-            if (window.location.pathname !== '/login') {
-              window.location.assign('/login');
+            const loginPath = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/login';
+            if (window.location.pathname !== loginPath) {
+              window.location.assign(loginPath);
             }
           }
           return Promise.reject(refreshErr);
@@ -198,8 +200,9 @@ api.interceptors.response.use(
         isRefreshing = false;
         processQueue(error, null);
         clearAuthStorage();
-        if (window.location.pathname !== '/login') {
-          window.location.assign('/login');
+        const loginPath = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/login';
+        if (window.location.pathname !== loginPath) {
+          window.location.assign(loginPath);
         }
       }
     }

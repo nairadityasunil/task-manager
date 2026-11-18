@@ -246,7 +246,6 @@ export function DashboardPage(): JSX.Element {
           else if (view === 'agents') navigate('/agents');
           else if (view === 'activity') navigate('/activity');
           else if (view === 'projects') navigate('/projects');
-          else if (view === 'admin') navigate('/admin');
           else if (view === 'telemetry') navigate('/telemetry');
           else if (view === 'insights') navigate('/insights');
           else if (view === 'ai-governance') navigate('/ai-governance');
