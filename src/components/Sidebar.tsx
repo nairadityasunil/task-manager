@@ -11,6 +11,7 @@ import {
   Sparkles,
   Play,
   ArrowLeft,
+  ShieldCheck,
   ShieldHalf,
   Bot,
   Home,
@@ -23,6 +24,7 @@ import {
   ClipboardCheck
 } from 'lucide-react';
 import { cn, tagColor, type Area } from '@/components/ui';
+import { useAuth } from '@/context/AuthContext';
 
 import logoImg from '@/assets/logo.png';
 
@@ -42,7 +44,8 @@ export type SidebarView =
   | 'insights'
   | 'ai-governance'
   | 'activity'
-  | 'projects';
+  | 'projects'
+  | 'admin';
 
 interface SidebarProps {
   activeView: SidebarView;
@@ -145,6 +148,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   projects = [],
   onOpenSearch,
 }) => {
+  const isSuperAdmin = Boolean(useAuth().user?.isSuperAdmin);
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const toggleCollapsed = () =>
     setCollapsed((value) => {
@@ -304,6 +308,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                 })}
                 <NavItem area="tasks" icon={Plus} label="New Project" onClick={onNewProject} tone="muted" />
               </NavGroup>
+
+              {isSuperAdmin ? (
+                <NavGroup label="Platform">
+                  <NavItem icon={ShieldCheck} isActive={activeView === 'admin'} label="Platform admin" onClick={() => onViewChange('admin')} />
+                </NavGroup>
+              ) : null}
             </>
           )}
         </nav>
