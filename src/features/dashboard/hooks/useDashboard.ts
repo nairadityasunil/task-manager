@@ -9,7 +9,7 @@ import { Notification } from '@/components/NotificationBox';
 import { useChat } from '@/context/ChatContext';
 import { TaskFilters } from '@/components/TaskFilterBar';
 import { recalculateDynamicPriorities, evaluateTaskPriority, type PriorityEvaluation } from '@/services/priorityEngine';
-import { createEpic, deleteEpic, getEpics, updateEpic } from '@/services/epics';
+import { createEpic, deleteEpic, getEpicsForProjects, updateEpic } from '@/services/epics';
 import { createEpicNote, createNote, deleteNote, getEpicNotes, getNote, getProjectNotes, updateNote } from '@/services/notes';
 import {
   addProjectMember,
@@ -305,17 +305,12 @@ export function useDashboard() {
         }
       }
 
-      const epicResults = await Promise.allSettled(
-        projectList.map((project: Project) => getEpics(project.id))
-      );
-
-      const epicGroups = epicResults
-        .filter((result): result is PromiseFulfilledResult<Epic[]> => result.status === 'fulfilled')
-        .map((result) => result.value);
+      // One request for the epics of the whole page of projects, not one per project.
+      const allEpics = await getEpicsForProjects(projectList.map((project: Project) => project.id));
 
       setTasks(taskList);
       setProjects(projectList);
-      setEpics(epicGroups.flat());
+      setEpics(allEpics);
       setProjectTotalPages(projectData.totalPages);
     } catch (err) {
       console.error('Dashboard load error:', err);
