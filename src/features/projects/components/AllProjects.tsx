@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import EmptyState from '@/components/EmptyState';
 import { Badge, Button, Input, Select, tagColor } from '@/components/ui';
 import { getAllProjects } from '@/services/projects';
+import { useWorkspace } from '@/features/workspaces';
 import type { Project } from '@/types/project';
 
 const day = (v?: string): string => (v ? new Date(v).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '');
@@ -19,6 +20,7 @@ export function AllProjects({
   /** Changes when projects are added or removed elsewhere, so the list reloads. */
   reloadKey?: unknown;
 }): JSX.Element {
+  const { activeWorkspaceId } = useWorkspace();
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [error, setError] = useState(false);
   const [q, setQ] = useState('');
@@ -26,7 +28,7 @@ export function AllProjects({
 
   useEffect(() => {
     let cancelled = false;
-    getAllProjects()
+    getAllProjects(undefined, activeWorkspaceId || undefined)
       .then((list) => !cancelled && setProjects(list))
       .catch(() => {
         if (!cancelled) {
@@ -37,7 +39,7 @@ export function AllProjects({
     return () => {
       cancelled = true;
     };
-  }, [reloadKey]);
+  }, [reloadKey, activeWorkspaceId]);
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();

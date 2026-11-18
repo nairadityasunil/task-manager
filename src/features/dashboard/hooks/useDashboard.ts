@@ -182,6 +182,10 @@ export function useDashboard() {
   const [statesByProject, setStatesByProject] = useState<Record<string, ProjectState[]>>({});
   const [notesLoadingKey, setNotesLoadingKey] = useState<string | null>(null);
   const [projectPage, setProjectPage] = useState(1);
+  // A different workspace has its own project list, so start from its first page.
+  useEffect(() => {
+    setProjectPage(1);
+  }, [activeWorkspaceId]);
   const [projectTotalPages, setProjectTotalPages] = useState<number>(1);
   const [projectSearchTerm, setProjectSearchTerm] = useState<string>('');
   const debouncedProjectSearchTerm = useDebounce(projectSearchTerm, 300);
@@ -283,7 +287,7 @@ export function useDashboard() {
           taskFilters.assigneeId === 'all' ? undefined : taskFilters.assigneeId,
           debouncedTaskSearchTerm.trim() || undefined
         ),
-        getProjects({ page: projectPage, limit: 10, search: debouncedProjectSearchTerm.trim() })
+        getProjects({ page: projectPage, limit: 10, search: debouncedProjectSearchTerm.trim(), workspaceId: activeWorkspaceId || undefined })
       ]);
       const projectList = [...projectData.projects];
       // A project on a later page (opened from All projects or a link) is still loaded.
@@ -308,7 +312,7 @@ export function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [projectPage, projectId, debouncedProjectSearchTerm, taskFilters.assigneeId, debouncedTaskSearchTerm]);
+  }, [projectPage, projectId, debouncedProjectSearchTerm, taskFilters.assigneeId, debouncedTaskSearchTerm, activeWorkspaceId]);
 
   useEffect(() => {
     void loadDashboard();
@@ -806,13 +810,13 @@ export function useDashboard() {
     }
   };
 
-  const handleInviteProjectMember = async (email: string, role: 'ADMIN' | 'MEMBER'): Promise<void> => {
+  const handleInviteProjectMember = async (email: string): Promise<void> => {
     if (activeProject == null) return;
     setTeamMutationLoading(true);
     setProjectMutationError(null);
     setProjectMutationSuccess(null);
     try {
-      await api.post(`/invitations/projects/${activeProject.id}`, { email, role });
+      await api.post(`/invitations/projects/${activeProject.id}`, { email, role: 'MEMBER' });
       await Promise.all([loadDashboard(), loadProjectTeam(activeProject.id)]);
       setProjectMutationSuccess('Member successfully added or invited.');
     } catch (err: unknown) {
