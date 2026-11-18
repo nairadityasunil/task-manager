@@ -9,6 +9,8 @@ import {
   AuthSession,
   loginThunk,
   verify2faThunk,
+  adminLoginThunk,
+  adminVerify2faThunk,
   registerThunk,
   refreshUserThunk,
   updateProfileThunk,
@@ -35,6 +37,9 @@ interface AuthContextValue {
   require2fa: boolean;
   tempEmail2fa: string | null;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  /** Sign in to the platform admin console (platform admins only). */
+  adminLogin: (email: string, password: string) => Promise<void>;
+  adminVerify2fa: (email: string, code: string) => Promise<void>;
   loginWithCompanionKey: (key: string) => Promise<void>;
   loginWithCompanionQr: (payload: { sessionId: string; token: string; device?: Record<string, unknown> }) => Promise<void>;
   authenticateWithToken: (token: string) => Promise<void>;
@@ -155,6 +160,14 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     await dispatch(loginThunk({ email, password, rememberMe })).unwrap();
   };
 
+  const adminLogin = async (email: string, password: string): Promise<void> => {
+    await dispatch(adminLoginThunk({ email, password })).unwrap();
+  };
+
+  const adminVerify2fa = async (email: string, code: string): Promise<void> => {
+    await dispatch(adminVerify2faThunk({ email, code })).unwrap();
+  };
+
   const verify2fa = async (email: string, code: string, rememberMe = false): Promise<void> => {
     dispatch(setRememberMe(rememberMe));
     await dispatch(verify2faThunk({ email, code, rememberMe })).unwrap();
@@ -244,6 +257,8 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
       require2fa,
       tempEmail2fa,
       login,
+      adminLogin,
+      adminVerify2fa,
       loginWithCompanionKey,
       loginWithCompanionQr,
       register,

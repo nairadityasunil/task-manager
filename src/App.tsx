@@ -6,12 +6,14 @@ import { ChatProvider } from '@/context/ChatContext';
 import { ConfirmationProvider } from '@/context/ConfirmationContext';
 import PrivateRoute from '@/routes/PrivateRoute';
 import PublicRoute from '@/routes/PublicRoute';
+import AdminRoute from '@/routes/AdminRoute';
 import Loader from '@/components/Loader';
 import { GuideRuntimeProvider } from '@/lib/guide-runtime/GuideRuntimeProvider';
 import { WorkspaceProvider } from '@/features/workspaces';
 
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 const AdminPage = lazy(() => import('@/features/admin/AdminPage').then((m) => ({ default: m.AdminPage })));
+const AdminLoginPage = lazy(() => import('@/features/admin/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
@@ -67,7 +69,9 @@ function App(): JSX.Element {
                     <Route path="/event-tracking" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/activity" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/telemetry" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
-                    <Route path="/admin" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
+                    <Route path="/admin/login" element={<AdminLoginPage />} />
+                    <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
+                    <Route path="/admin/:section" element={<AdminRoute><AdminPage /></AdminRoute>} />
                     <Route path="/insights" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/ai-governance" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
                     <Route path="/ai-governance/:tab" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />

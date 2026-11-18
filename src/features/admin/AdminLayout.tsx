@@ -1,18 +1,18 @@
-import { ArrowLeft, BarChart3, Building2, LogOut, Mail, Menu, ScrollText, ShieldCheck, Users, X, type LucideIcon } from 'lucide-react';
+import { BarChart3, Building2, LogOut, Mail, Menu, ScrollText, ShieldCheck, Users, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { cn } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
 
 export type AdminTab = 'analytics' | 'users' | 'workspaces' | 'emails' | 'audit';
 
-export const ADMIN_TABS: Array<{ value: AdminTab; label: string; description: string; icon: LucideIcon }> = [
-  { value: 'analytics', label: 'Analytics', description: 'How the platform is used.', icon: BarChart3 },
-  { value: 'users', label: 'People', description: 'Every account on the platform.', icon: Users },
-  { value: 'workspaces', label: 'Workspaces', description: 'Every workspace and who is in it.', icon: Building2 },
-  { value: 'emails', label: 'Email templates', description: 'The emails the platform sends: edit the wording and variables.', icon: Mail },
-  { value: 'audit', label: 'Audit log', description: 'A record of what platform admins change.', icon: ScrollText },
+export const ADMIN_TABS: Array<{ value: AdminTab; slug: string; label: string; description: string; icon: LucideIcon }> = [
+  { value: 'analytics', slug: '', label: 'Analytics', description: 'How the platform is used.', icon: BarChart3 },
+  { value: 'users', slug: 'people', label: 'People', description: 'Every account on the platform.', icon: Users },
+  { value: 'workspaces', slug: 'workspaces', label: 'Workspaces', description: 'Every workspace and who is in it.', icon: Building2 },
+  { value: 'emails', slug: 'email-templates', label: 'Email templates', description: 'The emails the platform sends: edit the wording and variables.', icon: Mail },
+  { value: 'audit', slug: 'audit', label: 'Audit log', description: 'A record of what platform admins change.', icon: ScrollText },
 ];
 
 /**
@@ -21,6 +21,7 @@ export const ADMIN_TABS: Array<{ value: AdminTab; label: string; description: st
  */
 export function AdminLayout({ tab, onTab, children }: { tab: AdminTab; onTab: (tab: AdminTab) => void; children: ReactNode }): JSX.Element {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const current = ADMIN_TABS.find((t) => t.value === tab) ?? ADMIN_TABS[0];
 
@@ -56,14 +57,11 @@ export function AdminLayout({ tab, onTab, children }: { tab: AdminTab; onTab: (t
         ))}
       </nav>
       <div className="grid gap-1 border-t border-slate-200 p-3">
-        <Link className="flex h-8 items-center gap-2.5 rounded-md px-2.5 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-200/60 hover:text-slate-900" data-testid="admin-back-to-app" to="/dashboard">
-          <ArrowLeft size={16} /> Back to the app
-        </Link>
         <div className="flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5">
-          <span className="min-w-0 truncate text-[12px] text-slate-500" title={user?.email}>
+          <span className="min-w-0 flex-1 truncate text-[12px] text-slate-500" title={user?.email}>
             {user?.email}
           </span>
-          <button aria-label="Sign out" className="rounded p-1 text-slate-500 hover:bg-slate-200/60 hover:text-slate-900" onClick={logout} title="Sign out" type="button">
+          <button aria-label="Sign out" className="rounded p-1 text-slate-500 hover:bg-slate-200/60 hover:text-slate-900" onClick={() => { logout(); navigate('/admin/login', { replace: true }); }} title="Sign out" type="button">
             <LogOut size={15} />
           </button>
         </div>
@@ -100,7 +98,7 @@ export function AdminLayout({ tab, onTab, children }: { tab: AdminTab; onTab: (t
           </div>
         </header>
         <main className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-5 lg:px-6">{children}</div>
+          <div className="w-full px-3 py-4 sm:px-5 lg:px-6">{children}</div>
         </main>
       </div>
     </div>
