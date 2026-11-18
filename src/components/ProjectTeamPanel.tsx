@@ -12,7 +12,7 @@ interface ProjectTeamPanelProps {
   isMutating: boolean;
   members: ProjectMember[];
   projectId: string;
-  onInviteMember: (email: string, role: 'ADMIN' | 'MEMBER') => Promise<void>;
+  onInviteMember: (email: string) => Promise<void>;
   /** The workspace the project belongs to; its members can be added directly. */
   workspaceId?: string | null;
   onAddWorkspaceMember?: (userId: string) => Promise<void>;
@@ -43,7 +43,6 @@ function ProjectTeamPanel({
   onLeaveProject
 }: ProjectTeamPanelProps): JSX.Element {
   const [inviteEmail, setInviteEmail] = useState<string>('');
-  const [inviteRole, setInviteRole] = useState<'ADMIN' | 'MEMBER'>('MEMBER');
   const [inviteLoading, setInviteLoading] = useState<boolean>(false);
   const [workspaceMembers, setWorkspaceMembers] = useState<WorkspaceMember[]>([]);
   const [pickedUserId, setPickedUserId] = useState<string>('');
@@ -81,7 +80,7 @@ function ProjectTeamPanel({
     if (!inviteEmail.trim()) return;
     setInviteLoading(true);
     try {
-      await onInviteMember(inviteEmail.trim(), inviteRole);
+      await onInviteMember(inviteEmail.trim());
       setInviteEmail('');
       // Reload pending invitations list
       await loadPendingInvitations();
@@ -276,15 +275,6 @@ function ProjectTeamPanel({
               type="email"
               value={inviteEmail}
             />
-            <Select
-              aria-label="Role"
-              className={`${selectClass} sm:w-32`}
-              value={inviteRole}
-              onChange={(e) => setInviteRole(e.target.value as 'ADMIN' | 'MEMBER')}
-            >
-              <option value="MEMBER">Member</option>
-              <option value="ADMIN">Admin</option>
-            </Select>
             <Button disabled={isMutating} icon={UserPlus} loading={inviteLoading} type="submit" variant="primary">
               Send Invite
             </Button>

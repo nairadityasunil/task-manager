@@ -8,6 +8,9 @@ import {
   Users,
 } from 'lucide-react';
 import { Badge, Button } from '@/components/ui';
+import { useWorkspace } from '@/features/workspaces';
+import { rememberActiveWorkspace } from '@/features/workspaces/context/WorkspaceContext';
+import workspaceService from '@/features/workspaces/services/workspaceService';
 import socketService, { SocketEvents } from '@/services/socket';
 import {
   getMyInvitations,
@@ -36,6 +39,7 @@ const formatRelative = (date?: Date | string): string => {
 };
 
 function InvitationNotificationPanel() {
+  const { refreshWorkspaces } = useWorkspace();
   const [open, setOpen] = useState(false);
   const [myInvitations, setMyInvitations] = useState<PendingInvitation[]>([]);
   const [adminNotifications, setAdminNotifications] = useState<AdminNotification[]>([]);
@@ -131,8 +135,14 @@ function InvitationNotificationPanel() {
   const handleAccept = async (invitation: PendingInvitation) => {
     setActioning(invitation.id);
     try {
-      await acceptInvitation(invitation.token);
+      const joined = await acceptInvitation(invitation.token);
       setMyInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id));
+      // Joining a project moves you to the workspace it is in.
+      if (joined.workspaceId) {
+        rememberActiveWorkspace(joined.workspaceId);
+        await workspaceService.markUsed(joined.workspaceId).catch(() => undefined);
+        await refreshWorkspaces();
+      }
     } catch {
       // show nothing — user can retry
     } finally {

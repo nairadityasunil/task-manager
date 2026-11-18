@@ -5,7 +5,8 @@ import { useAuth } from '@/context/AuthContext';
 import api from '@/services/api';
 import logoImg from '@/assets/logo.png';
 import { Badge, Button, Field, Input, buttonClass } from '@/components/ui';
-import { rememberActiveWorkspace } from '@/features/workspaces/context/WorkspaceContext';
+import { rememberActiveWorkspace, useWorkspace } from '@/features/workspaces/context/WorkspaceContext';
+import workspaceService from '@/features/workspaces/services/workspaceService';
 
 const primaryBtn = buttonClass('primary', 'md', 'w-full').replace('h-9', 'h-10');
 const secondaryBtn = buttonClass('secondary', 'md', 'w-full').replace('h-9', 'h-10');
@@ -14,7 +15,7 @@ interface InvitationDetails {
   token: string;
   email: string;
   projectName: string;
-  role: 'ADMIN' | 'MEMBER';
+  role: 'MEMBER';
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   isRegistered: boolean;
   inviterName?: string;
@@ -25,6 +26,7 @@ function AcceptInvitationPage(): JSX.Element {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const { user, logout, register, loading: registering } = useAuth();
+  const { refreshWorkspaces } = useWorkspace();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
@@ -77,7 +79,11 @@ function AcceptInvitationPage(): JSX.Element {
     try {
       const res = await api.post<{ data?: { projectId?: string; workspaceId?: string | null; projectName?: string | null } }>('/invitations/accept', { token });
       const joined = res.data?.data;
-      if (joined?.workspaceId) rememberActiveWorkspace(joined.workspaceId);
+      if (joined?.workspaceId) {
+        rememberActiveWorkspace(joined.workspaceId);
+        await workspaceService.markUsed(joined.workspaceId).catch(() => undefined);
+        await refreshWorkspaces();
+      }
       if (joined?.projectId) setJoinedTo({ projectId: joined.projectId, projectName: joined.projectName ?? null });
       setSuccess(true);
       setTimeout(() => {
@@ -99,7 +105,10 @@ function AcceptInvitationPage(): JSX.Element {
     try {
       const { joined } = await register({ email: details.email, password, firstName: firstName.trim(), lastName: lastName.trim(), inviteToken: token });
       if (joined) {
-        if (joined.workspaceId) rememberActiveWorkspace(joined.workspaceId);
+        if (joined.workspaceId) {
+          rememberActiveWorkspace(joined.workspaceId);
+          await refreshWorkspaces();
+        }
         setJoinedTo({ projectId: joined.projectId, projectName: joined.projectName });
         setSuccess(true);
         setTimeout(() => navigate(`/projects/${joined.projectId}`, { replace: true }), 1500);
@@ -175,9 +184,7 @@ function AcceptInvitationPage(): JSX.Element {
                 <div className="grid gap-1">
                   <dt className="text-xs text-slate-500">Role</dt>
                   <dd className="m-0">
-                    <Badge tone={details?.role === 'ADMIN' ? 'dark' : 'neutral'}>
-                      {details?.role === 'ADMIN' ? 'Admin' : 'Member'}
-                    </Badge>
+                    <Badge tone="neutral">Member</Badge>
                   </dd>
                 </div>
                 <div className="grid min-w-0 gap-1">

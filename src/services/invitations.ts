@@ -29,8 +29,15 @@ export const getProjectInvitations = async (projectId: string): Promise<ProjectI
   return res.data.data;
 };
 
-export const acceptInvitation = async (token: string): Promise<void> => {
-  await api.post('/invitations/accept', { token });
+export interface AcceptedInvitation {
+  projectId?: string;
+  workspaceId?: string | null;
+  projectName?: string | null;
+}
+
+export const acceptInvitation = async (token: string): Promise<AcceptedInvitation> => {
+  const res = await api.post<{ data?: AcceptedInvitation }>('/invitations/accept', { token });
+  return res.data?.data ?? {};
 };
 
 export const rejectInvitation = async (token: string): Promise<void> => {
@@ -44,7 +51,7 @@ export const revokeInvitation = async (invitationId: string): Promise<void> => {
 export const sendInvitation = async (
   projectId: string,
   email: string,
-  role: 'ADMIN' | 'MEMBER',
 ): Promise<void> => {
-  await api.post(`/invitations/projects/${projectId}`, { email, role });
+  // People are invited to a project as members only.
+  await api.post(`/invitations/projects/${projectId}`, { email, role: 'MEMBER' });
 };

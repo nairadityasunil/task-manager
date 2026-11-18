@@ -11,6 +11,8 @@ export interface ProjectsPaginationParams {
   page?: number;
   limit?: number;
   search?: string;
+  /** Only the projects in this workspace. */
+  workspaceId?: string;
 }
 
 interface ProjectListResponse {
@@ -49,10 +51,10 @@ const getProject = async (projectId: string): Promise<Project> => {
 };
 
 /** Every project the person belongs to (the list is paged, so this reads all pages). */
-const getAllProjects = async (search?: string): Promise<Project[]> => {
+const getAllProjects = async (search?: string, workspaceId?: string): Promise<Project[]> => {
   const all: Project[] = [];
   for (let page = 1; page <= 50; page += 1) {
-    const data = await getProjects({ page, limit: 100, search: search?.trim() || undefined });
+    const data = await getProjects({ page, limit: 100, search: search?.trim() || undefined, workspaceId });
     all.push(...data.projects);
     if (page >= data.totalPages) break;
   }
