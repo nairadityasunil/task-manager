@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Building2, Check, ChevronDown, Plus, Settings, Loader2 } from 'lucide-react';
+import { Building2, Check, ChevronDown, LayoutGrid, Plus, Settings, Loader2 } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
+import { AllWorkspacesDialog } from './AllWorkspacesDialog';
 import { CreateWorkspaceDialog } from './CreateWorkspaceDialog';
 
 interface WorkspaceSwitcherProps {
@@ -8,9 +9,10 @@ interface WorkspaceSwitcherProps {
 }
 
 export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): JSX.Element {
-  const { workspaces, activeWorkspace, switchWorkspace, isLoading } = useWorkspace();
+  const { workspaces, recentWorkspaces, activeWorkspace, switchWorkspace, isLoading } = useWorkspace();
   const [isOpen, setIsOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const dropRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -51,10 +53,10 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
 
         {isOpen && (
           <div className="fixed left-3 right-3 top-[58px] z-50 rounded-xl border border-slate-200 bg-white p-1.5 text-sm shadow-xl animate-in fade-in slide-in-from-top-2 duration-150 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-72">
-            <div className="select-none px-2.5 pb-1 pt-1.5 text-xs font-medium text-slate-500">Workspaces</div>
+            <div className="select-none px-2.5 pb-1 pt-1.5 text-xs font-medium text-slate-500">Recent workspaces</div>
 
             <div className="scrollbar-thin max-h-56 space-y-0.5 overflow-y-auto">
-              {workspaces.map((ws) => {
+              {recentWorkspaces.map((ws) => {
                 const isActive = ws.id === activeWorkspace?.id;
                 const initial = ws.name.trim().charAt(0).toUpperCase() || 'W';
                 return (
@@ -96,6 +98,20 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
 
             <div className="mt-1.5 space-y-0.5 border-t border-slate-100 pt-1.5">
               <button
+                data-testid="view-all-workspaces"
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  setShowAll(true);
+                }}
+                className="flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
+              >
+                <LayoutGrid className="h-4 w-4 shrink-0 text-slate-500" />
+                <span>View all workspaces</span>
+                <span className="ml-auto text-xs font-normal text-slate-500">{workspaces.length}</span>
+              </button>
+
+              <button
                 type="button"
                 onClick={() => {
                   setIsOpen(false);
@@ -126,6 +142,7 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
       </div>
 
       {showCreate && <CreateWorkspaceDialog onClose={() => setShowCreate(false)} />}
+      {showAll && <AllWorkspacesDialog onClose={() => setShowAll(false)} />}
     </>
   );
 }
