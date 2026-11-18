@@ -19,6 +19,13 @@ import {
   setRememberMe
 } from '@/store/authSlice';
 
+export interface JoinedProject {
+  projectId: string;
+  workspaceId: string | null;
+  projectName: string | null;
+  role: 'ADMIN' | 'MEMBER';
+}
+
 interface AuthContextValue {
   user: AuthProfile | null;
   session: AuthSession | null;
@@ -31,7 +38,8 @@ interface AuthContextValue {
   loginWithCompanionKey: (key: string) => Promise<void>;
   loginWithCompanionQr: (payload: { sessionId: string; token: string; device?: Record<string, unknown> }) => Promise<void>;
   authenticateWithToken: (token: string) => Promise<void>;
-  register: (payload: { email: string; password: string; firstName: string; lastName: string }) => Promise<void>;
+  /** With `inviteToken`, the new account also joins the invited project and workspace; `joined` says where. */
+  register: (payload: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) => Promise<{ joined: JoinedProject | null }>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   updateProfile: (data: {
@@ -152,8 +160,9 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     await dispatch(verify2faThunk({ email, code, rememberMe })).unwrap();
   };
 
-  const register = async (payload: { email: string; password: string; firstName: string; lastName: string }): Promise<void> => {
-    await dispatch(registerThunk(payload)).unwrap();
+  const register = async (payload: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }): Promise<{ joined: JoinedProject | null }> => {
+    const result = (await dispatch(registerThunk(payload)).unwrap()) as { joined?: JoinedProject | null };
+    return { joined: result?.joined ?? null };
   };
 
   const updateProfile = async (data: {

@@ -1,5 +1,6 @@
 import { FormEvent, type ReactNode, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { rememberActiveWorkspace } from '@/features/workspaces/context/WorkspaceContext';
 import { AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 import { useAuth } from '@/context/AuthContext';
@@ -137,9 +138,10 @@ function RegisterPage(): JSX.Element {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
     try {
-      await register({ email, password, firstName, lastName });
+      const { joined } = await register({ email, password, firstName, lastName, inviteToken: tokenParam || undefined });
       if (tokenParam) {
-        navigate(`/accept-invitation?token=${tokenParam}`, { replace: true });
+        if (joined?.workspaceId) rememberActiveWorkspace(joined.workspaceId);
+        navigate(joined ? `/projects/${joined.projectId}` : `/accept-invitation?token=${tokenParam}`, { replace: true });
       } else {
         navigate('/', { replace: true });
       }

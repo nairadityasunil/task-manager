@@ -28,6 +28,11 @@ function getPersistedWorkspaceId(): string {
   return localStorage.getItem(ACTIVE_WS_KEY) ?? '';
 }
 
+/** Makes this workspace the one to open next (used after joining through an invitation). */
+export function rememberActiveWorkspace(id: string): void {
+  localStorage.setItem(ACTIVE_WS_KEY, id);
+}
+
 function persistWorkspaceId(id: string): void {
   localStorage.setItem(ACTIVE_WS_KEY, id);
 }

@@ -106,7 +106,7 @@ export const verify2faThunk = createAsyncThunk(
 
 export const registerThunk = createAsyncThunk(
   'auth/register',
-  async (payload: { email: string; password: string; firstName: string; lastName: string }, { rejectWithValue }) => {
+  async (payload: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }, { rejectWithValue }) => {
     try {
       const response = await api.post('/auth/register', payload);
       return response.data.data;
