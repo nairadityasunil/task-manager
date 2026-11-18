@@ -326,8 +326,8 @@ export function ProjectLabelChip({ projectId, onEdit, className }: { projectId: 
   useEffect(() => {
     let cancelled = false;
     agentsApi
-      .classification({ projectIds: [projectId] })
-      .then((r) => !cancelled && setValue(r.projects[projectId] ?? 'internal'))
+      .projectClassification(projectId)
+      .then((r) => !cancelled && setValue(r.classification ?? 'internal'))
       .catch(() => !cancelled && setValue(null));
     return () => {
       cancelled = true;
@@ -373,9 +373,8 @@ export function ClassificationSelect({
   const [value, setValue] = useState<Classification | null | undefined>(undefined);
   useEffect(() => {
     if (!projectId && !taskId) return;
-    agentsApi
-      .classification(taskId ? { taskIds: [taskId] } : { projectIds: [projectId as string] })
-      .then((r) => setValue(taskId ? (r.tasks[taskId] ?? null) : (r.projects[projectId as string] ?? null)))
+    (taskId ? agentsApi.taskClassification(taskId) : agentsApi.projectClassification(projectId as string))
+      .then((r) => setValue(r.classification ?? null))
       .catch(() => setValue(null));
   }, [projectId, taskId]);
   if (!projectId && !taskId) return null;

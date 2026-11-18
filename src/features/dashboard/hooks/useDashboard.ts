@@ -9,7 +9,7 @@ import { Notification } from '@/components/NotificationBox';
 import { useChat } from '@/context/ChatContext';
 import { TaskFilters } from '@/components/TaskFilterBar';
 import { recalculateDynamicPriorities, evaluateTaskPriority, type PriorityEvaluation } from '@/services/priorityEngine';
-import { createEpic, deleteEpic, getEpicsForProjects, updateEpic } from '@/services/epics';
+import { createEpic, deleteEpic, getMyEpics, updateEpic } from '@/services/epics';
 import { createEpicNote, createNote, deleteNote, getEpicNotes, getNote, getProjectNotes, updateNote } from '@/services/notes';
 import {
   addProjectMember,
@@ -305,8 +305,8 @@ export function useDashboard() {
         }
       }
 
-      // One request for the epics of the whole page of projects, not one per project.
-      const allEpics = await getEpicsForProjects(projectList.map((project: Project) => project.id));
+      // One request for the epics of all the person's projects; the server knows which those are.
+      const allEpics = await getMyEpics();
 
       setTasks(taskList);
       setProjects(projectList);
