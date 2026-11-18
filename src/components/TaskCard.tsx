@@ -91,7 +91,7 @@ export function PriorityIcon({ priority, size = 14 }: { priority: TaskPriority; 
   );
 }
 
-const parseTaskDate = (value: string): Date | null => {
+const parseTaskDate = (value: string | null | undefined): Date | null => {
   if (!value) return null;
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   const date = match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : new Date(value);

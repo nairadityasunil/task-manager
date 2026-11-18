@@ -60,14 +60,6 @@ export type ActiveNoteEditor =
     task: Task;
   };
 
-const getTodayDate = (): string => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = `${today.getMonth() + 1}`.padStart(2, '0');
-  const day = `${today.getDate()}`.padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
 export const ALL_PROJECTS_VALUE = '__all__';
 
 export const deriveTaskStatusFromSubtasks = (
@@ -355,6 +347,7 @@ export function useDashboard() {
     note?: string;
     status?: TaskWorkflowStatus;
     stateId?: string | null;
+    date?: string | null;
     priority?: TaskPriority;
     projectId?: string | null;
     epicId?: string | null;
@@ -364,7 +357,8 @@ export function useDashboard() {
       title: payload.title.trim(),
       description: payload.description?.trim(),
       note: payload.note?.trim(),
-      date: getTodayDate(),
+      // Optional: a task only has a due date when one was chosen.
+      date: payload.date ?? undefined,
       status: payload.stateId ? undefined : payload.status,
       stateId: payload.stateId ?? undefined,
       priority: payload.priority,
@@ -905,7 +899,7 @@ export function useDashboard() {
     title: string;
     description?: string;
     note?: string;
-    date: string;
+    date: string | null;
     status: TaskWorkflowStatus;
     stateId?: string | null;
     priority?: TaskPriority;
