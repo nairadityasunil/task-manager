@@ -4,15 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Plus,
-  Edit3,
-  Trash2,
-  FileText,
   AlertCircle,
   Zap,
-  NotebookPen,
-  MessageSquare,
   Clock,
 } from 'lucide-react';
+import { TASK_WORKFLOW_STATUS_OPTIONS } from '@/types/task';
 import type {
   Task,
   Subtask,
@@ -29,8 +25,8 @@ import ApprovalSection from '@/components/ApprovalSection';
 import { ClassificationSelect } from '@/features/agents/components/AdvancedGovernance';
 import CommentSection from '@/components/CommentSection';
 import { TaskAutomationNote } from '@/features/telemetry/TaskAutomationNote';
-import SubtaskInlineEdit from '@/components/SubtaskInlineEdit';
-import { PRIORITY_META, PriorityIcon, TASK_STATUS_TONE, taskDateInfo, taskStatusLabel } from '@/components/TaskCard';
+import { TaskNotes } from './TaskNotes';
+import { PRIORITY_META, PriorityIcon, taskDateInfo } from '@/components/TaskCard';
 import { Badge, Button, cn, selectClass, Select, Checkbox } from '@/components/ui';
 
 export interface TaskInspectorProps {
@@ -38,28 +34,19 @@ export interface TaskInspectorProps {
   onClose: () => void;
   task: Task | null;
   members: ProjectMember[];
-  actionTaskId: string | null;
   sidePanelTab: 'subtasks' | 'comments';
   setSidePanelTab: (tab: 'subtasks' | 'comments') => void;
-  editingSubtask: { task: Task; subtask: Subtask } | null;
-  setEditingSubtask: (state: { task: Task; subtask: Subtask } | null) => void;
   setSubtaskModalTask: (task: Task | null) => void;
   handleUpdateSubtaskStatus: (
     task: Task,
     subtask: Subtask,
     status: TaskWorkflowStatus,
   ) => Promise<void> | void;
-  handleUpdateSubtask: (
-    task: Task,
-    subtask: Subtask,
-    patch: { title: string; description?: string; note?: string; assignedToUserId?: string | null },
-  ) => Promise<void> | void;
-  handleDeleteSubtask: (task: Task, subtaskId: string) => Promise<void> | void;
-  handleOpenSubtaskNote: (task: Task, subtask: Subtask) => void;
   handleToggleBlocked: (task: Task) => void;
   handleEvaluatePriority: (taskId: string) => Promise<void> | void;
   isEvaluatingPriority: boolean;
-  handleOpenTaskNote: (task: Task) => void;
+  onViewSubtasks: (task: Task) => void;
+  onNotesChanged: () => void;
   handleUpdateTaskField: (taskId: string, updates: UpdateTaskInput) => Promise<void> | void;
 }
 
@@ -92,20 +79,15 @@ export function TaskInspector({
   onClose,
   task,
   members,
-  actionTaskId,
   sidePanelTab,
   setSidePanelTab,
-  editingSubtask,
-  setEditingSubtask,
   setSubtaskModalTask,
   handleUpdateSubtaskStatus,
-  handleUpdateSubtask,
-  handleDeleteSubtask,
-  handleOpenSubtaskNote,
   handleToggleBlocked,
   handleEvaluatePriority,
   isEvaluatingPriority,
-  handleOpenTaskNote,
+  onViewSubtasks,
+  onNotesChanged,
   handleUpdateTaskField,
 }: TaskInspectorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -123,7 +105,6 @@ export function TaskInspector({
   if (!task) return null;
 
   const completedSubtasks = task.subtasks.filter(s => s.status === 'DONE').length;
-  const isUpdating = actionTaskId === task.id;
   const dynamicMeta = task.dynamicPriority ? PRIORITY_META[task.dynamicPriority] : null;
   const dateInfo = taskDateInfo(task);
   const subtaskPct = task.subtasks.length ? Math.round((completedSubtasks / task.subtasks.length) * 100) : 0;
@@ -210,7 +191,19 @@ export function TaskInspector({
                   {/* Properties */}
                   <dl className="m-0 grid gap-1.5">
                     <PropertyRow label="Status">
-                      <Badge dot tone={TASK_STATUS_TONE[task.status] ?? 'neutral'}>{taskStatusLabel(task.status)}</Badge>
+                      <div className="w-40" data-testid="drawer-status">
+                        <Select
+                          aria-label="Status"
+                          onChange={(e) => {
+                            void handleUpdateTaskField(task.id, { status: e.target.value as TaskWorkflowStatus });
+                          }}
+                          value={task.status === 'rolled_over' ? 'TODO' : task.status}
+                        >
+                          {TASK_WORKFLOW_STATUS_OPTIONS.map((o) => (
+                            <option key={o.value} value={o.value}>{o.label}</option>
+                          ))}
+                        </Select>
+                      </div>
                       <button
                         type="button"
                         onClick={() => handleToggleBlocked(task)}
@@ -305,109 +298,26 @@ export function TaskInspector({
                         No subtasks added. Click "+" to create one.
                       </div>
                     ) : (
-                      <ul className="m-0 list-none divide-y divide-slate-100 rounded-lg border border-slate-200 p-0">
-                        {task.subtasks.map((subtask) => {
-                          const isEditingThisSubtask =
-                            editingSubtask?.task.id === task.id &&
-                            editingSubtask?.subtask.id === subtask.id;
-                          return (
-                            <li
-                              key={subtask.id}
-                              className="group relative px-3 py-2.5 transition-colors hover:bg-slate-50/70"
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="flex min-w-0 flex-1 items-start gap-3">
-                                  <Checkbox
-                                    aria-label={`Mark ${subtask.title} as ${subtask.status === 'DONE' ? 'not done' : 'done'}`}
-                                    checked={subtask.status === 'DONE'} className="mt-0.5 shrink-0"
-                                    disabled={!task.permissions.canUpdate}
-                                    onChange={() =>
-                                      void handleUpdateSubtaskStatus(
-                                        task,
-                                        subtask,
-                                        subtask.status === 'DONE' ? 'TODO' : 'DONE',
-                                      )
-                                    }
-                                  />
-                                  <div className="flex min-w-0 flex-col gap-1">
-                                    <span
-                                      className={cn(
-                                        'text-sm leading-5',
-                                        subtask.status === 'DONE' ? 'text-slate-400 line-through' : 'text-slate-900',
-                                      )}
-                                    >
-                                      {subtask.title}
-                                    </span>
-                                    {!isEditingThisSubtask && subtask.description && (
-                                      <p className="m-0 text-xs leading-relaxed text-slate-500 line-clamp-2">
-                                        {subtask.description}
-                                      </p>
-                                    )}
-                                    {!isEditingThisSubtask && subtask.note && (
-                                      <div className="flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
-                                        <MessageSquare size={12} className="shrink-0 text-slate-400" />
-                                        <span className="truncate">{subtask.note}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex shrink-0 items-center gap-1">
-                                  <div className="flex items-center transition-opacity [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100">
-                                    <button
-                                      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40"
-                                      disabled={!task.permissions.canUpdate}
-                                      onClick={() =>
-                                        setEditingSubtask(
-                                          isEditingThisSubtask ? null : { task, subtask },
-                                        )
-                                      }
-                                      title={isEditingThisSubtask ? 'Cancel' : 'Edit Subtask'}
-                                      type="button"
-                                    >
-                                      <Edit3 size={13} />
-                                    </button>
-                                    <button
-                                      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                                      onClick={() => handleOpenSubtaskNote(task, subtask)}
-                                      title="Subtask Note"
-                                      type="button"
-                                    >
-                                      <FileText size={13} />
-                                    </button>
-                                    <button
-                                      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
-                                      disabled={!task.permissions.canUpdate}
-                                      onClick={() => void handleDeleteSubtask(task, subtask.id)}
-                                      title="Delete Subtask"
-                                      type="button"
-                                    >
-                                      <Trash2 size={13} />
-                                    </button>
-                                  </div>
-                                  {subtask.assignedToUser && (
-                                    <UserAvatar
-                                      name={subtask.assignedToUser.name}
-                                      email={subtask.assignedToUser.email}
-                                      size="sm"
-                                    />
-                                  )}
-                                </div>
-                              </div>
-                              {isEditingThisSubtask && (
-                                <SubtaskInlineEdit
-                                  subtask={subtask}
-                                  onSave={(patch) =>
-                                    void handleUpdateSubtask(task, subtask, patch)
-                                  }
-                                  onCancel={() => setEditingSubtask(null)}
-                                  isSaving={isUpdating}
-                                  members={members}
-                                />
-                              )}
+                      <>
+                        <ul className="m-0 list-none divide-y divide-slate-100 rounded-lg border border-slate-200 p-0" data-testid="subtasks-preview">
+                          {task.subtasks.slice(0, 3).map((subtask) => (
+                            <li className="flex items-center gap-3 px-3 py-2" key={subtask.id}>
+                              <Checkbox
+                                aria-label={`Mark ${subtask.title} as ${subtask.status === 'DONE' ? 'not done' : 'done'}`}
+                                checked={subtask.status === 'DONE'}
+                                className="shrink-0"
+                                disabled={!task.permissions.canUpdate}
+                                onChange={() => void handleUpdateSubtaskStatus(task, subtask, subtask.status === 'DONE' ? 'TODO' : 'DONE')}
+                              />
+                              <span className={cn('min-w-0 flex-1 truncate text-sm', subtask.status === 'DONE' ? 'text-slate-400 line-through' : 'text-slate-900')}>{subtask.title}</span>
+                              {subtask.assignedToUser ? <UserAvatar email={subtask.assignedToUser.email} name={subtask.assignedToUser.name} size="sm" /> : null}
                             </li>
-                          );
-                        })}
-                      </ul>
+                          ))}
+                        </ul>
+                        <Button data-testid="view-all-subtasks" onClick={() => onViewSubtasks(task)} variant="secondary">
+                          {task.subtasks.length > 3 ? `View all ${task.subtasks.length} subtasks` : 'Open subtasks'}
+                        </Button>
+                      </>
                     )}
                   </section>
 
@@ -479,15 +389,8 @@ export function TaskInspector({
                     </div>
                   </section>
 
-                  {/* Work Notes */}
-                  <Button
-                    className="w-full"
-                    icon={NotebookPen}
-                    onClick={() => handleOpenTaskNote(task)}
-                    variant="primary"
-                  >
-                    Manage Work Notes
-                  </Button>
+                  {/* Notes: a task can have several */}
+                  <TaskNotes members={members} onChanged={onNotesChanged} task={task} />
 
                   {/* Who changed it, including AI agents */}
                   {task.projectId ? (

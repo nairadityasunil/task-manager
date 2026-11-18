@@ -920,6 +920,34 @@ export function useDashboard() {
    * Changes a task's status at once (optimistic) and saves in the background; reverts if saving fails.
    * Only marking a task done while sub-tasks are still open asks first, because that also closes them.
    */
+  /**
+   * Changes a few fields of any task, such as from the task drawer. Unlike handleUpdateTask, it does not
+   * depend on the edit dialog being open (that returned silently, so drawer dropdowns did nothing).
+   */
+  const handleUpdateTaskFields = async (taskId: string, patch: Parameters<typeof updateTask>[1]): Promise<void> => {
+    setActionTaskId(taskId);
+    // Show simple changes at once; the quiet reload then confirms them (and undoes them if the save failed).
+    const before = tasks;
+    if (patch.priority || patch.status || patch.title) {
+      setTasks((current) =>
+        current.map((t) =>
+          t.id === taskId
+            ? { ...t, ...(patch.priority ? { priority: patch.priority } : {}), ...(patch.status ? { status: patch.status as Task['status'] } : {}), ...(patch.title ? { title: patch.title } : {}) }
+            : t
+        )
+      );
+    }
+    try {
+      await updateTask(taskId, patch);
+      await loadDashboard({ quiet: true });
+    } catch {
+      setTasks(before);
+      setTaskMutationError('Unable to update the task.');
+    } finally {
+      setActionTaskId(null);
+    }
+  };
+
   const handleUpdateTaskStatus = async (targetTask: Task, status: TaskWorkflowStatus, skipConfirm = false) => {
     if (status === targetTask.status) return;
     const openSubtasks = targetTask.subtasks.filter((subtask) => subtask.status !== 'DONE').length;
@@ -1546,6 +1574,7 @@ export function useDashboard() {
     handleLeaveProject,
     handleUpdateTask,
     handleUpdateTaskStatus,
+    handleUpdateTaskFields,
     handleUpdateTaskEpic,
     handleDeleteTask,
     handleUpdateSubtaskStatus,

@@ -33,6 +33,8 @@ interface TaskCardProps {
   task: Task;
   onSelect?: (task: Task) => void;
   onComment?: (task: Task) => void;
+  /** Opens every subtask of the task in a floating window. */
+  onViewSubtasks?: (task: Task) => void;
   onToggleBlocked?: (task: Task) => void;
   isSelected?: boolean;
   isMultiSelected?: boolean;
@@ -119,6 +121,7 @@ function TaskCard({
   task,
   onSelect,
   onComment,
+  onViewSubtasks,
   onToggleBlocked,
   isSelected,
   isMultiSelected,
@@ -202,10 +205,28 @@ function TaskCard({
   );
 
   const subtaskMeta = task.subtasks.length > 0 ? (
-    <span className="inline-flex items-center gap-1 text-xs tabular-nums text-slate-500" title="Subtasks completed">
-      <ListChecks className="text-slate-400" size={13} />
-      {completedSubtasksCount}/{task.subtasks.length}
-    </span>
+    onViewSubtasks ? (
+      <button
+        aria-label={`View all ${task.subtasks.length} subtasks of ${task.title}`}
+        className="inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-xs tabular-nums text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+        data-testid="view-subtasks"
+        onClick={(event) => {
+          event.stopPropagation();
+          onViewSubtasks(task);
+        }}
+        onPointerDown={(event) => event.stopPropagation()}
+        title="View all subtasks"
+        type="button"
+      >
+        <ListChecks className="text-slate-400" size={13} />
+        {completedSubtasksCount}/{task.subtasks.length}
+      </button>
+    ) : (
+      <span className="inline-flex items-center gap-1 text-xs tabular-nums text-slate-500" title="Subtasks completed">
+        <ListChecks className="text-slate-400" size={13} />
+        {completedSubtasksCount}/{task.subtasks.length}
+      </span>
+    )
   ) : null;
 
   const dateMeta = dateInfo ? (

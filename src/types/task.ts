@@ -29,12 +29,22 @@ export interface Subtask {
   } | null;
 }
 
+export interface TaskNote {
+  id: string;
+  text: string;
+  authorId: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
 export interface Task {
   id: string;
   userId: string;
   title: string;
   description?: string;
   note?: string;
+  /** Every note on the task, oldest first. */
+  notes?: TaskNote[];
   date: string;
   status: TaskStatus;
   priority: TaskPriority;

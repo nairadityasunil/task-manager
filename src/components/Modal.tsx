@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
@@ -30,6 +30,9 @@ interface ModalProps {
  * The standard dialog: a header with the title and a close button, a scrolling body and an optional footer.
  * Full width (with a small margin) on phones, centred with a max width from `sm` up.
  */
+/** Open dialogs, oldest first, so Escape only affects the one on top. */
+const openModals: symbol[] = [];
+
 function Modal({
   backdropClassName,
   bodyClassName,
@@ -47,6 +50,27 @@ function Modal({
 }: ModalProps): JSX.Element {
   const titleId = useId();
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  // Latest props, so the key handler below is registered once and keeps this dialog's place in the stack.
+  const latest = useRef({ onClose, canDismiss: dismissOnBackdrop && !hideClose });
+  latest.current = { onClose, canDismiss: dismissOnBackdrop && !hideClose };
+
+  useEffect(() => {
+    const id = Symbol('modal');
+    openModals.push(id);
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape' || openModals[openModals.length - 1] !== id) return;
+      // Keep Escape from also closing a panel behind the dialog (such as the task drawer).
+      event.stopImmediatePropagation();
+      if (latest.current.canDismiss) latest.current.onClose();
+    };
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, true);
+      const index = openModals.indexOf(id);
+      if (index !== -1) openModals.splice(index, 1);
+    };
+  }, []);
 
   useEffect(() => {
     setPortalTarget(document.body);
