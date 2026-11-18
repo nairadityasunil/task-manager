@@ -31,7 +31,7 @@ import type { Epic, EpicStatus } from '@/types/epic';
 import type { Note } from '@/types/note';
 import type { Project, ProjectMember, ProjectPermissions } from '@/types/project';
 import projectStateService, { type ProjectState } from '@/services/projectStates';
-import { sortStates, statusOfCategory } from '@/features/projects/workflowStates';
+import { sortStates, stateForTask, statusOfCategory } from '@/features/projects/workflowStates';
 import type { Task, TaskWorkflowStatus, TaskPriority } from '@/types/task';
 import { findProjectByName } from '@/utils/projectTree';
 import { useConfirm } from '@/context/ConfirmationContext';
@@ -359,6 +359,7 @@ export function useDashboard() {
     description?: string;
     note?: string;
     status?: TaskWorkflowStatus;
+    stateId?: string | null;
     priority?: TaskPriority;
     projectId?: string | null;
     epicId?: string | null;
@@ -369,7 +370,8 @@ export function useDashboard() {
       description: payload.description?.trim(),
       note: payload.note?.trim(),
       date: selectedDate,
-      status: payload.status,
+      status: payload.stateId ? undefined : payload.status,
+      stateId: payload.stateId ?? undefined,
       priority: payload.priority,
       source: 'manual',
       projectId: payload.projectId,
@@ -509,7 +511,14 @@ export function useDashboard() {
       filtered = filtered.filter((task) => task.projectId === selectedProjectView);
     }
     if (taskFilters.status !== 'all') {
-      filtered = filtered.filter((task) => task.status === taskFilters.status);
+      const wanted = String(taskFilters.status);
+      const projectStates = selectedProjectView !== ALL_PROJECTS_VALUE ? (statesByProject[selectedProjectView] ?? []) : [];
+      if (projectStates.length) {
+        // The project has its own stages: filter by them (a leftover built-in value matches everything).
+        if (projectStates.some((st) => st._id === wanted)) filtered = filtered.filter((task) => stateForTask(task, projectStates)?._id === wanted);
+      } else {
+        filtered = filtered.filter((task) => task.status === wanted);
+      }
     }
     if (taskFilters.assigneeId !== 'all') {
       filtered = filtered.filter((task) =>
@@ -903,6 +912,7 @@ export function useDashboard() {
     note?: string;
     date: string;
     status: TaskWorkflowStatus;
+    stateId?: string | null;
     priority?: TaskPriority;
     isBlocked?: boolean;
     blockedByTaskId?: string | null;
@@ -918,7 +928,7 @@ export function useDashboard() {
         description: payload.description?.trim(),
         note: payload.note?.trim(),
         date: payload.date,
-        status: payload.status,
+        ...(payload.stateId ? { stateId: payload.stateId } : { status: payload.status }),
         priority: payload.priority,
         isBlocked: payload.isBlocked,
         blockedByTaskId: payload.blockedByTaskId,

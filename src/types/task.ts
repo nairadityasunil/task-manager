@@ -133,6 +133,8 @@ export interface CreateTaskInput {
   note?: string;
   date: string;
   status?: TaskStatus;
+  /** Create the task in a workflow state of its project; the status follows the state's category. */
+  stateId?: string | null;
   priority?: TaskPriority;
   source?: TaskSource;
   projectId?: string | null;

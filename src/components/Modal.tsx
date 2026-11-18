@@ -60,6 +60,8 @@ function Modal({
     openModals.push(id);
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== 'Escape' || openModals[openModals.length - 1] !== id) return;
+      // An open dropdown or menu takes the first Escape; only then does the dialog close.
+      if (document.querySelector('[role="listbox"], [role="menu"]')) return;
       // Keep Escape from also closing a panel behind the dialog (such as the task drawer).
       event.stopImmediatePropagation();
       if (latest.current.canDismiss) latest.current.onClose();

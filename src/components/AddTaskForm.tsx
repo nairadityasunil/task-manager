@@ -5,6 +5,7 @@ import type { Project } from '@/types/project';
 import { TASK_WORKFLOW_STATUS_OPTIONS, type TaskWorkflowStatus, type TaskPriority } from '@/types/task';
 import { flattenProjectOptions } from '@/utils/projectTree';
 import AssigneeSelector from './AssigneeSelector';
+import { useProjectStates } from '@/features/projects/useProjectStates';
 import { useAuth } from '@/context/AuthContext';
 import { AlertTriangle } from 'lucide-react';
 import { Button, Field, selectClass, textareaClass, Select, Input } from '@/components/ui';
@@ -18,6 +19,7 @@ interface AddTaskFormProps {
     description?: string;
     note?: string;
     status?: TaskWorkflowStatus;
+    stateId?: string | null;
     priority?: TaskPriority;
     projectId?: string | null;
     epicId?: string | null;
@@ -32,12 +34,17 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
   const [description, setDescription] = useState<string>('');
   const [note, setNote] = useState<string>('');
   const [status, setStatus] = useState<TaskWorkflowStatus>('TODO');
+  const [stateId, setStateId] = useState<string>('');
   const [priority, setPriority] = useState<TaskPriority>('MEDIUM');
   const [projectId, setProjectId] = useState<string>(initialProjectId ?? '');
   const [epicId, setEpicId] = useState<string>(initialEpicId ?? '');
   const [assignedTo, setAssignedTo] = useState<string>(user?.id ?? '');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // The project's own stages when it has them, so this list matches the board and the settings.
+  const { states: projectStates, loaded: statesLoaded } = useProjectStates(projectId || initialProjectId || null);
+  const usingStates = projectStates.length > 0;
+  const chosenState = usingStates ? (projectStates.find((st) => st._id === stateId) ?? projectStates[0]) : null;
 
   useEffect(() => {
     if (user?.id && !assignedTo) {
@@ -91,7 +98,7 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
         title: title.trim(),
         description: description.trim() || undefined,
         note: note.trim() || undefined,
-        status,
+        ...(chosenState ? { stateId: chosenState._id } : { status }),
         priority,
         projectId: finalProjectId,
         epicId: finalEpicId || null,
@@ -151,17 +158,27 @@ function AddTaskForm({ epics, initialProjectId = null, initialEpicId = null, onC
         </Field>
 
         <Field label="Initial status">
-          <Select
-            className={selectClass}
-            onChange={(event) => setStatus(event.target.value as TaskWorkflowStatus)}
-            value={status}
-          >
-            {TASK_WORKFLOW_STATUS_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+          {!statesLoaded ? (
+            <Select className={selectClass} disabled onChange={() => undefined} value="">
+              <option value="">Loading…</option>
+            </Select>
+          ) : usingStates ? (
+            <Select className={selectClass} onChange={(event) => setStateId(event.target.value)} value={chosenState?._id ?? ''}>
+              {projectStates.map((st) => (
+                <option key={st._id} value={st._id}>
+                  {st.name}
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <Select className={selectClass} onChange={(event) => setStatus(event.target.value as TaskWorkflowStatus)} value={status}>
+              {TASK_WORKFLOW_STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          )}
         </Field>
       </div>
 
