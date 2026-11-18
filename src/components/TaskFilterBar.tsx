@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { TaskStatus, TASK_WORKFLOW_STATUS_OPTIONS } from '../types/task';
 import { ProjectMember } from '../types/project';
+import type { ProjectState } from '@/services/projectStates';
 import { useAuth } from '../context/AuthContext';
 import { buttonClass, cn, Field, inputClass, selectClass, Select } from '@/components/ui';
 
@@ -24,13 +25,19 @@ interface TaskFilterBarProps {
   onFilterChange: (filters: TaskFilters) => void;
   members: ProjectMember[];
   onClear: () => void;
+  /** The project's workflow states: when it has them, the status filter lists them instead of the built-in statuses. */
+  states?: ProjectState[];
+  /** The project's states are still loading: wait instead of showing the built-in statuses first. */
+  statesLoading?: boolean;
 }
 
 const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
   filters,
   onFilterChange,
   members,
-  onClear
+  onClear,
+  states = [],
+  statesLoading = false
 }) => {
   const { user } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -125,12 +132,13 @@ const TaskFilterBar: React.FC<TaskFilterBarProps> = ({
           {/* Status */}
           <Field label={<span className="inline-flex items-center gap-1.5"><Activity className="h-3.5 w-3.5 text-slate-400" /> Status</span>}>
             <Select
-              value={filters.status}
+              value={statesLoading ? 'all' : filters.status}
+              disabled={statesLoading}
               onChange={(e) => updateFilter('status', e.target.value)}
               className={selectClass}
             >
-              <option value="all">All Statuses</option>
-              {[...TASK_WORKFLOW_STATUS_OPTIONS, { value: 'rolled_over', label: 'Rolled Over' }].map(opt => (
+              <option value="all">{statesLoading ? 'Loading…' : 'All Statuses'}</option>
+              {(states.length ? states.map((st) => ({ value: st._id, label: st.name })) : [...TASK_WORKFLOW_STATUS_OPTIONS, { value: 'rolled_over', label: 'Rolled Over' }]).map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </Select>

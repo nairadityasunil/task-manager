@@ -765,7 +765,7 @@ export function DashboardPage(): JSX.Element {
 
                 {/* Column 2 — Tasks */}
                 <div className="flex min-h-[60vh] min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[var(--shadow-card)] lg:h-full lg:min-h-0">
-                  {dash.selectedEpicId || dash.activeProjectEpics.length > 0 || dash.visibleTasks.length > 0 ? (
+                  {dash.selectedEpicId || dash.activeProjectEpics.length > 0 || dash.visibleTasks.length > 0 || dash.taskFilters.status !== 'all' || dash.taskFilters.assigneeId !== 'all' || dash.taskFilters.search.trim() !== '' ? (
                     <>
                       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-2.5">
                         <div className="min-w-0">
@@ -836,6 +836,8 @@ export function DashboardPage(): JSX.Element {
                           onFilterChange={dash.setTaskFilters}
                           members={dash.activeProjectMembers}
                           onClear={dash.handleClearFilters}
+                          states={dash.activeProjectStates}
+                          statesLoading={!dash.activeProjectStatesLoaded}
                         />
                       </div>
 

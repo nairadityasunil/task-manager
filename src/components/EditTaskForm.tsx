@@ -4,6 +4,8 @@ import type { Epic } from '@/types/epic';
 import type { Project } from '@/types/project';
 import { TASK_WORKFLOW_STATUS_OPTIONS, type Task, type TaskWorkflowStatus, type TaskPriority } from '@/types/task';
 import AssigneeSelector from './AssigneeSelector';
+import { useProjectStates } from '@/features/projects/useProjectStates';
+import { stateForTask } from '@/features/projects/workflowStates';
 import { AlertCircle } from 'lucide-react';
 import { Button, Field, selectClass, textareaClass, Select, DateInput, Input } from '@/components/ui';
 
@@ -16,6 +18,7 @@ interface EditTaskFormProps {
     note?: string;
     date: string;
     status: TaskWorkflowStatus;
+    stateId?: string | null;
     priority: TaskPriority;
     isBlocked: boolean;
     blockedByTaskId: string | null;
@@ -44,6 +47,11 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
   const [assignedTo, setAssignedTo] = useState<string>(task.assignedTo?.id || '');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { states: projectStates, loaded: statesLoaded } = useProjectStates(projectId || null);
+  const usingStates = projectStates.length > 0;
+  const [stateId, setStateId] = useState<string>('');
+  // The task's current state, or the one its status maps to, until the person picks another.
+  const chosenState = usingStates ? (projectStates.find((st) => st._id === stateId) ?? stateForTask({ stateId: task.projectId === projectId ? task.stateId : null, status: task.status }, projectStates)) : null;
 
   const currentProject = useMemo(
     () => projects.find((project) => project.id === projectId) ?? null,
@@ -95,6 +103,7 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
         note: note.trim() || undefined,
         date,
         status,
+        ...(chosenState ? { stateId: chosenState._id } : {}),
         priority,
         isBlocked,
         blockedByTaskId: isBlocked ? (blockedByTaskId || null) : null,
@@ -148,17 +157,27 @@ function EditTaskForm({ epics, allTasks, onSubmit, projects, task }: EditTaskFor
         </Field>
 
         <Field label="Status">
-          <Select
-            className={selectClass}
-            onChange={(event) => setStatus(event.target.value as TaskWorkflowStatus)}
-            value={status}
-          >
-            {TASK_WORKFLOW_STATUS_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+          {!statesLoaded ? (
+            <Select className={selectClass} disabled onChange={() => undefined} value="">
+              <option value="">Loading…</option>
+            </Select>
+          ) : usingStates ? (
+            <Select className={selectClass} onChange={(event) => setStateId(event.target.value)} value={chosenState?._id ?? ''}>
+              {projectStates.map((st) => (
+                <option key={st._id} value={st._id}>
+                  {st.name}
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <Select className={selectClass} onChange={(event) => setStatus(event.target.value as TaskWorkflowStatus)} value={status}>
+              {TASK_WORKFLOW_STATUS_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          )}
         </Field>
       </div>
 
