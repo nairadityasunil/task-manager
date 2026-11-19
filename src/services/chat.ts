@@ -162,7 +162,7 @@ export const markMessagesAsRead = async (
   projectId: string,
   messageIds?: string[]
 ): Promise<void> => {
-  await api.post(`/projects/${projectId}/chat/messages/read`, { messageIds });
+  await api.post(`/projects/${projectId}/chat/messages/read`, { messageIds }, { silent: true });
 };
 
 /**

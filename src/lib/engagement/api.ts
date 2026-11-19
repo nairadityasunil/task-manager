@@ -194,7 +194,7 @@ export const trackEngagementEvent = async (payload: {
   userId?: string;
   properties?: Record<string, unknown>;
 }): Promise<void> => {
-  await api.post('/engagement/track', payload);
+  await api.post('/engagement/track', payload, { silent: true });
 };
 
 export const getGuideAnalyticsSummary = async (sdkIntegrationId: string): Promise<GuideAnalyticsSummary> => {

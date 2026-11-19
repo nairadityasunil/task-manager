@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { showGlobalToast } from '@/context/ToastContext';
-import { startGlobalLoading, stopGlobalLoading } from '@/context/LoadingContext';
+import { startGlobalLoading, startGlobalMutation, stopGlobalLoading, stopGlobalMutation } from '@/context/LoadingContext';
 import { isAgentForbidden, normalizeApiError } from '@/utils/apiError';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
@@ -41,11 +41,19 @@ declare module 'axios' {
 
 // Requests currently counted by the global progress bar.
 const trackedRequests = new WeakSet<object>();
+// Requests that change data also lock toggles and dropdowns until they finish (see BusyControlsGuard).
+const trackedMutations = new WeakSet<object>();
+const isMutation = (config: InternalAxiosRequestConfig): boolean =>
+  !['get', 'head', 'options'].includes((config.method ?? 'get').toLowerCase());
 
 const finishTracking = (config: InternalAxiosRequestConfig | undefined) => {
   if (config && trackedRequests.has(config)) {
     trackedRequests.delete(config);
     stopGlobalLoading();
+  }
+  if (config && trackedMutations.has(config)) {
+    trackedMutations.delete(config);
+    stopGlobalMutation();
   }
 };
 
@@ -53,6 +61,10 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   if (!config.silent && !trackedRequests.has(config)) {
     trackedRequests.add(config);
     startGlobalLoading();
+    if (isMutation(config)) {
+      trackedMutations.add(config);
+      startGlobalMutation();
+    }
   }
 
   return config;

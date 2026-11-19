@@ -23,6 +23,7 @@ const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 import { LoadingProvider } from '@/context/LoadingContext';
 import GlobalLoadingSpinner from '@/components/GlobalLoadingSpinner';
+import BusyControlsGuard from '@/components/BusyControlsGuard';
 import { SessionBlockedNotice } from '@/components/SessionBlockedNotice';
 import { ToastProvider } from '@/context/ToastContext';
 import { TooltipLayer } from '@/components/ui';
@@ -95,6 +96,7 @@ function App(): JSX.Element {
                 </GuideRuntimeProvider>
               </BrowserRouter>
               <GlobalLoadingSpinner />
+              <BusyControlsGuard />
               <SessionBlockedNotice />
               <TooltipLayer />
             </ConfirmationProvider>
