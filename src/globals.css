@@ -478,3 +478,9 @@ details > summary::marker { content: ''; }
 input[type='checkbox'], input[type='radio'] { accent-color: var(--brand); }
 /* Focus ring for anything focusable that has no ring of its own. */
 :where(a, button, [role='button'], [tabindex]):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 4px; }
+
+/* While a change is being saved, toggles, checkboxes and dropdowns look unavailable (they are blocked by BusyControlsGuard). */
+html[data-busy-visible='true'] :is(select, input[type='checkbox'], input[type='radio'], input[type='range'], [role='switch'], [role='checkbox'], [role='radio'], [role='combobox'], [role='option'], [role='menuitem']) {
+  cursor: progress;
+  opacity: 0.55;
+}
