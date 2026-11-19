@@ -1,5 +1,5 @@
 import api from '@/services/api';
-import type { SlaAnalyticsSummary, SlaConfig, TaskPriority } from '@/types/task';
+import type { ProjectSlaConfig, SlaAnalyticsSummary, SlaConfig, TaskPriority } from '@/types/task';
 
 interface SlaConfigListResponse {
   message: string;
@@ -41,4 +41,21 @@ const getSlaAnalytics = async (): Promise<SlaAnalyticsSummary> => {
   return response.data.data.summary;
 };
 
-export { getSlaAnalytics, getSlaConfigs, updateSlaConfig };
+const getProjectSlaConfigs = async (projectId: string): Promise<ProjectSlaConfig[]> => {
+  const response = await api.get<{ data: { configs: ProjectSlaConfig[] } }>(`/sla/projects/${projectId}/config`);
+  return response.data.data.configs;
+};
+
+const updateProjectSlaConfig = async (
+  projectId: string,
+  payload: { priority: TaskPriority; responseTimeHours: number; resolutionTimeHours: number }
+): Promise<ProjectSlaConfig> => {
+  const response = await api.patch<{ data: { config: ProjectSlaConfig } }>(`/sla/projects/${projectId}/config`, payload);
+  return response.data.data.config;
+};
+
+const resetProjectSlaConfig = async (projectId: string, priority: TaskPriority): Promise<void> => {
+  await api.delete(`/sla/projects/${projectId}/config/${priority}`);
+};
+
+export { getProjectSlaConfigs, getSlaAnalytics, getSlaConfigs, resetProjectSlaConfig, updateProjectSlaConfig, updateSlaConfig };

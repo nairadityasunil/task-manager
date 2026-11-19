@@ -4,10 +4,11 @@ import { useState, type ReactNode } from 'react';
 import { Badge, Button, Checkbox, Tabs, avatarColor, initialsOf } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
 import { updateMemberPermissions } from '@/services/projects';
+import { ProjectSlaPanel } from './ProjectSlaPanel';
 import { PROJECT_FEATURES, PROJECT_FEATURE_INFO, type Project, type ProjectFeature, type ProjectMember, type ProjectPermissions } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
-type Tab = 'general' | 'team' | 'access' | 'workflow';
+type Tab = 'general' | 'team' | 'access' | 'workflow' | 'sla';
 
 interface Props {
   project: Project;
@@ -39,6 +40,7 @@ export function ProjectSettings({ project, members, currentUserId, isAdmin, myPe
             { value: 'team', label: 'Team', icon: Users, count: members.length },
             { value: 'access', label: 'Access', icon: Sparkles },
             { value: 'workflow', label: 'Workflow' },
+            { value: 'sla', label: 'SLA' },
           ]}
           onChange={setTab}
           value={tab}
@@ -90,6 +92,8 @@ export function ProjectSettings({ project, members, currentUserId, isAdmin, myPe
           <div>{teamPanel}</div>
         ) : tab === 'access' ? (
           <AccessMatrix currentUserId={currentUserId} isAdmin={isAdmin} members={members} onChanged={onChanged} projectId={project.id} />
+        ) : tab === 'sla' ? (
+          <ProjectSlaPanel canManage={isAdmin} projectId={project.id} />
         ) : (
           <div>{workflowPanel}</div>
         )}

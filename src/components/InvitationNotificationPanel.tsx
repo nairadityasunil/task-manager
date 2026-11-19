@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Inbox,
@@ -40,6 +41,7 @@ const formatRelative = (date?: Date | string): string => {
 
 function InvitationNotificationPanel() {
   const { refreshWorkspaces } = useWorkspace();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [myInvitations, setMyInvitations] = useState<PendingInvitation[]>([]);
   const [adminNotifications, setAdminNotifications] = useState<AdminNotification[]>([]);
@@ -142,6 +144,7 @@ function InvitationNotificationPanel() {
         rememberActiveWorkspace(joined.workspaceId);
         await workspaceService.markUsed(joined.workspaceId).catch(() => undefined);
         await refreshWorkspaces();
+        navigate('/dashboard');
       }
     } catch {
       // show nothing — user can retry

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import React, { useState } from 'react';
 import Modal from '@/components/Modal';
 import { buttonClass, inputClass, Input } from '@/components/ui';
@@ -9,6 +10,7 @@ interface CreateWorkspaceDialogProps {
 
 export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps): JSX.Element {
   const { createWorkspace } = useWorkspace();
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,6 +32,7 @@ export function CreateWorkspaceDialog({ onClose }: CreateWorkspaceDialogProps): 
     try {
       await createWorkspace(name.trim(), slug || undefined);
       onClose();
+      navigate('/dashboard');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create workspace');
     } finally {

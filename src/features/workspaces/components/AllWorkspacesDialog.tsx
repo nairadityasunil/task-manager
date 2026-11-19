@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Check, Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -20,6 +21,7 @@ const ago = (iso: string | null | undefined): string => {
 /** Every workspace of the person (the switcher only lists the five most recent), with search and a way to add one. */
 export function AllWorkspacesDialog({ onClose }: { onClose: () => void }): JSX.Element {
   const { workspaces, activeWorkspace, switchWorkspace } = useWorkspace();
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [creating, setCreating] = useState(false);
   const shown = useMemo(() => {
@@ -32,6 +34,7 @@ export function AllWorkspacesDialog({ onClose }: { onClose: () => void }): JSX.E
   const open = (ws: Workspace): void => {
     switchWorkspace(ws);
     onClose();
+    navigate('/dashboard');
   };
 
   return (
