@@ -19,8 +19,8 @@ export interface CompanionDevice {
   expiresAt?: string | null;
 }
 
-type SettingsTab = "profile" | "workspace" | "sla" | "chatgpt" | "companion" | "mcp";
-const SETTINGS_TABS: SettingsTab[] = ["profile", "workspace", "sla", "chatgpt", "companion", "mcp"];
+type SettingsTab = "profile" | "work" | "workspace" | "sla" | "chatgpt" | "companion" | "mcp";
+const SETTINGS_TABS: SettingsTab[] = ["profile", "work", "workspace", "sla", "chatgpt", "companion", "mcp"];
 const tabFromSearch = (search: string): SettingsTab | null => {
   const tab = new URLSearchParams(search).get("tab");
   return SETTINGS_TABS.includes(tab as SettingsTab) ? (tab as SettingsTab) : null;
