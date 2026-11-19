@@ -110,7 +110,7 @@ export function TaskNotesModal({ task, members, onClose, onChanged }: Props): JS
       // A stray click outside must not throw away a note being written.
       dismissOnBackdrop={!editing}
       onClose={onClose}
-      panelClassName="!max-w-[680px] w-full"
+      panelClassName="!max-w-[880px] w-full"
       title={heading}
     >
       <div data-testid="task-notes-modal">
@@ -188,7 +188,7 @@ export function TaskNotesModal({ task, members, onClose, onChanged }: Props): JS
             </Field>
             <div className="grid gap-1">
               <span className="text-[13px] font-medium text-slate-700">Description</span>
-              <RichTextEditor aria-label="Note description" minHeight={200} onChange={setText} placeholder="Write the details, decisions or links…" value={text} />
+              <RichTextEditor aria-label="Note description" minHeight={340} onChange={setText} placeholder="Write the details, decisions or links…" value={text} />
             </div>
             <div className="flex justify-between gap-2 border-t border-slate-100 pt-4">
               <Button disabled={busy} onClick={() => setView(current ? { kind: 'detail', id: current.id } : { kind: 'list' })} variant="ghost">

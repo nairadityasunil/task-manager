@@ -36,7 +36,9 @@ const progressPercent = (task: Task): number => {
   return Math.min(100, Math.round((elapsed / total) * 100));
 };
 
-function SlaIndicator({ compact = false, task }: SlaIndicatorProps): JSX.Element {
+function SlaIndicator({ compact = false, task }: SlaIndicatorProps): JSX.Element | null {
+  // The task's project does not track SLA.
+  if (task.slaTracked === false) return null;
   const state = task.currentSlaState ?? 'HEALTHY';
   const breached = task.responseBreached || task.resolutionBreached;
   const remaining = formatRemaining(task.slaResolutionDueAt);

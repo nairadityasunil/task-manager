@@ -279,9 +279,11 @@ export function TaskInspector({
                         {dateInfo?.overdue ? <span className="text-xs text-red-600">Overdue</span> : null}
                       </div>
                     </PropertyRow>
-                    <PropertyRow label="SLA">
-                      <SlaIndicator task={task} compact />
-                    </PropertyRow>
+                    {task.slaTracked !== false ? (
+                      <PropertyRow label="SLA">
+                        <SlaIndicator task={task} compact />
+                      </PropertyRow>
+                    ) : null}
                     <PropertyRow label="Source">
                       <SourceBadge source={task.source} />
                     </PropertyRow>
@@ -352,6 +354,7 @@ export function TaskInspector({
                   </section>
 
                   {/* SLA timers and details */}
+                  {task.slaTracked !== false ? (
                   <section className="rounded-lg border border-slate-200">
                     <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
                       <Clock size={16} className="text-slate-400" />
@@ -418,6 +421,7 @@ export function TaskInspector({
                       </Button>
                     </div>
                   </section>
+                  ) : null}
 
                   {/* Notes: a task can have several */}
                   <TaskNotes members={members} onChanged={onNotesChanged} task={task} />

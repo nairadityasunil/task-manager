@@ -821,7 +821,7 @@ export function DashboardPage(): JSX.Element {
                       </div>
 
                       <div className="grid gap-2.5 border-b border-slate-100 px-4 py-3">
-                        <SlaDashboard projectId={dash.activeProject?.id ?? null} refreshKey={dash.tasks} workspaceId={dash.activeWorkspaceId ?? null} />
+                        <SlaDashboard enabled={dash.activeProject?.slaEnabled !== false} projectId={dash.activeProject?.id ?? null} refreshKey={dash.tasks} workspaceId={dash.activeWorkspaceId ?? null} />
                         <TaskFilterBar
                           filters={dash.taskFilters}
                           onFilterChange={dash.setTaskFilters}

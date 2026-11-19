@@ -233,7 +233,7 @@ function SubtaskForm({ onSubmit, members }: SubtaskFormProps): JSX.Element {
                 <Field label="Internal note">
                   <RichTextEditor
                     aria-label="Internal note"
-                    minHeight={90}
+                    minHeight={180}
                     onChange={(html) => updateDraft(draft.id, { note: html })}
                     placeholder="Optional private note"
                     value={draft.note ?? ''}

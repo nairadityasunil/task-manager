@@ -45,9 +45,15 @@ const getSlaAnalytics = async (scope: { projectId?: string; workspaceId?: string
   return response.data.data.summary;
 };
 
-const getProjectSlaConfigs = async (projectId: string): Promise<ProjectSlaConfig[]> => {
-  const response = await api.get<{ data: { configs: ProjectSlaConfig[] } }>(`/sla/projects/${projectId}/config`);
-  return response.data.data.configs;
+const getProjectSla = async (projectId: string): Promise<{ enabled: boolean; configs: ProjectSlaConfig[] }> => {
+  const response = await api.get<{ data: { enabled: boolean; configs: ProjectSlaConfig[] } }>(`/sla/projects/${projectId}/config`);
+  return response.data.data;
+};
+
+/** Project admins turn SLA tracking for a project on or off. */
+const setProjectSlaEnabled = async (projectId: string, enabled: boolean): Promise<boolean> => {
+  const response = await api.patch<{ data: { enabled: boolean } }>(`/sla/projects/${projectId}/enabled`, { enabled });
+  return response.data.data.enabled;
 };
 
 const updateProjectSlaConfig = async (
@@ -62,4 +68,4 @@ const resetProjectSlaConfig = async (projectId: string, priority: TaskPriority):
   await api.delete(`/sla/projects/${projectId}/config/${priority}`);
 };
 
-export { getProjectSlaConfigs, getSlaAnalytics, getSlaConfigs, resetProjectSlaConfig, updateProjectSlaConfig, updateSlaConfig };
+export { getProjectSla, getSlaAnalytics, getSlaConfigs, resetProjectSlaConfig, setProjectSlaEnabled, updateProjectSlaConfig, updateSlaConfig };
