@@ -90,7 +90,9 @@ export function useDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { projectId, epicId, integrationId } = useParams();
-  const { activeWorkspaceId } = useWorkspace();
+  const { activeWorkspaceId, isLoading: workspacesLoading } = useWorkspace();
+  /** The newest dashboard load: an older one that finishes late must not replace what a newer one showed. */
+  const loadSeq = useRef(0);
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -279,6 +281,9 @@ export function useDashboard() {
 
   /** Reloads tasks and projects. `quiet` refreshes in the background without the loading state (after an optimistic change). */
   const loadDashboard = useCallback(async (options?: { quiet?: boolean }): Promise<void> => {
+    // Wait until the open workspace is known: loading before that would show every workspace's data for a moment.
+    if (workspacesLoading) return;
+    const seq = ++loadSeq.current;
     if (!options?.quiet) setLoading(true);
     setError(null);
     try {
@@ -287,7 +292,9 @@ export function useDashboard() {
           // Every task, whatever day it was made: tasks are not tied to a date or carried from day to day.
           undefined,
           taskFilters.assigneeId === 'all' ? undefined : taskFilters.assigneeId,
-          debouncedTaskSearchTerm.trim() || undefined
+          debouncedTaskSearchTerm.trim() || undefined,
+          // The dashboard is about the open workspace only.
+          activeWorkspaceId || undefined
         ),
         getProjects({ page: projectPage, limit: 10, search: debouncedProjectSearchTerm.trim(), workspaceId: activeWorkspaceId || undefined })
       ]);
@@ -302,19 +309,21 @@ export function useDashboard() {
       }
 
       // One request for the epics of all the person's projects; the server knows which those are.
-      const allEpics = await getMyEpics();
+      const allEpics = await getMyEpics(activeWorkspaceId || undefined);
 
+      if (seq !== loadSeq.current) return;
       setTasks(taskList);
       setProjects(projectList);
       setEpics(allEpics);
       setProjectTotalPages(projectData.totalPages);
     } catch (err) {
+      if (seq !== loadSeq.current) return;
       console.error('Dashboard load error:', err);
       setError('Unable to load some data. Please check your connection.');
     } finally {
-      setLoading(false);
+      if (seq === loadSeq.current) setLoading(false);
     }
-  }, [projectPage, projectId, debouncedProjectSearchTerm, taskFilters.assigneeId, debouncedTaskSearchTerm, activeWorkspaceId]);
+  }, [projectPage, projectId, debouncedProjectSearchTerm, taskFilters.assigneeId, debouncedTaskSearchTerm, activeWorkspaceId, workspacesLoading]);
 
   useEffect(() => {
     void loadDashboard();

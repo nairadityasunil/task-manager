@@ -76,14 +76,22 @@ function SlaDashboard({ projectId, workspaceId, refreshKey, enabled = true }: Sl
     },
     { label: 'Response', value: `${summary.responseCompliancePercent}%`, icon: CheckCircle2, valueTone: 'text-slate-900', dot: 'bg-emerald-500' },
     { label: 'Resolution', value: `${summary.resolutionCompliancePercent}%`, icon: BarChart3, valueTone: 'text-slate-900', dot: 'bg-sky-500' },
-    { label: 'Avg resolve', value: `${summary.averageResolutionTimeHours}h`, icon: TimerReset, valueTone: 'text-slate-900', dot: 'bg-amber-500' }
+    {
+      label: 'Avg resolve',
+      // The average of the time people logged on resolved tasks: with none logged there is nothing to show.
+      value: summary.resolvedTasksWithTime === 0 ? '–' : `${summary.averageResolutionTimeHours}h`,
+      hint: 'Average time logged on resolved tasks',
+      icon: TimerReset,
+      valueTone: summary.resolvedTasksWithTime === 0 ? 'text-slate-400' : 'text-slate-900',
+      dot: 'bg-amber-500'
+    }
   ];
 
   return (
     <div className="@container">
       <dl className="m-0 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 @lg:grid-cols-4">
         {items.map((item) => (
-          <div className="flex items-center justify-between gap-2 bg-white px-3 py-2.5" key={item.label}>
+          <div className="flex items-center justify-between gap-2 bg-white px-3 py-2.5" key={item.label} title={'hint' in item ? item.hint : undefined}>
             <div className="min-w-0">
               <dt className="flex items-center gap-1.5 text-xs text-slate-500">
                 <span aria-hidden className={cn('h-1.5 w-1.5 shrink-0 rounded-full', item.dot)} />
