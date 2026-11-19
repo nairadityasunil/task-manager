@@ -61,7 +61,6 @@ export function WeeklyTimesheet({ projectId, projectName = 'project', isAdmin }:
     const ids = new Set<string>();
     for (const e of week.entries) ids.add(e.taskId ?? NO_TASK);
     for (const id of extraRows) ids.add(id);
-    ids.add(NO_TASK);
     return [...ids].map((id) => {
       const task = week.tasks.find((t) => t.id === id);
       return { id, title: id === NO_TASK ? 'No task (general time)' : (task?.title ?? 'Task'), estimate: task?.estimatedHours ?? null };
@@ -74,6 +73,8 @@ export function WeeklyTimesheet({ projectId, projectName = 'project', isAdmin }:
   const weekTotal = (week?.entries ?? []).reduce((n, e) => n + e.minutes, 0);
 
   const addableTasks = (week?.tasks ?? []).filter((t) => !rows.some((r) => r.id === t.id));
+  // "No task" (general time) is a row only when there is such time or the person adds it.
+  const canAddGeneral = !rows.some((r) => r.id === NO_TASK);
   const range = days.length ? `${dayLabel(days[0]).date} – ${dayLabel(days[6]).date}` : '';
 
   return (
@@ -171,7 +172,15 @@ export function WeeklyTimesheet({ projectId, projectName = 'project', isAdmin }:
                         <td className="px-3 py-2 text-right font-semibold tabular-nums text-slate-900">{formatDuration(p.minutes)}</td>
                       </tr>
                     ))
-                : rows.map((row) => {
+                : rows.length === 0
+                  ? (
+                    <tr data-testid="timesheet-empty">
+                      <td className="px-3 py-6 text-center text-slate-500" colSpan={9}>
+                        No time logged this week. Add a task below to start.
+                      </td>
+                    </tr>
+                    )
+                  : rows.map((row) => {
                     const total = days.reduce((n, d) => n + minutesAt(row.id, d), 0);
                     return (
                       <tr className="border-b border-slate-100 last:border-0" data-testid="timesheet-row" key={row.id}>
@@ -221,14 +230,15 @@ export function WeeklyTimesheet({ projectId, projectName = 'project', isAdmin }:
         </div>
       )}
 
-      {week && scope === 'me' && addableTasks.length > 0 ? (
+      {week && scope === 'me' && (addableTasks.length > 0 || canAddGeneral) ? (
         <div className="flex max-w-md items-center gap-2">
           <Plus aria-hidden className="shrink-0 text-slate-400" size={16} />
           <div className="min-w-0 flex-1">
             <Select
               aria-label="Add a task to the timesheet"
+              data-testid="timesheet-add-row"
               onValueChange={(id) => id && setExtraRows((current) => [...current, id])}
-              options={[{ value: '', label: 'Add a task to this timesheet' }, ...addableTasks.map((t) => ({ value: t.id, label: t.title }))]}
+              options={[{ value: '', label: 'Add a task to this timesheet' }, ...(canAddGeneral ? [{ value: NO_TASK, label: 'No task (general time)' }] : []), ...addableTasks.map((t) => ({ value: t.id, label: t.title }))]}
               value=""
             />
           </div>
