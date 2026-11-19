@@ -28,6 +28,13 @@ export interface MyWeek {
   projects: Array<{ projectId: string; name: string; minutes: number; byDay: number[] }>;
   totalMinutes: number;
   totalByDay: number[];
+  /** Every workspace the person is in (even with no time) and any other they logged time in, with the projects that have time. */
+  workspaces: Array<{
+    workspaceId: string | null;
+    name: string;
+    minutes: number;
+    projects: Array<{ projectId: string; name: string; minutes: number; byDay: number[] }>;
+  }>;
 }
 
 type Envelope<T> = { data: T };
