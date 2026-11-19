@@ -31,6 +31,9 @@ export interface Subtask {
 
 export interface TaskNote {
   id: string;
+  /** Heading in the list of notes; the server fills it from the text for notes written without one. */
+  title: string;
+  /** The description: HTML from the editor, or plain text for older notes. */
   text: string;
   authorId: string | null;
   createdAt: string | null;

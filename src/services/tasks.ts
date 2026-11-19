@@ -63,13 +63,13 @@ const updateTask = async (taskId: string, payload: UpdateTaskInput): Promise<Tas
   return response.data.data.task;
 };
 
-const addTaskNote = async (taskId: string, text: string): Promise<Task> => {
-  const response = await api.post<TaskResponse>(`/tasks/${taskId}/notes`, { text });
+const addTaskNote = async (taskId: string, text: string, title?: string): Promise<Task> => {
+  const response = await api.post<TaskResponse>(`/tasks/${taskId}/notes`, { text, title });
   return response.data.data.task;
 };
 
-const updateTaskNote = async (taskId: string, noteId: string, text: string): Promise<Task> => {
-  const response = await api.patch<TaskResponse>(`/tasks/${taskId}/notes/${noteId}`, { text });
+const updateTaskNote = async (taskId: string, noteId: string, text: string, title?: string): Promise<Task> => {
+  const response = await api.patch<TaskResponse>(`/tasks/${taskId}/notes/${noteId}`, { text, title });
   return response.data.data.task;
 };
 
