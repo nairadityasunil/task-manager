@@ -213,7 +213,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Write here…',
       onClick={(event) => {
         if (!(event.target as HTMLElement).closest('button, input')) event.preventDefault();
       }}
-      className={cn('relative rounded-lg border border-slate-300 bg-white transition-colors focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/15', disabled && 'bg-slate-50 opacity-70')}>
+      className={cn('relative min-w-0 max-w-full rounded-lg border border-slate-300 bg-white transition-colors focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/15', disabled && 'bg-slate-50 opacity-70')}>
       <div className="relative flex flex-wrap items-center gap-0.5 border-b border-slate-200 px-1.5 py-1" role="toolbar" aria-label="Formatting">
         <ToolbarButton active={editor.isActive('bold')} disabled={disabled} label="Bold (Ctrl+B)" onClick={() => editor.chain().focus().toggleBold().run()} testId="rich-bold">
           <Bold size={15} />
@@ -258,7 +258,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Write here…',
         </ToolbarButton>
         {linkOpen ? <LinkPopover editor={editor} onClose={() => { setLinkOpen(false); editor.commands.focus(); }} /> : null}
       </div>
-      <EditorContent editor={editor} className="max-h-[min(46vh,500px)] overflow-y-auto px-3.5 py-3 text-sm text-slate-800" />
+      <EditorContent editor={editor} className="max-h-[min(46vh,500px)] min-w-0 overflow-x-hidden overflow-y-auto px-3.5 py-3 text-sm text-slate-800" />
     </div>
   );
 }

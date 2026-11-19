@@ -138,7 +138,7 @@ function SubtaskForm({ onSubmit, members }: SubtaskFormProps): JSX.Element {
 
   return (
     <form
-      className="grid gap-4"
+      className="grid grid-cols-[minmax(0,1fr)] gap-4"
       onKeyDown={(event) => {
         if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
           event.preventDefault();

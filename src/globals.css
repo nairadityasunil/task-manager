@@ -505,3 +505,8 @@ html[data-busy-visible='true'] :is(select, input[type='checkbox'], input[type='r
 .rich-text a:hover { color: #3730a3; }
 .rich-text-editor p.is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; pointer-events: none; color: #94a3b8; }
 .rich-text-editor, .rich-text-editor:focus, .rich-text-editor:focus-visible { outline: none !important; box-shadow: none !important; border-color: transparent !important; }
+
+/* A long word or link must wrap at the edge, in the editor too. The editor library sets its own `word-wrap: break-word`
+   (which does not shrink the box around an unbroken word), so this wins over it. */
+.rich-text, .rich-text.ProseMirror, .rich-text-editor, .rich-text-editor.ProseMirror { overflow-wrap: anywhere !important; word-break: break-word !important; min-width: 0; max-width: 100%; }
+.rich-text a { overflow-wrap: anywhere; word-break: break-all; }
