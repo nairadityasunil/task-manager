@@ -159,7 +159,7 @@ export function TaskInspector({
                       </Badge>
                     )}
                   </div>
-                  <h3 className="m-0 text-lg font-semibold leading-snug tracking-tight text-slate-900 line-clamp-3">
+                  <h3 className="m-0 text-lg font-semibold leading-snug tracking-tight text-slate-900 line-clamp-3 [overflow-wrap:anywhere]">
                     {task.title}
                   </h3>
                 </div>
@@ -194,7 +194,7 @@ export function TaskInspector({
             </div>
 
             {/* Main content drawer container */}
-            <div className="flex flex-1 flex-col gap-6 overflow-y-auto bg-white px-4 py-5 custom-scrollbar sm:px-5">
+            <div className="flex flex-1 flex-col gap-6 overflow-y-auto overflow-x-hidden bg-white px-4 py-5 custom-scrollbar sm:px-5">
               {sidePanelTab === 'subtasks' ? (
                 <div className="flex flex-col gap-6">
                   {/* Properties */}
@@ -299,7 +299,7 @@ export function TaskInspector({
                   {task.description && (
                     <section>
                       <h4 className="m-0 mb-1.5 text-[13px] font-medium text-slate-500">Description</h4>
-                      <p className="m-0 whitespace-pre-line text-sm leading-relaxed text-slate-700">{linkify(task.description)}</p>
+                      <p className="m-0 whitespace-pre-line text-sm leading-relaxed text-slate-700 [overflow-wrap:anywhere]">{linkify(task.description)}</p>
                     </section>
                   )}
 
