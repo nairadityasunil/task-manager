@@ -94,7 +94,7 @@ export function useSettings() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === "companion" || activeTab === "mcp") fetchCompanionDevices();
+    if (activeTab === "companion") fetchCompanionDevices();
     if (activeTab === "sla") fetchSlaConfigs();
   }, [activeTab, fetchCompanionDevices, fetchSlaConfigs]);
 
