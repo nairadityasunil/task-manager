@@ -107,6 +107,7 @@ export function useDashboard() {
   const [projectsVersion, setProjectsVersion] = useState(0);
   const [actionEpicId, setActionEpicId] = useState<string | null>(null);
   const [actionNoteId, setActionNoteId] = useState<string | null>(null);
+  const [openingNoteId, setOpeningNoteId] = useState<string | null>(null);
 
   const [taskMutationError, setTaskMutationError] = useState<string | null>(null);
   const [taskMutationSuccess, setTaskMutationSuccess] = useState<string | null>(null);
@@ -1287,7 +1288,7 @@ export function useDashboard() {
   };
 
   const handleOpenExistingNote = async (note: Note): Promise<void> => {
-    setActionNoteId(note.id);
+    setOpeningNoteId(note.id);
     try {
       const latestNote = await getNote(note.id);
       if (latestNote.entityType === 'epic') {
@@ -1311,7 +1312,7 @@ export function useDashboard() {
     } catch {
       setNoteMutationError('Unable to open the note.');
     } finally {
-      setActionNoteId(null);
+      setOpeningNoteId(null);
     }
   };
 
@@ -1388,6 +1389,7 @@ export function useDashboard() {
       type: 'danger'
     });
     if (!isConfirmed) return;
+    setActionNoteId(note.id);
     try {
       await deleteNote(note.id);
       if (note.entityType === 'epic' && note.epicId) {
@@ -1406,6 +1408,8 @@ export function useDashboard() {
       }
     } catch {
       setNoteMutationError('Unable to delete the note.');
+    } finally {
+      setActionNoteId(null);
     }
   };
 
@@ -1500,6 +1504,7 @@ export function useDashboard() {
     actionProjectId,
     actionEpicId,
     actionNoteId,
+    openingNoteId,
     taskMutationError,
     setTaskMutationError,
     taskMutationSuccess,

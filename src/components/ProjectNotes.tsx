@@ -1,4 +1,4 @@
-import { FileText, Plus, ScrollText, Trash2 } from 'lucide-react';
+import { FileText, Loader2, Plus, ScrollText, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui';
 
@@ -16,6 +16,7 @@ interface ProjectNotesProps {
   onCreateNote?: () => void;
   onDeleteNote?: (note: Note) => void;
   onOpenNote: (note: Note) => void;
+  openingNoteId?: string | null;
 }
 
 const timestampFormatter = new Intl.DateTimeFormat(undefined, {
@@ -42,7 +43,8 @@ function ProjectNotes({
   notes,
   onCreateNote,
   onDeleteNote,
-  onOpenNote
+  onOpenNote,
+  openingNoteId = null
 }: ProjectNotesProps): JSX.Element {
   return (
     <section className="grid gap-3">
@@ -72,10 +74,15 @@ function ProjectNotes({
             <li key={note.id} className="flex items-center gap-2 pr-2">
               <button
                 className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-slate-50 sm:px-4"
+                disabled={openingNoteId !== null}
                 onClick={() => onOpenNote(note)}
                 type="button"
               >
-                <FileText className="shrink-0 text-slate-400" size={16} />
+                {openingNoteId === note.id ? (
+                  <Loader2 aria-label="Opening note" className="shrink-0 animate-spin text-slate-500" size={16} />
+                ) : (
+                  <FileText className="shrink-0 text-slate-400" size={16} />
+                )}
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium text-slate-900">{note.title}</span>
                   <span className="block text-xs text-slate-500">Updated {formatTimestamp(note.updatedAt)}</span>
@@ -84,7 +91,7 @@ function ProjectNotes({
               {onDeleteNote ? (
                 <Button
                   className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                  disabled={actionNoteId === note.id}
+                  disabled={actionNoteId === note.id || openingNoteId !== null}
                   icon={Trash2}
                   onClick={() => onDeleteNote(note)}
                   size="sm"
