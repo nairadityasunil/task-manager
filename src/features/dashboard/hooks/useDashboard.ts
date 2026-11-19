@@ -101,6 +101,8 @@ export function useDashboard() {
 
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
   const [actionProjectId, setActionProjectId] = useState<string | null>(null);
+  /** Goes up after a project is created, edited or deleted, so lists that show every project reload. */
+  const [projectsVersion, setProjectsVersion] = useState(0);
   const [actionEpicId, setActionEpicId] = useState<string | null>(null);
   const [actionNoteId, setActionNoteId] = useState<string | null>(null);
 
@@ -732,6 +734,7 @@ export function useDashboard() {
         description: payload.description?.trim()
       });
       await loadDashboard();
+      setProjectsVersion((v) => v + 1);
       setProjectMutationSuccess('Project created.');
       setIsProjectCreateModalOpen(false);
     } catch (error) {
@@ -755,6 +758,7 @@ export function useDashboard() {
         description: payload.description?.trim()
       });
       await loadDashboard();
+      setProjectsVersion((v) => v + 1);
       setProjectMutationSuccess('Project updated.');
       setEditingProject(null);
     } catch (error) {
@@ -777,6 +781,7 @@ export function useDashboard() {
     try {
       await deleteProject(projId);
       await loadDashboard();
+      setProjectsVersion((v) => v + 1);
       if (selectedProjectView === projId) {
         setSelectedProjectView(ALL_PROJECTS_VALUE);
       }
@@ -800,6 +805,7 @@ export function useDashboard() {
     try {
       await deleteProjects(projectIds);
       await loadDashboard();
+      setProjectsVersion((v) => v + 1);
       if (selectedProjectView && projectIds.includes(selectedProjectView)) {
         handleProjectSelect(ALL_PROJECTS_VALUE);
       }
@@ -1611,6 +1617,7 @@ export function useDashboard() {
     handleCreateProject,
     handleUpdateProject,
     handleDeleteProject,
+    projectsVersion,
     handleDeleteProjects,
     handleInviteProjectMember,
     handleAddWorkspaceMemberToProject,

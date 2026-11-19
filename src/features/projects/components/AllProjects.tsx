@@ -1,4 +1,4 @@
-import { FolderOpen, Plus, Search } from 'lucide-react';
+import { FolderOpen, Pencil, Plus, Search, Settings2, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import EmptyState from '@/components/EmptyState';
@@ -7,16 +7,30 @@ import { getAllProjects } from '@/services/projects';
 import { useWorkspace } from '@/features/workspaces';
 import type { Project } from '@/types/project';
 
+const actionCls = 'grid h-8 w-8 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:pointer-events-none disabled:opacity-40';
+
 const day = (v?: string): string => (v ? new Date(v).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : '');
 
 /** Every project, not just the first page: search, sort, and open one. */
 export function AllProjects({
   onOpen,
   onNewProject,
+  onEdit,
+  onDelete,
+  onOpenSettings,
+  busyProjectId,
   reloadKey,
 }: {
   onOpen: (projectId: string) => void;
   onNewProject: () => void;
+  /** Edit a project's name and description (project admins). */
+  onEdit?: (project: Project) => void;
+  /** Delete a project, after asking (project admins). */
+  onDelete?: (project: Project) => void;
+  /** Open the project's settings: team, access, workflow, SLA. */
+  onOpenSettings?: (project: Project) => void;
+  /** A project being changed right now: its buttons wait. */
+  busyProjectId?: string | null;
   /** Changes when projects are added or removed elsewhere, so the list reloads. */
   reloadKey?: unknown;
 }): JSX.Element {
@@ -98,22 +112,43 @@ export function AllProjects({
         <ul className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4" data-testid="all-projects-list">
           {shown.map((p) => (
             <li key={p.id}>
-              <button
-                className="flex h-full w-full flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 text-left transition-colors hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand-600/20"
-                data-testid="all-projects-row"
-                onClick={() => onOpen(p.id)}
-                type="button"
-              >
-                <span className="flex items-center gap-2">
-                  <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: tagColor(p.id) }} />
-                  <span className="truncate text-sm font-semibold text-slate-900">{p.name}</span>
-                </span>
-                {p.description ? <span className="line-clamp-2 text-[13px] text-slate-600">{p.description}</span> : null}
-                <span className="mt-auto flex flex-wrap items-center gap-1.5 pt-1 text-xs text-slate-500">
-                  <Badge tone={p.currentUserRole === 'ADMIN' ? 'violet' : 'neutral'}>{p.currentUserRole === 'ADMIN' ? 'Admin' : 'Member'}</Badge>
-                  <span>Created {day(p.createdAt)}</span>
-                </span>
-              </button>
+              <div className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-white transition-colors hover:border-slate-300 hover:bg-slate-50/60" data-testid="all-projects-row">
+                <button
+                  className="flex flex-1 flex-col gap-2 rounded-t-xl p-4 text-left focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-brand-600/20"
+                  data-testid="all-projects-open"
+                  onClick={() => onOpen(p.id)}
+                  type="button"
+                >
+                  <span className="flex items-center gap-2">
+                    <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: tagColor(p.id) }} />
+                    <span className="truncate text-sm font-semibold text-slate-900">{p.name}</span>
+                  </span>
+                  {p.description ? <span className="line-clamp-2 text-[13px] text-slate-600 [overflow-wrap:anywhere]">{p.description}</span> : null}
+                  <span className="mt-auto flex flex-wrap items-center gap-1.5 pt-1 text-xs text-slate-500">
+                    <Badge tone={p.currentUserRole === 'ADMIN' ? 'violet' : 'neutral'}>{p.currentUserRole === 'ADMIN' ? 'Admin' : 'Member'}</Badge>
+                    <span>Created {day(p.createdAt)}</span>
+                  </span>
+                </button>
+                {onOpenSettings || (p.currentUserRole === 'ADMIN' && (onEdit || onDelete)) ? (
+                  <div className="flex items-center justify-end gap-0.5 border-t border-slate-100 px-2 py-1.5" data-testid="all-projects-actions">
+                    {onOpenSettings ? (
+                      <button aria-label={`Settings for ${p.name}`} className={actionCls} data-testid="project-action-settings" onClick={() => onOpenSettings(p)} title="Project settings" type="button">
+                        <Settings2 size={15} />
+                      </button>
+                    ) : null}
+                    {p.currentUserRole === 'ADMIN' && onEdit ? (
+                      <button aria-label={`Edit ${p.name}`} className={actionCls} data-testid="project-action-edit" disabled={busyProjectId === p.id} onClick={() => onEdit(p)} title="Edit project" type="button">
+                        <Pencil size={15} />
+                      </button>
+                    ) : null}
+                    {p.currentUserRole === 'ADMIN' && onDelete ? (
+                      <button aria-label={`Delete ${p.name}`} className={`${actionCls} hover:!bg-red-50 hover:!text-red-600`} data-testid="project-action-delete" disabled={busyProjectId === p.id} onClick={() => onDelete(p)} title="Delete project" type="button">
+                        <Trash2 size={15} />
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
             </li>
           ))}
         </ul>

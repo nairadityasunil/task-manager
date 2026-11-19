@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronRight, NotebookPen, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, NotebookPen, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import Modal from '@/components/Modal';
@@ -22,6 +22,8 @@ interface Props {
   onChanged: () => void;
 }
 
+const PAGE_SIZE = 10;
+
 type View = { kind: 'list' } | { kind: 'detail'; id: string } | { kind: 'form'; id: string | null };
 
 const when = (iso: string | null): string =>
@@ -40,6 +42,7 @@ export function TaskNotesModal({ task, members, onClose, onChanged }: Props): JS
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
+  const [page, setPage] = useState(1);
 
   // The task was reloaded elsewhere (someone else added a note): show it.
   useEffect(() => {
@@ -101,6 +104,10 @@ export function TaskNotesModal({ task, members, onClose, onChanged }: Props): JS
     }
   };
 
+  const newestFirst = [...notes].reverse();
+  const pageCount = Math.max(1, Math.ceil(newestFirst.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageNotes = newestFirst.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
   const editing = view.kind === 'form';
   const heading = view.kind === 'form' ? (view.id ? 'Edit note' : 'New note') : view.kind === 'detail' ? 'Note' : `Notes (${notes.length})`;
 
@@ -109,6 +116,13 @@ export function TaskNotesModal({ task, members, onClose, onChanged }: Props): JS
       description={<>For <span className="font-medium text-slate-700">{task.title}</span></>}
       // A stray click outside must not throw away a note being written.
       dismissOnBackdrop={!editing}
+      headerActions={
+        view.kind === 'list' ? (
+          <Button data-testid="task-note-new" disabled={!task.permissions.canUpdate} icon={Plus} onClick={() => openForm(null)} size="sm" variant="primary">
+            New note
+          </Button>
+        ) : null
+      }
       onClose={onClose}
       panelClassName="!max-w-[880px] w-full"
       title={heading}
@@ -116,11 +130,6 @@ export function TaskNotesModal({ task, members, onClose, onChanged }: Props): JS
       <div data-testid="task-notes-modal">
         {view.kind === 'list' ? (
           <div className="grid gap-3">
-            <div className="flex justify-end">
-              <Button data-testid="task-note-new" disabled={!task.permissions.canUpdate} icon={Plus} onClick={() => openForm(null)} variant="primary">
-                New note
-              </Button>
-            </div>
             {notes.length === 0 ? (
               <div className="grid place-items-center gap-2 rounded-lg border border-dashed border-slate-200 px-4 py-10 text-center">
                 <NotebookPen className="text-slate-300" size={28} />
@@ -129,7 +138,7 @@ export function TaskNotesModal({ task, members, onClose, onChanged }: Props): JS
               </div>
             ) : (
               <ul className="m-0 grid list-none gap-2 p-0">
-                {[...notes].reverse().map((n) => (
+                {pageNotes.map((n) => (
                   <li key={n.id}>
                     <button
                       className="flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-left transition-colors hover:border-slate-300 hover:bg-slate-50"
@@ -144,6 +153,24 @@ export function TaskNotesModal({ task, members, onClose, onChanged }: Props): JS
                 ))}
               </ul>
             )}
+            {newestFirst.length > PAGE_SIZE ? (
+              <nav aria-label="Notes pages" className="flex items-center justify-between gap-2 pt-1 text-[13px] text-slate-600" data-testid="task-notes-pager">
+                <span className="tabular-nums">
+                  {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, newestFirst.length)} of {newestFirst.length}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Button aria-label="Previous page" data-testid="task-notes-prev" disabled={safePage <= 1} icon={ChevronLeft} onClick={() => setPage(safePage - 1)} size="sm" variant="secondary">
+                    Prev
+                  </Button>
+                  <span className="px-1 tabular-nums">
+                    Page {safePage} of {pageCount}
+                  </span>
+                  <Button aria-label="Next page" data-testid="task-notes-next" disabled={safePage >= pageCount} onClick={() => setPage(safePage + 1)} size="sm" variant="secondary">
+                    Next <ChevronRight size={14} />
+                  </Button>
+                </span>
+              </nav>
+            ) : null}
           </div>
         ) : null}
 

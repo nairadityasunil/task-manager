@@ -15,6 +15,8 @@ interface ModalProps {
   closeLabel?: string;
   /** Clicking outside the panel closes it (default). Turn off for editors so work is not lost by a stray click. */
   dismissOnBackdrop?: boolean;
+  /** Buttons shown in the header, before the close button. */
+  headerActions?: ReactNode;
   /** Hide the close button (the dialog must be finished with its own buttons). */
   hideClose?: boolean;
   /** Body without padding or scrolling, for dialogs that lay out their own scroll area and sticky footer. */
@@ -46,6 +48,7 @@ function Modal({
   closeLabel = 'Close modal',
   dismissOnBackdrop = true,
   hideClose = false,
+  headerActions,
   plainBody = false
 }: ModalProps): JSX.Element {
   const titleId = useId();
@@ -113,6 +116,8 @@ function Modal({
             </h2>
             {description ? <p className="m-0 mt-0.5 text-[13px] text-slate-500">{description}</p> : null}
           </div>
+          <div className="flex shrink-0 items-center gap-2">
+          {headerActions}
           {hideClose ? null : (
             <button
               aria-label={closeLabel}
@@ -123,6 +128,7 @@ function Modal({
               <X size={18} />
             </button>
           )}
+          </div>
         </div>
         <div className={plainBody ? cn('flex min-h-0 flex-1 flex-col', bodyClassName) : cn('grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)] gap-5 overflow-y-auto p-4', bodyClassName)}>{children}</div>
         {footer ? (

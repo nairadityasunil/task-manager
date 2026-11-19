@@ -446,7 +446,18 @@ export function DashboardPage(): JSX.Element {
             </div>
           ) : dash.activeView === 'projects' ? (
             <div className="h-full overflow-y-auto">
-              <AllProjects onNewProject={() => dash.setIsProjectCreateModalOpen(true)} onOpen={(id) => navigate(`/projects/${id}`)} reloadKey={dash.projects.length} />
+              <AllProjects
+                busyProjectId={dash.actionProjectId}
+                onDelete={(project) => void dash.handleDeleteProject(project.id)}
+                onEdit={(project) => dash.setEditingProject(project)}
+                onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
+                onOpen={(id) => navigate(`/projects/${id}`)}
+                onOpenSettings={(project) => {
+                  navigate(`/projects/${project.id}`);
+                  setIsProjectSettingsOpen(true);
+                }}
+                reloadKey={dash.projectsVersion}
+              />
             </div>
           ) : dash.activeView === 'telemetry' ? (
             <div className="h-full overflow-y-auto">

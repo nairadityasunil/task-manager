@@ -280,7 +280,7 @@ function TaskCard({
         <div className="flex min-w-0 flex-1 flex-col gap-1 @3xl:flex-row @3xl:items-center @3xl:gap-4">
           {/* Title */}
           <div className="flex min-h-7 min-w-0 flex-1 items-center gap-2">
-            <h3 className={cn('m-0 min-w-0 text-[13px] font-normal leading-5 line-clamp-2 @3xl:line-clamp-none @3xl:truncate', isDone ? 'text-slate-500 line-through decoration-slate-300' : 'text-slate-900')}>
+            <h3 className={cn('m-0 min-w-0 text-[13px] font-normal leading-5 line-clamp-2 [overflow-wrap:anywhere] @3xl:line-clamp-none @3xl:truncate', isDone ? 'text-slate-500 line-through decoration-slate-300' : 'text-slate-900')}>
               {task.title}
             </h3>
             {subtaskMeta}
@@ -334,7 +334,7 @@ function TaskCard({
       </div>
 
       {task.description ? (
-        <p className="m-0 text-[13px] leading-snug text-slate-500 line-clamp-2">{task.description}</p>
+        <p className="m-0 text-[13px] leading-snug text-slate-500 line-clamp-2 [overflow-wrap:anywhere]">{task.description}</p>
       ) : null}
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
