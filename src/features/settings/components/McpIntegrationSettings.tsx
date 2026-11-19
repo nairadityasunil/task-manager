@@ -13,7 +13,6 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
-  Smartphone,
 } from 'lucide-react';
 import { Badge, Button, Card, CardHeader, buttonClass, inputClass } from '@/components/ui';
 import EmptyState from '@/components/EmptyState';
@@ -25,22 +24,13 @@ import { CreateKeyModal } from '@/features/agents/components/CreateKeyModal';
 import { SecretReveal } from '@/features/agents/components/shared';
 import { isAtLeastAdmin } from '@/features/workspaces';
 import { Link } from 'react-router-dom';
-import type { CompanionDevice } from '../hooks/useSettings';
+import { McpClientsCard } from './McpClientsCard';
 
 interface McpIntegrationSettingsProps {
-  companionDevices?: CompanionDevice[];
-  isLoadingCompanionDevices?: boolean;
-  onRevokeCompanionDevice?: (id: string) => void;
   onNavigateToProfile?: () => void;
-  onOpenCompanionModal?: () => void;
 }
 
-export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
-  companionDevices = [],
-  isLoadingCompanionDevices = false,
-  onRevokeCompanionDevice,
-  onOpenCompanionModal,
-}) => {
+export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = () => {
   const { activeWorkspace } = useWorkspace();
   const [creatingKey, setCreatingKey] = useState(false);
   const [mcpKey, setMcpKey] = useState<string | null>(null);
@@ -350,75 +340,8 @@ export const McpIntegrationSettings: React.FC<McpIntegrationSettingsProps> = ({
         </div>
       </Card>
 
-      {/* Connected Companion Devices */}
-      <Card>
-        <CardHeader
-          title={
-            <span className="flex items-center gap-1.5">
-              <Smartphone className="h-4 w-4 text-slate-400" /> Connected MCP Client Devices
-            </span>
-          }
-          description="Manage paired companion devices and external keys with access to your workspace."
-          actions={
-            onOpenCompanionModal ? (
-              <Button size="sm" variant="primary" onClick={onOpenCompanionModal}>
-                + Pair Companion Client
-              </Button>
-            ) : null
-          }
-        />
-        <div className="p-4">
-          {isLoadingCompanionDevices ? (
-            <div className="flex items-center justify-center gap-2 p-6 text-[13px] text-slate-500">
-              <RefreshCw className="h-4 w-4 animate-spin" /> Loading client devices...
-            </div>
-          ) : companionDevices.length === 0 ? (
-            <EmptyState
-              compact
-              icon={Smartphone}
-              title="No companion client devices paired yet."
-              description="Use your Sync API Key directly in Claude Desktop or pair a companion device for isolated access."
-            />
-          ) : (
-            <div className="overflow-x-auto rounded-lg border border-slate-200">
-              <table className="w-full min-w-[560px] text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50">
-                  <tr className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                    <th className="px-3 py-2.5 font-medium">Device / Client Name</th>
-                    <th className="px-3 py-2.5 font-medium">Type</th>
-                    <th className="px-3 py-2.5 font-medium">Status</th>
-                    <th className="px-3 py-2.5 font-medium">Paired Date</th>
-                    <th className="px-3 py-2.5 text-right font-medium">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {companionDevices.map((dev) => (
-                    <tr key={dev.id} className="hover:bg-slate-50/60">
-                      <td className="px-3 py-2.5 font-medium text-slate-900">{dev.deviceName}</td>
-                      <td className="px-3 py-2.5 capitalize">{dev.deviceType}</td>
-                      <td className="px-3 py-2.5">
-                        <Badge tone={dev.status === 'active' ? 'success' : dev.status === 'pending' ? 'warning' : 'danger'} dot>
-                          {dev.status.charAt(0).toUpperCase() + dev.status.slice(1)}
-                        </Badge>
-                      </td>
-                      <td className="px-3 py-2.5 text-[13px] text-slate-500">
-                        {dev.createdAt ? new Date(dev.createdAt).toLocaleDateString() : 'N/A'}
-                      </td>
-                      <td className="px-3 py-2.5 text-right">
-                        {dev.status !== 'revoked' && onRevokeCompanionDevice && (
-                          <Button size="sm" variant="danger" onClick={() => onRevokeCompanionDevice(dev.id)}>
-                            Revoke Access
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </Card>
+      {/* The AI tools connected through MCP (companion devices are a separate page) */}
+      <McpClientsCard />
 
       {/* Tool Manifest Browser */}
       <Card>

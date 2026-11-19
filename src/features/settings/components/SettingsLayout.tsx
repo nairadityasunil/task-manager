@@ -205,16 +205,7 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       )}
 
       {activeTab === "mcp" && (
-        <McpIntegrationSettings
-          companionDevices={companionDevices}
-          isLoadingCompanionDevices={isLoadingCompanionDevices}
-          onRevokeCompanionDevice={onRevokeCompanionDevice}
-          onNavigateToProfile={() => setActiveTab("profile")}
-          onOpenCompanionModal={() => {
-            setSelectedDeviceForRegen(null);
-            setIsCompanionModalOpen(true);
-          }}
-        />
+        <McpIntegrationSettings onNavigateToProfile={() => setActiveTab("profile")} />
       )}
 
       {activeTab === "companion" && (

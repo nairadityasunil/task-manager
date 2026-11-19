@@ -42,7 +42,7 @@ export const CompanionDevicesList: React.FC<CompanionDevicesListProps> = ({
     <Card className="font-sans">
       <CardHeader
         title="Companion Mobile & Desktop Devices"
-        description="Manage paired secondary devices, generate pairing keys, or authorize device sessions."
+        description="Phones, tablets and apps you have paired with a key or QR code. Each stays signed in for a month. AI tools connected through MCP are separate: see MCP Integration."
         actions={
           <>
             <Button size="sm" icon={Key} onClick={onOpenPairModal}>
