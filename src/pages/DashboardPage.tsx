@@ -1143,6 +1143,7 @@ export function DashboardPage(): JSX.Element {
         <Modal onClose={() => dash.setIsProjectNotesModalOpen(false)} title={dash.activeProjectNotesModalTitle}>
           <ProjectNotes
             actionNoteId={dash.actionNoteId}
+            openingNoteId={dash.openingNoteId}
             heading="Project notes"
             loading={dash.notesLoadingKey === `project:${dash.activeProjectForNotes.id}`}
             notes={dash.activeProjectNotes}
@@ -1156,6 +1157,7 @@ export function DashboardPage(): JSX.Element {
         <Modal onClose={() => dash.setIsEpicNotesModalOpen(false)} title={dash.activeEpicNotesModalTitle}>
           <ProjectNotes
             actionNoteId={dash.actionNoteId}
+            openingNoteId={dash.openingNoteId}
             createLabel="Create epic note"
             emptyDescription="Create the first note to capture decisions, references, or follow-ups for this epic."
             emptyTitle="No epic notes yet"
