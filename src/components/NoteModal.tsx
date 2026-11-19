@@ -1,7 +1,9 @@
 import { FormEvent, useEffect, useState } from 'react';
 
 import Modal from '@/components/Modal';
-import { Button, Field, textareaClass, Input } from '@/components/ui';
+import { Button, Field, Input } from '@/components/ui';
+import { RichTextEditor } from '@/components/rich-text/RichTextEditor';
+import { isRichEmpty } from '@/components/rich-text/richText';
 import type { Note } from '@/types/note';
 
 interface NoteModalProps {
@@ -54,7 +56,7 @@ function NoteModal({
       return;
     }
 
-    if (!content.trim()) {
+    if (isRichEmpty(content)) {
       setErrorMessage('Description is required.');
       return;
     }
@@ -97,9 +99,11 @@ function NoteModal({
         ) : null}
 
         <Field label="Description">
-          <textarea
-            className={`${textareaClass} min-h-[220px]`}
-            onChange={(event) => setContent(event.target.value)}
+          <RichTextEditor
+            aria-label="Note"
+            autoFocus={!showTitle}
+            minHeight={220}
+            onChange={setContent}
             placeholder="Write note details, decisions, or follow-ups..."
             value={content}
           />

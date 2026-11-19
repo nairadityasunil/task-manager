@@ -1,3 +1,5 @@
+import { RichTextEditor } from '@/components/rich-text/RichTextEditor';
+import { isRichEmpty } from '@/components/rich-text/richText';
 import { ClipboardEvent, FormEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { ChevronDown, Plus, Trash2 } from 'lucide-react';
 
@@ -108,7 +110,7 @@ function SubtaskForm({ onSubmit, members }: SubtaskFormProps): JSX.Element {
       .map((draft) => ({
         title: draft.title.trim(),
         description: draft.description?.trim() || undefined,
-        note: draft.note?.trim() || undefined,
+        note: isRichEmpty(draft.note) ? undefined : draft.note?.trim(),
         status: draft.status,
         assignedToUserId: draft.assignedToUserId || null
       }))
@@ -229,11 +231,12 @@ function SubtaskForm({ onSubmit, members }: SubtaskFormProps): JSX.Element {
                   />
                 </Field>
                 <Field label="Internal note">
-                  <Input
-                    onChange={(event) => updateDraft(draft.id, { note: event.target.value })}
+                  <RichTextEditor
+                    aria-label="Internal note"
+                    minHeight={90}
+                    onChange={(html) => updateDraft(draft.id, { note: html })}
                     placeholder="Optional private note"
-                    type="text"
-                    value={draft.note}
+                    value={draft.note ?? ''}
                   />
                 </Field>
               </div>
