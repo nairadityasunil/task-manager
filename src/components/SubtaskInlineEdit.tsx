@@ -59,7 +59,7 @@ export default function SubtaskInlineEdit({ subtask, onSave, onCancel, isSaving,
 
       <div className="grid gap-1.5">
         <span className={labelCls}>Internal Note (optional)</span>
-        <RichTextEditor aria-label="Internal note" minHeight={90} onChange={setNote} placeholder="Private notes..." value={note} />
+        <RichTextEditor aria-label="Internal note" minHeight={180} onChange={setNote} placeholder="Private notes..." value={note} />
       </div>
 
       <label className="grid gap-1.5">

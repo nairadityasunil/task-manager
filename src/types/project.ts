@@ -19,6 +19,8 @@ export interface Project {
   currentUserRole: 'ADMIN' | 'MEMBER';
   /** What the signed-in person may use here. Admins have everything. */
   currentUserPermissions?: ProjectPermissions;
+  /** False when a project admin has turned SLA tracking off for the project. */
+  slaEnabled?: boolean;
   createdAt?: string;
   updatedAt?: string;
   creator?: {

@@ -133,7 +133,7 @@ function TaskCard({
 }: TaskCardProps): JSX.Element {
   const completedSubtasksCount = task.subtasks.filter((subtask) => subtask.status === 'DONE').length;
   const isUpdating = actionTaskId === task.id;
-  const breached = task.responseBreached || task.resolutionBreached;
+  const breached = task.slaTracked !== false && (task.responseBreached || task.resolutionBreached);
   const dateInfo = taskDateInfo(task);
   const isDone = task.status === 'DONE';
 

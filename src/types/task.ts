@@ -50,6 +50,8 @@ export interface Task {
   stateId?: string | null;
   /** Every note on the task, oldest first. */
   notes?: TaskNote[];
+  /** False when the task's project has SLA tracking off: no SLA information is shown for it. */
+  slaTracked?: boolean;
   /** The due date (YYYY-MM-DD), or null when the task has none. */
   date: string | null;
   status: TaskStatus;

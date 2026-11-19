@@ -1,7 +1,10 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { Loader2, Send, MessageSquare } from 'lucide-react';
+import { Loader2, Send, MessageSquare, Pencil, Trash2 } from 'lucide-react';
 import { Button, cn, textareaClass } from '@/components/ui';
-import { getComments, addComment, type Comment } from '@/services/comments';
+import { useConfirm } from '@/context/ConfirmationContext';
+import { useToast } from '@/context/ToastContext';
+import { getComments, addComment, updateComment, deleteComment, type Comment } from '@/services/comments';
+import { toDisplayErrorMessage } from '@/utils/apiError';
 import { formatDate } from '@/utils/date';
 import UserAvatar from './UserAvatar';
 
@@ -15,6 +18,10 @@ function CommentSection({ taskId }: CommentSectionProps): JSX.Element {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const confirm = useConfirm();
+  const { showToast } = useToast();
+  const [editing, setEditing] = useState<{ id: string; text: string } | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -54,6 +61,35 @@ function CommentSection({ taskId }: CommentSectionProps): JSX.Element {
 
   const displayDate = (dateString: string) => formatDate(dateString, 'short');
 
+  const saveEdit = async (comment: Comment): Promise<void> => {
+    if (!editing || !editing.text.trim()) return;
+    setSavingId(comment.id);
+    try {
+      const updated = await updateComment(taskId, comment.id, editing.text.trim());
+      setComments((prev) => prev.map((c) => (c.id === comment.id ? updated : c)));
+      setEditing(null);
+    } catch (err) {
+      showToast({ variant: 'error', message: toDisplayErrorMessage(err) });
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const remove = async (comment: Comment): Promise<void> => {
+    const sure = await confirm({ title: 'Delete this comment?', message: 'It will be removed for everyone on the task.', confirmText: 'Delete comment', type: 'danger' });
+    if (!sure) return;
+    setSavingId(comment.id);
+    try {
+      await deleteComment(taskId, comment.id);
+      setComments((prev) => prev.filter((c) => c.id !== comment.id));
+      if (editing?.id === comment.id) setEditing(null);
+    } catch (err) {
+      showToast({ variant: 'error', message: toDisplayErrorMessage(err) });
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 pb-3">
@@ -82,7 +118,7 @@ function CommentSection({ taskId }: CommentSectionProps): JSX.Element {
           </div>
         ) : (
           comments.map((comment) => (
-            <div key={comment.id} className="flex gap-3">
+            <div key={comment.id} className="flex gap-3" data-testid="comment">
               <UserAvatar
                 name={comment.user.name}
                 email={comment.user.email}
@@ -95,11 +131,62 @@ function CommentSection({ taskId }: CommentSectionProps): JSX.Element {
                   </span>
                   <span className="text-xs text-slate-500">
                     {displayDate(comment.createdAt)}
+                    {comment.editedAt ? <span title={`Edited ${displayDate(comment.editedAt)}`}> · edited</span> : null}
                   </span>
+                  {comment.canModify && editing?.id !== comment.id ? (
+                    <span className="ml-auto flex items-center gap-0.5">
+                      <button
+                        aria-label="Edit comment"
+                        className="grid h-6 w-6 place-items-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                        data-testid="comment-edit"
+                        disabled={savingId === comment.id}
+                        onClick={() => setEditing({ id: comment.id, text: comment.content })}
+                        type="button"
+                      >
+                        <Pencil size={12} />
+                      </button>
+                      <button
+                        aria-label="Delete comment"
+                        className="grid h-6 w-6 place-items-center rounded-md text-slate-400 hover:bg-red-50 hover:text-red-600"
+                        data-testid="comment-delete"
+                        disabled={savingId === comment.id}
+                        onClick={() => void remove(comment)}
+                        type="button"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </span>
+                  ) : null}
                 </div>
-                <div className="break-words rounded-lg rounded-tl-sm border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-relaxed text-slate-700">
-                  {comment.content}
-                </div>
+                {editing?.id === comment.id ? (
+                  <div className="grid gap-2">
+                    <textarea
+                      aria-label="Edit comment text"
+                      autoFocus
+                      className={cn(textareaClass, 'max-h-48 resize-y')}
+                      data-testid="comment-edit-text"
+                      onChange={(e) => setEditing({ id: comment.id, text: e.target.value })}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') setEditing(null);
+                        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void saveEdit(comment);
+                      }}
+                      rows={3}
+                      value={editing.text}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button onClick={() => setEditing(null)} size="sm" variant="secondary">
+                        Cancel
+                      </Button>
+                      <Button data-testid="comment-edit-save" disabled={!editing.text.trim() || savingId === comment.id} loading={savingId === comment.id} onClick={() => void saveEdit(comment)} size="sm" variant="primary">
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="whitespace-pre-wrap break-words rounded-lg rounded-tl-sm border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-relaxed text-slate-700 [overflow-wrap:anywhere]">
+                    {comment.content}
+                  </div>
+                )}
               </div>
             </div>
           ))

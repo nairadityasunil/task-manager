@@ -1,9 +1,9 @@
 import { Loader2, RotateCcw, Save } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
-import { Badge, Button, inputClass } from '@/components/ui';
+import { Badge, Button, Switch, inputClass } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
-import { getProjectSlaConfigs, resetProjectSlaConfig, updateProjectSlaConfig } from '@/services/sla';
+import { getProjectSla, resetProjectSlaConfig, setProjectSlaEnabled, updateProjectSlaConfig } from '@/services/sla';
 import type { ProjectSlaConfig, TaskPriority } from '@/types/task';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
@@ -18,19 +18,22 @@ interface Draft {
 const toDraft = (c: ProjectSlaConfig): Draft => ({ response: String(c.responseTimeHours), resolution: String(c.resolutionTimeHours) });
 
 /** Response and resolution times for the tasks of one project. Admins change them; everyone on the project can see them. */
-export function ProjectSlaPanel({ projectId, canManage }: { projectId: string; canManage: boolean }): JSX.Element {
+export function ProjectSlaPanel({ projectId, canManage, onChanged }: { projectId: string; canManage: boolean; onChanged?: () => void }): JSX.Element {
   const { showToast } = useToast();
   const [configs, setConfigs] = useState<ProjectSlaConfig[]>([]);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<TaskPriority | null>(null);
+  const [enabled, setEnabled] = useState(true);
+  const [toggling, setToggling] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const list = await getProjectSlaConfigs(projectId);
+      const { enabled: on, configs: list } = await getProjectSla(projectId);
+      setEnabled(on);
       setConfigs(list);
       setDrafts(Object.fromEntries(list.map((c) => [c.priority, toDraft(c)])));
     } catch (err) {
@@ -43,6 +46,20 @@ export function ProjectSlaPanel({ projectId, canManage }: { projectId: string; c
   useEffect(() => {
     void load();
   }, [load]);
+
+  const toggle = async (next: boolean): Promise<void> => {
+    setToggling(true);
+    try {
+      await setProjectSlaEnabled(projectId, next);
+      setEnabled(next);
+      showToast({ variant: 'success', message: next ? 'SLA tracking is on for this project.' : 'SLA tracking is off for this project. Its tasks show no SLA.' });
+      onChanged?.();
+    } catch (err) {
+      showToast({ variant: 'error', message: toDisplayErrorMessage(err) });
+    } finally {
+      setToggling(false);
+    }
+  };
 
   const save = async (c: ProjectSlaConfig): Promise<void> => {
     const d = drafts[c.priority];
@@ -92,11 +109,23 @@ export function ProjectSlaPanel({ projectId, canManage }: { projectId: string; c
 
   return (
     <div className="grid gap-4 p-5" data-testid="project-sla">
+      <div className="flex items-start justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50/60 px-4 py-3">
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-slate-900">SLA tracking</div>
+          <p className="m-0 mt-0.5 text-[13px] text-slate-600">
+            {enabled
+              ? 'Tasks in this project get response and resolution deadlines and can breach them.'
+              : 'Off: tasks in this project have no SLA, and nothing is counted as breached. Turning it back on dates the open tasks again.'}
+            {canManage ? '' : ' Only project admins can change this.'}
+          </p>
+        </div>
+        <Switch aria-label="SLA tracking" checked={enabled} data-testid="project-sla-toggle" disabled={!canManage || toggling} onChange={(event) => void toggle(event.target.checked)} />
+      </div>
       <p className="m-0 text-[13px] text-slate-600">
         How long tasks in this project have to get a first response and to be resolved, by priority. Priorities you do not change use your own SLA targets from Settings.
-        {canManage ? ' Changing a time re-dates the open tasks of that priority.' : ' Only project admins can change these.'}
+        {canManage && enabled ? ' Changing a time re-dates the open tasks of that priority.' : ''}
       </p>
-      <div className="overflow-x-auto rounded-lg border border-slate-200">
+      <div className={enabled ? 'overflow-x-auto rounded-lg border border-slate-200' : 'overflow-x-auto rounded-lg border border-slate-200 opacity-60'}>
         <table className="w-full text-[13px]">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/60 text-left">
@@ -121,19 +150,19 @@ export function ProjectSlaPanel({ projectId, canManage }: { projectId: string; c
                     </div>
                   </td>
                   <td className="px-4 py-2.5">
-                    <input aria-label={`${LABEL[c.priority]} response hours`} className={`${inputClass} w-24`} disabled={!canManage || busy !== null} min="0.01" onChange={(e) => setDraft({ response: e.target.value })} step="any" type="number" value={d.response} />
+                    <input aria-label={`${LABEL[c.priority]} response hours`} className={`${inputClass} w-24`} disabled={!canManage || !enabled || busy !== null} min="0.01" onChange={(e) => setDraft({ response: e.target.value })} step="any" type="number" value={d.response} />
                   </td>
                   <td className="px-4 py-2.5">
-                    <input aria-label={`${LABEL[c.priority]} resolution hours`} className={`${inputClass} w-24`} disabled={!canManage || busy !== null} min="0.01" onChange={(e) => setDraft({ resolution: e.target.value })} step="any" type="number" value={d.resolution} />
+                    <input aria-label={`${LABEL[c.priority]} resolution hours`} className={`${inputClass} w-24`} disabled={!canManage || !enabled || busy !== null} min="0.01" onChange={(e) => setDraft({ resolution: e.target.value })} step="any" type="number" value={d.resolution} />
                   </td>
                   {canManage && (
                     <td className="px-4 py-2.5">
                       <div className="flex justify-end gap-2">
-                        <Button disabled={!changed || busy !== null} icon={Save} loading={busy === c.priority} onClick={() => void save(c)} size="sm" variant="primary">
+                        <Button disabled={!enabled || !changed || busy !== null} icon={Save} loading={busy === c.priority} onClick={() => void save(c)} size="sm" variant="primary">
                           Save
                         </Button>
                         {c.custom && (
-                          <Button disabled={busy !== null} icon={RotateCcw} onClick={() => void reset(c)} size="sm" variant="secondary">
+                          <Button disabled={!enabled || busy !== null} icon={RotateCcw} onClick={() => void reset(c)} size="sm" variant="secondary">
                             Reset
                           </Button>
                         )}

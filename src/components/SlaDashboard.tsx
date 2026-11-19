@@ -10,17 +10,20 @@ interface SlaDashboardProps {
   projectId?: string | null;
   /** Used when no project is open: the numbers cover the projects of this workspace. */
   workspaceId?: string | null;
+  /** False when the open project has SLA tracking off: nothing is shown and nothing is fetched. */
+  enabled?: boolean;
   /** Changes whenever the tasks on screen change (created, moved, finished...), so the numbers are fetched again. */
   refreshKey?: unknown;
 }
 
-function SlaDashboard({ projectId, workspaceId, refreshKey }: SlaDashboardProps): JSX.Element | null {
+function SlaDashboard({ projectId, workspaceId, refreshKey, enabled = true }: SlaDashboardProps): JSX.Element | null {
   const [summary, setSummary] = useState<SlaAnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const scope = `${projectId ?? ''}|${projectId ? '' : (workspaceId ?? '')}`;
   const shownScope = useRef<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) return undefined;
     let active = true;
     // Another project or workspace: never keep showing the previous one's numbers while the new ones load.
     if (shownScope.current !== scope) {
@@ -42,7 +45,9 @@ function SlaDashboard({ projectId, workspaceId, refreshKey }: SlaDashboardProps)
     return () => {
       active = false;
     };
-  }, [scope, refreshKey]);
+  }, [scope, refreshKey, enabled]);
+
+  if (!enabled) return null;
 
   if (loading) {
     return (

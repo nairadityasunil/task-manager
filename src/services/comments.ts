@@ -5,6 +5,10 @@ export interface Comment {
   taskId: string;
   userId: string;
   content: string;
+  /** When the text was last changed after posting, or null. */
+  editedAt?: string | null;
+  /** The signed-in person is the author or an admin of the task's project. */
+  canModify?: boolean;
   user: {
     id: string;
     email: string;
@@ -37,4 +41,13 @@ const addComment = async (taskId: string, content: string): Promise<Comment> => 
   return response.data.data.comment;
 };
 
-export { getComments, addComment };
+const updateComment = async (taskId: string, commentId: string, content: string): Promise<Comment> => {
+  const response = await api.patch<CommentResponse>(`/tasks/${taskId}/comments/${commentId}`, { content });
+  return response.data.data.comment;
+};
+
+const deleteComment = async (taskId: string, commentId: string): Promise<void> => {
+  await api.delete(`/tasks/${taskId}/comments/${commentId}`);
+};
+
+export { getComments, addComment, updateComment, deleteComment };

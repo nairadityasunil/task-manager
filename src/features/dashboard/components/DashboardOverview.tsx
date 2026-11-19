@@ -74,8 +74,8 @@ export default function DashboardOverview({
     }
     const done = counts.DONE ?? 0;
     const open = tasks.length - done;
-    const slaBreached = tasks.filter((t) => normalisedStatus(t.status) !== 'DONE' && (t.currentSlaState === 'BREACHED' || t.resolutionBreached)).length;
-    const nearBreach = tasks.filter((t) => normalisedStatus(t.status) !== 'DONE' && t.currentSlaState === 'NEAR_BREACH').length;
+    const slaBreached = tasks.filter((t) => t.slaTracked !== false && normalisedStatus(t.status) !== 'DONE' && (t.currentSlaState === 'BREACHED' || t.resolutionBreached)).length;
+    const nearBreach = tasks.filter((t) => t.slaTracked !== false && normalisedStatus(t.status) !== 'DONE' && t.currentSlaState === 'NEAR_BREACH').length;
     const blocked = tasks.filter((t) => normalisedStatus(t.status) !== 'DONE' && (t.status === 'BLOCKED' || t.isBlocked)).length;
     const priorities: Record<TaskPriority, number> = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
     for (const task of tasks) {
@@ -245,7 +245,7 @@ export default function DashboardOverview({
                           <span className="block truncate text-[13px] text-slate-900">{task.title}</span>
                           {where ? <span className="block truncate text-xs text-slate-500">{where}</span> : null}
                         </span>
-                        {task.currentSlaState === 'BREACHED' || task.currentSlaState === 'NEAR_BREACH' ? (
+                        {task.slaTracked !== false && (task.currentSlaState === 'BREACHED' || task.currentSlaState === 'NEAR_BREACH') ? (
                           <Badge className="hidden sm:inline-flex" tone={task.currentSlaState === 'BREACHED' ? 'danger' : 'warning'}>
                             {task.currentSlaState === 'BREACHED' ? 'SLA breached' : 'Near breach'}
                           </Badge>

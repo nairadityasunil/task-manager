@@ -15,7 +15,7 @@ interface RichTextEditorProps {
   /** The note as HTML; an empty editor gives ''. */
   onChange: (html: string) => void;
   placeholder?: string;
-  /** Height of the writing area in pixels. */
+  /** Minimum height of the writing area in pixels (it scrolls past about half the window). */
   minHeight?: number;
   autoFocus?: boolean;
   disabled?: boolean;
@@ -134,7 +134,7 @@ function LinkPopover({ editor, onClose }: { editor: Editor; onClose: () => void 
  * The note editor: bold, italic, strike, code, heading, lists, quote, undo/redo and links (select text, press the link
  * button or Ctrl/Cmd+K). Output is HTML; the server cleans it again and the page cleans it before showing it.
  */
-export function RichTextEditor({ value, onChange, placeholder = 'Write here…', minHeight = 160, autoFocus = false, disabled = false, 'aria-label': ariaLabel = 'Note' }: RichTextEditorProps): JSX.Element {
+export function RichTextEditor({ value, onChange, placeholder = 'Write here…', minHeight = 280, autoFocus = false, disabled = false, 'aria-label': ariaLabel = 'Note' }: RichTextEditorProps): JSX.Element {
   const [linkOpen, setLinkOpen] = useState(false);
   // Everything the editor itself produced recently (cleaned the same way as incoming values), so the parent handing
   // back an older version while someone types fast is never mistaken for a different note.
@@ -258,7 +258,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Write here…',
         </ToolbarButton>
         {linkOpen ? <LinkPopover editor={editor} onClose={() => { setLinkOpen(false); editor.commands.focus(); }} /> : null}
       </div>
-      <EditorContent editor={editor} className="px-3 py-2 text-[13px] text-slate-800" />
+      <EditorContent editor={editor} className="max-h-[min(46vh,500px)] overflow-y-auto px-3.5 py-3 text-sm text-slate-800" />
     </div>
   );
 }

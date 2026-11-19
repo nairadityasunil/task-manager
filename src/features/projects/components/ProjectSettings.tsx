@@ -93,7 +93,7 @@ export function ProjectSettings({ project, members, currentUserId, isAdmin, myPe
         ) : tab === 'access' ? (
           <AccessMatrix currentUserId={currentUserId} isAdmin={isAdmin} members={members} onChanged={onChanged} projectId={project.id} />
         ) : tab === 'sla' ? (
-          <ProjectSlaPanel canManage={isAdmin} projectId={project.id} />
+          <ProjectSlaPanel canManage={isAdmin} onChanged={onChanged} projectId={project.id} />
         ) : (
           <div>{workflowPanel}</div>
         )}

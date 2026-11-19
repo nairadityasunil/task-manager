@@ -81,7 +81,7 @@ function NoteModal({
     <Modal
       backdropClassName="items-center overflow-y-auto"
       onClose={onClose}
-      panelClassName="!max-w-[680px] w-full"
+      panelClassName="!max-w-[880px] w-full"
       title={modalTitle ?? (note ? 'Edit Note' : 'Create Note')}
       description={<>For <span className="font-medium text-slate-700">{entityLabel}</span></>}
     >
@@ -102,7 +102,7 @@ function NoteModal({
           <RichTextEditor
             aria-label="Note"
             autoFocus={!showTitle}
-            minHeight={220}
+            minHeight={340}
             onChange={setContent}
             placeholder="Write note details, decisions, or follow-ups..."
             value={content}
