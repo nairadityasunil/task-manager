@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import React, { useRef, useState, useEffect } from 'react';
 import { Building2, Check, ChevronDown, LayoutGrid, Plus, Settings, Loader2 } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
@@ -10,6 +11,7 @@ interface WorkspaceSwitcherProps {
 
 export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): JSX.Element {
   const { workspaces, recentWorkspaces, activeWorkspace, switchWorkspace, isLoading } = useWorkspace();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showAll, setShowAll] = useState(false);
@@ -66,6 +68,8 @@ export function WorkspaceSwitcher({ onOpenSettings }: WorkspaceSwitcherProps): J
                     onClick={() => {
                       switchWorkspace(ws);
                       setIsOpen(false);
+                      // Every switch lands on that workspace's dashboard.
+                      navigate('/dashboard');
                     }}
                     className={`flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left transition-colors ${
                       isActive ? 'bg-slate-100' : 'hover:bg-slate-50'

@@ -108,6 +108,11 @@ export interface SlaConfig {
   resolutionTimeHours: number;
 }
 
+/** A project's times for one priority; `custom` is false when it uses the person's defaults. */
+export interface ProjectSlaConfig extends SlaConfig {
+  custom: boolean;
+}
+
 export interface SlaAnalyticsSummary {
   totalBreached: number;
   breachedByPriority: Record<TaskPriority, number>;
