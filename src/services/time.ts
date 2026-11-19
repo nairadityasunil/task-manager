@@ -20,7 +20,22 @@ export interface TimeWeek {
   tasks: Array<{ id: string; title: string; estimatedHours: number | null }>;
 }
 
+/** A person's own time across all their projects for one week. */
+export interface MyWeek {
+  weekStart: string;
+  days: string[];
+  /** Only projects with time that week, the most time first. */
+  projects: Array<{ projectId: string; name: string; minutes: number; byDay: number[] }>;
+  totalMinutes: number;
+  totalByDay: number[];
+}
+
 type Envelope<T> = { data: T };
+
+export const getMyWeek = async (start?: string): Promise<MyWeek> => {
+  const res = await api.get<Envelope<MyWeek>>('/time/my-week', { params: { start } });
+  return res.data.data;
+};
 
 export const getTimeWeek = async (projectId: string, params: { start?: string; scope?: 'all'; userId?: string }): Promise<TimeWeek> => {
   const res = await api.get<Envelope<TimeWeek>>(`/projects/${projectId}/time/week`, { params });

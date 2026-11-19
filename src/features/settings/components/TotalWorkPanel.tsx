@@ -1,0 +1,161 @@
+import { ChevronLeft, ChevronRight, Clock, Loader2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { Button, Card, CardHeader, cn } from '@/components/ui';
+import { dayLabel, formatDuration, shiftDay, todayIso } from '@/features/projects/components/time';
+import { getMyWeek, type MyWeek } from '@/services/time';
+
+/** Monday of the week a day (YYYY-MM-DD) falls in. */
+const mondayOf = (day: string): string => {
+  const d = new Date(`${day}T00:00:00Z`);
+  return shiftDay(day, -((d.getUTCDay() + 6) % 7));
+};
+
+const hours = (minutes: number): string => formatDuration(minutes) || '0h';
+
+/**
+ * "Total work": the signed-in person's logged time for a week, per project and per day, with a total.
+ * Weeks can be browsed back in time (never forward). Projects with no time that week are not listed.
+ */
+export function TotalWorkPanel(): JSX.Element {
+  const navigate = useNavigate();
+  const [start, setStart] = useState(() => mondayOf(todayIso()));
+  const [week, setWeek] = useState<MyWeek | null>(null);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const latest = useRef(0);
+
+  const load = useCallback(async () => {
+    const mine = ++latest.current;
+    setLoading(true);
+    try {
+      const result = await getMyWeek(start);
+      if (mine !== latest.current) return;
+      setWeek(result);
+      setError(false);
+    } catch {
+      if (mine === latest.current) setError(true);
+    } finally {
+      if (mine === latest.current) setLoading(false);
+    }
+  }, [start]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const thisMonday = mondayOf(todayIso());
+  const isThisWeek = start === thisMonday;
+  const canGoNext = start < thisMonday;
+  const days = week?.days ?? Array.from({ length: 7 }, (_, i) => shiftDay(start, i));
+  const range = `${dayLabel(days[0]).date} – ${dayLabel(days[6]).date}`;
+  const projects = week?.projects ?? [];
+  const total = week?.totalMinutes ?? 0;
+
+  const arrow = 'grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white';
+
+  return (
+    <Card data-testid="total-work">
+      <CardHeader
+        description="The time you logged in each project, week by week."
+        icon={<Clock className="h-4 w-4 text-slate-500" />}
+        title="Total work"
+      />
+      <div className="grid gap-4 p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5">
+            <button aria-label="Previous week" className={arrow} data-testid="work-prev" onClick={() => setStart(shiftDay(start, -7))} type="button">
+              <ChevronLeft size={16} />
+            </button>
+            <button aria-label="Next week" className={arrow} data-testid="work-next" disabled={!canGoNext} onClick={() => canGoNext && setStart(shiftDay(start, 7))} title={canGoNext ? undefined : 'This is the current week'} type="button">
+              <ChevronRight size={16} />
+            </button>
+            <span className="ml-1 text-sm font-semibold text-slate-900" data-testid="work-range">
+              {range}
+            </span>
+            {!isThisWeek ? (
+              <Button data-testid="work-this-week" onClick={() => setStart(thisMonday)} size="sm" variant="secondary">
+                This week
+              </Button>
+            ) : null}
+          </div>
+          <div className="text-right" data-testid="work-total">
+            <div className="text-xs text-slate-500">{isThisWeek ? 'Total this week' : 'Total for this week'}</div>
+            <div className="text-xl font-semibold tabular-nums text-slate-900">{hours(total)}</div>
+          </div>
+        </div>
+
+        {error ? (
+          <p className="m-0 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-800" role="alert">
+            Could not load your time.{' '}
+            <button className="font-medium underline" onClick={() => void load()} type="button">
+              Try again
+            </button>
+          </p>
+        ) : loading && !week ? (
+          <div className="flex items-center justify-center gap-2 py-12 text-[13px] text-slate-500">
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading your time…
+          </div>
+        ) : projects.length === 0 ? (
+          <div className="grid place-items-center gap-1.5 rounded-lg border border-dashed border-slate-200 px-4 py-12 text-center" data-testid="work-empty">
+            <Clock className="text-slate-300" size={28} />
+            <p className="m-0 text-sm font-medium text-slate-700">No time logged {isThisWeek ? 'this week' : 'in this week'}</p>
+            <p className="m-0 text-[13px] text-slate-500">Log time from a project's Time tab and it shows up here.</p>
+          </div>
+        ) : (
+          <div className={cn('overflow-x-auto rounded-lg border border-slate-200', loading && 'opacity-60')}>
+            <table className="w-full min-w-[640px] border-collapse text-[13px]" data-testid="work-table">
+              <thead>
+                <tr className="border-b border-slate-100 bg-slate-50/60 text-left">
+                  <th className="px-3 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">Project</th>
+                  {days.map((d) => (
+                    <th className="px-2 py-2.5 text-center text-xs font-medium uppercase tracking-wide text-slate-500" key={d}>
+                      {dayLabel(d).weekday}
+                    </th>
+                  ))}
+                  <th className="px-3 py-2.5 text-right text-xs font-medium uppercase tracking-wide text-slate-500">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {projects.map((p) => (
+                  <tr data-testid="work-row" key={p.projectId}>
+                    <td className="max-w-[260px] px-3 py-2.5">
+                      <button className="block max-w-full truncate text-left font-medium text-slate-900 hover:underline" onClick={() => navigate(`/projects/${p.projectId}`)} title={p.name} type="button">
+                        {p.name}
+                      </button>
+                      <div aria-hidden className="mt-1.5 h-1 overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-full rounded-full bg-emerald-500" style={{ width: `${total ? Math.max(3, Math.round((p.minutes / total) * 100)) : 0}%` }} />
+                      </div>
+                    </td>
+                    {p.byDay.map((m, i) => (
+                      <td className={cn('px-2 py-2.5 text-center tabular-nums', m ? 'text-slate-800' : 'text-slate-300')} key={days[i]}>
+                        {m ? formatDuration(m) : '–'}
+                      </td>
+                    ))}
+                    <td className="px-3 py-2.5 text-right font-semibold tabular-nums text-slate-900" data-testid="work-row-total">
+                      {hours(p.minutes)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t border-slate-200 bg-slate-50/60 font-semibold text-slate-900">
+                  <td className="px-3 py-2.5">Total</td>
+                  {(week?.totalByDay ?? []).map((m, i) => (
+                    <td className={cn('px-2 py-2.5 text-center tabular-nums', !m && 'font-normal text-slate-300')} key={days[i]}>
+                      {m ? formatDuration(m) : '–'}
+                    </td>
+                  ))}
+                  <td className="px-3 py-2.5 text-right tabular-nums">{hours(total)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+export default TotalWorkPanel;

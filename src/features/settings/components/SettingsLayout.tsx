@@ -1,10 +1,11 @@
 import React from "react";
-import { UserCircle, Settings2, TimerReset, Sparkles, Smartphone, Bot, Loader2 } from "lucide-react";
+import { UserCircle, Settings2, TimerReset, Sparkles, Smartphone, Bot, Loader2, Clock } from "lucide-react";
 import { ProfileSettings } from "./ProfileSettings";
 import { ChatGPTIntegrationSettings } from "./ChatGPTIntegrationSettings";
 import { CompanionDevicesList } from "./CompanionDevicesList";
 import { CompanionDeviceModal } from "./CompanionDeviceModal";
 import { McpIntegrationSettings } from "./McpIntegrationSettings";
+import { TotalWorkPanel } from "./TotalWorkPanel";
 import { WorkspaceSettingsPanel } from "@/features/workspaces";
 import { Card, CardHeader, inputClass } from "@/components/ui";
 import type { TaskPriority } from "@/types/task";
@@ -12,7 +13,7 @@ import type { AuthProfile } from "@/store/authSlice";
 import type { CompanionDevice } from "../hooks/useSettings";
 import type { Project } from "@/types/project";
 
-type SettingsTab = "profile" | "workspace" | "sla" | "chatgpt" | "companion" | "mcp";
+type SettingsTab = "profile" | "work" | "workspace" | "sla" | "chatgpt" | "companion" | "mcp";
 
 const SLA_DOT: Partial<Record<TaskPriority, string>> = {
   CRITICAL: "bg-red-500",
@@ -23,8 +24,8 @@ const SLA_DOT: Partial<Record<TaskPriority, string>> = {
 
 interface SettingsLayoutProps {
   user: AuthProfile | null;
-  activeTab: "profile" | "workspace" | "sla" | "chatgpt" | "companion" | "mcp";
-  setActiveTab: (tab: "profile" | "workspace" | "sla" | "chatgpt" | "companion" | "mcp") => void;
+  activeTab: SettingsTab;
+  setActiveTab: (tab: SettingsTab) => void;
   showKey: boolean;
   personalKey: string | null;
   setShowKey: (show: boolean) => void;
@@ -81,6 +82,7 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
 }) => {
   const navItems: Array<{ id: SettingsTab; label: string; icon: React.FC<{ className?: string }> }> = [
     { id: "profile", label: "Profile & API Key", icon: UserCircle },
+    { id: "work", label: "Total work", icon: Clock },
     { id: "workspace", label: "Workspace", icon: Settings2 },
     { id: "sla", label: "SLA Targets", icon: TimerReset },
     { id: "chatgpt", label: "ChatGPT Integration", icon: Sparkles },
@@ -128,6 +130,8 @@ export const SettingsLayout: React.FC<SettingsLayoutProps> = ({
           onRegenerateKey={onRegenerateKey}
         />
       )}
+
+      {activeTab === "work" && <TotalWorkPanel />}
 
       {activeTab === "workspace" && (
         <WorkspaceSettingsPanel />
