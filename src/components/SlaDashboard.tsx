@@ -1,17 +1,34 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, BarChart3, CheckCircle2, TimerReset } from 'lucide-react';
 
 import { getSlaAnalytics } from '@/services/sla';
 import type { SlaAnalyticsSummary } from '@/types/task';
 import { cn } from '@/components/ui';
 
-function SlaDashboard(): JSX.Element | null {
+interface SlaDashboardProps {
+  /** The project the screen is about: the numbers cover only its tasks. */
+  projectId?: string | null;
+  /** Used when no project is open: the numbers cover the projects of this workspace. */
+  workspaceId?: string | null;
+  /** Changes whenever the tasks on screen change (created, moved, finished...), so the numbers are fetched again. */
+  refreshKey?: unknown;
+}
+
+function SlaDashboard({ projectId, workspaceId, refreshKey }: SlaDashboardProps): JSX.Element | null {
   const [summary, setSummary] = useState<SlaAnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const scope = `${projectId ?? ''}|${projectId ? '' : (workspaceId ?? '')}`;
+  const shownScope = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
-    getSlaAnalytics()
+    // Another project or workspace: never keep showing the previous one's numbers while the new ones load.
+    if (shownScope.current !== scope) {
+      shownScope.current = scope;
+      setSummary(null);
+      setLoading(true);
+    }
+    getSlaAnalytics({ projectId: projectId || undefined, workspaceId: projectId ? undefined : workspaceId || undefined })
       .then((data) => {
         if (active) setSummary(data);
       })
@@ -25,7 +42,7 @@ function SlaDashboard(): JSX.Element | null {
     return () => {
       active = false;
     };
-  }, []);
+  }, [scope, refreshKey]);
 
   if (loading) {
     return (
