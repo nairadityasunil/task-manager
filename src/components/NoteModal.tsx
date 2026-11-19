@@ -85,7 +85,7 @@ function NoteModal({
       title={modalTitle ?? (note ? 'Edit Note' : 'Create Note')}
       description={<>For <span className="font-medium text-slate-700">{entityLabel}</span></>}
     >
-      <form className="grid gap-4" onSubmit={(event) => void handleSubmit(event)}>
+      <form className="grid grid-cols-[minmax(0,1fr)] gap-4" onSubmit={(event) => void handleSubmit(event)}>
         {showTitle ? (
           <Field label="Title">
             <Input

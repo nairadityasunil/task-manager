@@ -204,7 +204,7 @@ export function TaskNotesModal({ task, members, onClose, onChanged }: Props): JS
 
         {view.kind === 'form' ? (
           <form
-            className="grid gap-4"
+            className="grid grid-cols-[minmax(0,1fr)] gap-4"
             onSubmit={(event) => {
               event.preventDefault();
               void save();
