@@ -36,8 +36,12 @@ const updateSlaConfig = async (payload: {
   return response.data.data.config;
 };
 
-const getSlaAnalytics = async (): Promise<SlaAnalyticsSummary> => {
-  const response = await api.get<SlaAnalyticsResponse>('/sla/analytics');
+/** SLA numbers for one project, or one workspace, or (with no scope) everything the person can see. */
+const getSlaAnalytics = async (scope: { projectId?: string; workspaceId?: string } = {}): Promise<SlaAnalyticsSummary> => {
+  const response = await api.get<SlaAnalyticsResponse>('/sla/analytics', {
+    params: { projectId: scope.projectId || undefined, workspaceId: scope.workspaceId || undefined },
+    silent: true
+  });
   return response.data.data.summary;
 };
 
