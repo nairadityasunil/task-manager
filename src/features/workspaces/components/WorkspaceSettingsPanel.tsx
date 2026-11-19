@@ -74,7 +74,6 @@ export function WorkspaceSettingsPanel(): JSX.Element {
       <div className="mt-4 border-b border-slate-200 px-4">
         <div className="-mb-px flex gap-5 overflow-x-auto hide-scrollbar">
           {TABS.map((tab) => {
-            if (tab.id === 'danger' && activeWorkspace.role !== 'OWNER') return null;
             const active = activeTab === tab.id;
             return (
               <button
@@ -91,7 +90,7 @@ export function WorkspaceSettingsPanel(): JSX.Element {
                 }`}
               >
                 {tab.icon}
-                {tab.label}
+                {tab.id === 'danger' && activeWorkspace.role !== 'OWNER' ? 'Leave' : tab.label}
               </button>
             );
           })}

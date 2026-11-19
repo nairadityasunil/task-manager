@@ -34,6 +34,11 @@ export const workspaceService = {
     await api.delete(`/workspaces/${id}`);
   },
 
+  /** The signed-in person leaves a workspace, and the projects in it. The owner cannot. */
+  async leaveWorkspace(id: string): Promise<void> {
+    await api.post(`/workspaces/${id}/leave`);
+  },
+
   async listMembers(id: string): Promise<WorkspaceMember[]> {
     const res = await api.get<{ members: WorkspaceMember[] }>(`/workspaces/${id}/members`);
     return res.data.members;
