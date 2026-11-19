@@ -6,6 +6,11 @@ import { Button, Card, CardHeader, cn } from '@/components/ui';
 import { dayLabel, formatDuration, shiftDay, todayIso } from '@/features/projects/components/time';
 import { getMyWeek, type MyWeek } from '@/services/time';
 
+import { DonutChart } from './DonutChart';
+
+/** One distinct colour per project in the chart (in order, so neighbouring arcs never match). */
+const CHART_COLORS = ['#3e50d8', '#0e7490', '#c2410c', '#2f7d4f', '#b4416e', '#a16207', '#6d5bd0', '#57534e'];
+
 /** Monday of the week a day (YYYY-MM-DD) falls in. */
 const mondayOf = (day: string): string => {
   const d = new Date(`${day}T00:00:00Z`);
@@ -51,6 +56,8 @@ export function TotalWorkPanel(): JSX.Element {
   const days = week?.days ?? Array.from({ length: 7 }, (_, i) => shiftDay(start, i));
   const range = `${dayLabel(days[0]).date} – ${dayLabel(days[6]).date}`;
   const workspaces = week?.workspaces ?? [];
+  // One arc per project (a project belongs to one workspace, so none repeats), most time first.
+  const chartSegments = (week?.projects ?? []).map((p, i) => ({ id: p.projectId, label: p.name, value: p.minutes, color: CHART_COLORS[i % CHART_COLORS.length] }));
   const total = week?.totalMinutes ?? 0;
 
   const arrow = 'grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white';
@@ -99,6 +106,12 @@ export function TotalWorkPanel(): JSX.Element {
           </div>
         ) : (
           <div className={cn('grid gap-4', loading && 'opacity-60')}>
+            {chartSegments.length > 0 ? (
+              <section className="rounded-lg border border-slate-200 p-4" data-testid="work-chart">
+                <h4 className="m-0 mb-3 text-[13px] font-semibold text-slate-900">Time by project</h4>
+                <DonutChart centerLabel={isThisWeek ? 'this week' : 'that week'} centerValue={hours(total)} formatValue={hours} segments={chartSegments} />
+              </section>
+            ) : null}
             {workspaces.map((w) => (
               <section className="overflow-hidden rounded-lg border border-slate-200" data-testid="work-workspace" key={w.workspaceId ?? 'none'}>
                 <div className="flex items-center justify-between gap-3 bg-slate-50/70 px-3 py-2.5">

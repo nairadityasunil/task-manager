@@ -121,7 +121,10 @@ export interface ProjectSlaConfig extends SlaConfig {
 export interface SlaAnalyticsSummary {
   totalBreached: number;
   breachedByPriority: Record<TaskPriority, number>;
+  /** Average hours people logged on a resolved task (from saved time entries). */
   averageResolutionTimeHours: number;
+  /** The resolved tasks that average is based on (those with logged time); 0 means nothing to average yet. */
+  resolvedTasksWithTime?: number;
   responseCompliancePercent: number;
   resolutionCompliancePercent: number;
 }

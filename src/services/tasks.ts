@@ -29,8 +29,10 @@ interface TaskSummaryResponse {
   };
 }
 
-const getTasks = async (date?: string, assigneeId?: string, search?: string): Promise<Task[]> => {
+/** `workspaceId` limits the list to that workspace's projects (plus your own tasks that belong to no project). */
+const getTasks = async (date?: string, assigneeId?: string, search?: string, workspaceId?: string): Promise<Task[]> => {
   const params: Record<string, string> = {};
+  if (workspaceId) params.workspaceId = workspaceId;
   if (date) params.date = date;
   if (assigneeId) params.assigneeId = assigneeId;
   if (search) params.search = search;
