@@ -1,6 +1,7 @@
 import { FileText } from 'lucide-react';
 
 import EmptyState from '@/components/EmptyState';
+import { isRichEmpty, richToPlainText } from '@/components/rich-text/richText';
 import type { Subtask, Task } from '@/types/task';
 
 interface TaskNotesListProps {
@@ -27,12 +28,12 @@ const buildEntries = (
   tasks.flatMap((task) => {
     const entries: TaskNoteEntry[] = [];
 
-    if (noteType !== 'subtask' && task.note?.trim()) {
+    if (noteType !== 'subtask' && !isRichEmpty(task.note)) {
       entries.push({
         id: `task-${task.id}`,
         kind: 'task',
         label: task.title,
-        note: task.note,
+        note: task.note ?? '',
         onOpen: () => onOpenTaskNote(task)
       });
     }
@@ -42,7 +43,7 @@ const buildEntries = (
         return;
       }
 
-      if (!subtask.note?.trim()) {
+      if (isRichEmpty(subtask.note)) {
         return;
       }
 
@@ -50,7 +51,7 @@ const buildEntries = (
         id: `subtask-${task.id}-${subtask.id}`,
         kind: 'subtask',
         label: `${task.title} / ${subtask.title}`,
-        note: subtask.note,
+        note: subtask.note ?? '',
         onOpen: () => onOpenSubtaskNote(task, subtask)
       });
     });
@@ -105,7 +106,7 @@ function TaskNotesList({
               </span>
             </span>
             <span className="w-full truncate text-[13px] text-slate-500">
-              {entry.note.replace(/<[^>]+>/g, ' ').trim() || 'Open note'}
+              {richToPlainText(entry.note) || 'Open note'}
             </span>
           </button>
         </article>

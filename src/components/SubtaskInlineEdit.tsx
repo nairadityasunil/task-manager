@@ -1,3 +1,4 @@
+import { RichTextEditor } from '@/components/rich-text/RichTextEditor';
 import { useState } from 'react';
 import { Check, X } from 'lucide-react';
 import { Subtask } from '@/types/task';
@@ -56,16 +57,10 @@ export default function SubtaskInlineEdit({ subtask, onSave, onCancel, isSaving,
         />
       </label>
 
-      <label className="grid gap-1.5">
+      <div className="grid gap-1.5">
         <span className={labelCls}>Internal Note (optional)</span>
-        <textarea
-          className={cn(textareaClass, 'min-h-[60px] resize-none')}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="Private notes..."
-          rows={2}
-          value={note}
-        />
-      </label>
+        <RichTextEditor aria-label="Internal note" minHeight={90} onChange={setNote} placeholder="Private notes..." value={note} />
+      </div>
 
       <label className="grid gap-1.5">
         <span className={labelCls}>Assignee</span>
