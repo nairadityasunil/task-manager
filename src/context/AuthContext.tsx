@@ -80,12 +80,15 @@ interface AuthProviderProps {
  * person signed in earlier (flag), or still holds a pre-cookie token in browser storage that is moved into
  * cookies once. Any of these means: ask the API who this is. Anonymous visitors cause no request.
  */
+let googleExchangeCode: string | null = null;
+
 const consumeSignInMarker = (): boolean => {
   if (typeof window === 'undefined') return false;
   const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
   let fromRedirect = false;
   if (hashParams.get('signin') === '1') {
     fromRedirect = true;
+    googleExchangeCode = hashParams.get('code');
     const url = new URL(window.location.href);
     // A sign-in that returns to the public landing page should open the app.
     if (url.pathname === '/') url.pathname = '/dashboard';
@@ -127,6 +130,12 @@ function AuthProvider({ children }: AuthProviderProps): JSX.Element {
             // the old session is gone: fall through to a signed-out start
           }
           purgeLegacyTokens();
+        }
+        // Back from Google: swap the one-time code for cookies (set here, so the browser keeps them for this site).
+        if (googleExchangeCode) {
+          const code = googleExchangeCode;
+          googleExchangeCode = null;
+          await api.post('/auth/google/exchange', { code }, { silent: true, noAuthRetry: true });
         }
         let res;
         try {
