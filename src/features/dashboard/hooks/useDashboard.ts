@@ -23,7 +23,7 @@ import {
   removeProjectMember,
   updateProject
 } from '@/services/projects';
-import { bulkAssignTasks, createTask, deleteTask, getTasks, updateTask } from '@/services/tasks';
+import { addSubtasks, bulkAssignTasks, createTask, deleteTask, getTasks, updateTask } from '@/services/tasks';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAuth } from '@/context/AuthContext';
 import socketService, { SocketEvents } from '@/services/socket';
@@ -1155,21 +1155,17 @@ export function useDashboard() {
     if (subtaskModalTask == null) return;
     setActionTaskId(subtaskModalTask.id);
     try {
-      const subtasks = [
-        ...subtaskModalTask.subtasks,
-        ...payload.map((subtask) => ({
+      // Only the new records go to the server; it keeps the sub-tasks that already exist.
+      await addSubtasks(
+        subtaskModalTask.id,
+        payload.map((subtask) => ({
           title: subtask.title.trim(),
-          description: subtask.description?.trim(),
           note: subtask.note?.trim(),
           status: subtask.status,
           assignedToUserId: subtask.assignedToUserId ?? null,
           completedAt: subtask.status === 'DONE' ? new Date().toISOString() : null
         }))
-      ];
-      await updateTask(subtaskModalTask.id, {
-        status: deriveTaskStatusFromSubtasks(subtaskModalTask.status, subtasks),
-        subtasks
-      });
+      );
       await loadDashboard();
       setSubtaskModalTask(null);
       setTaskMutationSuccess(payload.length === 1 ? 'Sub-task created.' : `${payload.length} sub-tasks created.`);
