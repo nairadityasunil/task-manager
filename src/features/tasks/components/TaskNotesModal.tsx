@@ -1,7 +1,8 @@
-import { ArrowLeft, ChevronLeft, ChevronRight, NotebookPen, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Lock, NotebookPen, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import Modal from '@/components/Modal';
+import { CopyNoteButton } from '@/components/rich-text/CopyNoteButton';
 import { RichTextEditor } from '@/components/rich-text/RichTextEditor';
 import { RichTextView } from '@/components/rich-text/RichTextView';
 import { isRichEmpty } from '@/components/rich-text/richText';
@@ -121,6 +122,21 @@ export function TaskNotesModal({ task, members, onClose, onChanged }: Props): JS
           <Button data-testid="task-note-new" disabled={!task.permissions.canUpdate} icon={Plus} onClick={() => openForm(null)} size="sm" variant="primary">
             New note
           </Button>
+        ) : view.kind === 'detail' && current ? (
+          <>
+            <CopyNoteButton body={current.text} title={current.title} />
+            <Button
+              aria-label="Locked: click to edit"
+              data-testid="task-note-lock"
+              disabled={!task.permissions.canUpdate}
+              icon={Lock}
+              onClick={() => openForm(current)}
+              size="sm"
+              title="Locked: click to edit"
+              type="button"
+              variant="ghost"
+            />
+          </>
         ) : null
       }
       onClose={onClose}
