@@ -27,6 +27,7 @@ import { ClassificationSelect } from '@/features/agents/components/AdvancedGover
 import CommentSection from '@/components/CommentSection';
 import { TaskAutomationNote } from '@/features/telemetry/TaskAutomationNote';
 import { TaskNotes } from './TaskNotes';
+import { TaskTime } from './TaskTime';
 import { DueDateField } from '@/components/DueDateField';
 import { PRIORITY_META, PriorityIcon, taskDateInfo } from '@/components/TaskCard';
 import { Badge, Button, cn, selectClass, Select, Checkbox } from '@/components/ui';
@@ -425,6 +426,9 @@ export function TaskInspector({
 
                   {/* Notes: a task can have several */}
                   <TaskNotes members={members} onChanged={onNotesChanged} task={task} />
+
+                  {/* Time: many entries, each with a description, summed */}
+                  <TaskTime task={task} />
 
                   {/* Approvals */}
                   {task.projectId ? (
