@@ -65,6 +65,15 @@ const updateTask = async (taskId: string, payload: UpdateTaskInput): Promise<Tas
   return response.data.data.task;
 };
 
+/** Adds new sub-tasks. Only the new records are sent; the server keeps the ones that already exist. */
+const addSubtasks = async (
+  taskId: string,
+  subtasks: Array<{ title: string; note?: string; status?: string; assignedToUserId?: string | null; completedAt?: string | null }>
+): Promise<Task> => {
+  const response = await api.post<TaskResponse>(`/tasks/${taskId}/subtasks`, { subtasks });
+  return response.data.data.task;
+};
+
 const addTaskNote = async (taskId: string, text: string, title?: string): Promise<Task> => {
   const response = await api.post<TaskResponse>(`/tasks/${taskId}/notes`, { text, title });
   return response.data.data.task;
@@ -111,6 +120,7 @@ const bulkAssignTasks = async (taskIds: string[], userId: string): Promise<Task[
 };
 
 export {
+  addSubtasks,
   assignTask,
   bulkAssignTasks,
   createTask,
