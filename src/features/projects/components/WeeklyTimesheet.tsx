@@ -1,10 +1,10 @@
-import { ChevronLeft, ChevronRight, Clock, Download, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Clock, Download, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import Modal from '@/components/Modal';
 import { Button, Input, Select, cn } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
-import { addTimeEntry, deleteTimeEntry, getTimeWeek, type TimeEntry, type TimeWeek } from '@/services/time';
+import { addTimeEntry, deleteTimeEntry, getTimeWeek, updateTimeEntry, type TimeEntry, type TimeWeek } from '@/services/time';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
 import { ExportTimesheetModal } from './ExportTimesheetModal';
@@ -312,30 +312,24 @@ function LogTimeModal({
 
   return (
     <Modal description={`${label.weekday} ${label.date}`} onClose={onClose} title={`Log time: ${title}`}>
-      <div className="grid gap-4" data-testid="log-time-modal">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4" data-testid="log-time-modal">
         {entries.length ? (
-          <ul className="m-0 grid list-none gap-1.5 p-0">
+          <ul className="m-0 grid list-none gap-1.5 p-0" data-testid="log-time-entries">
             {entries.map((e) => (
-              <li className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-[13px]" key={e.id}>
-                <span className="font-semibold tabular-nums text-slate-900">{formatDuration(e.minutes)}</span>
-                <span className="min-w-0 flex-1 truncate text-slate-600">{e.note || 'No note'}</span>
-                <button aria-label="Delete entry" className="grid h-7 w-7 place-items-center rounded-md text-slate-400 hover:bg-red-50 hover:text-red-600" onClick={() => void remove(e)} type="button">
-                  <Trash2 size={14} />
-                </button>
-              </li>
+              <EntryRow entry={e} key={e.id} onChanged={onChanged} onRemove={() => void remove(e)} projectId={projectId} showToast={showToast} />
             ))}
           </ul>
         ) : (
           <p className="m-0 text-[13px] text-slate-500">Nothing logged here yet.</p>
         )}
         <form
-          className="grid gap-2"
+          className="grid grid-cols-[minmax(0,1fr)] gap-2"
           onSubmit={(ev) => {
             ev.preventDefault();
             void add();
           }}
         >
-          <div className="grid gap-2 sm:grid-cols-[130px_1fr]">
+          <div className="grid gap-2 sm:grid-cols-[130px_minmax(0,1fr)]">
             <Input aria-label="Time spent" autoFocus onChange={(e) => setDuration(e.target.value)} placeholder="1h 30m" value={duration} />
             <Input aria-label="Note" onChange={(e) => setNote(e.target.value)} placeholder="What did you do? (optional)" value={note} />
           </div>
@@ -351,5 +345,102 @@ function LogTimeModal({
         </form>
       </div>
     </Modal>
+  );
+}
+
+/** One time entry as an accordion row: the time and a one-line preview; open it to read the whole description, edit or delete. */
+function EntryRow({
+  entry,
+  projectId,
+  onChanged,
+  onRemove,
+  showToast,
+}: {
+  entry: TimeEntry;
+  projectId: string;
+  onChanged: () => void;
+  onRemove: () => void;
+  showToast: (message: string, variant: 'success' | 'error') => void;
+}): JSX.Element {
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [duration, setDuration] = useState('');
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const minutes = parseDuration(duration);
+
+  const startEdit = (): void => {
+    setDuration(formatDuration(entry.minutes));
+    setNote(entry.note);
+    setEditing(true);
+  };
+
+  const save = async (): Promise<void> => {
+    if (!minutes) return;
+    setBusy(true);
+    try {
+      await updateTimeEntry(projectId, entry.id, { minutes, note: note.trim() });
+      setEditing(false);
+      onChanged();
+    } catch (err) {
+      showToast(toDisplayErrorMessage(err), 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <li className="min-w-0 overflow-hidden rounded-lg border border-slate-200 text-[13px]" data-testid="log-time-entry">
+      <button
+        aria-expanded={open}
+        className="flex w-full min-w-0 items-center gap-2 px-3 py-2 text-left hover:bg-slate-50"
+        data-testid="log-time-entry-toggle"
+        onClick={() => setOpen((v) => !v)}
+        type="button"
+      >
+        <ChevronDown className={cn('shrink-0 text-slate-400 transition-transform', open ? 'rotate-180' : '')} size={14} />
+        <span className="shrink-0 font-semibold tabular-nums text-slate-900">{formatDuration(entry.minutes)}</span>
+        {open ? null : <span className="min-w-0 flex-1 truncate text-slate-600">{entry.note || 'No description'}</span>}
+      </button>
+      {open ? (
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-2 border-t border-slate-100 bg-slate-50/60 px-3 py-2.5" data-testid="log-time-entry-body">
+          {editing ? (
+            <form
+              className="grid grid-cols-[minmax(0,1fr)] gap-2"
+              onSubmit={(ev) => {
+                ev.preventDefault();
+                void save();
+              }}
+            >
+              <Input aria-label="Time spent" onChange={(e) => setDuration(e.target.value)} value={duration} />
+              <Input aria-label="Description" maxLength={500} onChange={(e) => setNote(e.target.value)} placeholder="What did you do?" value={note} />
+              {duration && !minutes ? <p className="m-0 text-xs text-red-600">That is not a time.</p> : null}
+              <div className="flex justify-end gap-2">
+                <Button onClick={() => setEditing(false)} size="sm" type="button" variant="secondary">
+                  Cancel
+                </Button>
+                <Button data-testid="log-time-entry-save" disabled={!minutes} loading={busy} size="sm" type="submit" variant="primary">
+                  Save
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <p className="m-0 whitespace-pre-wrap break-words text-slate-700 [overflow-wrap:anywhere]" data-testid="log-time-entry-note">
+                {entry.note || <span className="text-slate-400">No description</span>}
+              </p>
+              <div className="flex justify-end gap-1">
+                <Button data-testid="log-time-entry-edit" icon={Pencil} onClick={startEdit} size="sm" variant="ghost">
+                  Edit
+                </Button>
+                <Button aria-label="Delete entry" className="text-red-600 hover:bg-red-50" icon={Trash2} onClick={onRemove} size="sm" variant="ghost">
+                  Delete
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      ) : null}
+    </li>
   );
 }
