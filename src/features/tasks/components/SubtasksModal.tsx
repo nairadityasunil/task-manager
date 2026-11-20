@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Modal from '@/components/Modal';
 import SubtaskInlineEdit from '@/components/SubtaskInlineEdit';
 import UserAvatar from '@/components/UserAvatar';
+import { richToPlainText } from '@/components/rich-text/richText';
 import { Button, Checkbox, Input, cn } from '@/components/ui';
 import type { ProjectMember } from '@/types/project';
 import type { Subtask, Task, TaskWorkflowStatus } from '@/types/task';
@@ -122,7 +123,7 @@ export function SubtasksModal({
                         {!editing && subtask.note ? (
                           <div className="flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
                             <MessageSquare className="shrink-0 text-slate-400" size={12} />
-                            <span className="truncate">{subtask.note}</span>
+                            <span className="truncate">{richToPlainText(subtask.note)}</span>
                           </div>
                         ) : null}
                       </div>

@@ -1,5 +1,6 @@
 import { FileText, Loader2, Plus, ScrollText, Trash2 } from 'lucide-react';
 
+import { CopyNoteButton } from '@/components/rich-text/CopyNoteButton';
 import { Button } from '@/components/ui';
 
 import EmptyState from '@/components/EmptyState';
@@ -88,6 +89,7 @@ function ProjectNotes({
                   <span className="block text-xs text-slate-500">Updated {formatTimestamp(note.updatedAt)}</span>
                 </span>
               </button>
+              {typeof note.content === 'string' ? <CopyNoteButton body={note.content} testId="copy-note-row" title={note.title} /> : null}
               {onDeleteNote ? (
                 <Button
                   className="text-red-600 hover:bg-red-50 hover:text-red-700"
