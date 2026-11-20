@@ -71,3 +71,20 @@ export const getTimeRange = async (
   const res = await api.get<Envelope<{ from: string; to: string; scope: 'me' | 'all'; entries: TimeEntry[] }>>(`/projects/${projectId}/time/range`, { params });
   return res.data.data;
 };
+
+export interface TaskTimeEntry {
+  id: string;
+  userId: string;
+  userName: string;
+  date: string;
+  minutes: number;
+  note: string;
+  /** The person who logged it, or a project admin. */
+  canModify: boolean;
+}
+
+/** Every time entry on one task (newest first) and the summed time. */
+export const getTaskTime = async (projectId: string, taskId: string): Promise<{ totalMinutes: number; entries: TaskTimeEntry[] }> => {
+  const res = await api.get<Envelope<{ totalMinutes: number; entries: TaskTimeEntry[] }>>(`/projects/${projectId}/time/tasks/${taskId}`);
+  return res.data.data;
+};
