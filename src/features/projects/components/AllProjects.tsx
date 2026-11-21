@@ -1,4 +1,4 @@
-import { FolderOpen, Pencil, Plus, Search, Settings2, Trash2 } from 'lucide-react';
+import { Building2, FolderOpen, Pencil, Plus, Search, Settings2, Trash2, User } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import EmptyState from '@/components/EmptyState';
@@ -181,6 +181,27 @@ export function AllProjects({
                     <span className="truncate text-sm font-semibold text-slate-900">{p.name}</span>
                   </span>
                   {p.description ? <span className="line-clamp-2 text-[13px] text-slate-600 [overflow-wrap:anywhere]">{p.description}</span> : null}
+                  {(p.isCollaborator || tab === 'collaborating') && (p.workspaceName || p.workspaceAdmin) ? (
+                    <div className="mt-1 flex flex-col gap-1 rounded-lg border border-slate-100 bg-slate-50/80 p-2 text-xs">
+                      {p.workspaceName ? (
+                        <div className="flex items-center gap-1.5 font-medium text-slate-700" title={p.workspaceName}>
+                          <Building2 className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                          <span className="truncate">{p.workspaceName}</span>
+                        </div>
+                      ) : null}
+                      {p.workspaceAdmin ? (
+                        <div
+                          className="flex items-center gap-1.5 text-[11px] text-slate-500"
+                          title={p.workspaceAdmin.name ? `${p.workspaceAdmin.name} (${p.workspaceAdmin.email})` : p.workspaceAdmin.email}
+                        >
+                          <User className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                          <span className="truncate">
+                            Admin: {p.workspaceAdmin.name ? `${p.workspaceAdmin.name} (${p.workspaceAdmin.email})` : p.workspaceAdmin.email}
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <span className="mt-auto flex flex-wrap items-center gap-1.5 pt-1 text-xs text-slate-500">
                     {p.isCollaborator || tab === 'collaborating' ? (
                       <Badge tone="warning">Collaborator</Badge>

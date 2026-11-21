@@ -43,7 +43,7 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
   approvalBusyId = null,
   onDecideApproval,
 }) => {
-  const [actioningTransferId, setActioningTransferId] = useState<string | null>(null);
+  const [actioningTransfer, setActioningTransfer] = useState<{ id: string; action: 'accept' | 'reject' } | null>(null);
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
@@ -173,9 +173,9 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
                       <div className="mt-2.5 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <button
                           className="rounded bg-brand-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-brand-700 disabled:opacity-50"
-                          disabled={actioningTransferId === notification.id}
+                          disabled={actioningTransfer?.id === notification.id}
                           onClick={async () => {
-                            setActioningTransferId(notification.id);
+                            setActioningTransfer({ id: notification.id, action: 'accept' });
                             try {
                               await acceptProjectTransfer(notification.transferToken!);
                               onMarkAsRead(notification.id);
@@ -183,30 +183,34 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
                             } catch {
                               window.location.href = `/projects/transfer/${notification.transferToken}`;
                             } finally {
-                              setActioningTransferId(null);
+                              setActioningTransfer(null);
                             }
                           }}
                           type="button"
                         >
-                          Accept
+                          {actioningTransfer?.id === notification.id && actioningTransfer.action === 'accept'
+                            ? 'Accepting…'
+                            : 'Accept'}
                         </button>
                         <button
                           className="rounded border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
-                          disabled={actioningTransferId === notification.id}
+                          disabled={actioningTransfer?.id === notification.id}
                           onClick={async () => {
-                            setActioningTransferId(notification.id);
+                            setActioningTransfer({ id: notification.id, action: 'reject' });
                             try {
                               await rejectProjectTransfer(notification.transferToken!);
                               onMarkAsRead(notification.id);
                             } catch {
                               // ignore
                             } finally {
-                              setActioningTransferId(null);
+                              setActioningTransfer(null);
                             }
                           }}
                           type="button"
                         >
-                          Decline
+                          {actioningTransfer?.id === notification.id && actioningTransfer.action === 'reject'
+                            ? 'Declining…'
+                            : 'Decline'}
                         </button>
                       </div>
                     ) : (

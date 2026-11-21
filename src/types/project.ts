@@ -17,6 +17,12 @@ export interface Project {
   description?: string;
   userId: string;
   workspaceId?: string;
+  workspaceName?: string;
+  workspaceAdmin?: {
+    id?: string;
+    name?: string | null;
+    email: string;
+  };
   isCollaborator?: boolean;
   currentUserRole: 'ADMIN' | 'MEMBER';
   /** What the signed-in person may use here. Admins have everything. */

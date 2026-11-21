@@ -161,7 +161,7 @@ function InvitationNotificationPanel() {
   }, [open]);
 
   const handleAccept = async (invitation: PendingInvitation) => {
-    setActioning(invitation.id);
+    setActioning(`${invitation.id}:accept`);
     try {
       const joined = await acceptInvitation(invitation.token);
       setMyInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id));
@@ -180,7 +180,7 @@ function InvitationNotificationPanel() {
   };
 
   const handleReject = async (invitation: PendingInvitation) => {
-    setActioning(invitation.id);
+    setActioning(`${invitation.id}:reject`);
     try {
       await rejectInvitation(invitation.token);
       setMyInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id));
@@ -192,7 +192,7 @@ function InvitationNotificationPanel() {
   };
 
   const handleAcceptTransfer = async (transfer: ProjectTransferRequest) => {
-    setActioning(transfer.id);
+    setActioning(`${transfer.id}:accept`);
     try {
       await acceptProjectTransfer(transfer.token);
       setMyTransfers((prev) => prev.filter((t) => t.id !== transfer.id));
@@ -206,7 +206,7 @@ function InvitationNotificationPanel() {
   };
 
   const handleRejectTransfer = async (transfer: ProjectTransferRequest) => {
-    setActioning(transfer.id);
+    setActioning(`${transfer.id}:reject`);
     try {
       await rejectProjectTransfer(transfer.token);
       setMyTransfers((prev) => prev.filter((t) => t.id !== transfer.id));
@@ -281,23 +281,23 @@ function InvitationNotificationPanel() {
                     <div className="flex gap-2">
                       <Button
                         className="flex-1"
-                        disabled={actioning === t.id}
+                        disabled={actioning === `${t.id}:accept` || actioning === `${t.id}:reject`}
                         icon={CheckCircle}
                         onClick={() => void handleAcceptTransfer(t)}
                         size="sm"
                         variant="primary"
                       >
-                        {actioning === t.id ? 'Accepting…' : 'Accept'}
+                        {actioning === `${t.id}:accept` ? 'Accepting…' : 'Accept'}
                       </Button>
                       <Button
                         className="flex-1"
-                        disabled={actioning === t.id}
+                        disabled={actioning === `${t.id}:accept` || actioning === `${t.id}:reject`}
                         icon={XCircle}
                         onClick={() => void handleRejectTransfer(t)}
                         size="sm"
                         variant="secondary"
                       >
-                        {actioning === t.id ? 'Declining…' : 'Decline'}
+                        {actioning === `${t.id}:reject` ? 'Declining…' : 'Decline'}
                       </Button>
                     </div>
                   </div>
@@ -331,23 +331,23 @@ function InvitationNotificationPanel() {
                     <div className="flex gap-2">
                       <Button
                         className="flex-1"
-                        disabled={actioning === inv.id}
+                        disabled={actioning === `${inv.id}:accept` || actioning === `${inv.id}:reject`}
                         icon={CheckCircle}
                         onClick={() => void handleAccept(inv)}
                         size="sm"
                         variant="primary"
                       >
-                        {actioning === inv.id ? 'Accepting…' : 'Accept'}
+                        {actioning === `${inv.id}:accept` ? 'Accepting…' : 'Accept'}
                       </Button>
                       <Button
                         className="flex-1"
-                        disabled={actioning === inv.id}
+                        disabled={actioning === `${inv.id}:accept` || actioning === `${inv.id}:reject`}
                         icon={XCircle}
                         onClick={() => void handleReject(inv)}
                         size="sm"
                         variant="secondary"
                       >
-                        {actioning === inv.id ? 'Declining…' : 'Decline'}
+                        {actioning === `${inv.id}:reject` ? 'Declining…' : 'Decline'}
                       </Button>
                     </div>
                   </div>
