@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, Shield, ChevronDown, ChevronUp, Lock } from 'lucide-react';
+import { Trash2, Shield, ChevronDown, ChevronUp } from 'lucide-react';
 import type { WorkspaceMember, WorkspacePermissions, WorkspaceRole } from '../types/workspace';
 import { ROLE_HIERARCHY } from '../types/workspace';
 import { Badge, Button, Checkbox, selectClass, type BadgeTone, Select } from '@/components/ui';

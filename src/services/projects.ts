@@ -128,7 +128,7 @@ const leaveProject = async (projectId: string): Promise<void> => {
 const initiateProjectTransfer = async (
   projectId: string,
   email: string,
-): Promise<{ message: string; data: any }> => {
+): Promise<{ message: string; data: unknown }> => {
   const response = await api.post(`/projects/${projectId}/transfer`, { email });
   return response.data;
 };
@@ -144,14 +144,14 @@ const getProjectTransferDetails = async (
 
 const acceptProjectTransfer = async (
   token: string,
-): Promise<{ message: string; data: any }> => {
+): Promise<{ message: string; data: unknown }> => {
   const response = await api.post(`/projects/transfers/${token}/accept`);
   return response.data;
 };
 
 const rejectProjectTransfer = async (
   token: string,
-): Promise<{ message: string; data: any }> => {
+): Promise<{ message: string; data: unknown }> => {
   const response = await api.post(`/projects/transfers/${token}/reject`);
   return response.data;
 };

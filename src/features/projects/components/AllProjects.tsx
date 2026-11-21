@@ -142,10 +142,28 @@ export function AllProjects({
         <div className="h-40 animate-pulse rounded-xl bg-slate-100" />
       ) : !shown.length ? (
         <EmptyState
-          action={q ? undefined : <Button onClick={onNewProject} variant="primary">Create a project</Button>}
-          description={q ? 'No project matches that search.' : 'Projects group the work of a team.'}
+          action={
+            q || tab === 'collaborating' ? undefined : (
+              <Button onClick={onNewProject} variant="primary">
+                Create a project
+              </Button>
+            )
+          }
+          description={
+            q
+              ? 'No project matches that search.'
+              : tab === 'collaborating'
+              ? 'You are not collaborating on any projects from other workspaces.'
+              : 'Projects group the work of a team.'
+          }
           icon={FolderOpen}
-          title={q ? 'No match' : 'No projects yet'}
+          title={
+            q
+              ? 'No match'
+              : tab === 'collaborating'
+              ? 'No collaborating projects'
+              : 'No projects yet'
+          }
         />
       ) : (
         <ul className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4" data-testid="all-projects-list">
@@ -171,19 +189,19 @@ export function AllProjects({
                     <span>Created {day(p.createdAt)}</span>
                   </span>
                 </button>
-                {onOpenSettings || (p.currentUserRole === 'ADMIN' && (onEdit || onDelete)) ? (
+                {p.currentUserRole === 'ADMIN' && (onOpenSettings || onEdit || onDelete) ? (
                   <div className="flex items-center justify-end gap-0.5 border-t border-slate-100 px-2 py-1.5" data-testid="all-projects-actions">
                     {onOpenSettings ? (
                       <button aria-label={`Settings for ${p.name}`} className={actionCls} data-testid="project-action-settings" onClick={() => onOpenSettings(p)} title="Project settings" type="button">
                         <Settings2 size={15} />
                       </button>
                     ) : null}
-                    {p.currentUserRole === 'ADMIN' && onEdit ? (
+                    {onEdit ? (
                       <button aria-label={`Edit ${p.name}`} className={actionCls} data-testid="project-action-edit" disabled={busyProjectId === p.id} onClick={() => onEdit(p)} title="Edit project" type="button">
                         <Pencil size={15} />
                       </button>
                     ) : null}
-                    {p.currentUserRole === 'ADMIN' && onDelete ? (
+                    {onDelete ? (
                       <button aria-label={`Delete ${p.name}`} className={`${actionCls} hover:!bg-red-50 hover:!text-red-600`} data-testid="project-action-delete" disabled={busyProjectId === p.id} onClick={() => onDelete(p)} title="Delete project" type="button">
                         <Trash2 size={15} />
                       </button>

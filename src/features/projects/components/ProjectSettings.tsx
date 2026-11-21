@@ -38,6 +38,17 @@ export function ProjectSettings({ project, members, currentUserId, isAdmin, myPe
   const [transferError, setTransferError] = useState('');
   const { showToast } = useToast();
 
+  if (!isAdmin) {
+    return (
+      <div className="flex min-h-[300px] flex-col items-center justify-center p-8 text-center" data-testid="project-settings-forbidden">
+        <p className="text-base font-semibold text-slate-800">Access Restricted</p>
+        <p className="mt-1 text-sm text-slate-500">
+          Project settings are only accessible to project admins. As a normal member, you can collaborate on tasks, epics, and project features allocated to you.
+        </p>
+      </div>
+    );
+  }
+
   const handleTransferSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!transferEmail.trim()) return;
