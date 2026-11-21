@@ -1,12 +1,22 @@
-export type ProjectFeature = 'team' | 'time' | 'prompts' | 'aiPlanner';
+export type ProjectFeature =
+  | 'editTask'
+  | 'requestApproval'
+  | 'viewTeam'
+  | 'editNotes'
+  | 'time'
+  | 'aiPlanner'
+  | 'prompts';
 export type ProjectPermissions = Record<ProjectFeature, boolean>;
 
 /** Shown in settings: what each switch lets a member do. */
 export const PROJECT_FEATURE_INFO: Record<ProjectFeature, { label: string; hint: string }> = {
-  team: { label: 'Team management', hint: 'Add and remove people on the project' },
-  time: { label: 'Time management', hint: 'Log time and see the weekly timesheet' },
+  editTask: { label: 'Edit task details', hint: 'Edit task details and update progress' },
+  requestApproval: { label: 'Request approval', hint: 'Submit requests for approvals' },
+  viewTeam: { label: 'View team', hint: 'View team members (cannot alter them)' },
+  editNotes: { label: 'Edit notes', hint: 'Create and edit notes in this project' },
+  time: { label: 'Edit their own time', hint: 'Log and edit their own time in timesheets' },
+  aiPlanner: { label: 'AI planner', hint: 'Use the AI planner for this project' },
   prompts: { label: 'Prompt access', hint: 'Browse and run deployed prompts in this project' },
-  aiPlanner: { label: 'AI planner access', hint: 'Use the AI planner for this project' },
 };
 
 export const PROJECT_FEATURES = Object.keys(PROJECT_FEATURE_INFO) as ProjectFeature[];

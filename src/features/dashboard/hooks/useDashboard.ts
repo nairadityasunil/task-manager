@@ -350,10 +350,13 @@ export function useDashboard() {
                 ...p,
                 currentUserRole: 'MEMBER',
                 currentUserPermissions: data.permissions ?? {
-                  team: false,
+                  editTask: true,
+                  requestApproval: true,
+                  viewTeam: true,
+                  editNotes: true,
                   time: true,
-                  prompts: false,
-                  aiPlanner: false,
+                  aiPlanner: true,
+                  prompts: true,
                 },
               }
             : p,
@@ -622,8 +625,24 @@ export function useDashboard() {
   /** What the signed-in person may use in this project; admins have everything, older servers send nothing (all on). */
   const activePermissions: ProjectPermissions =
     activeProject?.currentUserRole === 'ADMIN' || !activeProject?.currentUserPermissions
-      ? { team: true, time: true, prompts: true, aiPlanner: true }
-      : activeProject.currentUserPermissions;
+      ? {
+          editTask: true,
+          requestApproval: true,
+          viewTeam: true,
+          editNotes: true,
+          time: true,
+          aiPlanner: true,
+          prompts: true,
+        }
+      : {
+          editTask: activeProject.currentUserPermissions.editTask ?? true,
+          requestApproval: activeProject.currentUserPermissions.requestApproval ?? true,
+          viewTeam: activeProject.currentUserPermissions.viewTeam ?? true,
+          editNotes: activeProject.currentUserPermissions.editNotes ?? true,
+          time: activeProject.currentUserPermissions.time ?? true,
+          aiPlanner: activeProject.currentUserPermissions.aiPlanner ?? true,
+          prompts: activeProject.currentUserPermissions.prompts ?? true,
+        };
 
   const visibleTasks = useMemo(() => {
     let filtered = tasks;

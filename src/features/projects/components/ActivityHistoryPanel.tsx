@@ -15,7 +15,8 @@ const ENTITY_LABELS: Record<string, string> = {
   epic: 'Epic',
   task: 'Task',
   subtask: 'Subtask',
-  note: 'Note'
+  note: 'Note',
+  time: 'Time',
 };
 
 const ENTITY_COLORS: Record<string, string> = {
@@ -23,7 +24,8 @@ const ENTITY_COLORS: Record<string, string> = {
   epic: 'bg-sky-500',
   task: 'bg-emerald-500',
   subtask: 'bg-teal-500',
-  note: 'bg-amber-500'
+  note: 'bg-amber-500',
+  time: 'bg-violet-500',
 };
 
 const ACTION_ICONS: Record<string, typeof Plus> = {
@@ -59,6 +61,7 @@ const FILTER_OPTIONS = [
   { value: 'task', label: 'Tasks' },
   { value: 'subtask', label: 'Subtasks' },
   { value: 'note', label: 'Notes' },
+  { value: 'time', label: 'Time Management' },
 ];
 
 function getDateLabel(dateString: string): string {

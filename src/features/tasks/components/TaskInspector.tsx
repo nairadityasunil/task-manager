@@ -55,6 +55,7 @@ export interface TaskInspectorProps {
   onMoveToState?: (task: Task, stateId: string) => void;
   statesLoading?: boolean;
   handleUpdateTaskField: (taskId: string, updates: UpdateTaskInput) => Promise<void> | void;
+  isAdmin?: boolean;
 }
 
 const tabCls = (active: boolean) =>
@@ -99,6 +100,7 @@ export function TaskInspector({
   onMoveToState,
   statesLoading = false,
   handleUpdateTaskField,
+  isAdmin = false,
 }: TaskInspectorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -407,19 +409,21 @@ export function TaskInspector({
                         </div>
                       )}
 
-                      <Button
-                        className="mt-4 w-full"
-                        disabled={isEvaluatingPriority}
-                        icon={Zap}
-                        loading={isEvaluatingPriority}
-                        onClick={() => void handleEvaluatePriority(task.id)}
-                        size="sm"
-                        variant="secondary"
-                      >
-                        {isEvaluatingPriority
-                          ? 'Calculating priorities...'
-                          : 'Evaluate Dynamic Priority'}
-                      </Button>
+                      {isAdmin ? (
+                        <Button
+                          className="mt-4 w-full"
+                          disabled={isEvaluatingPriority}
+                          icon={Zap}
+                          loading={isEvaluatingPriority}
+                          onClick={() => void handleEvaluatePriority(task.id)}
+                          size="sm"
+                          variant="secondary"
+                        >
+                          {isEvaluatingPriority
+                            ? 'Calculating priorities...'
+                            : 'Evaluate Dynamic Priority'}
+                        </Button>
+                      ) : null}
                     </div>
                   </section>
                   ) : null}
