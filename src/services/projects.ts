@@ -4,7 +4,8 @@ import type {
   Project,
   ProjectMember,
   ProjectPermissions,
-  UpdateProjectInput
+  ProjectTransferRequest,
+  UpdateProjectInput,
 } from '@/types/project';
 
 export interface ProjectsPaginationParams {
@@ -13,6 +14,8 @@ export interface ProjectsPaginationParams {
   search?: string;
   /** Only the projects in this workspace. */
   workspaceId?: string;
+  /** Filter between workspace projects or collaborating projects. */
+  scope?: 'workspace' | 'collaborating';
 }
 
 interface ProjectListResponse {
@@ -51,10 +54,20 @@ const getProject = async (projectId: string): Promise<Project> => {
 };
 
 /** Every project the person belongs to (the list is paged, so this reads all pages). */
-const getAllProjects = async (search?: string, workspaceId?: string): Promise<Project[]> => {
+const getAllProjects = async (
+  search?: string,
+  workspaceId?: string,
+  scope?: 'workspace' | 'collaborating',
+): Promise<Project[]> => {
   const all: Project[] = [];
   for (let page = 1; page <= 50; page += 1) {
-    const data = await getProjects({ page, limit: 100, search: search?.trim() || undefined, workspaceId });
+    const data = await getProjects({
+      page,
+      limit: 100,
+      search: search?.trim() || undefined,
+      workspaceId,
+      scope,
+    });
     all.push(...data.projects);
     if (page >= data.totalPages) break;
   }
@@ -112,6 +125,44 @@ const leaveProject = async (projectId: string): Promise<void> => {
   await api.post(`/projects/${projectId}/leave`);
 };
 
+const initiateProjectTransfer = async (
+  projectId: string,
+  email: string,
+): Promise<{ message: string; data: unknown }> => {
+  const response = await api.post(`/projects/${projectId}/transfer`, { email });
+  return response.data;
+};
+
+const getProjectTransferDetails = async (
+  token: string,
+): Promise<ProjectTransferRequest> => {
+  const response = await api.get<{ data: ProjectTransferRequest }>(
+    `/projects/transfers/${token}`,
+  );
+  return response.data.data;
+};
+
+const acceptProjectTransfer = async (
+  token: string,
+): Promise<{ message: string; data: unknown }> => {
+  const response = await api.post(`/projects/transfers/${token}/accept`);
+  return response.data;
+};
+
+const rejectProjectTransfer = async (
+  token: string,
+): Promise<{ message: string; data: unknown }> => {
+  const response = await api.post(`/projects/transfers/${token}/reject`);
+  return response.data;
+};
+
+const getMyProjectTransfers = async (): Promise<ProjectTransferRequest[]> => {
+  const response = await api.get<{ data: ProjectTransferRequest[] }>(
+    '/projects/transfers/me',
+  );
+  return response.data.data;
+};
+
 export {
   addProjectMember,
   createProject,
@@ -124,5 +175,10 @@ export {
   leaveProject,
   updateMemberPermissions,
   removeProjectMember,
-  updateProject
+  updateProject,
+  initiateProjectTransfer,
+  getProjectTransferDetails,
+  acceptProjectTransfer,
+  rejectProjectTransfer,
+  getMyProjectTransfers,
 };

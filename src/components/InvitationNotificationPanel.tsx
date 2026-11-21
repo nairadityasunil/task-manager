@@ -7,6 +7,7 @@ import {
   Clock,
   X,
   Users,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { Badge, Button } from '@/components/ui';
 import { useWorkspace } from '@/features/workspaces';
@@ -19,6 +20,12 @@ import {
   rejectInvitation,
   type PendingInvitation,
 } from '@/services/invitations';
+import {
+  getMyProjectTransfers,
+  acceptProjectTransfer,
+  rejectProjectTransfer,
+} from '@/services/projects';
+import type { ProjectTransferRequest } from '@/types/project';
 
 interface AdminNotification {
   id: string;
@@ -44,16 +51,21 @@ function InvitationNotificationPanel() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [myInvitations, setMyInvitations] = useState<PendingInvitation[]>([]);
+  const [myTransfers, setMyTransfers] = useState<ProjectTransferRequest[]>([]);
   const [adminNotifications, setAdminNotifications] = useState<AdminNotification[]>([]);
   const [actioning, setActioning] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const totalCount = myInvitations.length + adminNotifications.length;
+  const totalCount = myInvitations.length + myTransfers.length + adminNotifications.length;
 
   const loadMyInvitations = useCallback(async () => {
     try {
-      const invitations = await getMyInvitations();
+      const [invitations, transfers] = await Promise.all([
+        getMyInvitations(),
+        getMyProjectTransfers().catch(() => []),
+      ]);
       setMyInvitations(invitations);
+      setMyTransfers(transfers);
     } catch {
       // silently fail — not critical
     }
@@ -110,14 +122,24 @@ function InvitationNotificationPanel() {
       ]);
     };
 
+    // Real-time: someone sent me a project ownership transfer request
+    const onTransferRequest = (data: ProjectTransferRequest) => {
+      setMyTransfers((prev) => {
+        if (prev.some((t) => t.id === data.id)) return prev;
+        return [data, ...prev];
+      });
+    };
+
     socketService.on(SocketEvents.INVITATION_RECEIVED, onReceived);
     socketService.on(SocketEvents.INVITATION_ACCEPTED, onAccepted);
     socketService.on(SocketEvents.INVITATION_REJECTED, onRejected);
+    socketService.on(SocketEvents.PROJECT_TRANSFER_REQUEST, onTransferRequest);
 
     return () => {
       socketService.off(SocketEvents.INVITATION_RECEIVED, onReceived);
       socketService.off(SocketEvents.INVITATION_ACCEPTED, onAccepted);
       socketService.off(SocketEvents.INVITATION_REJECTED, onRejected);
+      socketService.off(SocketEvents.PROJECT_TRANSFER_REQUEST, onTransferRequest);
     };
   }, [loadMyInvitations]);
 
@@ -158,6 +180,32 @@ function InvitationNotificationPanel() {
     try {
       await rejectInvitation(invitation.token);
       setMyInvitations((prev) => prev.filter((inv) => inv.id !== invitation.id));
+    } catch {
+      // show nothing — user can retry
+    } finally {
+      setActioning(null);
+    }
+  };
+
+  const handleAcceptTransfer = async (transfer: ProjectTransferRequest) => {
+    setActioning(transfer.id);
+    try {
+      await acceptProjectTransfer(transfer.token);
+      setMyTransfers((prev) => prev.filter((t) => t.id !== transfer.id));
+      await refreshWorkspaces();
+      navigate(`/projects/${transfer.projectId}`);
+    } catch {
+      // show nothing — user can retry
+    } finally {
+      setActioning(null);
+    }
+  };
+
+  const handleRejectTransfer = async (transfer: ProjectTransferRequest) => {
+    setActioning(transfer.id);
+    try {
+      await rejectProjectTransfer(transfer.token);
+      setMyTransfers((prev) => prev.filter((t) => t.id !== transfer.id));
     } catch {
       // show nothing — user can retry
     } finally {
@@ -207,6 +255,52 @@ function InvitationNotificationPanel() {
           </div>
 
           <div className="flex-1 overflow-y-auto">
+            {myTransfers.length > 0 ? (
+              <div className="pb-1">
+                <div className="px-4 pb-1.5 pt-3 text-xs font-medium text-slate-500">Ownership transfers</div>
+                {myTransfers.map((t) => (
+                  <div key={t.id} className="mx-3 mb-2 rounded-lg border border-amber-200 bg-amber-50/30 p-3">
+                    <div className="mb-3 flex items-start gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                        <ArrowRightLeft size={15} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="m-0 text-[13px] leading-snug text-slate-600">
+                          <span className="font-medium text-slate-900">{t.currentOwnerName}</span> wants to transfer ownership of
+                        </p>
+                        <p className="m-0 mt-0.5 truncate text-sm font-semibold text-slate-900">{t.projectName}</p>
+                        <p className="m-0 mt-1 text-xs text-slate-500">
+                          Will become part of your default workspace.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        className="flex-1"
+                        disabled={actioning === t.id}
+                        icon={CheckCircle}
+                        onClick={() => void handleAcceptTransfer(t)}
+                        size="sm"
+                        variant="primary"
+                      >
+                        {actioning === t.id ? 'Accepting…' : 'Accept'}
+                      </Button>
+                      <Button
+                        className="flex-1"
+                        disabled={actioning === t.id}
+                        icon={XCircle}
+                        onClick={() => void handleRejectTransfer(t)}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        {actioning === t.id ? 'Declining…' : 'Decline'}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
             {myInvitations.length > 0 ? (
               <div className="pb-1">
                 <div className="px-4 pb-1.5 pt-3 text-xs font-medium text-slate-500">Project invitations</div>

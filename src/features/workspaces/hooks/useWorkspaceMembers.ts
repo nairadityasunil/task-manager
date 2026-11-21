@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { workspaceService } from '../services/workspaceService';
-import type { WorkspaceMember, WorkspaceRole } from '../types/workspace';
+import type { WorkspaceMember, WorkspacePermissions, WorkspaceRole } from '../types/workspace';
 
 export function useWorkspaceMembers(workspaceId: string | null | undefined) {
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
@@ -55,6 +55,25 @@ export function useWorkspaceMembers(workspaceId: string | null | undefined) {
     [workspaceId],
   );
 
+  const updateMemberPermissions = useCallback(
+    async (memberUserId: string, permissions: Partial<WorkspacePermissions>) => {
+      if (!workspaceId) return;
+      const updated = await workspaceService.updateMemberPermissions(
+        workspaceId,
+        memberUserId,
+        permissions,
+      );
+      setMembers((prev) =>
+        prev.map((m) =>
+          m.userId === memberUserId
+            ? { ...m, permissions: updated.permissions }
+            : m,
+        ),
+      );
+    },
+    [workspaceId],
+  );
+
   return {
     members,
     isLoading,
@@ -62,6 +81,7 @@ export function useWorkspaceMembers(workspaceId: string | null | undefined) {
     refreshMembers: fetchMembers,
     inviteMember,
     updateMemberRole,
+    updateMemberPermissions,
     removeMember,
   };
 }

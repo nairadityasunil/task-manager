@@ -35,6 +35,7 @@ export function AllProjects({
   reloadKey?: unknown;
 }): JSX.Element {
   const { activeWorkspaceId } = useWorkspace();
+  const [tab, setTab] = useState<'workspace' | 'collaborating'>('workspace');
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [error, setError] = useState(false);
   const [q, setQ] = useState('');
@@ -42,7 +43,12 @@ export function AllProjects({
 
   useEffect(() => {
     let cancelled = false;
-    getAllProjects(undefined, activeWorkspaceId || undefined)
+    setProjects(null);
+    getAllProjects(
+      undefined,
+      tab === 'workspace' ? activeWorkspaceId || undefined : undefined,
+      tab,
+    )
       .then((list) => !cancelled && setProjects(list))
       .catch(() => {
         if (!cancelled) {
@@ -53,7 +59,7 @@ export function AllProjects({
     return () => {
       cancelled = true;
     };
-  }, [reloadKey, activeWorkspaceId]);
+  }, [reloadKey, activeWorkspaceId, tab]);
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -70,11 +76,44 @@ export function AllProjects({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="m-0 text-lg font-semibold tracking-tight text-slate-900">All projects</h1>
-          <p className="m-0 text-[13px] text-slate-500">{projects ? `${projects.length} project${projects.length === 1 ? '' : 's'} you are part of` : 'Loading'}</p>
+          <p className="m-0 text-[13px] text-slate-500">
+            {projects
+              ? tab === 'workspace'
+                ? `${projects.length} project${projects.length === 1 ? '' : 's'} in current workspace`
+                : `${projects.length} collaborating project${projects.length === 1 ? '' : 's'} you are part of`
+              : 'Loading'}
+          </p>
         </div>
-        <Button icon={Plus} onClick={onNewProject} variant="primary">
-          New project
-        </Button>
+        {tab === 'workspace' ? (
+          <Button icon={Plus} onClick={onNewProject} variant="primary">
+            New project
+          </Button>
+        ) : null}
+      </div>
+
+      <div className="flex gap-4 border-b border-slate-200">
+        <button
+          className={`relative pb-2.5 text-sm font-medium transition-colors ${
+            tab === 'workspace'
+              ? 'text-brand-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-brand-600'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+          onClick={() => setTab('workspace')}
+          type="button"
+        >
+          Current Workspace Projects
+        </button>
+        <button
+          className={`relative pb-2.5 text-sm font-medium transition-colors ${
+            tab === 'collaborating'
+              ? 'text-brand-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-brand-600'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+          onClick={() => setTab('collaborating')}
+          type="button"
+        >
+          Collaborating Projects
+        </button>
       </div>
       <div className="flex flex-wrap gap-2">
         <div className="relative min-w-52 flex-1">
@@ -103,10 +142,28 @@ export function AllProjects({
         <div className="h-40 animate-pulse rounded-xl bg-slate-100" />
       ) : !shown.length ? (
         <EmptyState
-          action={q ? undefined : <Button onClick={onNewProject} variant="primary">Create a project</Button>}
-          description={q ? 'No project matches that search.' : 'Projects group the work of a team.'}
+          action={
+            q || tab === 'collaborating' ? undefined : (
+              <Button onClick={onNewProject} variant="primary">
+                Create a project
+              </Button>
+            )
+          }
+          description={
+            q
+              ? 'No project matches that search.'
+              : tab === 'collaborating'
+              ? 'You are not collaborating on any projects from other workspaces.'
+              : 'Projects group the work of a team.'
+          }
           icon={FolderOpen}
-          title={q ? 'No match' : 'No projects yet'}
+          title={
+            q
+              ? 'No match'
+              : tab === 'collaborating'
+              ? 'No collaborating projects'
+              : 'No projects yet'
+          }
         />
       ) : (
         <ul className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4" data-testid="all-projects-list">
@@ -125,23 +182,26 @@ export function AllProjects({
                   </span>
                   {p.description ? <span className="line-clamp-2 text-[13px] text-slate-600 [overflow-wrap:anywhere]">{p.description}</span> : null}
                   <span className="mt-auto flex flex-wrap items-center gap-1.5 pt-1 text-xs text-slate-500">
+                    {p.isCollaborator || tab === 'collaborating' ? (
+                      <Badge tone="warning">Collaborator</Badge>
+                    ) : null}
                     <Badge tone={p.currentUserRole === 'ADMIN' ? 'violet' : 'neutral'}>{p.currentUserRole === 'ADMIN' ? 'Admin' : 'Member'}</Badge>
                     <span>Created {day(p.createdAt)}</span>
                   </span>
                 </button>
-                {onOpenSettings || (p.currentUserRole === 'ADMIN' && (onEdit || onDelete)) ? (
+                {p.currentUserRole === 'ADMIN' && (onOpenSettings || onEdit || onDelete) ? (
                   <div className="flex items-center justify-end gap-0.5 border-t border-slate-100 px-2 py-1.5" data-testid="all-projects-actions">
                     {onOpenSettings ? (
                       <button aria-label={`Settings for ${p.name}`} className={actionCls} data-testid="project-action-settings" onClick={() => onOpenSettings(p)} title="Project settings" type="button">
                         <Settings2 size={15} />
                       </button>
                     ) : null}
-                    {p.currentUserRole === 'ADMIN' && onEdit ? (
+                    {onEdit ? (
                       <button aria-label={`Edit ${p.name}`} className={actionCls} data-testid="project-action-edit" disabled={busyProjectId === p.id} onClick={() => onEdit(p)} title="Edit project" type="button">
                         <Pencil size={15} />
                       </button>
                     ) : null}
-                    {p.currentUserRole === 'ADMIN' && onDelete ? (
+                    {onDelete ? (
                       <button aria-label={`Delete ${p.name}`} className={`${actionCls} hover:!bg-red-50 hover:!text-red-600`} data-testid="project-action-delete" disabled={busyProjectId === p.id} onClick={() => onDelete(p)} title="Delete project" type="button">
                         <Trash2 size={15} />
                       </button>

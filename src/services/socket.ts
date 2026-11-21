@@ -50,6 +50,12 @@ export enum SocketEvents {
   INVITATION_RECEIVED = 'invitation:received',
   INVITATION_ACCEPTED = 'invitation:accepted',
   INVITATION_REJECTED = 'invitation:rejected',
+
+  // Project Transfers & Ownership
+  PROJECT_OWNERSHIP_TRANSFERRED = 'project:ownership_transferred',
+  PROJECT_TRANSFER_REQUEST = 'project:transfer_request',
+  PROJECT_OWNERSHIP_ACCEPTED = 'project:ownership_accepted',
+  PROJECT_TRANSFER_REJECTED = 'project:transfer_rejected',
 }
 
 /**

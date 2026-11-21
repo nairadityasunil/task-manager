@@ -19,6 +19,7 @@ const RegisterPage = lazy(() => import('@/pages/RegisterPage'));
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const GuidePage = lazy(() => import('@/pages/GuidePage'));
 const AcceptInvitationPage = lazy(() => import('@/pages/AcceptInvitationPage'));
+const ProjectTransferPage = lazy(() => import('@/pages/ProjectTransferPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 import { LoadingProvider } from '@/context/LoadingContext';
@@ -43,6 +44,7 @@ function App(): JSX.Element {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/guide" element={<GuidePage />} />
                     <Route path="/accept-invitation" element={<AcceptInvitationPage />} />
+                    <Route path="/projects/transfer/:token" element={<ProjectTransferPage />} />
                     <Route
                       path="/login"
                       element={

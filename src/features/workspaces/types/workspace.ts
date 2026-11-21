@@ -13,12 +13,22 @@ export interface Workspace {
   lastUsedAt?: string | null;
 }
 
+export interface WorkspacePermissions {
+  projects?: boolean;
+  members?: boolean;
+  settings?: boolean;
+  agentGovernance?: boolean;
+  prompts?: boolean;
+  timeTracking?: boolean;
+}
+
 export interface WorkspaceMember {
   id: string;
   userId: string;
   name: string;
   email: string;
   role: WorkspaceRole;
+  permissions?: WorkspacePermissions;
   joinedAt: string;
 }
 

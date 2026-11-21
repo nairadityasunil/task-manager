@@ -335,11 +335,59 @@ export function useDashboard() {
       void loadDashboard();
       setTaskMutationSuccess('Tasks updated');
     };
+
+    const handleOwnershipTransferred = (data: {
+      projectId: string;
+      newOwnerId: string;
+      role: 'MEMBER';
+      permissions?: ProjectPermissions;
+    }) => {
+      setProjects((current) =>
+        current.map((p) =>
+          p.id === data.projectId
+            ? {
+                ...p,
+                currentUserRole: 'MEMBER',
+                currentUserPermissions: data.permissions ?? {
+                  team: false,
+                  time: true,
+                  prompts: false,
+                  aiPlanner: false,
+                },
+              }
+            : p,
+        ),
+      );
+      setProjectMutationSuccess(
+        'Project ownership was transferred. Your role is now Member.',
+      );
+    };
+
+    const handleOwnershipAccepted = () => {
+      void loadDashboard();
+    };
+
     socketService.on(SocketEvents.TASK_ASSIGNED, handleTaskAssigned);
     socketService.on(SocketEvents.TASK_BULK_ASSIGNED, handleTaskAssigned);
+    socketService.on(
+      SocketEvents.PROJECT_OWNERSHIP_TRANSFERRED,
+      handleOwnershipTransferred,
+    );
+    socketService.on(
+      SocketEvents.PROJECT_OWNERSHIP_ACCEPTED,
+      handleOwnershipAccepted,
+    );
     return () => {
       socketService.off(SocketEvents.TASK_ASSIGNED, handleTaskAssigned);
       socketService.off(SocketEvents.TASK_BULK_ASSIGNED, handleTaskAssigned);
+      socketService.off(
+        SocketEvents.PROJECT_OWNERSHIP_TRANSFERRED,
+        handleOwnershipTransferred,
+      );
+      socketService.off(
+        SocketEvents.PROJECT_OWNERSHIP_ACCEPTED,
+        handleOwnershipAccepted,
+      );
     };
   }, [loadDashboard]);
 

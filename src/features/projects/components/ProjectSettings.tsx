@@ -1,9 +1,10 @@
-import { Bot, Clock, Info, Pencil, Sparkles, Users } from 'lucide-react';
+import { ArrowRightLeft, Bot, Clock, Info, Pencil, Sparkles, Users } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
-import { Badge, Button, Checkbox, Tabs, avatarColor, initialsOf } from '@/components/ui';
+import Modal from '@/components/Modal';
+import { Badge, Button, Checkbox, Input, Tabs, avatarColor, initialsOf } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
-import { updateMemberPermissions } from '@/services/projects';
+import { initiateProjectTransfer, updateMemberPermissions } from '@/services/projects';
 import { ProjectSlaPanel } from './ProjectSlaPanel';
 import { PROJECT_FEATURES, PROJECT_FEATURE_INFO, type Project, type ProjectFeature, type ProjectMember, type ProjectPermissions } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
@@ -31,6 +32,42 @@ const day = (v?: string): string => (v ? new Date(v).toLocaleDateString(undefine
 /** Everything about one project in one place: details, team, who may use which feature, and workflow states. */
 export function ProjectSettings({ project, members, currentUserId, isAdmin, myPermissions, onEditDetails, onChanged, teamPanel, workflowPanel, onOpenAiSettings }: Props): JSX.Element {
   const [tab, setTab] = useState<Tab>('general');
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [transferEmail, setTransferEmail] = useState('');
+  const [transferLoading, setTransferLoading] = useState(false);
+  const [transferError, setTransferError] = useState('');
+  const { showToast } = useToast();
+
+  if (!isAdmin) {
+    return (
+      <div className="flex min-h-[300px] flex-col items-center justify-center p-8 text-center" data-testid="project-settings-forbidden">
+        <p className="text-base font-semibold text-slate-800">Access Restricted</p>
+        <p className="mt-1 text-sm text-slate-500">
+          Project settings are only accessible to project admins. As a normal member, you can collaborate on tasks, epics, and project features allocated to you.
+        </p>
+      </div>
+    );
+  }
+
+  const handleTransferSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!transferEmail.trim()) return;
+    setTransferLoading(true);
+    setTransferError('');
+    try {
+      await initiateProjectTransfer(project.id, transferEmail.trim().toLowerCase());
+      showToast({
+        variant: 'success',
+        message: `Ownership transfer request sent to ${transferEmail}. They will receive an email and notification to accept.`,
+      });
+      setIsTransferModalOpen(false);
+      setTransferEmail('');
+    } catch (err: unknown) {
+      setTransferError(toDisplayErrorMessage(err));
+    } finally {
+      setTransferLoading(false);
+    }
+  };
   return (
     <div className="flex min-h-[420px] flex-col" data-testid="project-settings">
       <div className="border-b border-slate-200 px-5 pt-3">
@@ -87,6 +124,23 @@ export function ProjectSettings({ project, members, currentUserId, isAdmin, myPe
                 ))}
               </ul>
             </div>
+            {isAdmin || project.userId === currentUserId ? (
+              <div className="rounded-lg border border-slate-200 bg-white p-4 text-[13px]">
+                <div className="font-semibold text-slate-900">Project Ownership</div>
+                <p className="mt-1 text-slate-500">
+                  Transfer this project to another user. The project, tasks, epics, time sheets, and members will be moved into their default workspace once accepted.
+                </p>
+                <div className="mt-3">
+                  <Button
+                    icon={ArrowRightLeft}
+                    onClick={() => setIsTransferModalOpen(true)}
+                    variant="secondary"
+                  >
+                    Transfer Project Ownership
+                  </Button>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : tab === 'team' ? (
           <div>{teamPanel}</div>
@@ -98,6 +152,65 @@ export function ProjectSettings({ project, members, currentUserId, isAdmin, myPe
           <div>{workflowPanel}</div>
         )}
       </div>
+
+      {isTransferModalOpen ? (
+        <Modal
+          description={`Transfer ownership of "${project.name}"`}
+          maxWidth="max-w-md"
+          onClose={() => {
+            setIsTransferModalOpen(false);
+            setTransferEmail('');
+            setTransferError('');
+          }}
+          title="Transfer Project Ownership"
+        >
+          <form onSubmit={handleTransferSubmit} className="space-y-4">
+            {transferError ? (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-xs text-red-700">
+                {transferError}
+              </div>
+            ) : null}
+            <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-xs leading-relaxed text-amber-800">
+              <strong className="block font-semibold">Important</strong>
+              An invitation email and notification will be sent to the recipient. The transfer will only take effect once they accept. Once transferred, your role on this project will become Member.
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-700">
+                Recipient Email Address
+              </label>
+              <Input
+                autoFocus
+                placeholder="colleague@example.com"
+                required
+                type="email"
+                value={transferEmail}
+                onChange={(e) => setTransferEmail(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                disabled={transferLoading}
+                onClick={() => {
+                  setIsTransferModalOpen(false);
+                  setTransferEmail('');
+                  setTransferError('');
+                }}
+                variant="ghost"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={transferLoading || !transferEmail.trim()}
+                loading={transferLoading}
+                type="submit"
+                variant="primary"
+              >
+                Send Transfer Request
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      ) : null}
     </div>
   );
 }

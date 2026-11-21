@@ -453,8 +453,10 @@ export function DashboardPage(): JSX.Element {
                 onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
                 onOpen={(id) => navigate(`/projects/${id}`)}
                 onOpenSettings={(project) => {
-                  navigate(`/projects/${project.id}`);
-                  setIsProjectSettingsOpen(true);
+                  if (project.currentUserRole === 'ADMIN') {
+                    navigate(`/projects/${project.id}`);
+                    setIsProjectSettingsOpen(true);
+                  }
                 }}
                 reloadKey={dash.projectsVersion}
               />
@@ -566,7 +568,7 @@ export function DashboardPage(): JSX.Element {
                     <ProjectLabelChip
                       // Remount after the edit dialog closes so a new label shows at once.
                       key={`${dash.activeProject.id}:${dash.editingProject ? 'editing' : 'view'}`}
-                      onEdit={dash.canManageActiveProject ? () => dash.setEditingProject(dash.activeProject) : undefined}
+                      onEdit={dash.canManageTeam ? () => dash.setEditingProject(dash.activeProject) : undefined}
                       projectId={dash.activeProject.id}
                     />
                     <AiSpend className="hidden md:inline-flex" projectId={dash.activeProject.id} />
@@ -598,15 +600,17 @@ export function DashboardPage(): JSX.Element {
                         <HeaderLabel>Run prompt</HeaderLabel>
                       </button>
                     ) : null}
-                    <button
-                      className={headerButtonCls}
-                      data-testid="project-settings-button"
-                      onClick={() => setIsProjectSettingsOpen(true)}
-                      type="button"
-                    >
-                      <SlidersHorizontal size={16} />
-                      <HeaderLabel>Settings</HeaderLabel>
-                    </button>
+                    {dash.canManageTeam ? (
+                      <button
+                        className={headerButtonCls}
+                        data-testid="project-settings-button"
+                        onClick={() => setIsProjectSettingsOpen(true)}
+                        type="button"
+                      >
+                        <SlidersHorizontal size={16} />
+                        <HeaderLabel>Settings</HeaderLabel>
+                      </button>
+                    ) : null}
                     <ProjectMoreMenu
                       items={[
                         { label: 'Project notes', icon: MessageSquare, onSelect: () => dash.handleOpenProjectNotesPanel(dash.activeProject!) },
@@ -1086,7 +1090,7 @@ export function DashboardPage(): JSX.Element {
           />
         </Modal>
       )}
-      {isProjectSettingsOpen && dash.activeProject && (
+      {isProjectSettingsOpen && dash.activeProject && dash.canManageTeam && (
         <Modal
           bodyClassName="!p-0"
           onClose={() => setIsProjectSettingsOpen(false)}
