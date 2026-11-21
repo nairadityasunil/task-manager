@@ -2,7 +2,7 @@ import { ChevronRight, Clock, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import Modal from '@/components/Modal';
-import { Button, Field, Input } from '@/components/ui';
+import { Button, DateInput, Field, Input } from '@/components/ui';
 import { useConfirm } from '@/context/ConfirmationContext';
 import { useToast } from '@/context/ToastContext';
 import { addTimeEntry, deleteTimeEntry, getTaskTime, updateTimeEntry, type TaskTimeEntry } from '@/services/time';
@@ -152,19 +152,20 @@ function TaskTimeModal({
         ) : undefined
       }
       onClose={onClose}
-      title={`Time on ${task.title}`}
+      description={<>For <span className="font-medium text-slate-700">{task.title}</span></>}
+      title="Time logged"
     >
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
-        <div className="flex items-baseline justify-between rounded-lg bg-slate-50 px-3 py-2.5">
-          <span className="text-[13px] text-slate-600">Total logged</span>
-          <span className="text-lg font-semibold tabular-nums text-slate-900" data-testid="task-time-modal-total">
+        <div className="flex items-baseline justify-between border-b border-slate-200 pb-3">
+          <span className="text-[13px] font-medium text-slate-600">Total logged</span>
+          <span className="text-xl font-semibold tabular-nums text-slate-900" data-testid="task-time-modal-total">
             {total ? formatDuration(total) : '0m'}
           </span>
         </div>
 
         {editing !== null ? (
           <form
-            className="grid grid-cols-[minmax(0,1fr)] gap-3 rounded-xl border border-slate-200 p-3"
+            className="grid grid-cols-[minmax(0,1fr)] gap-3 rounded-xl bg-slate-50 p-3.5"
             data-testid="task-time-form"
             onSubmit={(e) => {
               e.preventDefault();
@@ -173,12 +174,13 @@ function TaskTimeModal({
           >
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Date">
-                <Input max={todayIso()} onChange={(e) => setDate(e.target.value)} type="date" value={date} />
+                <DateInput aria-label="Date" max={todayIso()} onValueChange={(next) => next && setDate(next)} value={date} />
               </Field>
-              <Field hint="Like 1h 30m, 45m or 1.5" label="Time spent">
+              <Field label="Time spent">
                 <Input data-testid="task-time-duration" onChange={(e) => setDuration(e.target.value)} placeholder="1h 30m" value={duration} />
               </Field>
             </div>
+            <p className="m-0 -mt-1 text-xs text-slate-500">Time can be like 1h 30m, 45m or 1.5.</p>
             <Field label="What did you work on?">
               <Input data-testid="task-time-note" maxLength={500} onChange={(e) => setNote(e.target.value)} placeholder="Short description" value={note} />
             </Field>
@@ -205,7 +207,7 @@ function TaskTimeModal({
             ))}
           </div>
         ) : entries.length === 0 ? (
-          <p className="m-0 py-6 text-center text-[13px] text-slate-500">No time logged on this task yet.</p>
+          <p className="m-0 rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-[13px] text-slate-500">No time logged on this task yet.</p>
         ) : (
           <ul className="m-0 grid max-h-[420px] list-none divide-y divide-slate-100 overflow-auto rounded-xl border border-slate-200 p-0" data-testid="task-time-list">
             {entries.map((entry) => (
