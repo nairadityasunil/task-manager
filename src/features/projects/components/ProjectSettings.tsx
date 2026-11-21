@@ -1,4 +1,4 @@
-import { ArrowRightLeft, Bot, Clock, Info, Lock, Pencil, Sparkles, Users } from 'lucide-react';
+import { ArrowRightLeft, Bot, CheckSquare, Clock, FileText, Info, Lock, Pencil, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import Modal from '@/components/Modal';
@@ -26,7 +26,15 @@ interface Props {
   onOpenAiSettings: () => void;
 }
 
-const FEATURE_ICON: Record<ProjectFeature, typeof Users> = { team: Users, time: Clock, prompts: Sparkles, aiPlanner: Bot };
+const FEATURE_ICON: Record<ProjectFeature, typeof Users> = {
+  editTask: CheckSquare,
+  requestApproval: ShieldCheck,
+  viewTeam: Users,
+  editNotes: FileText,
+  time: Clock,
+  aiPlanner: Bot,
+  prompts: Sparkles,
+};
 
 const day = (v?: string): string => (v ? new Date(v).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : 'Unknown');
 
@@ -146,7 +154,7 @@ export function ProjectSettings({ project, members, currentUserId, isAdmin, myPe
               ) : (
                 <p className="m-0 text-[13px] text-slate-500">Only project admins can edit these details.</p>
               )}
-              {isAdmin || myPermissions.aiPlanner ? (
+              {isAdmin ? (
                 <Button icon={Bot} onClick={onOpenAiSettings} variant="secondary">
                   AI settings
                 </Button>

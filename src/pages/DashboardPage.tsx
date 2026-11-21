@@ -165,6 +165,7 @@ export function DashboardPage(): JSX.Element {
                   handleToggleBlocked={dash.handleToggleBlocked}
                   handleEvaluatePriority={dash.handleEvaluatePriority}
                   isEvaluatingPriority={dash.isEvaluatingPriority}
+                  isAdmin={dash.canManageTeam}
                   onViewSubtasks={(task) => setViewSubtasksTaskId(task.id)}
                   onNotesChanged={() => void dash.loadDashboard({ quiet: true })}
                   states={dash.activeTask?.projectId && dash.activeProject?.id === dash.activeTask.projectId ? dash.activeProjectStates : []}
@@ -614,15 +615,19 @@ export function DashboardPage(): JSX.Element {
                     <ProjectMoreMenu
                       items={[
                         { label: 'Project notes', icon: MessageSquare, onSelect: () => dash.handleOpenProjectNotesPanel(dash.activeProject!) },
-                        { label: 'Activity history', icon: History, onSelect: () => dash.setIsActivityHistoryOpen(true) },
-                        {
-                          label: dash.isRecalculatingPriorities ? 'Recalculating priorities…' : 'Recalculate priorities',
-                          icon: Calculator,
-                          disabled: dash.isRecalculatingPriorities,
-                          onSelect: () => void dash.handleRecalculatePriorities()
-                        },
-                        { label: 'AI settings', icon: Bot, onSelect: () => dash.setActiveView('settings') },
-                        { label: 'Refresh', icon: RefreshCw, onSelect: () => void dash.loadDashboard() }
+                        ...(dash.canManageTeam
+                          ? [
+                              { label: 'Activity history', icon: History, onSelect: () => dash.setIsActivityHistoryOpen(true) },
+                              {
+                                label: dash.isRecalculatingPriorities ? 'Recalculating priorities…' : 'Recalculate priorities',
+                                icon: Calculator,
+                                disabled: dash.isRecalculatingPriorities,
+                                onSelect: () => void dash.handleRecalculatePriorities(),
+                              },
+                              { label: 'AI settings', icon: Bot, onSelect: () => dash.setActiveView('settings') },
+                            ]
+                          : []),
+                        { label: 'Refresh', icon: RefreshCw, onSelect: () => void dash.loadDashboard() },
                       ]}
                     />
                     {dash.activePermissions.aiPlanner ? (
@@ -1077,7 +1082,7 @@ export function DashboardPage(): JSX.Element {
           title={`Team for ${dash.activeProject.name}`}
         >
           <ProjectTeamPanel
-            canManageTeam={dash.activePermissions.team}
+            canManageTeam={dash.canManageTeam}
             currentUserId={dash.user?.id ?? null}
             isMutating={dash.teamMutationLoading}
             members={dash.activeProjectMembers}
@@ -1114,7 +1119,7 @@ export function DashboardPage(): JSX.Element {
             project={dash.activeProject}
             teamPanel={
               <ProjectTeamPanel
-                canManageTeam={dash.activePermissions.team}
+                canManageTeam={dash.canManageTeam}
                 currentUserId={dash.user?.id ?? null}
                 isMutating={dash.teamMutationLoading}
                 members={dash.activeProjectMembers}
@@ -1130,7 +1135,7 @@ export function DashboardPage(): JSX.Element {
           />
         </Modal>
       )}
-      {dash.isActivityHistoryOpen && dash.activeProject && (
+      {dash.isActivityHistoryOpen && dash.activeProject && dash.canManageTeam && (
         <Modal
           bodyClassName="!p-0"
           onClose={() => dash.setIsActivityHistoryOpen(false)}
@@ -1168,7 +1173,7 @@ export function DashboardPage(): JSX.Element {
             heading="Epic notes"
             loading={dash.notesLoadingKey === `epic:${dash.activeEpicForNotes.id}`}
             notes={dash.activeEpicNotes}
-            onCreateNote={dash.projects.find((project) => project.id === dash.activeEpicForNotes?.projectId)?.currentUserRole === 'ADMIN' ? () => dash.handleOpenCreateEpicNote(dash.activeEpicForNotes!) : undefined}
+            onCreateNote={() => dash.activeEpicForNotes && dash.handleOpenCreateEpicNote(dash.activeEpicForNotes)}
             onDeleteNote={dash.projects.find((project) => project.id === dash.activeEpicForNotes?.projectId)?.currentUserRole === 'ADMIN' ? (note) => void dash.handleDeleteNote(note) : undefined}
             onOpenNote={(note) => void dash.handleOpenExistingNote(note)}
           />
