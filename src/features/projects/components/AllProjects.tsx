@@ -78,7 +78,7 @@ export function AllProjects({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="m-0 text-lg font-semibold tracking-tight text-slate-900">
-            {mode === 'collaborating' ? 'Collaborating projects' : 'All projects'}
+            {mode === 'collaborating' ? 'Collaborating Projects' : 'Workspace Projects'}
           </h1>
           <p className="m-0 text-[13px] text-slate-500">
             {projects

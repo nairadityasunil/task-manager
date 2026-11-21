@@ -15,6 +15,7 @@ import {
   createProject,
   deleteProject,
   deleteProjects,
+  getAllProjects,
   getMyProjectTransfers,
   getProjectMembers,
   getProject,
@@ -96,6 +97,7 @@ export function useDashboard() {
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [collaboratingProjects, setCollaboratingProjects] = useState<Project[]>([]);
   const [epics, setEpics] = useState<Epic[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'week'>('list');
@@ -291,7 +293,7 @@ export function useDashboard() {
     setError(null);
     try {
       const isProjectScoped = Boolean(projectId);
-      const [taskList, projectData] = await Promise.all([
+      const [taskList, projectData, collaboratingList] = await Promise.all([
         getTasks(
           // Every task, whatever day it was made: tasks are not tied to a date or carried from day to day.
           undefined,
@@ -301,7 +303,8 @@ export function useDashboard() {
           isProjectScoped ? undefined : (activeWorkspaceId || undefined),
           projectId || undefined
         ),
-        getProjects({ page: projectPage, limit: 10, search: debouncedProjectSearchTerm.trim(), workspaceId: activeWorkspaceId || undefined })
+        getProjects({ page: projectPage, limit: 10, search: debouncedProjectSearchTerm.trim(), workspaceId: activeWorkspaceId || undefined }),
+        getAllProjects(undefined, undefined, 'collaborating').catch(() => [] as Project[])
       ]);
       const projectList = [...projectData.projects];
       // A project on a later page (opened from All projects or a link) is still loaded.
@@ -330,6 +333,7 @@ export function useDashboard() {
       if (seq !== loadSeq.current) return;
       setTasks(taskList);
       setProjects(projectList);
+      setCollaboratingProjects(collaboratingList);
       setEpics(allEpics);
       setProjectTotalPages(projectData.totalPages);
     } catch (err) {
@@ -1631,6 +1635,8 @@ export function useDashboard() {
     logout: handleLogout,
     tasks,
     projects,
+    collaboratingProjects,
+    setCollaboratingProjects,
     epics,
     loading,
     viewMode,

@@ -6,10 +6,12 @@ import { cn, tagColor } from '@/components/ui';
 
 export interface PaletteItem {
   id: string;
-  group: 'Tasks' | 'Epics' | 'Projects' | 'Pages' | 'Actions';
+  group: 'Tasks' | 'Epics' | 'Workspace Projects' | 'Collaborating Projects' | 'Projects' | 'Pages' | 'Actions';
   label: string;
   /** Muted text on the right, e.g. the project name. */
   hint?: string;
+  /** Hidden keywords used for filtering (e.g. workspace name, owner name/email). */
+  searchKeywords?: string;
   /** Square colour swatch (projects, epics). */
   swatch?: string;
   icon?: LucideIcon;
@@ -18,7 +20,15 @@ export interface PaletteItem {
   run: () => void;
 }
 
-const GROUP_ORDER: PaletteItem['group'][] = ['Tasks', 'Epics', 'Projects', 'Pages', 'Actions'];
+const GROUP_ORDER: PaletteItem['group'][] = [
+  'Tasks',
+  'Epics',
+  'Workspace Projects',
+  'Collaborating Projects',
+  'Projects',
+  'Pages',
+  'Actions',
+];
 const PER_GROUP = 5;
 
 /** The label with the matched part in bold. */
@@ -67,9 +77,22 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps): J
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const matching = items.filter((item) => !q || `${item.label} ${item.hint ?? ''}`.toLowerCase().includes(q));
+    const matching = items.filter((item) => {
+      if (!q) return true;
+      const haystack = `${item.label} ${item.hint ?? ''} ${item.searchKeywords ?? ''}`.toLowerCase();
+      return haystack.includes(q);
+    });
     // Without a query, show places and actions; tasks and epics need a search.
-    const visible = q ? matching : matching.filter((item) => item.group === 'Pages' || item.group === 'Actions' || item.group === 'Projects');
+    const visible = q
+      ? matching
+      : matching.filter(
+          (item) =>
+            item.group === 'Pages' ||
+            item.group === 'Actions' ||
+            item.group === 'Workspace Projects' ||
+            item.group === 'Collaborating Projects' ||
+            item.group === 'Projects'
+        );
     return GROUP_ORDER.flatMap((group) => visible.filter((item) => item.group === group).slice(0, q ? PER_GROUP : 8));
   }, [items, query]);
 
@@ -159,7 +182,11 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps): J
                     <span className="truncate">
                       <Highlight query={query.trim()} text={item.label} />
                     </span>
-                    {item.hint ? <span className="ml-auto truncate pl-3 text-slate-500">{item.hint}</span> : null}
+                    {item.hint ? (
+                      <span className="ml-auto truncate pl-3 text-xs text-slate-500">
+                        <Highlight query={query.trim()} text={item.hint} />
+                      </span>
+                    ) : null}
                     {item.shortcut ? (
                       <kbd className={cn('rounded border border-slate-200 px-1.5 font-mono text-[11px] text-slate-500', !item.hint && 'ml-auto')}>{item.shortcut}</kbd>
                     ) : null}
@@ -186,18 +213,93 @@ export function CommandPalette({ open, onClose, items }: CommandPaletteProps): J
   );
 }
 
-/** Builds palette items from the workspace data the dashboard already has. */
+/** Builds palette items from the workspace data and collaborating projects. */
 export function buildPaletteItems(input: {
-  projects: Array<{ id: string; name: string }>;
+  projects: Array<{
+    id: string;
+    name: string;
+    workspaceName?: string;
+    workspaceAdmin?: { name?: string | null; email?: string };
+    creator?: { name?: string | null; email?: string };
+    isCollaborator?: boolean;
+  }>;
+  collaboratingProjects?: Array<{
+    id: string;
+    name: string;
+    workspaceName?: string;
+    workspaceAdmin?: { name?: string | null; email?: string };
+    creator?: { name?: string | null; email?: string };
+    isCollaborator?: boolean;
+  }>;
   epics: Array<{ id: string; name: string; projectId: string }>;
   tasks: Array<{ id: string; title: string; projectId?: string | null; epicId?: string | null }>;
   go: (path: string) => void;
   openTask: (task: { id: string; projectId?: string | null; epicId?: string | null }) => void;
   actions: Array<{ id: string; label: string; run: () => void; shortcut?: string }>;
 }): PaletteItem[] {
-  const projectName = new Map(input.projects.map((p) => [p.id, p.name]));
+  const seenProjectIds = new Set<string>();
+  const workspaceProjectItems: PaletteItem[] = [];
+  const collaboratingProjectItems: PaletteItem[] = [];
+
+  const addProject = (
+    p: {
+      id: string;
+      name: string;
+      workspaceName?: string;
+      workspaceAdmin?: { name?: string | null; email?: string };
+      creator?: { name?: string | null; email?: string };
+      isCollaborator?: boolean;
+    },
+    forceCollab = false
+  ) => {
+    if (seenProjectIds.has(p.id)) return;
+    seenProjectIds.add(p.id);
+
+    const adminOrOwner = p.workspaceAdmin?.name || p.creator?.name || '';
+    const adminEmail = p.workspaceAdmin?.email || p.creator?.email || '';
+    const wsName = p.workspaceName || '';
+    const hintParts = [wsName, adminOrOwner].filter(Boolean);
+    const hint = hintParts.length > 0 ? hintParts.join(' · ') : undefined;
+
+    const isCollab = forceCollab || Boolean(p.isCollaborator);
+    if (isCollab) {
+      collaboratingProjectItems.push({
+        id: `collab-project-${p.id}`,
+        group: 'Collaborating Projects' as const,
+        label: p.name,
+        hint: hint || 'Collaborating',
+        searchKeywords: `${wsName} ${adminOrOwner} ${adminEmail} collaborator collaborating project`,
+        swatch: tagColor(p.id),
+        icon: Folder,
+        run: () => input.go(`/projects/${p.id}`)
+      });
+    } else {
+      workspaceProjectItems.push({
+        id: `project-${p.id}`,
+        group: 'Workspace Projects' as const,
+        label: p.name,
+        hint,
+        searchKeywords: `${wsName} ${adminOrOwner} ${adminEmail} workspace project`,
+        swatch: tagColor(p.id),
+        icon: Folder,
+        run: () => input.go(`/projects/${p.id}`)
+      });
+    }
+  };
+
+  for (const p of input.projects) {
+    addProject(p, false);
+  }
+  for (const p of input.collaboratingProjects || []) {
+    addProject(p, true);
+  }
+
+  const allProjects = [...input.projects, ...(input.collaboratingProjects || [])];
+  const projectName = new Map(allProjects.map((p) => [p.id, p.name]));
   const pages: Array<[string, string]> = [
     ['Home', '/dashboard'],
+    ['Workspace Projects', '/projects'],
+    ['Collaborating Projects', '/collaborating-projects'],
     ['Activity timeline', '/activity'],
     ['Telemetry', '/telemetry'],
     ['AI Governance', '/ai-governance'],
@@ -244,14 +346,8 @@ export function buildPaletteItems(input: {
       swatch: tagColor(epic.id),
       run: () => input.go(`/projects/${epic.projectId}/epics/${epic.id}`)
     })),
-    ...input.projects.map((project) => ({
-      id: `project-${project.id}`,
-      group: 'Projects' as const,
-      label: project.name,
-      swatch: tagColor(project.id),
-      icon: Folder,
-      run: () => input.go(`/projects/${project.id}`)
-    })),
+    ...workspaceProjectItems,
+    ...collaboratingProjectItems,
     ...pages.map(([label, path]) => ({ id: `page-${path}`, group: 'Pages' as const, label, icon: ArrowRight, run: () => input.go(path) })),
     ...input.actions.map((action) => ({
       id: `action-${action.id}`,

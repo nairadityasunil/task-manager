@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   Folder,
-  Plus,
   Settings,
   Activity,
   BrainCircuit,
@@ -23,7 +22,7 @@ import {
   ClipboardCheck,
   Users
 } from 'lucide-react';
-import { cn, tagColor, type Area } from '@/components/ui';
+import { cn, type Area } from '@/components/ui';
 
 import logoImg from '@/assets/logo.png';
 
@@ -53,7 +52,7 @@ interface SidebarProps {
   allProjectsValue: string;
   onProjectSelect: (projectId: string) => void;
   onViewChange: (view: SidebarView, tab?: string) => void;
-  onNewProject: () => void;
+  onNewProject?: () => void;
   onPlanWithAi?: () => void;
   onPlanMyDay?: () => void;
   activeIntegrationId?: string;
@@ -68,7 +67,6 @@ interface SidebarProps {
   onOpenSearch?: () => void;
 }
 
-const MAX_SIDEBAR_PROJECTS = 5;
 const COLLAPSE_KEY = 'pristine.sidebar.collapsed';
 
 /** True while the desktop sidebar is collapsed to an icon rail (the phone drawer is always full width). */
@@ -139,13 +137,11 @@ const Sidebar: React.FC<SidebarProps> = ({
   allProjectsValue,
   onProjectSelect,
   onViewChange,
-  onNewProject,
   activeIntegrationId,
   activeIntegrationName,
   activeTab,
   mobileOpen = false,
   onMobileClose,
-  projects = [],
   onOpenSearch,
 }) => {
   const [collapsed, setCollapsed] = useState(readCollapsed);
@@ -266,8 +262,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                   label="Home"
                   onClick={() => onProjectSelect(allProjectsValue)}
                 />
-                <NavItem icon={Folder} isActive={activeView === 'projects'} label="All projects" onClick={() => onViewChange('projects')} />
-                <NavItem icon={Users} isActive={activeView === 'collaborating-projects'} label="Collaborating projects" onClick={() => onViewChange('collaborating-projects')} />
+                <NavItem icon={Folder} isActive={activeView === 'projects'} label="Workspace Projects" onClick={() => onViewChange('projects')} />
+                <NavItem icon={Users} isActive={activeView === 'collaborating-projects'} label="Collaborating Projects" onClick={() => onViewChange('collaborating-projects')} />
                 <NavItem icon={Activity} isActive={activeView === 'activity'} label="Activity" onClick={() => onViewChange('activity')} />
                 <NavItem icon={Gauge} isActive={activeView === 'telemetry'} label="Telemetry" onClick={() => onViewChange('telemetry')} />
               </NavGroup>
@@ -284,31 +280,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <NavItem area="events" icon={BarChart3} isActive={activeView === 'insights'} label="Insights" onClick={() => onViewChange('insights')} />
                 <NavItem area="integrations" icon={Plug} isActive={activeView === 'sdk-integrations'} label="SDK Integrations" onClick={() => onViewChange('sdk-integrations')} />
               </NavGroup>
-
-              <NavGroup label="Projects">
-                {projects.slice(0, MAX_SIDEBAR_PROJECTS).map((project) => {
-                  const isActive = activeView === 'dashboard' && selectedProjectView === project.id;
-                  return (
-                    <button
-                      aria-current={isActive ? 'page' : undefined}
-                      title={collapsed ? project.name : undefined}
-                      className={cn(
-                        'flex h-8 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-brand-600/40',
-                        collapsed && 'lg:justify-center lg:px-0',
-                        isActive ? 'bg-slate-200 font-medium text-slate-900' : 'text-slate-700 hover:bg-slate-200/60 hover:text-slate-900'
-                      )}
-                      key={project.id}
-                      onClick={() => onProjectSelect(project.id)}
-                      type="button"
-                    >
-                      <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: tagColor(project.id) }} />
-                      <span className={cn('truncate', collapsed && 'lg:sr-only')}>{project.name}</span>
-                    </button>
-                  );
-                })}
-                <NavItem area="tasks" icon={Plus} label="New Project" onClick={onNewProject} tone="muted" />
-              </NavGroup>
-
             </>
           )}
         </nav>
