@@ -3,7 +3,6 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import api from '@/services/api';
 import { useWorkspace } from '@/features/workspaces';
 import { getIntegration } from '@/lib/sdk-integrations/api';
-import { getProjectAiConfig } from '@/services/aiPlanning';
 import { SidebarView } from '@/components/Sidebar';
 import { Notification } from '@/components/NotificationBox';
 import { useChat } from '@/context/ChatContext';
@@ -289,14 +288,16 @@ export function useDashboard() {
     if (!options?.quiet) setLoading(true);
     setError(null);
     try {
+      const isProjectScoped = Boolean(projectId);
       const [taskList, projectData] = await Promise.all([
         getTasks(
           // Every task, whatever day it was made: tasks are not tied to a date or carried from day to day.
           undefined,
           taskFilters.assigneeId === 'all' ? undefined : taskFilters.assigneeId,
           debouncedTaskSearchTerm.trim() || undefined,
-          // The dashboard is about the open workspace only.
-          activeWorkspaceId || undefined
+          // When scoped to a specific project, fetch tasks for that project regardless of workspace
+          isProjectScoped ? undefined : (activeWorkspaceId || undefined),
+          projectId || undefined
         ),
         getProjects({ page: projectPage, limit: 10, search: debouncedProjectSearchTerm.trim(), workspaceId: activeWorkspaceId || undefined })
       ]);
@@ -310,8 +311,19 @@ export function useDashboard() {
         }
       }
 
-      // One request for the epics of all the person's projects; the server knows which those are.
-      const allEpics = await getMyEpics(activeWorkspaceId || undefined);
+      // One request for the epics of all the person's projects in workspace, plus project epics if viewing a specific project
+      const epicsPromises: Promise<Epic[]>[] = [getMyEpics(activeWorkspaceId || undefined)];
+      if (projectId) {
+        epicsPromises.push(getMyEpics(undefined, projectId));
+      }
+      const epicsResults = await Promise.all(epicsPromises);
+      const epicMap = new Map<string, Epic>();
+      for (const list of epicsResults) {
+        for (const epic of list) {
+          epicMap.set(epic.id, epic);
+        }
+      }
+      const allEpics = Array.from(epicMap.values());
 
       if (seq !== loadSeq.current) return;
       setTasks(taskList);
@@ -708,17 +720,8 @@ export function useDashboard() {
     if (projectMembersByProject[activeProject.id] == null) {
       void loadProjectTeam(activeProject.id);
     }
-    const loadAiConfigStatus = async () => {
-      try {
-        const config = await getProjectAiConfig(activeProject.id);
-        setActiveProjectAiEnabled(config.enabled);
-        setActiveProjectAiProvider(config.provider);
-      } catch {
-        setActiveProjectAiEnabled(false);
-        setActiveProjectAiProvider(null);
-      }
-    };
-    void loadAiConfigStatus();
+    setActiveProjectAiEnabled(activeProject.aiEnabled ?? false);
+    setActiveProjectAiProvider(activeProject.aiProvider ?? null);
   }, [activeProject, loadProjectTeam, projectMembersByProject, setActiveProject]);
 
   useEffect(() => {
