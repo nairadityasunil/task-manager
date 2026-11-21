@@ -28,9 +28,14 @@ const getEpics = async (projectId: string): Promise<Epic[]> => {
 };
 
 /** The epics of every project the person belongs to, in one request (the server knows which projects those are). */
-/** `workspaceId` limits the list to the epics of that workspace's projects. */
-const getMyEpics = async (workspaceId?: string): Promise<Epic[]> => {
-  const response = await api.get<EpicListResponse>('/epics', { params: workspaceId ? { workspaceId } : undefined });
+/** `workspaceId` limits the list to the epics of that workspace's projects. `projectId` narrows it to one project. */
+const getMyEpics = async (workspaceId?: string, projectId?: string): Promise<Epic[]> => {
+  const params: Record<string, string> = {};
+  if (workspaceId) params.workspaceId = workspaceId;
+  if (projectId) params.projectId = projectId;
+  const response = await api.get<EpicListResponse>('/epics', {
+    params: Object.keys(params).length ? params : undefined,
+  });
   return response.data.data.epics;
 };
 

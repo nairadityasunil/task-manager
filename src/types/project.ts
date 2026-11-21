@@ -34,6 +34,8 @@ export interface Project {
     email: string;
   };
   isCollaborator?: boolean;
+  aiEnabled?: boolean;
+  aiProvider?: string | null;
   currentUserRole: 'ADMIN' | 'MEMBER';
   /** What the signed-in person may use here. Admins have everything. */
   currentUserPermissions?: ProjectPermissions;
