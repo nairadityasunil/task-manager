@@ -1,19 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { ApprovalRequestItem, type ApprovalDecision, type SecurityItem } from '@/features/agents/components/ApprovalRequest';
 import type { AgentApproval } from '@/services/agents';
-import { Bell, MessageCircle, UserPlus, X, ChevronRight } from 'lucide-react';
+import { acceptProjectTransfer, rejectProjectTransfer } from '@/services/projects';
+import { Bell, MessageCircle, UserPlus, X, ChevronRight, ArrowRightLeft } from 'lucide-react';
 
 export interface Notification {
   id: string;
-  type: 'message' | 'team_join' | 'system';
+  type: 'message' | 'team_join' | 'transfer_request' | 'system';
   title: string;
   message: string;
   timestamp: Date;
   isRead: boolean;
   link?: string;
   projectId?: string;
+  transferToken?: string;
 }
 
 interface NotificationBoxProps {
@@ -41,6 +43,7 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
   approvalBusyId = null,
   onDecideApproval,
 }) => {
+  const [actioningTransferId, setActioningTransferId] = useState<string | null>(null);
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
@@ -145,10 +148,13 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
                 <div className="flex gap-3">
                   <div className={[
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-                    notification.type === 'team_join' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-600',
+                    notification.type === 'team_join' ? 'bg-emerald-50 text-emerald-600' :
+                    notification.type === 'transfer_request' ? 'bg-violet-50 text-violet-600' :
+                    'bg-slate-100 text-slate-600',
                   ].join(' ')}>
                     {notification.type === 'message' ? <MessageCircle size={15} /> :
                       notification.type === 'team_join' ? <UserPlus size={15} /> :
+                      notification.type === 'transfer_request' ? <ArrowRightLeft size={15} /> :
                         <Bell size={15} />}
                   </div>
 
@@ -163,23 +169,65 @@ const NotificationBox: React.FC<NotificationBoxProps> = ({
                     </div>
                     <p className="m-0 mt-0.5 line-clamp-2 text-[13px] text-slate-500">{notification.message}</p>
 
-                    <div className="mt-2 flex items-center justify-between">
-                      <span className="flex items-center gap-0.5 text-xs font-medium text-slate-600 group-hover:text-slate-900">
-                        View details <ChevronRight size={12} />
-                      </span>
-                      {!notification.isRead && (
+                    {notification.type === 'transfer_request' && notification.transferToken ? (
+                      <div className="mt-2.5 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onMarkAsRead(notification.id);
+                          className="rounded bg-brand-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-brand-700 disabled:opacity-50"
+                          disabled={actioningTransferId === notification.id}
+                          onClick={async () => {
+                            setActioningTransferId(notification.id);
+                            try {
+                              await acceptProjectTransfer(notification.transferToken!);
+                              onMarkAsRead(notification.id);
+                              window.location.reload();
+                            } catch {
+                              window.location.href = `/projects/transfer/${notification.transferToken}`;
+                            } finally {
+                              setActioningTransferId(null);
+                            }
                           }}
-                          className="text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
                           type="button"
                         >
-                          Mark as read
+                          Accept
                         </button>
-                      )}
-                    </div>
+                        <button
+                          className="rounded border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                          disabled={actioningTransferId === notification.id}
+                          onClick={async () => {
+                            setActioningTransferId(notification.id);
+                            try {
+                              await rejectProjectTransfer(notification.transferToken!);
+                              onMarkAsRead(notification.id);
+                            } catch {
+                              // ignore
+                            } finally {
+                              setActioningTransferId(null);
+                            }
+                          }}
+                          type="button"
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="flex items-center gap-0.5 text-xs font-medium text-slate-600 group-hover:text-slate-900">
+                          View details <ChevronRight size={12} />
+                        </span>
+                        {!notification.isRead && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onMarkAsRead(notification.id);
+                            }}
+                            className="text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
+                            type="button"
+                          >
+                            Mark as read
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

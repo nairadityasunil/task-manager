@@ -16,6 +16,7 @@ import {
   createProject,
   deleteProject,
   deleteProjects,
+  getMyProjectTransfers,
   getProjectMembers,
   getProject,
   getProjects,
@@ -29,7 +30,7 @@ import { useAuth } from '@/context/AuthContext';
 import socketService, { SocketEvents } from '@/services/socket';
 import type { Epic, EpicStatus } from '@/types/epic';
 import type { Note } from '@/types/note';
-import type { Project, ProjectMember, ProjectPermissions } from '@/types/project';
+import type { Project, ProjectMember, ProjectPermissions, ProjectTransferRequest } from '@/types/project';
 import projectStateService, { type ProjectState } from '@/services/projectStates';
 import { sortStates, stateForTask, statusOfCategory } from '@/features/projects/workflowStates';
 import type { Task, TaskWorkflowStatus, TaskPriority } from '@/types/task';
@@ -367,6 +368,27 @@ export function useDashboard() {
       void loadDashboard();
     };
 
+    const handleTransferRequest = (data: ProjectTransferRequest) => {
+      const newNotification: Notification = {
+        id: `transfer-${data.id}`,
+        type: 'transfer_request',
+        title: 'Project Ownership Transfer',
+        message: `${data.currentOwnerName} requested to transfer ownership of project "${data.projectName}" to you.`,
+        timestamp: new Date(data.createdAt || Date.now()),
+        isRead: false,
+        link: `/projects/transfer/${data.token}`,
+        projectId: data.projectId,
+        transferToken: data.token,
+      };
+      setNotifications((prev) => [
+        newNotification,
+        ...prev.filter((n) => n.id !== newNotification.id),
+      ]);
+      setProjectMutationSuccess(
+        `Ownership transfer invitation received for "${data.projectName}"`,
+      );
+    };
+
     socketService.on(SocketEvents.TASK_ASSIGNED, handleTaskAssigned);
     socketService.on(SocketEvents.TASK_BULK_ASSIGNED, handleTaskAssigned);
     socketService.on(
@@ -376,6 +398,10 @@ export function useDashboard() {
     socketService.on(
       SocketEvents.PROJECT_OWNERSHIP_ACCEPTED,
       handleOwnershipAccepted,
+    );
+    socketService.on(
+      SocketEvents.PROJECT_TRANSFER_REQUEST,
+      handleTransferRequest,
     );
     return () => {
       socketService.off(SocketEvents.TASK_ASSIGNED, handleTaskAssigned);
@@ -387,6 +413,10 @@ export function useDashboard() {
       socketService.off(
         SocketEvents.PROJECT_OWNERSHIP_ACCEPTED,
         handleOwnershipAccepted,
+      );
+      socketService.off(
+        SocketEvents.PROJECT_TRANSFER_REQUEST,
+        handleTransferRequest,
       );
     };
   }, [loadDashboard]);
@@ -515,6 +545,43 @@ export function useDashboard() {
     }
   }, [lastMessage, isChatPanelOpen, activeProject, user?.id, clearLastMessage]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const fetchTransfers = async () => {
+      try {
+        const transfers = await getMyProjectTransfers();
+        if (cancelled) return;
+        const transferNotifications: Notification[] = transfers.map((t) => ({
+          id: `transfer-${t.id}`,
+          type: 'transfer_request',
+          title: 'Project Ownership Transfer',
+          message: `${t.currentOwnerName} requested to transfer ownership of project "${t.projectName}" to you.`,
+          timestamp: new Date(t.createdAt || Date.now()),
+          isRead: false,
+          link: `/projects/transfer/${t.token}`,
+          projectId: t.projectId,
+          transferToken: t.token,
+        }));
+        setNotifications((prev) => {
+          const nonTransfers = prev.filter((n) => n.type !== 'transfer_request');
+          return [...transferNotifications, ...nonTransfers];
+        });
+      } catch {
+        // ignore
+      }
+    };
+
+    void fetchTransfers();
+    const interval = setInterval(() => {
+      void fetchTransfers();
+    }, 30_000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
   const handleMarkAsRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
   };
@@ -527,6 +594,8 @@ export function useDashboard() {
     handleMarkAsRead(notification.id);
     if (notification.type === 'message') {
       setIsChatPanelOpen(true);
+    } else if (notification.link) {
+      navigate(notification.link);
     }
     setIsNotificationsOpen(false);
   };
