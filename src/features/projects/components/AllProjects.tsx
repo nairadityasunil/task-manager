@@ -35,6 +35,7 @@ export function AllProjects({
   reloadKey?: unknown;
 }): JSX.Element {
   const { activeWorkspaceId } = useWorkspace();
+  const [tab, setTab] = useState<'workspace' | 'collaborating'>('workspace');
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [error, setError] = useState(false);
   const [q, setQ] = useState('');
@@ -42,7 +43,12 @@ export function AllProjects({
 
   useEffect(() => {
     let cancelled = false;
-    getAllProjects(undefined, activeWorkspaceId || undefined)
+    setProjects(null);
+    getAllProjects(
+      undefined,
+      tab === 'workspace' ? activeWorkspaceId || undefined : undefined,
+      tab,
+    )
       .then((list) => !cancelled && setProjects(list))
       .catch(() => {
         if (!cancelled) {
@@ -53,7 +59,7 @@ export function AllProjects({
     return () => {
       cancelled = true;
     };
-  }, [reloadKey, activeWorkspaceId]);
+  }, [reloadKey, activeWorkspaceId, tab]);
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -70,11 +76,44 @@ export function AllProjects({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="m-0 text-lg font-semibold tracking-tight text-slate-900">All projects</h1>
-          <p className="m-0 text-[13px] text-slate-500">{projects ? `${projects.length} project${projects.length === 1 ? '' : 's'} you are part of` : 'Loading'}</p>
+          <p className="m-0 text-[13px] text-slate-500">
+            {projects
+              ? tab === 'workspace'
+                ? `${projects.length} project${projects.length === 1 ? '' : 's'} in current workspace`
+                : `${projects.length} collaborating project${projects.length === 1 ? '' : 's'} you are part of`
+              : 'Loading'}
+          </p>
         </div>
-        <Button icon={Plus} onClick={onNewProject} variant="primary">
-          New project
-        </Button>
+        {tab === 'workspace' ? (
+          <Button icon={Plus} onClick={onNewProject} variant="primary">
+            New project
+          </Button>
+        ) : null}
+      </div>
+
+      <div className="flex gap-4 border-b border-slate-200">
+        <button
+          className={`relative pb-2.5 text-sm font-medium transition-colors ${
+            tab === 'workspace'
+              ? 'text-brand-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-brand-600'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+          onClick={() => setTab('workspace')}
+          type="button"
+        >
+          Current Workspace Projects
+        </button>
+        <button
+          className={`relative pb-2.5 text-sm font-medium transition-colors ${
+            tab === 'collaborating'
+              ? 'text-brand-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-brand-600'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+          onClick={() => setTab('collaborating')}
+          type="button"
+        >
+          Collaborating Projects
+        </button>
       </div>
       <div className="flex flex-wrap gap-2">
         <div className="relative min-w-52 flex-1">
@@ -125,6 +164,9 @@ export function AllProjects({
                   </span>
                   {p.description ? <span className="line-clamp-2 text-[13px] text-slate-600 [overflow-wrap:anywhere]">{p.description}</span> : null}
                   <span className="mt-auto flex flex-wrap items-center gap-1.5 pt-1 text-xs text-slate-500">
+                    {p.isCollaborator || tab === 'collaborating' ? (
+                      <Badge tone="warning">Collaborator</Badge>
+                    ) : null}
                     <Badge tone={p.currentUserRole === 'ADMIN' ? 'violet' : 'neutral'}>{p.currentUserRole === 'ADMIN' ? 'Admin' : 'Member'}</Badge>
                     <span>Created {day(p.createdAt)}</span>
                   </span>

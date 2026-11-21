@@ -15,8 +15,16 @@ interface WorkspaceMembersProps {
 }
 
 export function WorkspaceMembers({ workspace, currentUserId }: WorkspaceMembersProps): JSX.Element {
-  const { members, isLoading, error, refreshMembers, inviteMember, updateMemberRole, removeMember } =
-    useWorkspaceMembers(workspace.id);
+  const {
+    members,
+    isLoading,
+    error,
+    refreshMembers,
+    inviteMember,
+    updateMemberRole,
+    updateMemberPermissions,
+    removeMember,
+  } = useWorkspaceMembers(workspace.id);
   const [showInvite, setShowInvite] = useState(false);
   const location = useLocation();
 
@@ -93,6 +101,7 @@ export function WorkspaceMembers({ workspace, currentUserId }: WorkspaceMembersP
                 currentUserId={currentUserId}
                 currentUserRole={workspace.role}
                 onUpdateRole={updateMemberRole}
+                onUpdatePermissions={updateMemberPermissions}
                 onRemove={removeMember}
               />
             ))}

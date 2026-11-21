@@ -16,6 +16,8 @@ export interface Project {
   name: string;
   description?: string;
   userId: string;
+  workspaceId?: string;
+  isCollaborator?: boolean;
   currentUserRole: 'ADMIN' | 'MEMBER';
   /** What the signed-in person may use here. Admins have everything. */
   currentUserPermissions?: ProjectPermissions;
@@ -28,6 +30,20 @@ export interface Project {
     email: string;
     name: string | null;
   };
+}
+
+export interface ProjectTransferRequest {
+  id: string;
+  token: string;
+  projectId: string;
+  projectName: string;
+  projectDescription?: string;
+  currentOwnerName: string;
+  currentOwnerEmail: string;
+  targetEmail: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
+  createdAt?: string;
+  expiresAt: string;
 }
 
 export interface ProjectMemberUser {

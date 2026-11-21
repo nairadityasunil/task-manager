@@ -1,5 +1,5 @@
 import api from '@/services/api';
-import type { Workspace, WorkspaceDetails, WorkspaceMember, WorkspaceRole, WorkspaceSettings } from '../types/workspace';
+import type { Workspace, WorkspaceDetails, WorkspaceMember, WorkspacePermissions, WorkspaceRole, WorkspaceSettings } from '../types/workspace';
 
 export const workspaceService = {
   async listWorkspaces(): Promise<Workspace[]> {
@@ -56,6 +56,18 @@ export const workspaceService = {
     const res = await api.patch<{ member: WorkspaceMember }>(
       `/workspaces/${id}/members/${memberUserId}`,
       { role },
+    );
+    return res.data.member;
+  },
+
+  async updateMemberPermissions(
+    id: string,
+    memberUserId: string,
+    permissions: Partial<WorkspacePermissions>,
+  ): Promise<WorkspaceMember> {
+    const res = await api.patch<{ member: WorkspaceMember }>(
+      `/workspaces/${id}/members/${memberUserId}/permissions`,
+      { permissions },
     );
     return res.data.member;
   },
