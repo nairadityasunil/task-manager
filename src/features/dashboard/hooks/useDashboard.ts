@@ -253,6 +253,8 @@ export function useDashboard() {
       setActiveView('settings');
     } else if (path === '/projects') {
       setActiveView('projects');
+    } else if (path === '/collaborating-projects') {
+      setActiveView('collaborating-projects');
     } else if (path === '/activity') {
       setActiveView('activity');
     } else if (path === '/telemetry' || path.startsWith('/telemetry/')) {

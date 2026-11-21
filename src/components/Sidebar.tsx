@@ -20,7 +20,8 @@ import {
   type LucideIcon,
   Gauge,
   BarChart3,
-  ClipboardCheck
+  ClipboardCheck,
+  Users
 } from 'lucide-react';
 import { cn, tagColor, type Area } from '@/components/ui';
 
@@ -43,6 +44,7 @@ export type SidebarView =
   | 'ai-governance'
   | 'activity'
   | 'projects'
+  | 'collaborating-projects'
   | 'admin';
 
 interface SidebarProps {
@@ -265,6 +267,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => onProjectSelect(allProjectsValue)}
                 />
                 <NavItem icon={Folder} isActive={activeView === 'projects'} label="All projects" onClick={() => onViewChange('projects')} />
+                <NavItem icon={Users} isActive={activeView === 'collaborating-projects'} label="Collaborating projects" onClick={() => onViewChange('collaborating-projects')} />
                 <NavItem icon={Activity} isActive={activeView === 'activity'} label="Activity" onClick={() => onViewChange('activity')} />
                 <NavItem icon={Gauge} isActive={activeView === 'telemetry'} label="Telemetry" onClick={() => onViewChange('telemetry')} />
               </NavGroup>

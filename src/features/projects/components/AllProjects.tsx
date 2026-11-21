@@ -20,9 +20,10 @@ export function AllProjects({
   onOpenSettings,
   busyProjectId,
   reloadKey,
+  mode = 'workspace',
 }: {
   onOpen: (projectId: string) => void;
-  onNewProject: () => void;
+  onNewProject?: () => void;
   /** Edit a project's name and description (project admins). */
   onEdit?: (project: Project) => void;
   /** Delete a project, after asking (project admins). */
@@ -33,9 +34,10 @@ export function AllProjects({
   busyProjectId?: string | null;
   /** Changes when projects are added or removed elsewhere, so the list reloads. */
   reloadKey?: unknown;
+  /** 'workspace' for current workspace projects, 'collaborating' for other people's projects. */
+  mode?: 'workspace' | 'collaborating';
 }): JSX.Element {
   const { activeWorkspaceId } = useWorkspace();
-  const [tab, setTab] = useState<'workspace' | 'collaborating'>('workspace');
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [error, setError] = useState(false);
   const [q, setQ] = useState('');
@@ -46,8 +48,8 @@ export function AllProjects({
     setProjects(null);
     getAllProjects(
       undefined,
-      tab === 'workspace' ? activeWorkspaceId || undefined : undefined,
-      tab,
+      mode === 'workspace' ? activeWorkspaceId || undefined : undefined,
+      mode,
     )
       .then((list) => !cancelled && setProjects(list))
       .catch(() => {
@@ -59,7 +61,7 @@ export function AllProjects({
     return () => {
       cancelled = true;
     };
-  }, [reloadKey, activeWorkspaceId, tab]);
+  }, [reloadKey, activeWorkspaceId, mode]);
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -75,46 +77,24 @@ export function AllProjects({
     <div className="grid w-full gap-4 px-3 py-4 sm:px-5 lg:px-6" data-testid="all-projects">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="m-0 text-lg font-semibold tracking-tight text-slate-900">All projects</h1>
+          <h1 className="m-0 text-lg font-semibold tracking-tight text-slate-900">
+            {mode === 'collaborating' ? 'Collaborating projects' : 'All projects'}
+          </h1>
           <p className="m-0 text-[13px] text-slate-500">
             {projects
-              ? tab === 'workspace'
-                ? `${projects.length} project${projects.length === 1 ? '' : 's'} in current workspace`
-                : `${projects.length} collaborating project${projects.length === 1 ? '' : 's'} you are part of`
+              ? mode === 'collaborating'
+                ? `${projects.length} collaborating project${projects.length === 1 ? '' : 's'} you are part of`
+                : `${projects.length} project${projects.length === 1 ? '' : 's'} in current workspace`
               : 'Loading'}
           </p>
         </div>
-        {tab === 'workspace' ? (
+        {mode === 'workspace' && onNewProject ? (
           <Button icon={Plus} onClick={onNewProject} variant="primary">
             New project
           </Button>
         ) : null}
       </div>
 
-      <div className="flex gap-4 border-b border-slate-200">
-        <button
-          className={`relative pb-2.5 text-sm font-medium transition-colors ${
-            tab === 'workspace'
-              ? 'text-brand-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-brand-600'
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-          onClick={() => setTab('workspace')}
-          type="button"
-        >
-          Current Workspace Projects
-        </button>
-        <button
-          className={`relative pb-2.5 text-sm font-medium transition-colors ${
-            tab === 'collaborating'
-              ? 'text-brand-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-brand-600'
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-          onClick={() => setTab('collaborating')}
-          type="button"
-        >
-          Collaborating Projects
-        </button>
-      </div>
       <div className="flex flex-wrap gap-2">
         <div className="relative min-w-52 flex-1">
           <Search aria-hidden className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
@@ -143,7 +123,7 @@ export function AllProjects({
       ) : !shown.length ? (
         <EmptyState
           action={
-            q || tab === 'collaborating' ? undefined : (
+            q || mode === 'collaborating' || !onNewProject ? undefined : (
               <Button onClick={onNewProject} variant="primary">
                 Create a project
               </Button>
@@ -152,7 +132,7 @@ export function AllProjects({
           description={
             q
               ? 'No project matches that search.'
-              : tab === 'collaborating'
+              : mode === 'collaborating'
               ? 'You are not collaborating on any projects from other workspaces.'
               : 'Projects group the work of a team.'
           }
@@ -160,7 +140,7 @@ export function AllProjects({
           title={
             q
               ? 'No match'
-              : tab === 'collaborating'
+              : mode === 'collaborating'
               ? 'No collaborating projects'
               : 'No projects yet'
           }
@@ -181,7 +161,7 @@ export function AllProjects({
                     <span className="truncate text-sm font-semibold text-slate-900">{p.name}</span>
                   </span>
                   {p.description ? <span className="line-clamp-2 text-[13px] text-slate-600 [overflow-wrap:anywhere]">{p.description}</span> : null}
-                  {(p.isCollaborator || tab === 'collaborating') && (p.workspaceName || p.workspaceAdmin) ? (
+                  {(p.isCollaborator || mode === 'collaborating') && (p.workspaceName || p.workspaceAdmin) ? (
                     <div className="mt-1 flex flex-col gap-1 rounded-lg border border-slate-100 bg-slate-50/80 p-2 text-xs">
                       {p.workspaceName ? (
                         <div className="flex items-center gap-1.5 font-medium text-slate-700" title={p.workspaceName}>
@@ -203,7 +183,7 @@ export function AllProjects({
                     </div>
                   ) : null}
                   <span className="mt-auto flex flex-wrap items-center gap-1.5 pt-1 text-xs text-slate-500">
-                    {p.isCollaborator || tab === 'collaborating' ? (
+                    {p.isCollaborator || mode === 'collaborating' ? (
                       <Badge tone="warning">Collaborator</Badge>
                     ) : null}
                     <Badge tone={p.currentUserRole === 'ADMIN' ? 'violet' : 'neutral'}>{p.currentUserRole === 'ADMIN' ? 'Admin' : 'Member'}</Badge>
