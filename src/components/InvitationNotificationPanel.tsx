@@ -73,6 +73,9 @@ function InvitationNotificationPanel() {
 
   useEffect(() => {
     void loadMyInvitations();
+    const interval = setInterval(() => {
+      void loadMyInvitations();
+    }, 30_000);
 
     // Real-time: someone sent me an invite
     const onReceived = (data: PendingInvitation) => {
@@ -136,6 +139,7 @@ function InvitationNotificationPanel() {
     socketService.on(SocketEvents.PROJECT_TRANSFER_REQUEST, onTransferRequest);
 
     return () => {
+      clearInterval(interval);
       socketService.off(SocketEvents.INVITATION_RECEIVED, onReceived);
       socketService.off(SocketEvents.INVITATION_ACCEPTED, onAccepted);
       socketService.off(SocketEvents.INVITATION_REJECTED, onRejected);

@@ -1,12 +1,13 @@
-import { ArrowRightLeft, Bot, Clock, Info, Pencil, Sparkles, Users } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { ArrowRightLeft, Bot, Clock, Info, Lock, Pencil, Sparkles, Users } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import Modal from '@/components/Modal';
 import { Badge, Button, Checkbox, Input, Tabs, avatarColor, initialsOf } from '@/components/ui';
 import { useToast } from '@/context/ToastContext';
-import { initiateProjectTransfer, updateMemberPermissions } from '@/services/projects';
+import socketService, { SocketEvents } from '@/services/socket';
+import { getActiveProjectTransfer, initiateProjectTransfer, updateMemberPermissions } from '@/services/projects';
 import { ProjectSlaPanel } from './ProjectSlaPanel';
-import { PROJECT_FEATURES, PROJECT_FEATURE_INFO, type Project, type ProjectFeature, type ProjectMember, type ProjectPermissions } from '@/types/project';
+import { PROJECT_FEATURES, PROJECT_FEATURE_INFO, type ActiveProjectTransfer, type Project, type ProjectFeature, type ProjectMember, type ProjectPermissions } from '@/types/project';
 import { toDisplayErrorMessage } from '@/utils/apiError';
 
 type Tab = 'general' | 'team' | 'access' | 'workflow' | 'sla';
@@ -36,7 +37,40 @@ export function ProjectSettings({ project, members, currentUserId, isAdmin, myPe
   const [transferEmail, setTransferEmail] = useState('');
   const [transferLoading, setTransferLoading] = useState(false);
   const [transferError, setTransferError] = useState('');
+  const [activeTransfer, setActiveTransfer] = useState<ActiveProjectTransfer | null>(null);
+  const [transferCheckLoading, setTransferCheckLoading] = useState(false);
   const { showToast } = useToast();
+
+  useEffect(() => {
+    let cancelled = false;
+    setTransferCheckLoading(true);
+    getActiveProjectTransfer(project.id)
+      .then((res) => {
+        if (!cancelled) setActiveTransfer(res);
+      })
+      .catch(() => {
+        if (!cancelled) setActiveTransfer(null);
+      })
+      .finally(() => {
+        if (!cancelled) setTransferCheckLoading(false);
+      });
+
+    const onTransferRejected = (data: { projectId: string; targetEmail?: string }) => {
+      if (data.projectId === project.id) {
+        setActiveTransfer(null);
+        showToast({
+          variant: 'info',
+          message: 'The pending ownership transfer was rejected. Transfer lock has been released.',
+        });
+      }
+    };
+
+    socketService.on(SocketEvents.PROJECT_TRANSFER_REJECTED, onTransferRejected);
+    return () => {
+      cancelled = true;
+      socketService.off(SocketEvents.PROJECT_TRANSFER_REJECTED, onTransferRejected);
+    };
+  }, [project.id]);
 
   if (!isAdmin) {
     return (
@@ -55,13 +89,21 @@ export function ProjectSettings({ project, members, currentUserId, isAdmin, myPe
     setTransferLoading(true);
     setTransferError('');
     try {
-      await initiateProjectTransfer(project.id, transferEmail.trim().toLowerCase());
+      const res = await initiateProjectTransfer(project.id, transferEmail.trim().toLowerCase());
       showToast({
         variant: 'success',
         message: `Ownership transfer request sent to ${transferEmail}. They will receive an email and notification to accept.`,
       });
       setIsTransferModalOpen(false);
       setTransferEmail('');
+      setActiveTransfer(
+        (res as { data?: ActiveProjectTransfer }).data ?? {
+          id: 'new',
+          targetEmail: transferEmail.trim().toLowerCase(),
+          status: 'PENDING',
+          expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+        },
+      );
     } catch (err: unknown) {
       setTransferError(toDisplayErrorMessage(err));
     } finally {
@@ -131,13 +173,40 @@ export function ProjectSettings({ project, members, currentUserId, isAdmin, myPe
                   Transfer this project to another user. The project, tasks, epics, time sheets, and members will be moved into their default workspace once accepted.
                 </p>
                 <div className="mt-3">
-                  <Button
-                    icon={ArrowRightLeft}
-                    onClick={() => setIsTransferModalOpen(true)}
-                    variant="secondary"
-                  >
-                    Transfer Project Ownership
-                  </Button>
+                  {activeTransfer ? (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-left" data-testid="project-transfer-locked">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+                        <Lock className="h-4 w-4 text-amber-700" />
+                        Ownership Transfer Pending (Locked)
+                      </div>
+                      <p className="mt-1.5 text-xs text-amber-800 leading-relaxed">
+                        An ownership transfer invitation is currently active and awaiting a response from{' '}
+                        <strong>{activeTransfer.targetEmail}</strong>.
+                      </p>
+                      <p className="mt-1 text-[11px] text-amber-700">
+                        Transfers remain locked until the previous invitation is accepted, rejected, or expires.
+                      </p>
+                      <div className="mt-3">
+                        <Button
+                          disabled
+                          icon={Lock}
+                          variant="secondary"
+                          className="cursor-not-allowed opacity-60"
+                        >
+                          Transfer Locked (Pending Response)
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      disabled={transferCheckLoading}
+                      icon={ArrowRightLeft}
+                      onClick={() => setIsTransferModalOpen(true)}
+                      variant="secondary"
+                    >
+                      Transfer Project Ownership
+                    </Button>
+                  )}
                 </div>
               </div>
             ) : null}
@@ -172,7 +241,7 @@ export function ProjectSettings({ project, members, currentUserId, isAdmin, myPe
             ) : null}
             <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-xs leading-relaxed text-amber-800">
               <strong className="block font-semibold">Important</strong>
-              An invitation email and notification will be sent to the recipient. The transfer will only take effect once they accept. Once transferred, your role on this project will become Member.
+              Only one invitation can be sent at a time. The project will remain locked for new transfers until the recipient accepts or rejects this invitation. Once transferred, your role on this project will become Member.
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-slate-700">

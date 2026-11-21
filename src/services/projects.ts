@@ -1,5 +1,6 @@
 import api from '@/services/api';
 import type {
+  ActiveProjectTransfer,
   CreateProjectInput,
   Project,
   ProjectMember,
@@ -163,6 +164,15 @@ const getMyProjectTransfers = async (): Promise<ProjectTransferRequest[]> => {
   return response.data.data;
 };
 
+const getActiveProjectTransfer = async (
+  projectId: string,
+): Promise<ActiveProjectTransfer | null> => {
+  const response = await api.get<{ data: ActiveProjectTransfer | null }>(
+    `/projects/${projectId}/transfer/active`,
+  );
+  return response.data.data;
+};
+
 export {
   addProjectMember,
   createProject,
@@ -181,4 +191,5 @@ export {
   acceptProjectTransfer,
   rejectProjectTransfer,
   getMyProjectTransfers,
+  getActiveProjectTransfer,
 };

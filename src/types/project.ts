@@ -46,6 +46,15 @@ export interface ProjectTransferRequest {
   expiresAt: string;
 }
 
+export interface ActiveProjectTransfer {
+  id: string;
+  targetEmail: string;
+  targetUserName?: string | null;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
+  createdAt?: string;
+  expiresAt: string;
+}
+
 export interface ProjectMemberUser {
   id: string;
   email: string;
