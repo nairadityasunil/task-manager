@@ -247,6 +247,7 @@ export function DashboardPage(): JSX.Element {
           else if (view === 'agents') navigate('/agents');
           else if (view === 'activity') navigate('/activity');
           else if (view === 'projects') navigate('/projects');
+          else if (view === 'collaborating-projects') navigate('/collaborating-projects');
           else if (view === 'telemetry') navigate('/telemetry');
           else if (view === 'insights') navigate('/insights');
           else if (view === 'ai-governance') navigate('/ai-governance');
@@ -294,6 +295,8 @@ export function DashboardPage(): JSX.Element {
               ? 'Activity'
               : dash.activeView === 'projects'
               ? 'All projects'
+              : dash.activeView === 'collaborating-projects'
+              ? 'Collaborating projects'
               : dash.activeView === 'telemetry'
               ? 'Telemetry'
               : dash.activeView === 'insights'
@@ -345,6 +348,8 @@ export function DashboardPage(): JSX.Element {
 
               {dash.activeView === 'settings' ? (
                 <span className={crumbCurrentCls}>Settings</span>
+              ) : dash.activeView === 'collaborating-projects' ? (
+                <span className={crumbCurrentCls}>Collaborating projects</span>
               ) : dash.activeView === 'activity' ? (
                 <span className={crumbCurrentCls}>Activity</span>
               ) : dash.activeView === 'telemetry' ? (
@@ -449,9 +454,27 @@ export function DashboardPage(): JSX.Element {
             <div className="h-full overflow-y-auto">
               <AllProjects
                 busyProjectId={dash.actionProjectId}
+                mode="workspace"
                 onDelete={(project) => void dash.handleDeleteProject(project.id)}
                 onEdit={(project) => dash.setEditingProject(project)}
                 onNewProject={() => dash.setIsProjectCreateModalOpen(true)}
+                onOpen={(id) => navigate(`/projects/${id}`)}
+                onOpenSettings={(project) => {
+                  if (project.currentUserRole === 'ADMIN') {
+                    navigate(`/projects/${project.id}`);
+                    setIsProjectSettingsOpen(true);
+                  }
+                }}
+                reloadKey={dash.projectsVersion}
+              />
+            </div>
+          ) : dash.activeView === 'collaborating-projects' ? (
+            <div className="h-full overflow-y-auto">
+              <AllProjects
+                busyProjectId={dash.actionProjectId}
+                mode="collaborating"
+                onDelete={(project) => void dash.handleDeleteProject(project.id)}
+                onEdit={(project) => dash.setEditingProject(project)}
                 onOpen={(id) => navigate(`/projects/${id}`)}
                 onOpenSettings={(project) => {
                   if (project.currentUserRole === 'ADMIN') {
