@@ -265,6 +265,7 @@ export function DashboardPage(): JSX.Element {
           isPaletteOpen
             ? buildPaletteItems({
                 projects: dash.projects,
+                collaboratingProjects: dash.collaboratingProjects,
                 epics: dash.epics,
                 tasks: dash.tasks,
                 go: (path) => navigate(path),
@@ -294,9 +295,9 @@ export function DashboardPage(): JSX.Element {
               : dash.activeView === 'activity'
               ? 'Activity'
               : dash.activeView === 'projects'
-              ? 'All projects'
+              ? 'Workspace Projects'
               : dash.activeView === 'collaborating-projects'
-              ? 'Collaborating projects'
+              ? 'Collaborating Projects'
               : dash.activeView === 'telemetry'
               ? 'Telemetry'
               : dash.activeView === 'insights'
@@ -349,7 +350,7 @@ export function DashboardPage(): JSX.Element {
               {dash.activeView === 'settings' ? (
                 <span className={crumbCurrentCls}>Settings</span>
               ) : dash.activeView === 'collaborating-projects' ? (
-                <span className={crumbCurrentCls}>Collaborating projects</span>
+                <span className={crumbCurrentCls}>Collaborating Projects</span>
               ) : dash.activeView === 'activity' ? (
                 <span className={crumbCurrentCls}>Activity</span>
               ) : dash.activeView === 'telemetry' ? (
@@ -408,7 +409,7 @@ export function DashboardPage(): JSX.Element {
                   )}
                 </>
               ) : (
-                <span className={crumbCurrentCls}>{dash.activeView === 'projects' ? 'All projects' : 'Overview'}</span>
+                <span className={crumbCurrentCls}>{dash.activeView === 'projects' ? 'Workspace Projects' : 'Overview'}</span>
               )}
             </>
           }
